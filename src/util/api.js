@@ -206,10 +206,13 @@ export const fetchStudentTransactions = (studentId, params = {}) => {
     .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`)
     .join('&');
 
-  return request(`/api/education/students/${studentId}/transactions${queryString ? `?${queryString}` : ''}`, {
-    method: 'GET',
-    headers: { 'Content-Type': 'application/json' },
-  });
+  return request(
+    `/api/education/students/${studentId}/transactions${queryString ? `?${queryString}` : ''}`,
+    {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
+    }
+  );
 };
 
 // =====================================================
@@ -276,7 +279,7 @@ export const deleteUserAdmin = userId => {
 };
 
 // Create an admin user (system admin only)
-export const createAdminUser = (data) => {
+export const createAdminUser = data => {
   return request('/api/admin/users/create-admin', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },

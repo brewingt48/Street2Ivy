@@ -35,65 +35,59 @@ module.exports = (req, res) => {
       const currentUserId = currentUser.id.uuid;
 
       // Step 2: Verify the listing belongs to the current user
-      return sdk.ownListings
-        .show({ id: listingId })
-        .then(listingResponse => {
-          const listing = listingResponse.data.data;
-          const processAlias =
-            listing.attributes.publicData?.transactionProcessAlias;
+      return sdk.ownListings.show({ id: listingId }).then(listingResponse => {
+        const listing = listingResponse.data.data;
+        const processAlias = listing.attributes.publicData?.transactionProcessAlias;
 
-          if (!processAlias) {
-            const error = new Error('Listing does not have a transaction process configured.');
-            error.status = 400;
-            error.statusText = error.message;
-            error.data = {};
-            throw error;
-          }
+        if (!processAlias) {
+          const error = new Error('Listing does not have a transaction process configured.');
+          error.status = 400;
+          error.statusText = error.message;
+          error.data = {};
+          throw error;
+        }
 
-          // Step 3: Use trusted SDK to initiate transaction on behalf of the student
-          return getTrustedSdk(req).then(trustedSdk => {
-            const bodyParams = {
-              transition: 'transition/apply',
-              processAlias,
-              params: {
-                listingId,
-              },
-            };
+        // Step 3: Use trusted SDK to initiate transaction on behalf of the student
+        return getTrustedSdk(req).then(trustedSdk => {
+          const bodyParams = {
+            transition: 'transition/apply',
+            processAlias,
+            params: {
+              listingId,
+            },
+          };
 
-            // The trusted SDK initiates the transaction.
-            // The student becomes the customer, the listing author becomes the provider.
-            return trustedSdk.transactions
-              .initiate(bodyParams)
-              .then(txResponse => {
-                const transactionId = txResponse.data.data.id;
+          // The trusted SDK initiates the transaction.
+          // The student becomes the customer, the listing author becomes the provider.
+          return trustedSdk.transactions.initiate(bodyParams).then(txResponse => {
+            const transactionId = txResponse.data.data.id;
 
-                // Step 4: Send the invitation message
-                const messageContent =
-                  message || 'You have been invited to apply for this project.';
+            // Step 4: Send the invitation message
+            const messageContent = message || 'You have been invited to apply for this project.';
 
-                return trustedSdk.messages
-                  .send({
-                    transactionId: transactionId,
-                    content: messageContent,
-                  })
-                  .then(() => {
-                    res
-                      .status(200)
-                      .set('Content-Type', 'application/transit+json')
-                      .send(
-                        serialize({
-                          status: 200,
-                          statusText: 'OK',
-                          data: {
-                            transactionId: transactionId.uuid,
-                          },
-                        })
-                      )
-                      .end();
-                  });
+            return trustedSdk.messages
+              .send({
+                transactionId: transactionId,
+                content: messageContent,
+              })
+              .then(() => {
+                res
+                  .status(200)
+                  .set('Content-Type', 'application/transit+json')
+                  .send(
+                    serialize({
+                      status: 200,
+                      statusText: 'OK',
+                      data: {
+                        transactionId: transactionId.uuid,
+                      },
+                    })
+                  )
+                  .end();
               });
           });
         });
+      });
     })
     .catch(e => {
       console.error('invite-to-apply error:', e);

@@ -61,7 +61,8 @@ async function checkDepositStatus(req, res) {
     } else if (depositConfirmed) {
       message = 'Deposit confirmed. You can accept this student.';
     } else {
-      message = 'Please contact Street2Ivy to submit your deposit before accepting this student. Your deposit ensures payment to students upon project completion.';
+      message =
+        'Please contact Street2Ivy to submit your deposit before accepting this student. Your deposit ensures payment to students upon project completion.';
     }
 
     res.status(200).json({

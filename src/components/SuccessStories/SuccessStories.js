@@ -18,7 +18,8 @@ const DEFAULT_TESTIMONIALS = [
     role: 'Stanford University, Class of 2024',
     company: 'TechStart Inc.',
     project: 'Market Research Analysis',
-    quote: 'Working on a real business project gave me hands-on experience that my classes couldn\'t provide. I learned how to present to stakeholders and manage tight deadlines.',
+    quote:
+      "Working on a real business project gave me hands-on experience that my classes couldn't provide. I learned how to present to stakeholders and manage tight deadlines.",
     outcome: 'Received a full-time job offer',
     avatar: null,
   },
@@ -28,7 +29,8 @@ const DEFAULT_TESTIMONIALS = [
     role: 'Howard University, Class of 2023',
     company: 'Green Ventures',
     project: 'Sustainability Strategy',
-    quote: 'Street2Ivy connected me with a company that values diverse perspectives. The project let me apply my environmental science knowledge to real business challenges.',
+    quote:
+      'Street2Ivy connected me with a company that values diverse perspectives. The project let me apply my environmental science knowledge to real business challenges.',
     outcome: 'Built portfolio for grad school applications',
     avatar: null,
   },
@@ -38,7 +40,8 @@ const DEFAULT_TESTIMONIALS = [
     role: 'UC Berkeley, Class of 2024',
     company: 'DataFlow Analytics',
     project: 'Customer Segmentation',
-    quote: 'The mentorship I received was invaluable. The corporate partner took time to explain industry best practices and helped me develop professional skills.',
+    quote:
+      'The mentorship I received was invaluable. The corporate partner took time to explain industry best practices and helped me develop professional skills.',
     outcome: 'Launched career in data analytics',
     avatar: null,
   },
@@ -57,7 +60,11 @@ const TestimonialCard = ({ testimonial, isActive }) => {
     attributes: {
       profile: {
         displayName: name,
-        abbreviatedName: name?.split(' ').map(n => n[0]).join('') || '?',
+        abbreviatedName:
+          name
+            ?.split(' ')
+            .map(n => n[0])
+            .join('') || '?',
       },
     },
     profileImage: avatar,
@@ -144,18 +151,12 @@ const SuccessStories = props => {
     return (
       <section className={classes}>
         <div className={css.header}>
-          <h2 className={css.title}>
-            {title || <FormattedMessage id="SuccessStories.title" />}
-          </h2>
+          <h2 className={css.title}>{title || <FormattedMessage id="SuccessStories.title" />}</h2>
           {subtitle && <p className={css.subtitle}>{subtitle}</p>}
         </div>
         <div className={css.gridContainer}>
           {testimonials.map((testimonial, index) => (
-            <TestimonialCard
-              key={testimonial.id}
-              testimonial={testimonial}
-              isActive={false}
-            />
+            <TestimonialCard key={testimonial.id} testimonial={testimonial} isActive={false} />
           ))}
         </div>
       </section>
@@ -179,7 +180,10 @@ const SuccessStories = props => {
                 attributes: {
                   profile: {
                     displayName: featured.name,
-                    abbreviatedName: featured.name?.split(' ').map(n => n[0]).join(''),
+                    abbreviatedName: featured.name
+                      ?.split(' ')
+                      .map(n => n[0])
+                      .join(''),
                   },
                 },
                 profileImage: featured.avatar,
@@ -190,7 +194,9 @@ const SuccessStories = props => {
             <div className={css.featuredAuthorInfo}>
               <span className={css.authorNameLarge}>{featured.name}</span>
               <span className={css.authorRoleLarge}>{featured.role}</span>
-              <span className={css.featuredCompany}>{featured.project} @ {featured.company}</span>
+              <span className={css.featuredCompany}>
+                {featured.project} @ {featured.company}
+              </span>
             </div>
           </div>
         </div>
@@ -202,9 +208,7 @@ const SuccessStories = props => {
   return (
     <section className={classes}>
       <div className={css.header}>
-        <h2 className={css.title}>
-          {title || <FormattedMessage id="SuccessStories.title" />}
-        </h2>
+        <h2 className={css.title}>{title || <FormattedMessage id="SuccessStories.title" />}</h2>
         {subtitle && <p className={css.subtitle}>{subtitle}</p>}
       </div>
 
@@ -227,10 +231,7 @@ const SuccessStories = props => {
                 [css.hiddenSlide]: index !== activeIndex,
               })}
             >
-              <TestimonialCard
-                testimonial={testimonial}
-                isActive={index === activeIndex}
-              />
+              <TestimonialCard testimonial={testimonial} isActive={index === activeIndex} />
             </div>
           ))}
         </div>

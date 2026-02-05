@@ -274,13 +274,16 @@ async function checkInstitutionMembership(req, res) {
     if (!institution) {
       return res.status(200).json({
         isMember: false,
-        message: 'Your institution is not a member of Street2Ivy. Please contact your school administrator.',
+        message:
+          'Your institution is not a member of Street2Ivy. Please contact your school administrator.',
       });
     }
 
     const isActive = institution.membershipStatus === 'active';
     const now = new Date();
-    const startDate = institution.membershipStartDate ? new Date(institution.membershipStartDate) : null;
+    const startDate = institution.membershipStartDate
+      ? new Date(institution.membershipStartDate)
+      : null;
     const endDate = institution.membershipEndDate ? new Date(institution.membershipEndDate) : null;
 
     // Check if membership is within valid dates
@@ -338,7 +341,9 @@ async function getMyInstitution(req, res) {
 
     const isActive = institution.membershipStatus === 'active';
     const now = new Date();
-    const startDate = institution.membershipStartDate ? new Date(institution.membershipStartDate) : null;
+    const startDate = institution.membershipStartDate
+      ? new Date(institution.membershipStartDate)
+      : null;
     const endDate = institution.membershipEndDate ? new Date(institution.membershipEndDate) : null;
     const isWithinDates = (!startDate || now >= startDate) && (!endDate || now <= endDate);
     const isMember = isActive && isWithinDates;

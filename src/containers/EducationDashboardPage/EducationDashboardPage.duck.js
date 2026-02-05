@@ -26,7 +26,10 @@ export const fetchDashboard = params => dispatch => {
   return dispatch(fetchDashboardThunk(params)).unwrap();
 };
 
-const fetchStudentTransactionsPayloadCreator = async ({ studentId, params }, { rejectWithValue }) => {
+const fetchStudentTransactionsPayloadCreator = async (
+  { studentId, params },
+  { rejectWithValue }
+) => {
   try {
     const response = await fetchStudentTransactionsApi(studentId, params);
     return response;
@@ -121,10 +124,7 @@ export const loadData = (params, search) => dispatch => {
     searchParams[key] = value;
   }
 
-  return Promise.all([
-    dispatch(fetchCurrentUser()),
-    dispatch(fetchDashboardThunk(searchParams)),
-  ]);
+  return Promise.all([dispatch(fetchCurrentUser()), dispatch(fetchDashboardThunk(searchParams))]);
 };
 
 export default educationDashboardPageSlice.reducer;

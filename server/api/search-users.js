@@ -4,7 +4,7 @@ const {
   sanitizeString,
   validatePagination,
   validationError,
-  auditLog
+  auditLog,
 } = require('../api-util/security');
 
 /**
@@ -30,8 +30,9 @@ async function verifySearchPermission(req, res) {
     if (!allowedTypes.includes(userType)) {
       return {
         authorized: false,
-        error: 'Access denied. Only corporate partners, educational administrators, and system administrators can search users.',
-        status: 403
+        error:
+          'Access denied. Only corporate partners, educational administrators, and system administrators can search users.',
+        status: 403,
       };
     }
 
@@ -70,7 +71,7 @@ module.exports = async (req, res) => {
   if (!authResult.authorized) {
     return res.status(authResult.status).json({
       error: authResult.error,
-      code: authResult.status === 401 ? 'AUTH_REQUIRED' : 'FORBIDDEN'
+      code: authResult.status === 401 ? 'AUTH_REQUIRED' : 'FORBIDDEN',
     });
   }
 
@@ -90,14 +91,18 @@ module.exports = async (req, res) => {
 
   // Validate required param
   if (!userType || !['student', 'corporate-partner'].includes(userType)) {
-    return validationError(res, 'userType query parameter is required and must be "student" or "corporate-partner".', 'userType');
+    return validationError(
+      res,
+      'userType query parameter is required and must be "student" or "corporate-partner".',
+      'userType'
+    );
   }
 
   // SECURITY: Educational admins can only search students from their institution
   if (authResult.userType === 'educational-admin' && userType !== 'student') {
     return res.status(403).json({
       error: 'Educational administrators can only search for students.',
-      code: 'FORBIDDEN'
+      code: 'FORBIDDEN',
     });
   }
 
@@ -118,10 +123,7 @@ module.exports = async (req, res) => {
   const queryParams = {
     pub_userType: userType,
     include: ['profileImage'],
-    'fields.image': [
-      'variants.square-small',
-      'variants.square-small2x',
-    ],
+    'fields.image': ['variants.square-small', 'variants.square-small2x'],
     page: pagination.page,
     perPage: pagination.perPage,
   };
@@ -163,8 +165,8 @@ module.exports = async (req, res) => {
         university: sanitizedUniversity,
         major: sanitizedMajor,
         graduationYear: sanitizedGraduationYear,
-        industry: sanitizedIndustry
-      }
+        industry: sanitizedIndustry,
+      },
     });
 
     integrationSdk.users

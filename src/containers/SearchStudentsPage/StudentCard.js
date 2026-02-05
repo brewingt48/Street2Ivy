@@ -27,17 +27,57 @@ const SKILL_OPTIONS = [
 ];
 
 const STATE_MAP = {
-  AL: 'Alabama', AK: 'Alaska', AZ: 'Arizona', AR: 'Arkansas', CA: 'California',
-  CO: 'Colorado', CT: 'Connecticut', DE: 'Delaware', DC: 'District of Columbia',
-  FL: 'Florida', GA: 'Georgia', HI: 'Hawaii', ID: 'Idaho', IL: 'Illinois',
-  IN: 'Indiana', IA: 'Iowa', KS: 'Kansas', KY: 'Kentucky', LA: 'Louisiana',
-  ME: 'Maine', MD: 'Maryland', MA: 'Massachusetts', MI: 'Michigan', MN: 'Minnesota',
-  MS: 'Mississippi', MO: 'Missouri', MT: 'Montana', NE: 'Nebraska', NV: 'Nevada',
-  NH: 'New Hampshire', NJ: 'New Jersey', NM: 'New Mexico', NY: 'New York',
-  NC: 'North Carolina', ND: 'North Dakota', OH: 'Ohio', OK: 'Oklahoma', OR: 'Oregon',
-  PA: 'Pennsylvania', RI: 'Rhode Island', SC: 'South Carolina', SD: 'South Dakota',
-  TN: 'Tennessee', TX: 'Texas', UT: 'Utah', VT: 'Vermont', VA: 'Virginia',
-  WA: 'Washington', WV: 'West Virginia', WI: 'Wisconsin', WY: 'Wyoming',
+  AL: 'Alabama',
+  AK: 'Alaska',
+  AZ: 'Arizona',
+  AR: 'Arkansas',
+  CA: 'California',
+  CO: 'Colorado',
+  CT: 'Connecticut',
+  DE: 'Delaware',
+  DC: 'District of Columbia',
+  FL: 'Florida',
+  GA: 'Georgia',
+  HI: 'Hawaii',
+  ID: 'Idaho',
+  IL: 'Illinois',
+  IN: 'Indiana',
+  IA: 'Iowa',
+  KS: 'Kansas',
+  KY: 'Kentucky',
+  LA: 'Louisiana',
+  ME: 'Maine',
+  MD: 'Maryland',
+  MA: 'Massachusetts',
+  MI: 'Michigan',
+  MN: 'Minnesota',
+  MS: 'Mississippi',
+  MO: 'Missouri',
+  MT: 'Montana',
+  NE: 'Nebraska',
+  NV: 'Nevada',
+  NH: 'New Hampshire',
+  NJ: 'New Jersey',
+  NM: 'New Mexico',
+  NY: 'New York',
+  NC: 'North Carolina',
+  ND: 'North Dakota',
+  OH: 'Ohio',
+  OK: 'Oklahoma',
+  OR: 'Oregon',
+  PA: 'Pennsylvania',
+  RI: 'Rhode Island',
+  SC: 'South Carolina',
+  SD: 'South Dakota',
+  TN: 'Tennessee',
+  TX: 'Texas',
+  UT: 'Utah',
+  VT: 'Vermont',
+  VA: 'Virginia',
+  WA: 'Washington',
+  WV: 'West Virginia',
+  WI: 'Wisconsin',
+  WY: 'Wyoming',
 };
 
 const getSkillLabel = option => {
@@ -77,11 +117,7 @@ const StudentCard = props => {
       <div className={css.cardHeader}>
         <AvatarMedium user={userForAvatar} />
         <div className={css.cardInfo}>
-          <NamedLink
-            className={css.studentName}
-            name="ProfilePage"
-            params={{ id: user.id }}
-          >
+          <NamedLink className={css.studentName} name="ProfilePage" params={{ id: user.id }}>
             {displayName}
           </NamedLink>
           {university && <p className={css.university}>{university}</p>}
@@ -110,9 +146,7 @@ const StudentCard = props => {
             <span className={css.detailLabel}>
               <FormattedMessage id="StudentCard.state" />
             </span>
-            <span className={css.detailValue}>
-              {STATE_MAP[studentState] || studentState}
-            </span>
+            <span className={css.detailValue}>{STATE_MAP[studentState] || studentState}</span>
           </div>
         )}
       </div>
@@ -124,26 +158,16 @@ const StudentCard = props => {
               {getSkillLabel(skill)}
             </span>
           ))}
-          {skills.length > 5 && (
-            <span className={css.skillPill}>+{skills.length - 5}</span>
-          )}
+          {skills.length > 5 && <span className={css.skillPill}>+{skills.length - 5}</span>}
         </div>
       )}
 
       <div className={css.cardActions}>
-        <NamedLink
-          className={css.viewProfileLink}
-          name="ProfilePage"
-          params={{ id: user.id }}
-        >
+        <NamedLink className={css.viewProfileLink} name="ProfilePage" params={{ id: user.id }}>
           <FormattedMessage id="StudentCard.viewProfile" />
         </NamedLink>
         {onInvite && (
-          <button
-            className={css.inviteButton}
-            onClick={() => onInvite(user)}
-            type="button"
-          >
+          <button className={css.inviteButton} onClick={() => onInvite(user)} type="button">
             <FormattedMessage id="StudentCard.inviteToApply" />
           </button>
         )}

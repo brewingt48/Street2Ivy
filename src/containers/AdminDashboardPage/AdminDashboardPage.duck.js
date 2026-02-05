@@ -97,7 +97,8 @@ export const createAdminUserThunk = createAsyncThunk(
   }
 );
 
-export const createAdminUserAction = data => dispatch => dispatch(createAdminUserThunk(data)).unwrap();
+export const createAdminUserAction = data => dispatch =>
+  dispatch(createAdminUserThunk(data)).unwrap();
 
 // Messages thunks
 export const fetchMessagesThunk = createAsyncThunk(
@@ -152,7 +153,8 @@ export const fetchPendingApprovalsThunk = createAsyncThunk(
   }
 );
 
-export const fetchPendingApprovals = params => dispatch => dispatch(fetchPendingApprovalsThunk(params)).unwrap();
+export const fetchPendingApprovals = params => dispatch =>
+  dispatch(fetchPendingApprovalsThunk(params)).unwrap();
 
 export const approveUserThunk = createAsyncThunk(
   'app/AdminDashboardPage/approveUser',
@@ -178,7 +180,8 @@ export const rejectUserThunk = createAsyncThunk(
   }
 );
 
-export const rejectUserAction = (userId, reason) => dispatch => dispatch(rejectUserThunk({ userId, reason })).unwrap();
+export const rejectUserAction = (userId, reason) => dispatch =>
+  dispatch(rejectUserThunk({ userId, reason })).unwrap();
 
 // Deposit management thunks
 export const fetchDepositsThunk = createAsyncThunk(
@@ -205,8 +208,8 @@ export const confirmDepositThunk = createAsyncThunk(
   }
 );
 
-export const confirmDepositAction = (transactionId, { amount, paymentMethod, notes }) =>
-  dispatch => dispatch(confirmDepositThunk({ transactionId, amount, paymentMethod, notes })).unwrap();
+export const confirmDepositAction = (transactionId, { amount, paymentMethod, notes }) => dispatch =>
+  dispatch(confirmDepositThunk({ transactionId, amount, paymentMethod, notes })).unwrap();
 
 export const revokeDepositThunk = createAsyncThunk(
   'app/AdminDashboardPage/revokeDeposit',
@@ -219,8 +222,8 @@ export const revokeDepositThunk = createAsyncThunk(
   }
 );
 
-export const revokeDepositAction = (transactionId, reason) =>
-  dispatch => dispatch(revokeDepositThunk({ transactionId, reason })).unwrap();
+export const revokeDepositAction = (transactionId, reason) => dispatch =>
+  dispatch(revokeDepositThunk({ transactionId, reason })).unwrap();
 
 // ================ Slice ================ //
 
@@ -482,7 +485,11 @@ const adminDashboardPageSlice = createSlice({
   },
 });
 
-export const { clearSelectedUser, clearMessageState, clearCreateAdminState } = adminDashboardPageSlice.actions;
+export const {
+  clearSelectedUser,
+  clearMessageState,
+  clearCreateAdminState,
+} = adminDashboardPageSlice.actions;
 
 // ================ loadData ================ //
 

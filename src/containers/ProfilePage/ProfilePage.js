@@ -72,11 +72,12 @@ export const AsideContent = props => {
   const isVerified = publicData?.isVerified;
 
   // For corporate partners, show company name as the heading
-  const headingName = isCorporatePartner && companyName
-    ? companyName
-    : isEducationalAdmin && institutionName
-    ? institutionName
-    : displayName;
+  const headingName =
+    isCorporatePartner && companyName
+      ? companyName
+      : isEducationalAdmin && institutionName
+      ? institutionName
+      : displayName;
 
   // Determine verification badge type
   const badgeType = isEducationalAdmin ? 'institution' : isCorporatePartner ? 'company' : 'user';

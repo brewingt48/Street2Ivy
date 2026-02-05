@@ -6,12 +6,7 @@ import { useConfiguration } from '../../context/configurationContext';
 import { isScrollingDisabled } from '../../ducks/ui.duck';
 import { getOwnListingsById } from './CorporateDashboardPage.duck';
 
-import {
-  Page,
-  LayoutSingleColumn,
-  NamedLink,
-  H3,
-} from '../../components';
+import { Page, LayoutSingleColumn, NamedLink, H3 } from '../../components';
 
 import TopbarContainer from '../../containers/TopbarContainer/TopbarContainer';
 import FooterContainer from '../../containers/FooterContainer/FooterContainer';
@@ -57,18 +52,19 @@ const ProjectCard = props => {
   const { listing } = props;
   const { title, state, publicData } = listing.attributes;
   const listingId = listing.id.uuid;
-  const slug = title ? title.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, '') : 'project';
+  const slug = title
+    ? title
+        .toLowerCase()
+        .replace(/\s+/g, '-')
+        .replace(/[^\w-]/g, '')
+    : 'project';
 
   const estimatedHours = publicData?.estimatedHours || '';
   const studentsNeeded = publicData?.studentsNeeded || '';
   const industryCategory = publicData?.industryCategory || '';
 
   return (
-    <NamedLink
-      className={css.projectCard}
-      name="ListingPage"
-      params={{ id: listingId, slug }}
-    >
+    <NamedLink className={css.projectCard} name="ListingPage" params={{ id: listingId, slug }}>
       <h4 className={css.projectCardTitle}>{title || 'Untitled Project'}</h4>
       <div className={css.projectCardMeta}>
         {industryCategory && (
@@ -76,9 +72,7 @@ const ProjectCard = props => {
             {industryCategory.charAt(0).toUpperCase() + industryCategory.slice(1)}
           </span>
         )}
-        {estimatedHours && (
-          <span className={css.projectCardMetaItem}>{estimatedHours} hrs</span>
-        )}
+        {estimatedHours && <span className={css.projectCardMetaItem}>{estimatedHours} hrs</span>}
         {studentsNeeded && (
           <span className={css.projectCardMetaItem}>
             {studentsNeeded} {studentsNeeded === '1' ? 'student' : 'students'}
@@ -112,21 +106,14 @@ export const CorporateDashboardPageComponent = props => {
   const title = intl.formatMessage({ id: 'CorporateDashboardPage.title' });
 
   // Calculate stats
-  const activeProjects = listings.filter(
-    l => l.attributes.state === LISTING_STATE_PUBLISHED
-  );
-  const completedProjects = listings.filter(
-    l => l.attributes.state === LISTING_STATE_CLOSED
-  );
+  const activeProjects = listings.filter(l => l.attributes.state === LISTING_STATE_PUBLISHED);
+  const completedProjects = listings.filter(l => l.attributes.state === LISTING_STATE_CLOSED);
   const totalProjects = listings.length;
 
   if (!isCorporatePartner && currentUser) {
     return (
       <Page title={title} scrollingDisabled={scrollingDisabled}>
-        <LayoutSingleColumn
-          topbar={<TopbarContainer />}
-          footer={<FooterContainer />}
-        >
+        <LayoutSingleColumn topbar={<TopbarContainer />} footer={<FooterContainer />}>
           <div className={css.content}>
             <div className={css.accessDenied}>
               <h2 className={css.accessDeniedTitle}>Access Restricted</h2>
@@ -143,10 +130,7 @@ export const CorporateDashboardPageComponent = props => {
 
   return (
     <Page title={title} scrollingDisabled={scrollingDisabled}>
-      <LayoutSingleColumn
-        topbar={<TopbarContainer />}
-        footer={<FooterContainer />}
-      >
+      <LayoutSingleColumn topbar={<TopbarContainer />} footer={<FooterContainer />}>
         <div className={css.content}>
           <div className={css.pageHeader}>
             <H3 as="h1" className={css.title}>
@@ -256,23 +240,27 @@ export const CorporateDashboardPageComponent = props => {
               </div>
 
               {/* Projects by Category */}
-              {dashboardStats.projectsByCategory && Object.keys(dashboardStats.projectsByCategory).length > 0 && (
-                <div className={css.enhancedStatsSection}>
-                  <h3 className={css.sectionTitle}>
-                    {intl.formatMessage({ id: 'CorporateDashboardPage.projectsByCategory' })}
-                  </h3>
-                  <div className={css.categoryList}>
-                    {Object.entries(dashboardStats.projectsByCategory).map(([category, count]) => (
-                      <div key={category} className={css.categoryItem}>
-                        <span className={css.categoryName}>
-                          {category.charAt(0).toUpperCase() + category.slice(1).replace(/-/g, ' ')}
-                        </span>
-                        <span className={css.categoryCount}>{count}</span>
-                      </div>
-                    ))}
+              {dashboardStats.projectsByCategory &&
+                Object.keys(dashboardStats.projectsByCategory).length > 0 && (
+                  <div className={css.enhancedStatsSection}>
+                    <h3 className={css.sectionTitle}>
+                      {intl.formatMessage({ id: 'CorporateDashboardPage.projectsByCategory' })}
+                    </h3>
+                    <div className={css.categoryList}>
+                      {Object.entries(dashboardStats.projectsByCategory).map(
+                        ([category, count]) => (
+                          <div key={category} className={css.categoryItem}>
+                            <span className={css.categoryName}>
+                              {category.charAt(0).toUpperCase() +
+                                category.slice(1).replace(/-/g, ' ')}
+                            </span>
+                            <span className={css.categoryCount}>{count}</span>
+                          </div>
+                        )
+                      )}
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
 
               {/* Financial Summary */}
               {dashboardStats.financialStats && (

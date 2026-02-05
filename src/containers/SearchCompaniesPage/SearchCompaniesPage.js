@@ -5,11 +5,7 @@ import { useHistory, useLocation } from 'react-router-dom';
 import { FormattedMessage, useIntl } from '../../util/reactIntl';
 import { isScrollingDisabled } from '../../ducks/ui.duck';
 
-import {
-  Page,
-  LayoutSingleColumn,
-  PaginationLinks,
-} from '../../components';
+import { Page, LayoutSingleColumn, PaginationLinks } from '../../components';
 import TopbarContainer from '../../containers/TopbarContainer/TopbarContainer';
 import FooterContainer from '../../containers/FooterContainer/FooterContainer';
 import CompanyCard from './CompanyCard';
@@ -19,31 +15,56 @@ import css from './SearchCompaniesPage.module.css';
 
 // Filter options (matching configUser.js)
 const STATE_OPTIONS = [
-  { value: 'AL', label: 'Alabama' }, { value: 'AK', label: 'Alaska' },
-  { value: 'AZ', label: 'Arizona' }, { value: 'AR', label: 'Arkansas' },
-  { value: 'CA', label: 'California' }, { value: 'CO', label: 'Colorado' },
-  { value: 'CT', label: 'Connecticut' }, { value: 'DE', label: 'Delaware' },
-  { value: 'DC', label: 'District of Columbia' }, { value: 'FL', label: 'Florida' },
-  { value: 'GA', label: 'Georgia' }, { value: 'HI', label: 'Hawaii' },
-  { value: 'ID', label: 'Idaho' }, { value: 'IL', label: 'Illinois' },
-  { value: 'IN', label: 'Indiana' }, { value: 'IA', label: 'Iowa' },
-  { value: 'KS', label: 'Kansas' }, { value: 'KY', label: 'Kentucky' },
-  { value: 'LA', label: 'Louisiana' }, { value: 'ME', label: 'Maine' },
-  { value: 'MD', label: 'Maryland' }, { value: 'MA', label: 'Massachusetts' },
-  { value: 'MI', label: 'Michigan' }, { value: 'MN', label: 'Minnesota' },
-  { value: 'MS', label: 'Mississippi' }, { value: 'MO', label: 'Missouri' },
-  { value: 'MT', label: 'Montana' }, { value: 'NE', label: 'Nebraska' },
-  { value: 'NV', label: 'Nevada' }, { value: 'NH', label: 'New Hampshire' },
-  { value: 'NJ', label: 'New Jersey' }, { value: 'NM', label: 'New Mexico' },
-  { value: 'NY', label: 'New York' }, { value: 'NC', label: 'North Carolina' },
-  { value: 'ND', label: 'North Dakota' }, { value: 'OH', label: 'Ohio' },
-  { value: 'OK', label: 'Oklahoma' }, { value: 'OR', label: 'Oregon' },
-  { value: 'PA', label: 'Pennsylvania' }, { value: 'RI', label: 'Rhode Island' },
-  { value: 'SC', label: 'South Carolina' }, { value: 'SD', label: 'South Dakota' },
-  { value: 'TN', label: 'Tennessee' }, { value: 'TX', label: 'Texas' },
-  { value: 'UT', label: 'Utah' }, { value: 'VT', label: 'Vermont' },
-  { value: 'VA', label: 'Virginia' }, { value: 'WA', label: 'Washington' },
-  { value: 'WV', label: 'West Virginia' }, { value: 'WI', label: 'Wisconsin' },
+  { value: 'AL', label: 'Alabama' },
+  { value: 'AK', label: 'Alaska' },
+  { value: 'AZ', label: 'Arizona' },
+  { value: 'AR', label: 'Arkansas' },
+  { value: 'CA', label: 'California' },
+  { value: 'CO', label: 'Colorado' },
+  { value: 'CT', label: 'Connecticut' },
+  { value: 'DE', label: 'Delaware' },
+  { value: 'DC', label: 'District of Columbia' },
+  { value: 'FL', label: 'Florida' },
+  { value: 'GA', label: 'Georgia' },
+  { value: 'HI', label: 'Hawaii' },
+  { value: 'ID', label: 'Idaho' },
+  { value: 'IL', label: 'Illinois' },
+  { value: 'IN', label: 'Indiana' },
+  { value: 'IA', label: 'Iowa' },
+  { value: 'KS', label: 'Kansas' },
+  { value: 'KY', label: 'Kentucky' },
+  { value: 'LA', label: 'Louisiana' },
+  { value: 'ME', label: 'Maine' },
+  { value: 'MD', label: 'Maryland' },
+  { value: 'MA', label: 'Massachusetts' },
+  { value: 'MI', label: 'Michigan' },
+  { value: 'MN', label: 'Minnesota' },
+  { value: 'MS', label: 'Mississippi' },
+  { value: 'MO', label: 'Missouri' },
+  { value: 'MT', label: 'Montana' },
+  { value: 'NE', label: 'Nebraska' },
+  { value: 'NV', label: 'Nevada' },
+  { value: 'NH', label: 'New Hampshire' },
+  { value: 'NJ', label: 'New Jersey' },
+  { value: 'NM', label: 'New Mexico' },
+  { value: 'NY', label: 'New York' },
+  { value: 'NC', label: 'North Carolina' },
+  { value: 'ND', label: 'North Dakota' },
+  { value: 'OH', label: 'Ohio' },
+  { value: 'OK', label: 'Oklahoma' },
+  { value: 'OR', label: 'Oregon' },
+  { value: 'PA', label: 'Pennsylvania' },
+  { value: 'RI', label: 'Rhode Island' },
+  { value: 'SC', label: 'South Carolina' },
+  { value: 'SD', label: 'South Dakota' },
+  { value: 'TN', label: 'Tennessee' },
+  { value: 'TX', label: 'Texas' },
+  { value: 'UT', label: 'Utah' },
+  { value: 'VT', label: 'Vermont' },
+  { value: 'VA', label: 'Virginia' },
+  { value: 'WA', label: 'Washington' },
+  { value: 'WV', label: 'West Virginia' },
+  { value: 'WI', label: 'Wisconsin' },
   { value: 'WY', label: 'Wyoming' },
 ];
 
@@ -140,13 +161,14 @@ const SearchCompaniesPageComponent = props => {
   if (currentUser && !isStudent) {
     return (
       <Page title={title} scrollingDisabled={scrollingDisabled}>
-        <LayoutSingleColumn
-          topbar={<TopbarContainer />}
-          footer={<FooterContainer />}
-        >
+        <LayoutSingleColumn topbar={<TopbarContainer />} footer={<FooterContainer />}>
           <div className={css.noAccess}>
-            <h1><FormattedMessage id="SearchCompaniesPage.noAccessTitle" /></h1>
-            <p><FormattedMessage id="SearchCompaniesPage.noAccessMessage" /></p>
+            <h1>
+              <FormattedMessage id="SearchCompaniesPage.noAccessTitle" />
+            </h1>
+            <p>
+              <FormattedMessage id="SearchCompaniesPage.noAccessMessage" />
+            </p>
           </div>
         </LayoutSingleColumn>
       </Page>
@@ -155,10 +177,7 @@ const SearchCompaniesPageComponent = props => {
 
   return (
     <Page title={title} scrollingDisabled={scrollingDisabled}>
-      <LayoutSingleColumn
-        topbar={<TopbarContainer />}
-        footer={<FooterContainer />}
-      >
+      <LayoutSingleColumn topbar={<TopbarContainer />} footer={<FooterContainer />}>
         <div className={css.pageContent}>
           <h1 className={css.pageHeading}>
             <FormattedMessage id="SearchCompaniesPage.heading" />
@@ -228,11 +247,7 @@ const SearchCompaniesPageComponent = props => {
               {hasFiltersActive && (
                 <div className={css.filterItem}>
                   <label className={css.filterLabel}>&nbsp;</label>
-                  <button
-                    className={css.resetButton}
-                    onClick={handleResetFilters}
-                    type="button"
-                  >
+                  <button className={css.resetButton} onClick={handleResetFilters} type="button">
                     <FormattedMessage id="SearchCompaniesPage.resetFilters" />
                   </button>
                 </div>
@@ -256,8 +271,12 @@ const SearchCompaniesPageComponent = props => {
 
             {!searchInProgress && !searchError && users.length === 0 && (
               <div className={css.noResults}>
-                <h3><FormattedMessage id="SearchCompaniesPage.noResultsTitle" /></h3>
-                <p><FormattedMessage id="SearchCompaniesPage.noResultsMessage" /></p>
+                <h3>
+                  <FormattedMessage id="SearchCompaniesPage.noResultsTitle" />
+                </h3>
+                <p>
+                  <FormattedMessage id="SearchCompaniesPage.noResultsMessage" />
+                </p>
               </div>
             )}
 
@@ -279,9 +298,7 @@ const SearchCompaniesPageComponent = props => {
                   <PaginationLinks
                     className={css.pagination}
                     pageName="SearchCompaniesPage"
-                    pageSearchParams={Object.fromEntries(
-                      new URLSearchParams(location.search)
-                    )}
+                    pageSearchParams={Object.fromEntries(new URLSearchParams(location.search))}
                     pagination={{
                       ...pagination,
                       paginationUnsupported: false,
@@ -299,12 +316,7 @@ const SearchCompaniesPageComponent = props => {
 
 const mapStateToProps = state => {
   const { currentUser } = state.user;
-  const {
-    users,
-    pagination,
-    searchInProgress,
-    searchError,
-  } = state.SearchCompaniesPage;
+  const { users, pagination, searchInProgress, searchError } = state.SearchCompaniesPage;
 
   return {
     scrollingDisabled: isScrollingDisabled(state),
@@ -321,7 +333,10 @@ const mapDispatchToProps = dispatch => ({
 });
 
 const SearchCompaniesPage = compose(
-  connect(mapStateToProps, mapDispatchToProps)
+  connect(
+    mapStateToProps,
+    mapDispatchToProps
+  )
 )(SearchCompaniesPageComponent);
 
 export default SearchCompaniesPage;

@@ -6,50 +6,67 @@ import { FormattedMessage, useIntl } from '../../util/reactIntl';
 import { isScrollingDisabled } from '../../ducks/ui.duck';
 import { manageDisableScrolling } from '../../ducks/ui.duck';
 
-import {
-  Page,
-  LayoutSingleColumn,
-  PaginationLinks,
-} from '../../components';
+import { Page, LayoutSingleColumn, PaginationLinks } from '../../components';
 import TopbarContainer from '../../containers/TopbarContainer/TopbarContainer';
 import FooterContainer from '../../containers/FooterContainer/FooterContainer';
 import StudentCard from './StudentCard';
 import InviteModal from './InviteModal';
-import {
-  searchStudents,
-  inviteToApply,
-  clearInviteState,
-} from './SearchStudentsPage.duck';
+import { searchStudents, inviteToApply, clearInviteState } from './SearchStudentsPage.duck';
 
 import css from './SearchStudentsPage.module.css';
 
 // Filter option definitions (matching configUser.js)
 const STATE_OPTIONS = [
-  { value: 'AL', label: 'Alabama' }, { value: 'AK', label: 'Alaska' },
-  { value: 'AZ', label: 'Arizona' }, { value: 'AR', label: 'Arkansas' },
-  { value: 'CA', label: 'California' }, { value: 'CO', label: 'Colorado' },
-  { value: 'CT', label: 'Connecticut' }, { value: 'DE', label: 'Delaware' },
-  { value: 'DC', label: 'District of Columbia' }, { value: 'FL', label: 'Florida' },
-  { value: 'GA', label: 'Georgia' }, { value: 'HI', label: 'Hawaii' },
-  { value: 'ID', label: 'Idaho' }, { value: 'IL', label: 'Illinois' },
-  { value: 'IN', label: 'Indiana' }, { value: 'IA', label: 'Iowa' },
-  { value: 'KS', label: 'Kansas' }, { value: 'KY', label: 'Kentucky' },
-  { value: 'LA', label: 'Louisiana' }, { value: 'ME', label: 'Maine' },
-  { value: 'MD', label: 'Maryland' }, { value: 'MA', label: 'Massachusetts' },
-  { value: 'MI', label: 'Michigan' }, { value: 'MN', label: 'Minnesota' },
-  { value: 'MS', label: 'Mississippi' }, { value: 'MO', label: 'Missouri' },
-  { value: 'MT', label: 'Montana' }, { value: 'NE', label: 'Nebraska' },
-  { value: 'NV', label: 'Nevada' }, { value: 'NH', label: 'New Hampshire' },
-  { value: 'NJ', label: 'New Jersey' }, { value: 'NM', label: 'New Mexico' },
-  { value: 'NY', label: 'New York' }, { value: 'NC', label: 'North Carolina' },
-  { value: 'ND', label: 'North Dakota' }, { value: 'OH', label: 'Ohio' },
-  { value: 'OK', label: 'Oklahoma' }, { value: 'OR', label: 'Oregon' },
-  { value: 'PA', label: 'Pennsylvania' }, { value: 'RI', label: 'Rhode Island' },
-  { value: 'SC', label: 'South Carolina' }, { value: 'SD', label: 'South Dakota' },
-  { value: 'TN', label: 'Tennessee' }, { value: 'TX', label: 'Texas' },
-  { value: 'UT', label: 'Utah' }, { value: 'VT', label: 'Vermont' },
-  { value: 'VA', label: 'Virginia' }, { value: 'WA', label: 'Washington' },
-  { value: 'WV', label: 'West Virginia' }, { value: 'WI', label: 'Wisconsin' },
+  { value: 'AL', label: 'Alabama' },
+  { value: 'AK', label: 'Alaska' },
+  { value: 'AZ', label: 'Arizona' },
+  { value: 'AR', label: 'Arkansas' },
+  { value: 'CA', label: 'California' },
+  { value: 'CO', label: 'Colorado' },
+  { value: 'CT', label: 'Connecticut' },
+  { value: 'DE', label: 'Delaware' },
+  { value: 'DC', label: 'District of Columbia' },
+  { value: 'FL', label: 'Florida' },
+  { value: 'GA', label: 'Georgia' },
+  { value: 'HI', label: 'Hawaii' },
+  { value: 'ID', label: 'Idaho' },
+  { value: 'IL', label: 'Illinois' },
+  { value: 'IN', label: 'Indiana' },
+  { value: 'IA', label: 'Iowa' },
+  { value: 'KS', label: 'Kansas' },
+  { value: 'KY', label: 'Kentucky' },
+  { value: 'LA', label: 'Louisiana' },
+  { value: 'ME', label: 'Maine' },
+  { value: 'MD', label: 'Maryland' },
+  { value: 'MA', label: 'Massachusetts' },
+  { value: 'MI', label: 'Michigan' },
+  { value: 'MN', label: 'Minnesota' },
+  { value: 'MS', label: 'Mississippi' },
+  { value: 'MO', label: 'Missouri' },
+  { value: 'MT', label: 'Montana' },
+  { value: 'NE', label: 'Nebraska' },
+  { value: 'NV', label: 'Nevada' },
+  { value: 'NH', label: 'New Hampshire' },
+  { value: 'NJ', label: 'New Jersey' },
+  { value: 'NM', label: 'New Mexico' },
+  { value: 'NY', label: 'New York' },
+  { value: 'NC', label: 'North Carolina' },
+  { value: 'ND', label: 'North Dakota' },
+  { value: 'OH', label: 'Ohio' },
+  { value: 'OK', label: 'Oklahoma' },
+  { value: 'OR', label: 'Oregon' },
+  { value: 'PA', label: 'Pennsylvania' },
+  { value: 'RI', label: 'Rhode Island' },
+  { value: 'SC', label: 'South Carolina' },
+  { value: 'SD', label: 'South Dakota' },
+  { value: 'TN', label: 'Tennessee' },
+  { value: 'TX', label: 'Texas' },
+  { value: 'UT', label: 'Utah' },
+  { value: 'VT', label: 'Vermont' },
+  { value: 'VA', label: 'Virginia' },
+  { value: 'WA', label: 'Washington' },
+  { value: 'WV', label: 'West Virginia' },
+  { value: 'WI', label: 'Wisconsin' },
   { value: 'WY', label: 'Wyoming' },
 ];
 
@@ -205,13 +222,14 @@ const SearchStudentsPageComponent = props => {
   if (currentUser && !isCorporatePartner) {
     return (
       <Page title={title} scrollingDisabled={scrollingDisabled}>
-        <LayoutSingleColumn
-          topbar={<TopbarContainer />}
-          footer={<FooterContainer />}
-        >
+        <LayoutSingleColumn topbar={<TopbarContainer />} footer={<FooterContainer />}>
           <div className={css.noAccess}>
-            <h1><FormattedMessage id="SearchStudentsPage.noAccessTitle" /></h1>
-            <p><FormattedMessage id="SearchStudentsPage.noAccessMessage" /></p>
+            <h1>
+              <FormattedMessage id="SearchStudentsPage.noAccessTitle" />
+            </h1>
+            <p>
+              <FormattedMessage id="SearchStudentsPage.noAccessMessage" />
+            </p>
           </div>
         </LayoutSingleColumn>
       </Page>
@@ -220,10 +238,7 @@ const SearchStudentsPageComponent = props => {
 
   return (
     <Page title={title} scrollingDisabled={scrollingDisabled}>
-      <LayoutSingleColumn
-        topbar={<TopbarContainer />}
-        footer={<FooterContainer />}
-      >
+      <LayoutSingleColumn topbar={<TopbarContainer />} footer={<FooterContainer />}>
         <div className={css.pageContent}>
           <h1 className={css.pageHeading}>
             <FormattedMessage id="SearchStudentsPage.heading" />
@@ -244,7 +259,9 @@ const SearchStudentsPageComponent = props => {
                 >
                   <option value="">All States</option>
                   {STATE_OPTIONS.map(opt => (
-                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </option>
                   ))}
                 </select>
               </div>
@@ -261,7 +278,9 @@ const SearchStudentsPageComponent = props => {
                 >
                   <option value="">All Years</option>
                   {GRADUATION_YEAR_OPTIONS.map(opt => (
-                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </option>
                   ))}
                 </select>
               </div>
@@ -278,7 +297,9 @@ const SearchStudentsPageComponent = props => {
                 >
                   <option value="">All Skills</option>
                   {SKILL_OPTIONS.map(opt => (
-                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </option>
                   ))}
                 </select>
               </div>
@@ -295,7 +316,9 @@ const SearchStudentsPageComponent = props => {
                 >
                   <option value="">All Interests</option>
                   {INTEREST_OPTIONS.map(opt => (
-                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </option>
                   ))}
                 </select>
               </div>
@@ -334,11 +357,7 @@ const SearchStudentsPageComponent = props => {
               {hasFiltersActive && (
                 <div className={css.filterItem}>
                   <label className={css.filterLabel}>&nbsp;</label>
-                  <button
-                    className={css.resetButton}
-                    onClick={handleResetFilters}
-                    type="button"
-                  >
+                  <button className={css.resetButton} onClick={handleResetFilters} type="button">
                     <FormattedMessage id="SearchStudentsPage.resetFilters" />
                   </button>
                 </div>
@@ -362,8 +381,12 @@ const SearchStudentsPageComponent = props => {
 
             {!searchInProgress && !searchError && users.length === 0 && (
               <div className={css.noResults}>
-                <h3><FormattedMessage id="SearchStudentsPage.noResultsTitle" /></h3>
-                <p><FormattedMessage id="SearchStudentsPage.noResultsMessage" /></p>
+                <h3>
+                  <FormattedMessage id="SearchStudentsPage.noResultsTitle" />
+                </h3>
+                <p>
+                  <FormattedMessage id="SearchStudentsPage.noResultsMessage" />
+                </p>
               </div>
             )}
 
@@ -377,11 +400,7 @@ const SearchStudentsPageComponent = props => {
                 </p>
                 <div className={css.resultsGrid}>
                   {users.map(user => (
-                    <StudentCard
-                      key={user.id}
-                      user={user}
-                      onInvite={handleInvite}
-                    />
+                    <StudentCard key={user.id} user={user} onInvite={handleInvite} />
                   ))}
                 </div>
 
@@ -389,9 +408,7 @@ const SearchStudentsPageComponent = props => {
                   <PaginationLinks
                     className={css.pagination}
                     pageName="SearchStudentsPage"
-                    pageSearchParams={Object.fromEntries(
-                      new URLSearchParams(location.search)
-                    )}
+                    pageSearchParams={Object.fromEntries(new URLSearchParams(location.search))}
                     pagination={{
                       ...pagination,
                       paginationUnsupported: false,
@@ -456,7 +473,10 @@ const mapDispatchToProps = dispatch => ({
 });
 
 const SearchStudentsPage = compose(
-  connect(mapStateToProps, mapDispatchToProps)
+  connect(
+    mapStateToProps,
+    mapDispatchToProps
+  )
 )(SearchStudentsPageComponent);
 
 export default SearchStudentsPage;

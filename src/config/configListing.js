@@ -252,7 +252,8 @@ export const listingFields = [
     },
     saveConfig: {
       label: 'Confidential Project Brief',
-      placeholderMessage: 'Detailed project brief that will only be visible to accepted students...',
+      placeholderMessage:
+        'Detailed project brief that will only be visible to accepted students...',
       isRequired: false,
     },
   },
@@ -270,7 +271,8 @@ export const listingFields = [
     },
     saveConfig: {
       label: 'Detailed Deliverables (Confidential)',
-      placeholderMessage: 'Specific deliverables and requirements that will only be visible to accepted students...',
+      placeholderMessage:
+        'Specific deliverables and requirements that will only be visible to accepted students...',
       isRequired: false,
     },
   },

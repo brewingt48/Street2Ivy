@@ -174,7 +174,6 @@ module.exports = async (req, res) => {
         perPage: meta.perPage,
       },
     });
-
   } catch (error) {
     console.error('Education student transactions error:', error);
     handleError(res, error);

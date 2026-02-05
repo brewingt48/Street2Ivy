@@ -59,10 +59,7 @@ const InviteModal = props => {
             <FormattedMessage id="InviteModal.successTitle" />
           </h2>
           <p className={css.inviteModalMessage}>
-            <FormattedMessage
-              id="InviteModal.successMessage"
-              values={{ name: studentName }}
-            />
+            <FormattedMessage id="InviteModal.successMessage" values={{ name: studentName }} />
           </p>
           <Button className={css.inviteModalSubmit} onClick={handleClose}>
             <FormattedMessage id="InviteModal.done" />
@@ -82,10 +79,7 @@ const InviteModal = props => {
     >
       <div className={css.inviteModalContent}>
         <h2 className={css.inviteModalTitle}>
-          <FormattedMessage
-            id="InviteModal.title"
-            values={{ name: studentName }}
-          />
+          <FormattedMessage id="InviteModal.title" values={{ name: studentName }} />
         </h2>
 
         <form onSubmit={handleSubmit}>
@@ -100,9 +94,7 @@ const InviteModal = props => {
               onChange={e => setSelectedListingId(e.target.value)}
               required
             >
-              <option value="">
-                -- Select a project --
-              </option>
+              <option value="">-- Select a project --</option>
               {publishedListings.map(listing => (
                 <option key={listing.id} value={listing.id}>
                   {listing.title}

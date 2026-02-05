@@ -167,7 +167,12 @@ const CorporatePartnerContent = props => {
           <div className={css.headingRow}>
             <span className={css.companyName}>{companyName}</span>
             {isVerified && (
-              <VerificationBadge type="company" size="small" showLabel={false} className={css.verifiedBadge} />
+              <VerificationBadge
+                type="company"
+                size="small"
+                showLabel={false}
+                className={css.verifiedBadge}
+              />
             )}
             {editProfileDesktop}
           </div>
@@ -178,7 +183,9 @@ const CorporatePartnerContent = props => {
           </div>
           {companyWebsite && (
             <a
-              href={companyWebsite.startsWith('http') ? companyWebsite : `https://${companyWebsite}`}
+              href={
+                companyWebsite.startsWith('http') ? companyWebsite : `https://${companyWebsite}`
+              }
               target="_blank"
               rel="noopener noreferrer"
               className={css.companyWebsite}

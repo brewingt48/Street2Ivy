@@ -185,10 +185,7 @@ const projectWorkspacePageSlice = createSlice({
         state.sendMessageInProgress = false;
         // Add the new message to the workspace
         if (state.workspace && action.payload.message) {
-          state.workspace.messages = [
-            ...(state.workspace.messages || []),
-            action.payload.message,
-          ];
+          state.workspace.messages = [...(state.workspace.messages || []), action.payload.message];
         }
       })
       .addCase(sendMessageThunk.rejected, (state, action) => {

@@ -176,7 +176,8 @@ export const AuthenticationForms = props => {
 
   // Use admin user types if on admin portal, otherwise use regular user types
   const availableUserTypes = isAdminPortal ? adminUserTypes : userTypes;
-  const preselectedUserType = availableUserTypes.find(conf => conf.userType === userType)?.userType || null;
+  const preselectedUserType =
+    availableUserTypes.find(conf => conf.userType === userType)?.userType || null;
 
   const fromMaybe = from ? { from } : null;
 
@@ -630,7 +631,8 @@ export const AuthenticationPageComponent = props => {
   const { userTypes = [], adminUserTypes = [] } = config.user;
   // Use admin user types if on admin portal, otherwise use regular user types
   const availableUserTypes = isAdminPortal ? adminUserTypes : userTypes;
-  const preselectedUserType = availableUserTypes.find(conf => conf.userType === userType)?.userType || null;
+  const preselectedUserType =
+    availableUserTypes.find(conf => conf.userType === userType)?.userType || null;
   const show404 = userType && !preselectedUserType;
 
   const user = ensureCurrentUser(currentUser);

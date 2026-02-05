@@ -15,13 +15,7 @@ import css from './VerificationBadge.module.css';
  * @param {string} rootClassName - Root CSS class override
  */
 const VerificationBadge = props => {
-  const {
-    type = 'company',
-    size = 'medium',
-    showLabel = true,
-    className,
-    rootClassName,
-  } = props;
+  const { type = 'company', size = 'medium', showLabel = true, className, rootClassName } = props;
 
   const classes = classNames(rootClassName || css.root, className, {
     [css.small]: size === 'small',
@@ -50,12 +44,7 @@ const VerificationBadge = props => {
 
   return (
     <span className={classes} title={showLabel ? undefined : 'Verified'}>
-      <svg
-        className={css.icon}
-        viewBox="0 0 24 24"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
-      >
+      <svg className={css.icon} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
         {/* Shield with checkmark for verification */}
         <path
           d="M12 2L4 5.5V11C4 15.52 7.23 19.74 12 21C16.77 19.74 20 15.52 20 11V5.5L12 2Z"

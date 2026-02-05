@@ -35,9 +35,7 @@ function checkInstitutionAccess(emailDomain) {
   const startDate = institution.membershipStartDate
     ? new Date(institution.membershipStartDate)
     : null;
-  const endDate = institution.membershipEndDate
-    ? new Date(institution.membershipEndDate)
-    : null;
+  const endDate = institution.membershipEndDate ? new Date(institution.membershipEndDate) : null;
 
   const isWithinDates = (!startDate || now >= startDate) && (!endDate || now <= endDate);
   const hasActiveAccess = isActive && isWithinDates;
@@ -71,7 +69,7 @@ function checkInstitutionAccess(emailDomain) {
  * Non-student users (corporate-partner, educational-admin, system-admin) are allowed through
  */
 function requireInstitutionAccess(req, res, next) {
-  return async function (req, res, next) {
+  return async function(req, res, next) {
     try {
       const sdk = await getIntegrationSdk(req);
       const currentUserRes = await sdk.currentUser.show();
@@ -115,11 +113,11 @@ function getAccessDeniedMessage(reason) {
     institution_not_found:
       'Your institution is not currently a member of Street2Ivy. Please contact your school administrator to request access.',
     membership_inactive:
-      'Your institution\'s membership is not currently active. Please contact your school administrator.',
+      "Your institution's membership is not currently active. Please contact your school administrator.",
     membership_not_started:
-      'Your institution\'s membership has not yet begun. Please check back later or contact your school administrator.',
+      "Your institution's membership has not yet begun. Please check back later or contact your school administrator.",
     membership_expired:
-      'Your institution\'s membership has expired. Please contact your school administrator to renew.',
+      "Your institution's membership has expired. Please contact your school administrator to renew.",
   };
 
   return messages[reason] || 'Access denied. Please contact your school administrator.';
@@ -144,9 +142,9 @@ function validateEduEmail(email) {
 
   // Check if it's a .edu domain (or other educational domains)
   const eduPatterns = [
-    /\.edu$/,           // US educational (.edu)
+    /\.edu$/, // US educational (.edu)
     /\.edu\.[a-z]{2}$/, // International educational (e.g., .edu.au)
-    /\.ac\.[a-z]{2}$/,  // UK/international academic (e.g., .ac.uk)
+    /\.ac\.[a-z]{2}$/, // UK/international academic (e.g., .ac.uk)
   ];
 
   const isEduEmail = eduPatterns.some(pattern => pattern.test(domain));

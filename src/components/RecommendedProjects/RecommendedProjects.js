@@ -52,7 +52,13 @@ const RecommendedProjects = props => {
 
     // Match skills (highest weight)
     userSkills.forEach(skill => {
-      if (listingSkills.some(ls => ls.toLowerCase().includes(skill.toLowerCase()) || skill.toLowerCase().includes(ls.toLowerCase()))) {
+      if (
+        listingSkills.some(
+          ls =>
+            ls.toLowerCase().includes(skill.toLowerCase()) ||
+            skill.toLowerCase().includes(ls.toLowerCase())
+        )
+      ) {
         score += 10;
       }
     });
@@ -60,8 +66,10 @@ const RecommendedProjects = props => {
     // Match major to category/industry
     if (userMajor) {
       const majorLower = userMajor.toLowerCase();
-      if (listingCategory.toLowerCase().includes(majorLower) ||
-          listingIndustry.toLowerCase().includes(majorLower)) {
+      if (
+        listingCategory.toLowerCase().includes(majorLower) ||
+        listingIndustry.toLowerCase().includes(majorLower)
+      ) {
         score += 5;
       }
     }
@@ -69,9 +77,11 @@ const RecommendedProjects = props => {
     // Match interests
     userInterests.forEach(interest => {
       const interestLower = interest.toLowerCase();
-      if (listingCategory.toLowerCase().includes(interestLower) ||
-          listingIndustry.toLowerCase().includes(interestLower) ||
-          listing.attributes?.title?.toLowerCase().includes(interestLower)) {
+      if (
+        listingCategory.toLowerCase().includes(interestLower) ||
+        listingIndustry.toLowerCase().includes(interestLower) ||
+        listing.attributes?.title?.toLowerCase().includes(interestLower)
+      ) {
         score += 3;
       }
     });
@@ -95,9 +105,8 @@ const RecommendedProjects = props => {
     .map(item => item.listing);
 
   // If no matches found with skills, show most recent listings
-  const displayListings = recommendedListings.length > 0
-    ? recommendedListings
-    : listings.slice(0, maxItems);
+  const displayListings =
+    recommendedListings.length > 0 ? recommendedListings : listings.slice(0, maxItems);
 
   if (isLoading) {
     return (
@@ -152,11 +161,7 @@ const RecommendedProjects = props => {
 
       <div className={css.listingsGrid}>
         {displayListings.map(listing => (
-          <ListingCard
-            key={listing.id.uuid}
-            listing={listing}
-            className={css.listingCard}
-          />
+          <ListingCard key={listing.id.uuid} listing={listing} className={css.listingCard} />
         ))}
       </div>
     </div>

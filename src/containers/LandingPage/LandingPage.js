@@ -24,77 +24,83 @@ const LandingPageComponent = props => {
   // Testimonials data - can be fetched from API in the future
   const testimonials = [
     {
-      quote: "Street2Ivy connected me with an amazing consulting project that helped me gain real-world experience before graduation. The skills I learned were invaluable for my career.",
-      author: "Sarah M.",
-      role: "Stanford University, Class of 2024",
-      initials: "SM"
+      quote:
+        'Street2Ivy connected me with an amazing consulting project that helped me gain real-world experience before graduation. The skills I learned were invaluable for my career.',
+      author: 'Sarah M.',
+      role: 'Stanford University, Class of 2024',
+      initials: 'SM',
     },
     {
-      quote: "As a corporate partner, we've found exceptional talent through Street2Ivy. The students bring fresh perspectives and innovative ideas to our projects.",
-      author: "Michael R.",
-      role: "Director of Innovation, Tech Startup",
-      initials: "MR"
+      quote:
+        "As a corporate partner, we've found exceptional talent through Street2Ivy. The students bring fresh perspectives and innovative ideas to our projects.",
+      author: 'Michael R.',
+      role: 'Director of Innovation, Tech Startup',
+      initials: 'MR',
     },
     {
-      quote: "The platform made it easy to find projects that aligned with my interests in sustainability. I completed two projects that directly related to my thesis work.",
-      author: "James L.",
-      role: "MIT, MBA Candidate",
-      initials: "JL"
+      quote:
+        'The platform made it easy to find projects that aligned with my interests in sustainability. I completed two projects that directly related to my thesis work.',
+      author: 'James L.',
+      role: 'MIT, MBA Candidate',
+      initials: 'JL',
     },
     {
-      quote: "Street2Ivy has been instrumental in helping our students gain practical experience. The quality of corporate partners on the platform is outstanding.",
-      author: "Dr. Patricia K.",
-      role: "Career Services Director, Columbia Business School",
-      initials: "PK"
+      quote:
+        'Street2Ivy has been instrumental in helping our students gain practical experience. The quality of corporate partners on the platform is outstanding.',
+      author: 'Dr. Patricia K.',
+      role: 'Career Services Director, Columbia Business School',
+      initials: 'PK',
     },
     {
-      quote: "I landed my dream job after completing a project through Street2Ivy. The company was so impressed they offered me a full-time position!",
-      author: "David C.",
-      role: "Harvard Business School, Class of 2023",
-      initials: "DC"
+      quote:
+        'I landed my dream job after completing a project through Street2Ivy. The company was so impressed they offered me a full-time position!',
+      author: 'David C.',
+      role: 'Harvard Business School, Class of 2023',
+      initials: 'DC',
     },
     {
-      quote: "The quality of student work exceeded our expectations. We've already posted multiple projects and plan to continue using the platform.",
-      author: "Jennifer W.",
-      role: "VP of Strategy, Fortune 500 Company",
-      initials: "JW"
-    }
+      quote:
+        "The quality of student work exceeded our expectations. We've already posted multiple projects and plan to continue using the platform.",
+      author: 'Jennifer W.',
+      role: 'VP of Strategy, Fortune 500 Company',
+      initials: 'JW',
+    },
   ];
 
   const features = [
     {
-      icon: "🎓",
+      icon: '🎓',
       title: intl.formatMessage({ id: 'LandingPage.feature1Title' }),
-      description: intl.formatMessage({ id: 'LandingPage.feature1Description' })
+      description: intl.formatMessage({ id: 'LandingPage.feature1Description' }),
     },
     {
-      icon: "💼",
+      icon: '💼',
       title: intl.formatMessage({ id: 'LandingPage.feature2Title' }),
-      description: intl.formatMessage({ id: 'LandingPage.feature2Description' })
+      description: intl.formatMessage({ id: 'LandingPage.feature2Description' }),
     },
     {
-      icon: "🤝",
+      icon: '🤝',
       title: intl.formatMessage({ id: 'LandingPage.feature3Title' }),
-      description: intl.formatMessage({ id: 'LandingPage.feature3Description' })
-    }
+      description: intl.formatMessage({ id: 'LandingPage.feature3Description' }),
+    },
   ];
 
   const steps = [
     {
-      number: "1",
+      number: '1',
       title: intl.formatMessage({ id: 'LandingPage.step1Title' }),
-      description: intl.formatMessage({ id: 'LandingPage.step1Description' })
+      description: intl.formatMessage({ id: 'LandingPage.step1Description' }),
     },
     {
-      number: "2",
+      number: '2',
       title: intl.formatMessage({ id: 'LandingPage.step2Title' }),
-      description: intl.formatMessage({ id: 'LandingPage.step2Description' })
+      description: intl.formatMessage({ id: 'LandingPage.step2Description' }),
     },
     {
-      number: "3",
+      number: '3',
       title: intl.formatMessage({ id: 'LandingPage.step3Title' }),
-      description: intl.formatMessage({ id: 'LandingPage.step3Description' })
-    }
+      description: intl.formatMessage({ id: 'LandingPage.step3Description' }),
+    },
   ];
 
   const layoutAreas = `
@@ -198,7 +204,7 @@ const LandingPageComponent = props => {
                           onClick={() => setShowVideo(true)}
                           role="button"
                           tabIndex={0}
-                          onKeyPress={(e) => e.key === 'Enter' && setShowVideo(true)}
+                          onKeyPress={e => e.key === 'Enter' && setShowVideo(true)}
                         >
                           <div className={css.playButton}>
                             <div className={css.playIcon} />

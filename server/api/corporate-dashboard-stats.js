@@ -136,9 +136,11 @@ module.exports = async (req, res) => {
       });
 
       // Calculate completion rate
-      const decidedTransactions = applicationStats.accepted + applicationStats.declined + completionStats.completed;
+      const decidedTransactions =
+        applicationStats.accepted + applicationStats.declined + completionStats.completed;
       if (decidedTransactions > 0) {
-        completionStats.completionRate = (applicationStats.accepted + completionStats.completed) / decidedTransactions;
+        completionStats.completionRate =
+          (applicationStats.accepted + completionStats.completed) / decidedTransactions;
       }
 
       // Calculate average days to completion
@@ -146,7 +148,6 @@ module.exports = async (req, res) => {
         completionStats.avgDaysToCompletion =
           completionTimes.reduce((a, b) => a + b, 0) / completionTimes.length;
       }
-
     } catch (txError) {
       console.error('Error querying transactions for corporate stats:', txError.message);
       // Continue with zero stats
@@ -174,7 +175,6 @@ module.exports = async (req, res) => {
         totalProjects: listings.length,
       },
     });
-
   } catch (error) {
     console.error('Corporate dashboard stats error:', error);
     handleError(res, error);

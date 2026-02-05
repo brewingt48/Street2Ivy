@@ -78,7 +78,9 @@ async function uploadNdaDocument(req, res) {
     }
 
     const ndaDocument = {
-      id: `nda_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      id: `nda_${Date.now()}_${Math.random()
+        .toString(36)
+        .substr(2, 9)}`,
       listingId,
       uploadedBy: currentUser.id.uuid,
       uploadedAt: new Date().toISOString(),
@@ -242,7 +244,9 @@ async function requestSignature(req, res) {
     }
 
     // Create signature request
-    const signatureRequestId = `sig_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    const signatureRequestId = `sig_${Date.now()}_${Math.random()
+      .toString(36)
+      .substr(2, 9)}`;
 
     const dropboxSignClient = getDropboxSignClient();
 
@@ -473,7 +477,9 @@ async function signNda(req, res) {
       const listingPublicData = listing?.attributes?.publicData || {};
 
       // Create a new signature request
-      const signatureRequestId = `sig_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      const signatureRequestId = `sig_${Date.now()}_${Math.random()
+        .toString(36)
+        .substr(2, 9)}`;
 
       signatureRequest = {
         id: signatureRequestId,
@@ -504,7 +510,10 @@ async function signNda(req, res) {
             signatureData: null,
           },
         ],
-        ndaText: listingPrivateData.ndaText || listingPublicData.ndaText || getDefaultNdaText(listing?.attributes?.title),
+        ndaText:
+          listingPrivateData.ndaText ||
+          listingPublicData.ndaText ||
+          getDefaultNdaText(listing?.attributes?.title),
         documentUrl: listingPrivateData.ndaDocumentUrl || null,
         signedDocumentUrl: null,
       };
@@ -513,9 +522,7 @@ async function signNda(req, res) {
     }
 
     // Find the current user's signer record
-    const signerIndex = signatureRequest.signers.findIndex(
-      s => s.userId === currentUser.id.uuid
-    );
+    const signerIndex = signatureRequest.signers.findIndex(s => s.userId === currentUser.id.uuid);
 
     if (signerIndex === -1) {
       return res.status(403).json({

@@ -43,7 +43,7 @@ const SECURITY_CONFIG = {
     'image/png',
     'image/gif',
     'application/msword',
-    'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
   ],
   allowedExtensions: ['.pdf', '.jpg', '.jpeg', '.png', '.gif', '.doc', '.docx'],
 
@@ -56,7 +56,7 @@ const SECURITY_CONFIG = {
 
   // Data export
   exportValidityPeriod: 24 * 60 * 60 * 1000, // 24 hours
-  maxExportRecords: 10000
+  maxExportRecords: 10000,
 };
 
 // ================ AUTHENTICATION MIDDLEWARE ================ //
@@ -76,11 +76,11 @@ const requireAuth = async (req, res, next) => {
         ip: getClientIP(req),
         userAgent: req.get('User-Agent'),
         path: req.path,
-        reason: 'No user session'
+        reason: 'No user session',
       });
       return res.status(401).json({
         error: 'Authentication required',
-        code: 'AUTH_REQUIRED'
+        code: 'AUTH_REQUIRED',
       });
     }
 
@@ -92,11 +92,11 @@ const requireAuth = async (req, res, next) => {
         ip: getClientIP(req),
         userAgent: req.get('User-Agent'),
         path: req.path,
-        reason: 'Invalid session'
+        reason: 'Invalid session',
       });
       return res.status(401).json({
         error: 'Authentication required',
-        code: 'AUTH_REQUIRED'
+        code: 'AUTH_REQUIRED',
       });
     }
     console.error('Authentication middleware error:', e.message);
@@ -120,11 +120,13 @@ const getCurrentUser = async (req, res) => {
 /**
  * Get client IP address, accounting for proxies
  */
-const getClientIP = (req) => {
-  return req.ip ||
+const getClientIP = req => {
+  return (
+    req.ip ||
     req.headers['x-forwarded-for']?.split(',')[0]?.trim() ||
     req.connection?.remoteAddress ||
-    'unknown';
+    'unknown'
+  );
 };
 
 // ================ AUTHORIZATION UTILITIES ================ //
@@ -142,7 +144,7 @@ const hasUserType = (user, allowedTypes) => {
  * Middleware factory for role-based access control
  * @param {Array<string>} allowedUserTypes - Array of allowed user types
  */
-const requireUserType = (allowedUserTypes) => {
+const requireUserType = allowedUserTypes => {
   return async (req, res, next) => {
     if (!req.user) {
       try {
@@ -152,7 +154,7 @@ const requireUserType = (allowedUserTypes) => {
       } catch (e) {
         return res.status(401).json({
           error: 'Authentication required',
-          code: 'AUTH_REQUIRED'
+          code: 'AUTH_REQUIRED',
         });
       }
     }
@@ -160,7 +162,7 @@ const requireUserType = (allowedUserTypes) => {
     if (!req.user) {
       return res.status(401).json({
         error: 'Authentication required',
-        code: 'AUTH_REQUIRED'
+        code: 'AUTH_REQUIRED',
       });
     }
 
@@ -170,12 +172,12 @@ const requireUserType = (allowedUserTypes) => {
         userType: req.user?.attributes?.profile?.publicData?.userType,
         requiredTypes: allowedUserTypes,
         path: req.path,
-        ip: getClientIP(req)
+        ip: getClientIP(req),
       });
       return res.status(403).json({
         error: 'Access denied. Insufficient permissions.',
         code: 'FORBIDDEN',
-        requiredRoles: allowedUserTypes
+        requiredRoles: allowedUserTypes,
       });
     }
 
@@ -309,7 +311,7 @@ const sanitizeObject = (obj, options = {}) => {
 /**
  * Validate email format
  */
-const isValidEmail = (email) => {
+const isValidEmail = email => {
   if (!email || typeof email !== 'string') return false;
   // RFC 5322 compliant email regex
   const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
@@ -319,7 +321,7 @@ const isValidEmail = (email) => {
 /**
  * Validate UUID format
  */
-const isValidUUID = (uuid) => {
+const isValidUUID = uuid => {
   if (!uuid || typeof uuid !== 'string') return false;
   const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
   return uuidRegex.test(uuid);
@@ -328,7 +330,7 @@ const isValidUUID = (uuid) => {
 /**
  * Validate domain format
  */
-const isValidDomain = (domain) => {
+const isValidDomain = domain => {
   if (!domain || typeof domain !== 'string') return false;
   const domainRegex = /^(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}$/;
   return domainRegex.test(domain) && domain.length <= 253;
@@ -337,7 +339,7 @@ const isValidDomain = (domain) => {
 /**
  * Validate URL format
  */
-const isValidURL = (url) => {
+const isValidURL = url => {
   if (!url || typeof url !== 'string') return false;
   try {
     const parsed = new URL(url);
@@ -363,7 +365,7 @@ const validationError = (res, message, field = null) => {
   return res.status(400).json({
     error: message,
     code: 'VALIDATION_ERROR',
-    field: field
+    field: field,
   });
 };
 
@@ -372,7 +374,7 @@ const validationError = (res, message, field = null) => {
 /**
  * Validate password against security policy
  */
-const validatePassword = (password) => {
+const validatePassword = password => {
   const errors = [];
 
   if (!password || typeof password !== 'string') {
@@ -411,7 +413,7 @@ const validatePassword = (password) => {
 
   return {
     valid: errors.length === 0,
-    errors
+    errors,
   };
 };
 
@@ -440,7 +442,7 @@ const csrfProtection = (req, res, next) => {
   if (!sessionId) {
     return res.status(403).json({
       error: 'CSRF validation failed: No session',
-      code: 'CSRF_ERROR'
+      code: 'CSRF_ERROR',
     });
   }
 
@@ -451,13 +453,13 @@ const csrfProtection = (req, res, next) => {
     const newToken = generateCSRFToken();
     csrfTokenStore.set(sessionId, {
       token: newToken,
-      created: Date.now()
+      created: Date.now(),
     });
 
     return res.status(403).json({
       error: 'CSRF token required',
       code: 'CSRF_TOKEN_REQUIRED',
-      token: newToken
+      token: newToken,
     });
   }
 
@@ -466,11 +468,11 @@ const csrfProtection = (req, res, next) => {
     auditLog('CSRF_FAILURE', {
       ip: getClientIP(req),
       sessionId: sessionId.substring(0, 8) + '...',
-      path: req.path
+      path: req.path,
     });
     return res.status(403).json({
       error: 'CSRF token invalid',
-      code: 'CSRF_INVALID'
+      code: 'CSRF_INVALID',
     });
   }
 
@@ -479,7 +481,7 @@ const csrfProtection = (req, res, next) => {
     csrfTokenStore.delete(sessionId);
     return res.status(403).json({
       error: 'CSRF token expired',
-      code: 'CSRF_EXPIRED'
+      code: 'CSRF_EXPIRED',
     });
   }
 
@@ -487,7 +489,7 @@ const csrfProtection = (req, res, next) => {
   const newToken = generateCSRFToken();
   csrfTokenStore.set(sessionId, {
     token: newToken,
-    created: Date.now()
+    created: Date.now(),
   });
   res.setHeader('X-CSRF-Token', newToken);
 
@@ -503,7 +505,7 @@ const getCSRFToken = (req, res) => {
 
   csrfTokenStore.set(sessionId, {
     token: token,
-    created: Date.now()
+    created: Date.now(),
   });
 
   res.json({ token });
@@ -545,8 +547,8 @@ const rateLimit = (options = {}) => {
     windowMs = SECURITY_CONFIG.rateLimitWindowMs,
     max = SECURITY_CONFIG.rateLimitMaxRequests,
     message = 'Too many requests, please try again later.',
-    keyGenerator = (req) => getClientIP(req),
-    skipFailedRequests = false
+    keyGenerator = req => getClientIP(req),
+    skipFailedRequests = false,
   } = options;
 
   return (req, res, next) => {
@@ -559,7 +561,7 @@ const rateLimit = (options = {}) => {
       record = {
         count: 1,
         windowStart: now,
-        windowMs: windowMs
+        windowMs: windowMs,
       };
       rateLimitStore.set(key, record);
     } else {
@@ -575,12 +577,12 @@ const rateLimit = (options = {}) => {
         ip: getClientIP(req),
         path: req.path,
         count: record.count,
-        limit: max
+        limit: max,
       });
       return res.status(429).json({
         error: message,
         code: 'RATE_LIMIT_EXCEEDED',
-        retryAfter: Math.ceil((record.windowStart + windowMs - now) / 1000)
+        retryAfter: Math.ceil((record.windowStart + windowMs - now) / 1000),
       });
     }
 
@@ -591,13 +593,13 @@ const rateLimit = (options = {}) => {
 const strictRateLimit = rateLimit({
   windowMs: SECURITY_CONFIG.strictRateLimitWindowMs,
   max: SECURITY_CONFIG.strictRateLimitMaxRequests,
-  message: 'Too many requests for this operation. Please wait a moment.'
+  message: 'Too many requests for this operation. Please wait a moment.',
 });
 
 const standardRateLimit = rateLimit({
   windowMs: SECURITY_CONFIG.rateLimitWindowMs,
   max: SECURITY_CONFIG.rateLimitMaxRequests,
-  message: 'Too many requests. Please try again later.'
+  message: 'Too many requests. Please try again later.',
 });
 
 // ================ SECURITY HEADERS ================ //
@@ -640,7 +642,7 @@ const securityHeaders = (req, res, next) => {
 /**
  * Validate file upload
  */
-const validateFileUpload = (file) => {
+const validateFileUpload = file => {
   const errors = [];
 
   if (!file) {
@@ -679,14 +681,14 @@ const validateFileUpload = (file) => {
 
   return {
     valid: errors.length === 0,
-    errors
+    errors,
   };
 };
 
 /**
  * Sanitize filename for storage
  */
-const sanitizeFilename = (filename) => {
+const sanitizeFilename = filename => {
   // Remove path components
   let sanitized = path.basename(filename);
 
@@ -727,7 +729,7 @@ const SENSITIVE_FIELDS = [
   'creditCard',
   'cardNumber',
   'cvv',
-  'bankAccount'
+  'bankAccount',
 ];
 
 /**
@@ -747,9 +749,7 @@ const sanitizeResponse = (data, options = {}) => {
     const sanitized = {};
     for (const [key, value] of Object.entries(data)) {
       // Skip sensitive fields
-      if (sensitiveFields.some(field =>
-        key.toLowerCase().includes(field.toLowerCase())
-      )) {
+      if (sensitiveFields.some(field => key.toLowerCase().includes(field.toLowerCase()))) {
         continue;
       }
       sanitized[key] = sanitizeResponse(value, { ...options, depth: depth + 1 });
@@ -766,7 +766,7 @@ const sanitizeResponse = (data, options = {}) => {
 const responseSanitizer = (req, res, next) => {
   const originalJson = res.json.bind(res);
 
-  res.json = (data) => {
+  res.json = data => {
     const sanitized = sanitizeResponse(data);
     return originalJson(sanitized);
   };
@@ -788,7 +788,7 @@ const auditLog = (eventType, data) => {
     id: crypto.randomUUID(),
     timestamp: new Date().toISOString(),
     eventType,
-    ...data
+    ...data,
   };
 
   // Add to in-memory store
@@ -810,14 +810,7 @@ const auditLog = (eventType, data) => {
  * Get audit logs (for admin dashboard)
  */
 const getAuditLogs = (options = {}) => {
-  const {
-    eventType,
-    userId,
-    startDate,
-    endDate,
-    limit = 100,
-    offset = 0
-  } = options;
+  const { eventType, userId, startDate, endDate, limit = 100, offset = 0 } = options;
 
   let logs = [...auditLogStore];
 
@@ -850,7 +843,7 @@ const getAuditLogs = (options = {}) => {
     logs,
     total,
     limit,
-    offset
+    offset,
   };
 };
 
@@ -872,25 +865,25 @@ const generateExportToken = (userId, exportType, options = {}) => {
     options,
     createdAt: Date.now(),
     expiresAt,
-    downloaded: false
+    downloaded: false,
   });
 
   auditLog('EXPORT_REQUESTED', {
     userId,
     exportType,
-    tokenPrefix: token.substring(0, 8)
+    tokenPrefix: token.substring(0, 8),
   });
 
   return {
     token,
-    expiresAt: new Date(expiresAt).toISOString()
+    expiresAt: new Date(expiresAt).toISOString(),
   };
 };
 
 /**
  * Validate and consume export token
  */
-const validateExportToken = (token) => {
+const validateExportToken = token => {
   const data = exportTokenStore.get(token);
 
   if (!data) {
@@ -912,14 +905,14 @@ const validateExportToken = (token) => {
   auditLog('EXPORT_DOWNLOADED', {
     userId: data.userId,
     exportType: data.exportType,
-    tokenPrefix: token.substring(0, 8)
+    tokenPrefix: token.substring(0, 8),
   });
 
   return {
     valid: true,
     userId: data.userId,
     exportType: data.exportType,
-    options: data.options
+    options: data.options,
   };
 };
 
@@ -938,7 +931,7 @@ setInterval(() => {
 /**
  * Validate request body against schema
  */
-const validateRequestBody = (schema) => {
+const validateRequestBody = schema => {
   return (req, res, next) => {
     const errors = [];
 
@@ -985,7 +978,7 @@ const validateRequestBody = (schema) => {
       return res.status(400).json({
         error: 'Validation failed',
         code: 'VALIDATION_ERROR',
-        details: errors
+        details: errors,
       });
     }
 
@@ -1052,5 +1045,5 @@ module.exports = {
 
   // Data Export
   generateExportToken,
-  validateExportToken
+  validateExportToken,
 };

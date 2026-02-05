@@ -1,8 +1,11 @@
 const sharetribeIntegrationSdk = require('sharetribe-flex-integration-sdk');
 
 // Integration API can use its own credentials, or fall back to the Marketplace API ones
-const CLIENT_ID = process.env.SHARETRIBE_INTEGRATION_API_CLIENT_ID || process.env.REACT_APP_SHARETRIBE_SDK_CLIENT_ID;
-const CLIENT_SECRET = process.env.SHARETRIBE_INTEGRATION_API_CLIENT_SECRET || process.env.SHARETRIBE_SDK_CLIENT_SECRET;
+const CLIENT_ID =
+  process.env.SHARETRIBE_INTEGRATION_API_CLIENT_ID ||
+  process.env.REACT_APP_SHARETRIBE_SDK_CLIENT_ID;
+const CLIENT_SECRET =
+  process.env.SHARETRIBE_INTEGRATION_API_CLIENT_SECRET || process.env.SHARETRIBE_SDK_CLIENT_SECRET;
 const BASE_URL = process.env.REACT_APP_SHARETRIBE_SDK_BASE_URL;
 const TRANSIT_VERBOSE = process.env.REACT_APP_SHARETRIBE_SDK_TRANSIT_VERBOSE === 'true';
 

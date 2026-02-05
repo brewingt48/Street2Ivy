@@ -23,10 +23,12 @@ async function verifyCorporatePartner(req, res) {
 function toCSV(data, headers) {
   const headerRow = headers.map(h => `"${h}"`).join(',');
   const dataRows = data.map(row =>
-    headers.map(header => {
-      const value = row[header] !== undefined ? String(row[header]) : '';
-      return `"${value.replace(/"/g, '""')}"`;
-    }).join(',')
+    headers
+      .map(header => {
+        const value = row[header] !== undefined ? String(row[header]) : '';
+        return `"${value.replace(/"/g, '""')}"`;
+      })
+      .join(',')
   );
   return [headerRow, ...dataRows].join('\n');
 }
@@ -35,9 +37,12 @@ function toCSV(data, headers) {
  * Convert data to HTML table (for Word-like format)
  */
 function toHTML(data, headers, title, companyName) {
-  const tableRows = data.map(row =>
-    `<tr>${headers.map(h => `<td>${row[h] !== undefined ? row[h] : ''}</td>`).join('')}</tr>`
-  ).join('\n');
+  const tableRows = data
+    .map(
+      row =>
+        `<tr>${headers.map(h => `<td>${row[h] !== undefined ? row[h] : ''}</td>`).join('')}</tr>`
+    )
+    .join('\n');
 
   return `<!DOCTYPE html>
 <html>
@@ -76,7 +81,9 @@ function toHTML(data, headers, title, companyName) {
 
 function formatDate() {
   const now = new Date();
-  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(
+    now.getDate()
+  ).padStart(2, '0')}`;
 }
 
 /**
@@ -120,7 +127,8 @@ async function exportCorporateReport(req, res) {
     }
 
     const userId = corporatePartner.id.uuid;
-    const companyName = corporatePartner.attributes.profile.publicData?.companyName || 'Your Company';
+    const companyName =
+      corporatePartner.attributes.profile.publicData?.companyName || 'Your Company';
     const sdk = getSdk(req, res);
 
     let exportData;
@@ -131,7 +139,14 @@ async function exportCorporateReport(req, res) {
     switch (type) {
       case 'projects':
         exportData = await generateProjectsExport(sdk, userId);
-        headers = ['Project Title', 'Status', 'Category', 'Est. Hours', 'Students Needed', 'Created'];
+        headers = [
+          'Project Title',
+          'Status',
+          'Category',
+          'Est. Hours',
+          'Students Needed',
+          'Created',
+        ];
         title = 'Projects Report';
         filename = `projects-report-${formatDate()}`;
         break;
@@ -168,7 +183,6 @@ async function exportCorporateReport(req, res) {
       res.setHeader('Content-Disposition', `attachment; filename="${filename}.html"`);
       return res.send(html);
     }
-
   } catch (error) {
     console.error('Corporate export report error:', error);
     handleError(res, error);
@@ -185,11 +199,11 @@ async function generateProjectsExport(sdk, userId) {
 
   return listings.map(listing => ({
     'Project Title': listing.attributes.title || 'Untitled',
-    'Status': listing.attributes.state,
-    'Category': listing.attributes.publicData?.industryCategory || 'N/A',
+    Status: listing.attributes.state,
+    Category: listing.attributes.publicData?.industryCategory || 'N/A',
     'Est. Hours': listing.attributes.publicData?.estimatedHours || 'N/A',
     'Students Needed': listing.attributes.publicData?.studentsNeeded || 'N/A',
-    'Created': new Date(listing.attributes.createdAt).toLocaleDateString(),
+    Created: new Date(listing.attributes.createdAt).toLocaleDateString(),
   }));
 }
 
@@ -234,9 +248,9 @@ async function generateApplicationsExport(sdk, userId) {
     if (lastTransition.includes('complete')) status = 'Completed';
 
     return {
-      'Project': listing?.attributes?.title || 'Unknown Project',
-      'Student': customer?.attributes?.profile?.displayName || 'Unknown',
-      'Status': status,
+      Project: listing?.attributes?.title || 'Unknown Project',
+      Student: customer?.attributes?.profile?.displayName || 'Unknown',
+      Status: status,
       'Applied Date': new Date(tx.attributes.createdAt).toLocaleDateString(),
       'Response Date': tx.attributes.protectedData?.respondedAt
         ? new Date(tx.attributes.protectedData.respondedAt).toLocaleDateString()

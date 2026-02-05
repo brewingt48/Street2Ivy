@@ -50,7 +50,8 @@ module.exports = async (req, res) => {
 
     if (!institutionDomain) {
       return res.status(400).json({
-        error: 'Institution domain not configured. Please update your profile with a valid institutional email.',
+        error:
+          'Institution domain not configured. Please update your profile with a valid institutional email.',
       });
     }
 
@@ -200,7 +201,6 @@ module.exports = async (req, res) => {
         // Adjust counts to be cumulative (accepted includes completed, etc.)
         // Applied = all transactions that have been initiated
         stats.projectsApplied = allTransactions.length;
-
       } catch (txError) {
         console.error('Error querying transactions for education dashboard:', txError.message);
         // Continue with zero stats if transaction query fails
@@ -220,7 +220,6 @@ module.exports = async (req, res) => {
         perPage: meta.perPage,
       },
     });
-
   } catch (error) {
     console.error('Education dashboard error:', error);
     handleError(res, error);

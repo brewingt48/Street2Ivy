@@ -7,13 +7,7 @@ import { isScrollingDisabled } from '../../ducks/ui.duck';
 import { pathByRouteName } from '../../util/routes';
 import { useRouteConfiguration } from '../../context/routeConfigurationContext';
 
-import {
-  Page,
-  LayoutSingleColumn,
-  NamedLink,
-  IconCheckmark,
-  Avatar,
-} from '../../components';
+import { Page, LayoutSingleColumn, NamedLink, IconCheckmark, Avatar } from '../../components';
 import TopbarContainer from '../../containers/TopbarContainer/TopbarContainer';
 import FooterContainer from '../../containers/FooterContainer/FooterContainer';
 
@@ -128,11 +122,12 @@ const calculateProgress = (currentUser, currentUserHasListings, currentUserHasOr
   const profile = currentUser.attributes?.profile || {};
   const publicData = profile.publicData || {};
   const hasBio = profile.bio && profile.bio.length > 20;
-  const hasEssentialFields = userType === 'student'
-    ? publicData.university && publicData.major
-    : userType === 'corporate-partner'
-    ? publicData.companyName && publicData.industry
-    : true;
+  const hasEssentialFields =
+    userType === 'student'
+      ? publicData.university && publicData.major
+      : userType === 'corporate-partner'
+      ? publicData.companyName && publicData.industry
+      : true;
 
   if (hasBio && hasEssentialFields) {
     completed.push('complete-profile');
@@ -169,14 +164,12 @@ const calculateProgress = (currentUser, currentUserHasListings, currentUserHasOr
 const StepCard = ({ step, isCompleted, isActive, onAction }) => {
   return (
     <div
-      className={`${css.stepCard} ${isCompleted ? css.completed : ''} ${isActive ? css.active : ''}`}
+      className={`${css.stepCard} ${isCompleted ? css.completed : ''} ${
+        isActive ? css.active : ''
+      }`}
     >
       <div className={css.stepIcon}>
-        {isCompleted ? (
-          <span className={css.checkmark}>✓</span>
-        ) : (
-          <span>{step.icon}</span>
-        )}
+        {isCompleted ? <span className={css.checkmark}>✓</span> : <span>{step.icon}</span>}
       </div>
       <div className={css.stepContent}>
         <h3 className={css.stepTitle}>{step.title}</h3>
@@ -208,10 +201,7 @@ const ProgressBar = ({ percentage }) => {
         <span className={css.progressPercentage}>{percentage}%</span>
       </div>
       <div className={css.progressBar}>
-        <div
-          className={css.progressFill}
-          style={{ width: `${percentage}%` }}
-        />
+        <div className={css.progressFill} style={{ width: `${percentage}%` }} />
       </div>
     </div>
   );
@@ -321,12 +311,7 @@ const QuickActions = ({ userType }) => {
 // ================ Main Component ================ //
 
 const OnboardingPageComponent = props => {
-  const {
-    scrollingDisabled,
-    currentUser,
-    currentUserHasListings,
-    currentUserHasOrders,
-  } = props;
+  const { scrollingDisabled, currentUser, currentUserHasListings, currentUserHasOrders } = props;
 
   const intl = useIntl();
   const routeConfiguration = useRouteConfiguration();
@@ -355,10 +340,7 @@ const OnboardingPageComponent = props => {
 
   return (
     <Page title={title} scrollingDisabled={scrollingDisabled}>
-      <LayoutSingleColumn
-        topbar={<TopbarContainer />}
-        footer={<FooterContainer />}
-      >
+      <LayoutSingleColumn topbar={<TopbarContainer />} footer={<FooterContainer />}>
         <div className={css.pageContent}>
           <WelcomeSection currentUser={currentUser} userType={userType} />
 
@@ -370,8 +352,12 @@ const OnboardingPageComponent = props => {
                 <div className={css.completionBanner}>
                   <span className={css.completionIcon}>🎉</span>
                   <div className={css.completionText}>
-                    <h3><FormattedMessage id="OnboardingPage.complete.title" /></h3>
-                    <p><FormattedMessage id="OnboardingPage.complete.description" /></p>
+                    <h3>
+                      <FormattedMessage id="OnboardingPage.complete.title" />
+                    </h3>
+                    <p>
+                      <FormattedMessage id="OnboardingPage.complete.description" />
+                    </p>
                   </div>
                 </div>
               )}
@@ -422,8 +408,6 @@ const mapStateToProps = state => {
   };
 };
 
-const OnboardingPage = compose(
-  connect(mapStateToProps)
-)(OnboardingPageComponent);
+const OnboardingPage = compose(connect(mapStateToProps))(OnboardingPageComponent);
 
 export default OnboardingPage;

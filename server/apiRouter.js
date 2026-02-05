@@ -17,7 +17,7 @@ const {
   getCSRFToken,
   getAuditLogs,
   validatePassword,
-  SECURITY_CONFIG
+  SECURITY_CONFIG,
 } = require('./api-util/security');
 
 const initiateLoginAs = require('./api/initiate-login-as');
@@ -117,7 +117,7 @@ router.get('/security-config', (req, res) => {
     passwordRequireSpecial: SECURITY_CONFIG.passwordRequireSpecial,
     maxFileSize: SECURITY_CONFIG.maxFileSize,
     allowedMimeTypes: SECURITY_CONFIG.allowedMimeTypes,
-    allowedExtensions: SECURITY_CONFIG.allowedExtensions
+    allowedExtensions: SECURITY_CONFIG.allowedExtensions,
   });
 });
 
@@ -175,7 +175,7 @@ router.get('/admin/audit-logs', async (req, res) => {
     startDate,
     endDate,
     limit: parseInt(limit, 10) || 100,
-    offset: parseInt(offset, 10) || 0
+    offset: parseInt(offset, 10) || 0,
   });
   res.json(logs);
 });

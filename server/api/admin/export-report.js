@@ -23,11 +23,13 @@ async function verifySystemAdmin(req, res) {
 function toCSV(data, headers) {
   const headerRow = headers.map(h => `"${h}"`).join(',');
   const dataRows = data.map(row =>
-    headers.map(header => {
-      const value = row[header] !== undefined ? String(row[header]) : '';
-      // Escape quotes and wrap in quotes
-      return `"${value.replace(/"/g, '""')}"`;
-    }).join(',')
+    headers
+      .map(header => {
+        const value = row[header] !== undefined ? String(row[header]) : '';
+        // Escape quotes and wrap in quotes
+        return `"${value.replace(/"/g, '""')}"`;
+      })
+      .join(',')
   );
   return [headerRow, ...dataRows].join('\n');
 }
@@ -36,9 +38,12 @@ function toCSV(data, headers) {
  * Convert data to HTML table (for Word-like format)
  */
 function toHTML(data, headers, title) {
-  const tableRows = data.map(row =>
-    `<tr>${headers.map(h => `<td>${row[h] !== undefined ? row[h] : ''}</td>`).join('')}</tr>`
-  ).join('\n');
+  const tableRows = data
+    .map(
+      row =>
+        `<tr>${headers.map(h => `<td>${row[h] !== undefined ? row[h] : ''}</td>`).join('')}</tr>`
+    )
+    .join('\n');
 
   return `<!DOCTYPE html>
 <html>
@@ -169,7 +174,6 @@ async function exportReport(req, res) {
       res.setHeader('Content-Disposition', `attachment; filename="${filename}.html"`);
       return res.send(html);
     }
-
   } catch (error) {
     console.error('Admin export report error:', error);
     handleError(res, error);
@@ -178,7 +182,9 @@ async function exportReport(req, res) {
 
 function formatDate() {
   const now = new Date();
-  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(
+    now.getDate()
+  ).padStart(2, '0')}`;
 }
 
 async function generateOverviewExport(integrationSdk) {
@@ -234,9 +240,9 @@ async function generateUsersExport(integrationSdk) {
 
     results.push({
       'User Type': userType.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase()),
-      'Total': total,
-      'Active': active,
-      'Banned': banned,
+      Total: total,
+      Active: active,
+      Banned: banned,
       'New This Month': newThisMonth,
     });
   }
@@ -274,7 +280,7 @@ async function generateInstitutionsExport(integrationSdk) {
 
       results.push({
         'Institution Name': name || 'Unknown',
-        'Domain': domain,
+        Domain: domain,
         'Student Count': studentsResponse.data.meta.totalItems,
         'Admin Count': eduAdmins.filter(
           a => a.attributes.profile.publicData?.institutionDomain === domain
@@ -283,7 +289,7 @@ async function generateInstitutionsExport(integrationSdk) {
     } catch (e) {
       results.push({
         'Institution Name': name || 'Unknown',
-        'Domain': domain,
+        Domain: domain,
         'Student Count': 'N/A',
         'Admin Count': 1,
       });
@@ -335,9 +341,9 @@ async function generateTransactionsExport(integrationSdk) {
   const total = transactions.length;
 
   return Object.entries(byState).map(([state, count]) => ({
-    'State': state.charAt(0).toUpperCase() + state.slice(1),
-    'Count': count,
-    'Percentage': total > 0 ? `${Math.round((count / total) * 100)}%` : '0%',
+    State: state.charAt(0).toUpperCase() + state.slice(1),
+    Count: count,
+    Percentage: total > 0 ? `${Math.round((count / total) * 100)}%` : '0%',
   }));
 }
 

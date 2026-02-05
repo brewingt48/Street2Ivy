@@ -5,13 +5,7 @@ import { useHistory, useLocation } from 'react-router-dom';
 import { FormattedMessage, useIntl } from '../../util/reactIntl';
 import { isScrollingDisabled, manageDisableScrolling } from '../../ducks/ui.duck';
 
-import {
-  Page,
-  LayoutSingleColumn,
-  PaginationLinks,
-  AvatarMedium,
-  Modal,
-} from '../../components';
+import { Page, LayoutSingleColumn, PaginationLinks, AvatarMedium, Modal } from '../../components';
 import TopbarContainer from '../../containers/TopbarContainer/TopbarContainer';
 import FooterContainer from '../../containers/FooterContainer/FooterContainer';
 
@@ -80,13 +74,14 @@ const EducationDashboardPageComponent = props => {
   if (currentUser && !isEducationalAdmin) {
     return (
       <Page title={title} scrollingDisabled={scrollingDisabled}>
-        <LayoutSingleColumn
-          topbar={<TopbarContainer />}
-          footer={<FooterContainer />}
-        >
+        <LayoutSingleColumn topbar={<TopbarContainer />} footer={<FooterContainer />}>
           <div className={css.noAccess}>
-            <h1><FormattedMessage id="EducationDashboardPage.noAccessTitle" /></h1>
-            <p><FormattedMessage id="EducationDashboardPage.noAccessMessage" /></p>
+            <h1>
+              <FormattedMessage id="EducationDashboardPage.noAccessTitle" />
+            </h1>
+            <p>
+              <FormattedMessage id="EducationDashboardPage.noAccessMessage" />
+            </p>
           </div>
         </LayoutSingleColumn>
       </Page>
@@ -123,10 +118,7 @@ const EducationDashboardPageComponent = props => {
 
   return (
     <Page title={title} scrollingDisabled={scrollingDisabled}>
-      <LayoutSingleColumn
-        topbar={<TopbarContainer />}
-        footer={<FooterContainer />}
-      >
+      <LayoutSingleColumn topbar={<TopbarContainer />} footer={<FooterContainer />}>
         <div className={css.pageContent}>
           <h1 className={css.pageHeading}>
             <FormattedMessage id="EducationDashboardPage.heading" />
@@ -209,7 +201,9 @@ const EducationDashboardPageComponent = props => {
                 <input
                   type="text"
                   className={css.searchInput}
-                  placeholder={intl.formatMessage({ id: 'EducationDashboardPage.searchPlaceholder' })}
+                  placeholder={intl.formatMessage({
+                    id: 'EducationDashboardPage.searchPlaceholder',
+                  })}
                   value={searchTerm}
                   onChange={e => setSearchTerm(e.target.value)}
                 />
@@ -226,10 +220,18 @@ const EducationDashboardPageComponent = props => {
                     <table className={css.studentsTable}>
                       <thead>
                         <tr>
-                          <th><FormattedMessage id="EducationDashboardPage.tableStudent" /></th>
-                          <th><FormattedMessage id="EducationDashboardPage.tableMajor" /></th>
-                          <th><FormattedMessage id="EducationDashboardPage.tableGradYear" /></th>
-                          <th><FormattedMessage id="EducationDashboardPage.tableActions" /></th>
+                          <th>
+                            <FormattedMessage id="EducationDashboardPage.tableStudent" />
+                          </th>
+                          <th>
+                            <FormattedMessage id="EducationDashboardPage.tableMajor" />
+                          </th>
+                          <th>
+                            <FormattedMessage id="EducationDashboardPage.tableGradYear" />
+                          </th>
+                          <th>
+                            <FormattedMessage id="EducationDashboardPage.tableActions" />
+                          </th>
                         </tr>
                       </thead>
                       <tbody>
@@ -258,9 +260,7 @@ const EducationDashboardPageComponent = props => {
                                   </span>
                                 </div>
                               </td>
-                              <td className={css.studentMeta}>
-                                {studentPublicData.major || '-'}
-                              </td>
+                              <td className={css.studentMeta}>{studentPublicData.major || '-'}</td>
                               <td className={css.studentMeta}>
                                 {studentPublicData.graduationYear || '-'}
                               </td>
@@ -372,7 +372,9 @@ const EducationDashboardPageComponent = props => {
                         {new Date(tx.attributes.createdAt).toLocaleDateString()}
                       </div>
                     </div>
-                    <span className={`${css.transactionStatus} ${getStatusClass(tx.attributes.state)}`}>
+                    <span
+                      className={`${css.transactionStatus} ${getStatusClass(tx.attributes.state)}`}
+                    >
                       {tx.attributes.state}
                     </span>
                   </div>
@@ -427,7 +429,10 @@ const mapDispatchToProps = dispatch => ({
 });
 
 const EducationDashboardPage = compose(
-  connect(mapStateToProps, mapDispatchToProps)
+  connect(
+    mapStateToProps,
+    mapDispatchToProps
+  )
 )(EducationDashboardPageComponent);
 
 export default EducationDashboardPage;

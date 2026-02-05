@@ -31,14 +31,7 @@ async function verifySystemAdmin(req, res) {
  *   perPage      - Results per page (default: 20, max: 100)
  */
 async function listUsers(req, res) {
-  const {
-    userType,
-    search,
-    status,
-    institution,
-    page = '1',
-    perPage = '20',
-  } = req.query;
+  const { userType, search, status, institution, page = '1', perPage = '20' } = req.query;
 
   try {
     const admin = await verifySystemAdmin(req, res);
@@ -97,7 +90,8 @@ async function listUsers(req, res) {
       filteredUsers = filteredUsers.filter(u => {
         const displayName = u.attributes.profile.displayName?.toLowerCase() || '';
         const emailDomain = u.attributes.profile.publicData?.emailDomain?.toLowerCase() || '';
-        const institutionName = u.attributes.profile.publicData?.institutionName?.toLowerCase() || '';
+        const institutionName =
+          u.attributes.profile.publicData?.institutionName?.toLowerCase() || '';
         const companyName = u.attributes.profile.publicData?.companyName?.toLowerCase() || '';
 
         return (
@@ -153,7 +147,6 @@ async function listUsers(req, res) {
         perPage: meta.perPage,
       },
     });
-
   } catch (error) {
     console.error('Admin list users error:', error);
     handleError(res, error);
@@ -203,7 +196,6 @@ async function blockUser(req, res) {
         banned: true,
       },
     });
-
   } catch (error) {
     console.error('Admin block user error:', error);
     handleError(res, error);
@@ -246,7 +238,6 @@ async function unblockUser(req, res) {
         banned: false,
       },
     });
-
   } catch (error) {
     console.error('Admin unblock user error:', error);
     handleError(res, error);
@@ -295,7 +286,6 @@ async function deleteUser(req, res) {
         deleted: true,
       },
     });
-
   } catch (error) {
     console.error('Admin delete user error:', error);
     handleError(res, error);
@@ -353,7 +343,6 @@ async function approveUser(req, res) {
         approvalStatus: 'approved',
       },
     });
-
   } catch (error) {
     console.error('Admin approve user error:', error);
     handleError(res, error);
@@ -413,7 +402,6 @@ async function rejectUser(req, res) {
         approvalStatus: 'rejected',
       },
     });
-
   } catch (error) {
     console.error('Admin reject user error:', error);
     handleError(res, error);
@@ -537,7 +525,9 @@ async function getPendingApprovals(req, res) {
     });
 
     // Sort by creation date (newest first)
-    pendingUsers.sort((a, b) => new Date(b.attributes.createdAt) - new Date(a.attributes.createdAt));
+    pendingUsers.sort(
+      (a, b) => new Date(b.attributes.createdAt) - new Date(a.attributes.createdAt)
+    );
 
     res.status(200).json({
       users: pendingUsers,
@@ -548,7 +538,6 @@ async function getPendingApprovals(req, res) {
         perPage: pendingUsers.length,
       },
     });
-
   } catch (error) {
     console.error('Admin get pending approvals error:', error);
     handleError(res, error);
@@ -612,7 +601,6 @@ async function getUser(req, res) {
           : null,
       },
     });
-
   } catch (error) {
     console.error('Admin get user error:', error);
     handleError(res, error);
@@ -698,7 +686,9 @@ async function createAdmin(req, res) {
 
     res.status(201).json({
       success: true,
-      message: `${userType === 'system-admin' ? 'System Administrator' : 'Educational Administrator'} account created successfully.`,
+      message: `${
+        userType === 'system-admin' ? 'System Administrator' : 'Educational Administrator'
+      } account created successfully.`,
       user: {
         id: newUser.id.uuid,
         email,
@@ -707,7 +697,6 @@ async function createAdmin(req, res) {
         institutionName: userType === 'educational-admin' ? institutionName : undefined,
       },
     });
-
   } catch (error) {
     console.error('Admin create admin user error:', error);
 

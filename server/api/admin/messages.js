@@ -112,7 +112,6 @@ async function sendMessage(req, res) {
       message: 'Message sent successfully.',
       data: message,
     });
-
   } catch (error) {
     console.error('Admin send message error:', error);
     handleError(res, error);
@@ -172,7 +171,6 @@ async function listMessages(req, res) {
         perPage: perPageNum,
       },
     });
-
   } catch (error) {
     console.error('Admin list messages error:', error);
     handleError(res, error);
@@ -217,7 +215,6 @@ async function markAsRead(req, res) {
       success: true,
       message: 'Message marked as read.',
     });
-
   } catch (error) {
     console.error('Admin mark message read error:', error);
     handleError(res, error);
@@ -240,12 +237,10 @@ async function getUnreadCount(req, res) {
       return res.status(200).json({ unreadCount: 0 });
     }
 
-    const unreadCount = adminMessages.filter(
-      m => m.recipientId === currentUser.id.uuid && !m.read
-    ).length;
+    const unreadCount = adminMessages.filter(m => m.recipientId === currentUser.id.uuid && !m.read)
+      .length;
 
     res.status(200).json({ unreadCount });
-
   } catch (error) {
     console.error('Admin unread count error:', error);
     handleError(res, error);

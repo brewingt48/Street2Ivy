@@ -456,7 +456,8 @@ export const userFields = [
     },
     saveConfig: {
       label: 'About the Company',
-      placeholderMessage: 'Tell students about your company, culture, and what makes it a great place to work...',
+      placeholderMessage:
+        'Tell students about your company, culture, and what makes it a great place to work...',
       displayInSignUp: true,
       isRequired: true,
     },

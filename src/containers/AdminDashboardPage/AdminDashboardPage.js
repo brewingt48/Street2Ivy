@@ -6,11 +6,7 @@ import { FormattedMessage, useIntl } from '../../util/reactIntl';
 import { isScrollingDisabled } from '../../ducks/ui.duck';
 import classNames from 'classnames';
 
-import {
-  Page,
-  LayoutSingleColumn,
-  PaginationLinks,
-} from '../../components';
+import { Page, LayoutSingleColumn, PaginationLinks } from '../../components';
 import TopbarContainer from '../../containers/TopbarContainer/TopbarContainer';
 import FooterContainer from '../../containers/FooterContainer/FooterContainer';
 
@@ -67,7 +63,7 @@ const UserManagementPanel = props => {
     onFetchUsers(params);
   };
 
-  const handleBlock = async (userId) => {
+  const handleBlock = async userId => {
     try {
       await onBlockUser(userId);
       onFetchUsers({}); // Refresh list
@@ -77,7 +73,7 @@ const UserManagementPanel = props => {
     setConfirmModal(null);
   };
 
-  const handleUnblock = async (userId) => {
+  const handleUnblock = async userId => {
     try {
       await onUnblockUser(userId);
       onFetchUsers({});
@@ -86,7 +82,7 @@ const UserManagementPanel = props => {
     }
   };
 
-  const handleDelete = async (userId) => {
+  const handleDelete = async userId => {
     try {
       await onDeleteUser(userId);
       onFetchUsers({});
@@ -96,15 +92,15 @@ const UserManagementPanel = props => {
     setConfirmModal(null);
   };
 
-  const getUserStatus = (user) => {
+  const getUserStatus = user => {
     if (user.attributes?.deleted) return 'deleted';
     if (user.attributes?.banned) return 'banned';
     return 'active';
   };
 
-  const getUserTypeLabel = (userType) => {
+  const getUserTypeLabel = userType => {
     const labels = {
-      'student': 'Student',
+      student: 'Student',
       'corporate-partner': 'Corporate',
       'educational-admin': 'Edu Admin',
       'system-admin': 'Sys Admin',
@@ -112,9 +108,14 @@ const UserManagementPanel = props => {
     return labels[userType] || userType;
   };
 
-  const getInitials = (name) => {
+  const getInitials = name => {
     if (!name) return '?';
-    return name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+    return name
+      .split(' ')
+      .map(n => n[0])
+      .join('')
+      .substring(0, 2)
+      .toUpperCase();
   };
 
   return (
@@ -172,11 +173,7 @@ const UserManagementPanel = props => {
           />
         </div>
 
-        <button
-          className={css.searchButton}
-          onClick={handleSearch}
-          disabled={fetchInProgress}
-        >
+        <button className={css.searchButton} onClick={handleSearch} disabled={fetchInProgress}>
           <FormattedMessage id="AdminDashboardPage.searchButton" />
         </button>
       </div>
@@ -191,11 +188,21 @@ const UserManagementPanel = props => {
           <table className={css.usersTable}>
             <thead>
               <tr>
-                <th><FormattedMessage id="AdminDashboardPage.tableUser" /></th>
-                <th><FormattedMessage id="AdminDashboardPage.tableType" /></th>
-                <th><FormattedMessage id="AdminDashboardPage.tableStatus" /></th>
-                <th><FormattedMessage id="AdminDashboardPage.tableJoined" /></th>
-                <th><FormattedMessage id="AdminDashboardPage.tableActions" /></th>
+                <th>
+                  <FormattedMessage id="AdminDashboardPage.tableUser" />
+                </th>
+                <th>
+                  <FormattedMessage id="AdminDashboardPage.tableType" />
+                </th>
+                <th>
+                  <FormattedMessage id="AdminDashboardPage.tableStatus" />
+                </th>
+                <th>
+                  <FormattedMessage id="AdminDashboardPage.tableJoined" />
+                </th>
+                <th>
+                  <FormattedMessage id="AdminDashboardPage.tableActions" />
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -214,14 +221,19 @@ const UserManagementPanel = props => {
                       <div className={css.userCell}>
                         <div className={css.userAvatar}>
                           {user.profileImage ? (
-                            <img src={user.profileImage.attributes?.variants?.['square-small']?.url} alt="" />
+                            <img
+                              src={user.profileImage.attributes?.variants?.['square-small']?.url}
+                              alt=""
+                            />
                           ) : (
                             getInitials(displayName)
                           )}
                         </div>
                         <div className={css.userInfo}>
                           <span className={css.userName}>{displayName}</span>
-                          <span className={css.userEmail}>{user.attributes?.email || publicData.email || ''}</span>
+                          <span className={css.userEmail}>
+                            {user.attributes?.email || publicData.email || ''}
+                          </span>
                         </div>
                       </div>
                     </td>
@@ -231,11 +243,13 @@ const UserManagementPanel = props => {
                       </span>
                     </td>
                     <td>
-                      <span className={classNames(css.statusBadge, {
-                        [css.statusActive]: status === 'active',
-                        [css.statusBanned]: status === 'banned',
-                        [css.statusDeleted]: status === 'deleted',
-                      })}>
+                      <span
+                        className={classNames(css.statusBadge, {
+                          [css.statusActive]: status === 'active',
+                          [css.statusBanned]: status === 'banned',
+                          [css.statusDeleted]: status === 'deleted',
+                        })}
+                      >
                         {status}
                       </span>
                     </td>
@@ -311,8 +325,7 @@ const UserManagementPanel = props => {
             <p className={css.modalMessage}>
               {confirmModal.type === 'block'
                 ? `Are you sure you want to block ${confirmModal.user.attributes?.profile?.displayName}? They will not be able to access the platform.`
-                : `Are you sure you want to delete ${confirmModal.user.attributes?.profile?.displayName}? This action cannot be undone.`
-              }
+                : `Are you sure you want to delete ${confirmModal.user.attributes?.profile?.displayName}? This action cannot be undone.`}
             </p>
             <div className={css.modalActions}>
               <button className={css.modalCancel} onClick={() => setConfirmModal(null)}>
@@ -320,9 +333,10 @@ const UserManagementPanel = props => {
               </button>
               <button
                 className={css.modalConfirm}
-                onClick={() => confirmModal.type === 'block'
-                  ? handleBlock(confirmModal.user.id)
-                  : handleDelete(confirmModal.user.id)
+                onClick={() =>
+                  confirmModal.type === 'block'
+                    ? handleBlock(confirmModal.user.id)
+                    : handleDelete(confirmModal.user.id)
                 }
                 disabled={blockInProgress || deleteInProgress}
               >
@@ -364,14 +378,14 @@ const MessagesPanel = props => {
     }
   }, [sendSuccess, onClearMessageState]);
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async e => {
     e.preventDefault();
     if (!formData.recipientId || !formData.subject || !formData.body) return;
 
     await onSendMessage(formData);
   };
 
-  const formatDate = (dateString) => {
+  const formatDate = dateString => {
     return new Date(dateString).toLocaleString();
   };
 
@@ -411,8 +425,7 @@ const MessagesPanel = props => {
                   {admin.attributes?.profile?.displayName || 'Unknown'}
                   {admin.attributes?.profile?.publicData?.institutionName
                     ? ` (${admin.attributes.profile.publicData.institutionName})`
-                    : ''
-                  }
+                    : ''}
                 </option>
               ))}
             </select>
@@ -446,7 +459,9 @@ const MessagesPanel = props => {
           <button
             type="submit"
             className={css.sendButton}
-            disabled={sendInProgress || !formData.recipientId || !formData.subject || !formData.body}
+            disabled={
+              sendInProgress || !formData.recipientId || !formData.subject || !formData.body
+            }
           >
             {sendInProgress ? 'Sending...' : 'Send Message'}
           </button>
@@ -471,9 +486,7 @@ const MessagesPanel = props => {
                   <span className={css.messageRecipient}>
                     To: {message.recipientName || message.recipientId}
                   </span>
-                  <span className={css.messageDate}>
-                    {formatDate(message.createdAt)}
-                  </span>
+                  <span className={css.messageDate}>{formatDate(message.createdAt)}</span>
                 </div>
                 <div className={css.messageSubject}>{message.subject}</div>
                 <div className={css.messageBody}>{message.body}</div>
@@ -592,29 +605,30 @@ const ReportsPanel = props => {
         <div className={css.reportSection}>
           <h4 className={css.reportSectionTitle}>Breakdown by User Type</h4>
           <div className={css.breakdownGrid}>
-            {breakdown && Object.entries(breakdown).map(([userType, stats]) => (
-              <div key={userType} className={css.breakdownCard}>
-                <h5 className={css.breakdownTitle}>{userType.replace('-', ' ')}</h5>
-                <div className={css.breakdownStats}>
-                  <div className={css.breakdownStat}>
-                    <span>Total</span>
-                    <span>{stats.total}</span>
-                  </div>
-                  <div className={css.breakdownStat}>
-                    <span>Active</span>
-                    <span>{stats.active}</span>
-                  </div>
-                  <div className={css.breakdownStat}>
-                    <span>Banned</span>
-                    <span>{stats.banned}</span>
-                  </div>
-                  <div className={css.breakdownStat}>
-                    <span>New This Month</span>
-                    <span>{stats.newThisMonth}</span>
+            {breakdown &&
+              Object.entries(breakdown).map(([userType, stats]) => (
+                <div key={userType} className={css.breakdownCard}>
+                  <h5 className={css.breakdownTitle}>{userType.replace('-', ' ')}</h5>
+                  <div className={css.breakdownStats}>
+                    <div className={css.breakdownStat}>
+                      <span>Total</span>
+                      <span>{stats.total}</span>
+                    </div>
+                    <div className={css.breakdownStat}>
+                      <span>Active</span>
+                      <span>{stats.active}</span>
+                    </div>
+                    <div className={css.breakdownStat}>
+                      <span>Banned</span>
+                      <span>{stats.banned}</span>
+                    </div>
+                    <div className={css.breakdownStat}>
+                      <span>New This Month</span>
+                      <span>{stats.newThisMonth}</span>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              ))}
           </div>
         </div>
       </>
@@ -703,17 +717,18 @@ const ReportsPanel = props => {
         <div className={css.reportSection}>
           <h4 className={css.reportSectionTitle}>Transaction States</h4>
           <div className={css.breakdownGrid}>
-            {byState && Object.entries(byState).map(([state, count]) => (
-              <div key={state} className={css.breakdownCard}>
-                <h5 className={css.breakdownTitle}>{state}</h5>
-                <div className={css.breakdownStats}>
-                  <div className={css.breakdownStat}>
-                    <span>Count</span>
-                    <span>{count}</span>
+            {byState &&
+              Object.entries(byState).map(([state, count]) => (
+                <div key={state} className={css.breakdownCard}>
+                  <h5 className={css.breakdownTitle}>{state}</h5>
+                  <div className={css.breakdownStats}>
+                    <div className={css.breakdownStat}>
+                      <span>Count</span>
+                      <span>{count}</span>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              ))}
           </div>
         </div>
 
@@ -753,7 +768,7 @@ const ReportsPanel = props => {
     }
   };
 
-  const handleExport = (format) => {
+  const handleExport = format => {
     const reportType = currentReportType || 'overview';
     window.open(`/api/admin/export/${reportType}?format=${format}`, '_blank');
   };
@@ -861,7 +876,7 @@ const DepositsPanel = props => {
     }
   };
 
-  const formatDate = (dateString) => {
+  const formatDate = dateString => {
     if (!dateString) return 'N/A';
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
@@ -901,12 +916,24 @@ const DepositsPanel = props => {
         <table className={css.depositsTable}>
           <thead>
             <tr>
-              <th><FormattedMessage id="AdminDashboardPage.depositProject" /></th>
-              <th><FormattedMessage id="AdminDashboardPage.depositCorporate" /></th>
-              <th><FormattedMessage id="AdminDashboardPage.depositStudent" /></th>
-              <th><FormattedMessage id="AdminDashboardPage.depositDate" /></th>
-              <th><FormattedMessage id="AdminDashboardPage.depositStatus" /></th>
-              <th><FormattedMessage id="AdminDashboardPage.tableActions" /></th>
+              <th>
+                <FormattedMessage id="AdminDashboardPage.depositProject" />
+              </th>
+              <th>
+                <FormattedMessage id="AdminDashboardPage.depositCorporate" />
+              </th>
+              <th>
+                <FormattedMessage id="AdminDashboardPage.depositStudent" />
+              </th>
+              <th>
+                <FormattedMessage id="AdminDashboardPage.depositDate" />
+              </th>
+              <th>
+                <FormattedMessage id="AdminDashboardPage.depositStatus" />
+              </th>
+              <th>
+                <FormattedMessage id="AdminDashboardPage.tableActions" />
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -942,18 +969,18 @@ const DepositsPanel = props => {
                         <span className={css.userName}>
                           {deposit.customer?.displayName || 'Unknown'}
                         </span>
-                        <span className={css.userEmail}>
-                          {deposit.customer?.email || ''}
-                        </span>
+                        <span className={css.userEmail}>{deposit.customer?.email || ''}</span>
                       </div>
                     </div>
                   </td>
                   <td>{formatDate(deposit.createdAt)}</td>
                   <td>
-                    <span className={classNames(css.depositStatusBadge, {
-                      [css.depositPending]: !isConfirmed,
-                      [css.depositConfirmed]: isConfirmed,
-                    })}>
+                    <span
+                      className={classNames(css.depositStatusBadge, {
+                        [css.depositPending]: !isConfirmed,
+                        [css.depositConfirmed]: isConfirmed,
+                      })}
+                    >
                       {isConfirmed ? 'Confirmed' : 'Pending'}
                     </span>
                   </td>
@@ -1142,7 +1169,7 @@ const CreateAdminPanel = props => {
     }
   }, [createSuccess, onClearCreateAdminState, onFetchUsers]);
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async e => {
     e.preventDefault();
     const { email, password, firstName, lastName, userType, institutionName, adminRole } = formData;
 
@@ -1326,11 +1353,7 @@ const CreateAdminPanel = props => {
         )}
 
         <div className={css.formActions}>
-          <button
-            type="submit"
-            className={css.createAdminButton}
-            disabled={createInProgress}
-          >
+          <button type="submit" className={css.createAdminButton} disabled={createInProgress}>
             {createInProgress ? (
               <FormattedMessage id="AdminDashboardPage.creating" />
             ) : (
@@ -1405,11 +1428,14 @@ const AdminDashboardPageComponent = props => {
 
   const [selectedEducator, setSelectedEducator] = useState(null);
 
-  const handleTabChange = useCallback((tab) => {
-    history.push(`/admin/${tab}`);
-  }, [history]);
+  const handleTabChange = useCallback(
+    tab => {
+      history.push(`/admin/${tab}`);
+    },
+    [history]
+  );
 
-  const handleMessageEducator = (user) => {
+  const handleMessageEducator = user => {
     setSelectedEducator(user);
     handleTabChange('messages');
   };
@@ -1420,13 +1446,14 @@ const AdminDashboardPageComponent = props => {
   if (currentUser && !isSystemAdmin) {
     return (
       <Page title={title} scrollingDisabled={scrollingDisabled}>
-        <LayoutSingleColumn
-          topbar={<TopbarContainer />}
-          footer={<FooterContainer />}
-        >
+        <LayoutSingleColumn topbar={<TopbarContainer />} footer={<FooterContainer />}>
           <div className={css.noAccess}>
-            <h1><FormattedMessage id="AdminDashboardPage.noAccessTitle" /></h1>
-            <p><FormattedMessage id="AdminDashboardPage.noAccessMessage" /></p>
+            <h1>
+              <FormattedMessage id="AdminDashboardPage.noAccessTitle" />
+            </h1>
+            <p>
+              <FormattedMessage id="AdminDashboardPage.noAccessMessage" />
+            </p>
           </div>
         </LayoutSingleColumn>
       </Page>
@@ -1435,10 +1462,7 @@ const AdminDashboardPageComponent = props => {
 
   return (
     <Page title={title} scrollingDisabled={scrollingDisabled}>
-      <LayoutSingleColumn
-        topbar={<TopbarContainer />}
-        footer={<FooterContainer />}
-      >
+      <LayoutSingleColumn topbar={<TopbarContainer />} footer={<FooterContainer />}>
         <div className={css.pageContent}>
           <h1 className={css.pageHeading}>
             <FormattedMessage id="AdminDashboardPage.heading" />
@@ -1613,7 +1637,10 @@ const mapDispatchToProps = dispatch => ({
 });
 
 const AdminDashboardPage = compose(
-  connect(mapStateToProps, mapDispatchToProps)
+  connect(
+    mapStateToProps,
+    mapDispatchToProps
+  )
 )(AdminDashboardPageComponent);
 
 export default AdminDashboardPage;

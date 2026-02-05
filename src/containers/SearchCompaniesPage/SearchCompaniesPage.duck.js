@@ -58,10 +58,7 @@ export const loadData = (params, search) => dispatch => {
     searchParams[key] = value;
   }
 
-  return Promise.all([
-    dispatch(fetchCurrentUser()),
-    dispatch(searchCompaniesThunk(searchParams)),
-  ]);
+  return Promise.all([dispatch(fetchCurrentUser()), dispatch(searchCompaniesThunk(searchParams))]);
 };
 
 export default searchCompaniesPageSlice.reducer;

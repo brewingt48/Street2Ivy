@@ -72,7 +72,6 @@ async function getReport(req, res) {
       generatedAt: new Date().toISOString(),
       ...report,
     });
-
   } catch (error) {
     console.error('Admin reports error:', error);
     handleError(res, error);
@@ -131,7 +130,7 @@ async function generateOverviewReport(integrationSdk) {
   // Calculate growth (simplified - comparing this week to estimate)
   const weeklyGrowthRate =
     transactionStats.thisMonth > 0
-      ? ((transactionStats.thisWeek / (transactionStats.thisMonth / 4)) - 1) * 100
+      ? (transactionStats.thisWeek / (transactionStats.thisMonth / 4) - 1) * 100
       : 0;
 
   return {
@@ -142,7 +141,10 @@ async function generateOverviewReport(integrationSdk) {
     },
     platformHealth: {
       activeUsersEstimate: Math.round(userCounts.total * 0.3), // Rough estimate
-      engagementRate: transactionStats.total > 0 ? Math.round((transactionStats.total / userCounts.students) * 100) / 100 : 0,
+      engagementRate:
+        transactionStats.total > 0
+          ? Math.round((transactionStats.total / userCounts.students) * 100) / 100
+          : 0,
     },
   };
 }
@@ -312,7 +314,10 @@ async function generateTransactionsReport(integrationSdk) {
 
     // Count by month
     const createdAt = new Date(tx.attributes.createdAt);
-    const monthKey = `${createdAt.getFullYear()}-${String(createdAt.getMonth() + 1).padStart(2, '0')}`;
+    const monthKey = `${createdAt.getFullYear()}-${String(createdAt.getMonth() + 1).padStart(
+      2,
+      '0'
+    )}`;
     byMonth[monthKey] = (byMonth[monthKey] || 0) + 1;
 
     // Calculate timing metrics
@@ -333,9 +338,7 @@ async function generateTransactionsReport(integrationSdk) {
 
   // Calculate averages
   const avgDecisionTime =
-    decisionTimes.length > 0
-      ? decisionTimes.reduce((a, b) => a + b, 0) / decisionTimes.length
-      : 0;
+    decisionTimes.length > 0 ? decisionTimes.reduce((a, b) => a + b, 0) / decisionTimes.length : 0;
 
   const avgCompletionTime =
     completionTimes.length > 0

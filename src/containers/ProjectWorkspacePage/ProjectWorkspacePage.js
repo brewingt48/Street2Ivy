@@ -5,11 +5,7 @@ import { useParams } from 'react-router-dom';
 import { FormattedMessage, useIntl } from '../../util/reactIntl';
 import { isScrollingDisabled } from '../../ducks/ui.duck';
 
-import {
-  Page,
-  LayoutSingleColumn,
-  NamedLink,
-} from '../../components';
+import { Page, LayoutSingleColumn, NamedLink } from '../../components';
 import TopbarContainer from '../../containers/TopbarContainer/TopbarContainer';
 import FooterContainer from '../../containers/FooterContainer/FooterContainer';
 
@@ -36,12 +32,14 @@ const AccessDeniedView = ({ reason, depositConfirmed, transactionState }) => {
     case 'not_accepted':
       icon = '';
       title = 'Awaiting Acceptance';
-      message = 'You have not been accepted for this project yet. The corporate partner is reviewing your application. You will gain access to the project workspace once you are accepted.';
+      message =
+        'You have not been accepted for this project yet. The corporate partner is reviewing your application. You will gain access to the project workspace once you are accepted.';
       break;
     case 'deposit_pending':
       icon = '';
       title = 'Deposit Pending';
-      message = "Great news - you've been accepted for this project! However, access to the project workspace is pending until the corporate partner's deposit is confirmed by Street2Ivy. You will receive a notification once you have full access.";
+      message =
+        "Great news - you've been accepted for this project! However, access to the project workspace is pending until the corporate partner's deposit is confirmed by Street2Ivy. You will receive a notification once you have full access.";
       break;
     case 'unauthorized':
     default:
@@ -99,8 +97,12 @@ const NdaSignatureSection = ({
             {signatureRequest?.signers?.map(signer => (
               <div key={signer.role} className={css.signerItem}>
                 <span className={css.signerName}>{signer.name}</span>
-                <span className={css.signerRole}>({signer.role === 'provider' ? 'Corporate Partner' : 'Student'})</span>
-                <span className={css.signedBadge}>Signed {new Date(signer.signedAt).toLocaleDateString()}</span>
+                <span className={css.signerRole}>
+                  ({signer.role === 'provider' ? 'Corporate Partner' : 'Student'})
+                </span>
+                <span className={css.signedBadge}>
+                  Signed {new Date(signer.signedAt).toLocaleDateString()}
+                </span>
               </div>
             ))}
           </div>
@@ -125,7 +127,8 @@ const NdaSignatureSection = ({
       <div className={css.ndaSection}>
         <h3 className={css.ndaTitle}>NDA Required</h3>
         <p className={css.ndaText}>
-          This project requires an NDA. Click below to initiate the signature process for both you and the student.
+          This project requires an NDA. Click below to initiate the signature process for both you
+          and the student.
         </p>
         <button
           className={css.ndaAcceptButton}
@@ -150,7 +153,9 @@ const NdaSignatureSection = ({
         {signatureRequest?.signers?.map(signer => (
           <div
             key={signer.role}
-            className={`${css.signerStatusItem} ${signer.status === 'signed' ? css.signed : css.pending}`}
+            className={`${css.signerStatusItem} ${
+              signer.status === 'signed' ? css.signed : css.pending
+            }`}
           >
             <span className={css.statusIcon}>{signer.status === 'signed' ? '✓' : '○'}</span>
             <span className={css.signerLabel}>
@@ -184,9 +189,7 @@ const NdaSignatureSection = ({
 
           {/* Signature Input */}
           <div className={css.signatureInput}>
-            <label className={css.signatureLabel}>
-              Type your full name to sign:
-            </label>
+            <label className={css.signatureLabel}>Type your full name to sign:</label>
             <input
               type="text"
               className={css.signatureField}
@@ -205,8 +208,8 @@ const NdaSignatureSection = ({
                 onChange={e => setAgreedToTerms(e.target.checked)}
               />
               <span>
-                I have read and agree to the terms of this Non-Disclosure Agreement.
-                I understand this is a legally binding document.
+                I have read and agree to the terms of this Non-Disclosure Agreement. I understand
+                this is a legally binding document.
               </span>
             </label>
           </div>
@@ -253,11 +256,7 @@ const NdaSection = ({ ndaRequired, ndaAccepted, onAcceptNda, acceptInProgress })
       <p className={css.ndaText}>
         <FormattedMessage id="ProjectWorkspacePage.ndaDescription" />
       </p>
-      <button
-        className={css.ndaAcceptButton}
-        onClick={onAcceptNda}
-        disabled={acceptInProgress}
-      >
+      <button className={css.ndaAcceptButton} onClick={onAcceptNda} disabled={acceptInProgress}>
         {acceptInProgress ? 'Accepting...' : 'I Accept the NDA'}
       </button>
     </div>
@@ -266,12 +265,7 @@ const NdaSection = ({ ndaRequired, ndaAccepted, onAcceptNda, acceptInProgress })
 
 // ================ Messages Section ================ //
 
-const MessagesSection = ({
-  messages,
-  currentUserId,
-  onSendMessage,
-  sendInProgress,
-}) => {
+const MessagesSection = ({ messages, currentUserId, onSendMessage, sendInProgress }) => {
   const [newMessage, setNewMessage] = useState('');
   const messagesEndRef = useRef(null);
 
@@ -432,10 +426,7 @@ const ProjectWorkspacePageComponent = props => {
   if (fetchInProgress) {
     return (
       <Page title={title} scrollingDisabled={scrollingDisabled}>
-        <LayoutSingleColumn
-          topbar={<TopbarContainer />}
-          footer={<FooterContainer />}
-        >
+        <LayoutSingleColumn topbar={<TopbarContainer />} footer={<FooterContainer />}>
           <div className={css.loadingState}>
             <FormattedMessage id="ProjectWorkspacePage.loading" />
           </div>
@@ -448,10 +439,7 @@ const ProjectWorkspacePageComponent = props => {
   if (!accessGranted && accessDeniedReason) {
     return (
       <Page title={title} scrollingDisabled={scrollingDisabled}>
-        <LayoutSingleColumn
-          topbar={<TopbarContainer />}
-          footer={<FooterContainer />}
-        >
+        <LayoutSingleColumn topbar={<TopbarContainer />} footer={<FooterContainer />}>
           <AccessDeniedView
             reason={accessDeniedReason}
             depositConfirmed={workspace?.transaction?.metadata?.depositConfirmed}
@@ -466,10 +454,7 @@ const ProjectWorkspacePageComponent = props => {
   if (fetchError) {
     return (
       <Page title={title} scrollingDisabled={scrollingDisabled}>
-        <LayoutSingleColumn
-          topbar={<TopbarContainer />}
-          footer={<FooterContainer />}
-        >
+        <LayoutSingleColumn topbar={<TopbarContainer />} footer={<FooterContainer />}>
           <div className={css.accessDenied}>
             <h2>Unable to Load Workspace</h2>
             <p>There was an error loading the project workspace. Please try again later.</p>
@@ -487,14 +472,7 @@ const ProjectWorkspacePageComponent = props => {
     return null;
   }
 
-  const {
-    listing,
-    provider,
-    customer,
-    messages = [],
-    ndaRequired,
-    ndaAccepted,
-  } = workspace;
+  const { listing, provider, customer, messages = [], ndaRequired, ndaAccepted } = workspace;
 
   const confidential = listing?.confidentialDetails || {};
   const isCustomer = currentUser?.id?.uuid === customer?.id;
@@ -502,10 +480,7 @@ const ProjectWorkspacePageComponent = props => {
 
   return (
     <Page title={title} scrollingDisabled={scrollingDisabled}>
-      <LayoutSingleColumn
-        topbar={<TopbarContainer />}
-        footer={<FooterContainer />}
-      >
+      <LayoutSingleColumn topbar={<TopbarContainer />} footer={<FooterContainer />}>
         <div className={css.pageContent}>
           <div className={css.pageHeader}>
             <h1 className={css.pageTitle}>{listing?.title || 'Project Workspace'}</h1>
@@ -524,9 +499,7 @@ const ProjectWorkspacePageComponent = props => {
                 <h2 className={css.sectionTitle}>
                   <FormattedMessage id="ProjectWorkspacePage.projectDetails" />
                 </h2>
-                <span className={css.confidentialBadge}>
-                  Confidential
-                </span>
+                <span className={css.confidentialBadge}>Confidential</span>
               </div>
 
               {/* NDA E-Signature Section (for both provider and customer) */}
@@ -553,7 +526,9 @@ const ProjectWorkspacePageComponent = props => {
                 </div>
                 <div className={css.infoCard}>
                   <p className={css.infoLabel}>Compensation</p>
-                  <p className={css.infoValue}>{listing?.publicData?.compensationAmount || 'TBD'}</p>
+                  <p className={css.infoValue}>
+                    {listing?.publicData?.compensationAmount || 'TBD'}
+                  </p>
                 </div>
                 <div className={css.infoCard}>
                   <p className={css.infoLabel}>Deadline</p>
@@ -564,9 +539,7 @@ const ProjectWorkspacePageComponent = props => {
               {/* Confidential Details - Show only if NDA is signed or not required */}
               {(!ndaRequired || ndaSignatureStatus?.signatureRequest?.status === 'completed') && (
                 <div className={css.confidentialSection}>
-                  <h3 className={css.confidentialTitle}>
-                    Confidential Project Information
-                  </h3>
+                  <h3 className={css.confidentialTitle}>Confidential Project Information</h3>
                   <div className={css.confidentialContent}>
                     {/* Project Brief */}
                     {confidential.projectBrief && (
@@ -701,12 +674,16 @@ const mapDispatchToProps = dispatch => ({
   onMarkMessagesRead: (transactionId, messageIds) =>
     dispatch(markMessagesRead(transactionId, messageIds)),
   onFetchNdaStatus: transactionId => dispatch(fetchNdaStatus(transactionId)),
-  onSignNda: (transactionId, signatureData) => dispatch(signNdaDocument(transactionId, signatureData)),
+  onSignNda: (transactionId, signatureData) =>
+    dispatch(signNdaDocument(transactionId, signatureData)),
   onRequestSignatures: transactionId => dispatch(requestNdaSignatures(transactionId)),
 });
 
 const ProjectWorkspacePage = compose(
-  connect(mapStateToProps, mapDispatchToProps)
+  connect(
+    mapStateToProps,
+    mapDispatchToProps
+  )
 )(ProjectWorkspacePageComponent);
 
 export default ProjectWorkspacePage;

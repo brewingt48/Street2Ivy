@@ -1185,7 +1185,10 @@ const mergeUserConfig = (hostedConfig, defaultConfigs) => {
   const userFields = union(hostedUserFields, defaultUserFields, 'key');
 
   // Include all user types (including admin types) for field validation
-  const allUserTypesForValidation = defaultAllUserTypes || [...userTypes, ...(defaultAdminUserTypes || [])];
+  const allUserTypesForValidation = defaultAllUserTypes || [
+    ...userTypes,
+    ...(defaultAdminUserTypes || []),
+  ];
   const userTypesInUse = allUserTypesForValidation.map(ut => `${ut.userType}`);
   return {
     userTypes: validUserTypes(userTypes),

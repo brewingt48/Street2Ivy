@@ -76,13 +76,9 @@ async function getProjectWorkspace(req, res) {
     const lastTransition = transaction.attributes.lastTransition;
 
     // Check transaction state - must be accepted or later
-    const acceptedStates = [
-      'transition/accept',
-      'transition/complete',
-      'transition/review',
-    ];
-    const isAccepted = acceptedStates.some(state =>
-      lastTransition === state || lastTransition?.includes('accept')
+    const acceptedStates = ['transition/accept', 'transition/complete', 'transition/review'];
+    const isAccepted = acceptedStates.some(
+      state => lastTransition === state || lastTransition?.includes('accept')
     );
 
     // For students, also check deposit confirmation
@@ -150,8 +146,10 @@ async function getProjectWorkspace(req, res) {
         publicData: listingPublicData,
         // Confidential details - only accessible in workspace
         confidentialDetails: {
-          projectBrief: listingPrivateData.projectBrief || listingPublicData.confidentialBrief || null,
-          deliverables: listingPrivateData.deliverables || listingPublicData.confidentialDeliverables || null,
+          projectBrief:
+            listingPrivateData.projectBrief || listingPublicData.confidentialBrief || null,
+          deliverables:
+            listingPrivateData.deliverables || listingPublicData.confidentialDeliverables || null,
           contactName: listingPrivateData.contactName || null,
           contactEmail: listingPrivateData.contactEmail || null,
           contactPhone: listingPrivateData.contactPhone || null,
@@ -256,7 +254,9 @@ async function sendProjectMessage(req, res) {
 
     // Create new message
     const newMessage = {
-      id: `msg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      id: `msg_${Date.now()}_${Math.random()
+        .toString(36)
+        .substr(2, 9)}`,
       senderId: currentUser.id.uuid,
       senderName: currentUser.attributes.profile.displayName,
       senderType: isProvider ? 'provider' : 'customer',
@@ -406,7 +406,7 @@ function getAccessDeniedMessage(reason) {
     case 'not_accepted':
       return 'You have not been accepted for this project yet. Please wait for the corporate partner to review your application.';
     case 'deposit_pending':
-      return 'The corporate partner\'s deposit is pending confirmation. You will gain access to the project workspace once the deposit is confirmed by Street2Ivy.';
+      return "The corporate partner's deposit is pending confirmation. You will gain access to the project workspace once the deposit is confirmed by Street2Ivy.";
     case 'unauthorized':
       return 'You are not authorized to access this project workspace.';
     default:
