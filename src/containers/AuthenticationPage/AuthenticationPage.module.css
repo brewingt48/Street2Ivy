@@ -318,3 +318,24 @@
   letter-spacing: 0.5px;
   text-transform: uppercase;
 }
+
+.adminPortalLink {
+  margin-top: 24px;
+  text-align: center;
+  border-top: 1px solid var(--colorGrey100);
+  padding-top: 16px;
+}
+
+.adminPortalLinkText {
+  font-size: 13px;
+  color: var(--colorGrey600);
+
+  & a {
+    color: var(--colorGrey700);
+    text-decoration: underline;
+
+    &:hover {
+      color: var(--marketplaceColor);
+    }
+  }
+}

@@ -25,6 +25,8 @@
   "AuthenticationPage.adminSignupLinkText": "Admin Sign up",
   "AuthenticationPage.adminLoginLinkText": "Admin Log in",
   "AuthenticationPage.adminPortalTitle": "Administrator Portal",
+  "AuthenticationPage.adminPortalLinkText": "Educational or System Administrator? {adminLink}",
+  "AuthenticationPage.adminPortalLinkLabel": "Sign in here",
   "AuthenticationPage.signupWithFacebook": "Continue with Facebook",
   "AuthenticationPage.signupWithGoogle": "Continue with Google",
   "AuthenticationPage.termsAndConditionsAcceptRequired": "You need to accept the Terms of Service",

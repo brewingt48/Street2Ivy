@@ -28,6 +28,7 @@ import {
   Page,
   Heading,
   IconSpinner,
+  NamedLink,
   NamedRedirect,
   LinkTabNavHorizontal,
   SocialLoginButton,
@@ -309,6 +310,24 @@ export const AuthenticationForms = props => {
           {...fromMaybe}
           {...userTypeMaybe}
         />
+      )}
+
+      {/* Show admin portal link on regular login/signup page */}
+      {!isAdminPortal && (
+        <div className={css.adminPortalLink}>
+          <span className={css.adminPortalLinkText}>
+            <FormattedMessage
+              id="AuthenticationPage.adminPortalLinkText"
+              values={{
+                adminLink: (
+                  <NamedLink name="AdminPortalLoginPage">
+                    <FormattedMessage id="AuthenticationPage.adminPortalLinkLabel" />
+                  </NamedLink>
+                ),
+              }}
+            />
+          </span>
+        </div>
       )}
     </div>
   );

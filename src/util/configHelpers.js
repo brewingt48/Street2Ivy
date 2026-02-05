@@ -1166,7 +1166,6 @@ const mergeListingConfig = (hostedConfig, defaultConfigs, categoriesInUse) => {
 };
 
 const mergeUserConfig = (hostedConfig, defaultConfigs) => {
-  const hostedUserTypes = restructureUserTypes(hostedConfig?.userTypes?.userTypes);
   const hostedUserFields = restructureUserFields(hostedConfig?.userFields?.userFields);
 
   const {
@@ -1176,14 +1175,15 @@ const mergeUserConfig = (hostedConfig, defaultConfigs) => {
     allUserTypes: defaultAllUserTypes,
   } = defaultConfigs.user;
 
-  // Street2Ivy: Always merge default user types and fields so that local
-  // configUser.js definitions (student/corporate-partner types and their
-  // fields) are included alongside any hosted asset configuration.
-  const userTypes = union(hostedUserTypes, defaultUserTypes, 'userType');
+  // Street2Ivy: Use ONLY local user types from configUser.js
+  // This ensures the signup page shows "Student" and "Corporate Partner"
+  // instead of the default "Provider" and "Customer" from hosted config.
+  // The hosted config user types (provider/customer) are completely ignored.
+  const userTypes = defaultUserTypes;
+
+  // Merge user fields - local fields take precedence
   const userFields = union(hostedUserFields, defaultUserFields, 'key');
 
-  // To include user type validation (if you have user types in your default configuration),
-  // pass userTypes to the validUserFields function as well:
   // Include all user types (including admin types) for field validation
   const allUserTypesForValidation = defaultAllUserTypes || [...userTypes, ...(defaultAdminUserTypes || [])];
   const userTypesInUse = allUserTypesForValidation.map(ut => `${ut.userType}`);
