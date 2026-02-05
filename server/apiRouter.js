@@ -46,6 +46,10 @@ const adminExportReport = require('./api/admin/export-report');
 const adminDeposits = require('./api/admin/deposits');
 const adminInstitutions = require('./api/admin/institutions');
 const adminContent = require('./api/admin/content');
+const adminUpload = require('./api/admin/upload');
+
+// File upload middleware
+const fileUpload = require('express-fileupload');
 
 // Project Workspace (secure portal for accepted students)
 const projectWorkspace = require('./api/project-workspace');
@@ -73,6 +77,16 @@ router.use(responseSanitizer);
 
 // Parse JSON bodies (for custom API endpoints like search-users)
 router.use(bodyParser.json({ limit: '1mb' })); // SECURITY: Limit body size
+
+// File upload middleware for admin uploads
+router.use(
+  fileUpload({
+    limits: { fileSize: 50 * 1024 * 1024 }, // 50MB max file size
+    abortOnLimit: true,
+    useTempFiles: true,
+    tempFileDir: '/tmp/',
+  })
+);
 
 // Parse Transit body first to a string
 router.use(
@@ -210,6 +224,13 @@ router.post('/admin/content/reset', adminContent.resetContent);
 
 // Public content endpoint (for frontend to fetch landing page content)
 router.get('/content', adminContent.getPublicContent);
+
+// Street2Ivy: File upload endpoints for admin
+router.post('/admin/upload/logo', adminUpload.uploadLogo);
+router.post('/admin/upload/favicon', adminUpload.uploadFavicon);
+router.post('/admin/upload/hero-image', adminUpload.uploadHeroImage);
+router.post('/admin/upload/hero-video', adminUpload.uploadHeroVideo);
+router.delete('/admin/upload/:filename', adminUpload.deleteFile);
 
 // Street2Ivy: Secure Project Workspace (for accepted students with confirmed deposits)
 router.get('/project-workspace/:transactionId', projectWorkspace.get);

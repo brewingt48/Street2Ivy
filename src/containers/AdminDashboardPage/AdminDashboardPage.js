@@ -1746,6 +1746,8 @@ const ContentManagementPanel = props => {
   const [editingItem, setEditingItem] = useState(null);
   const [formData, setFormData] = useState({});
   const [successMessage, setSuccessMessage] = useState('');
+  const [uploadInProgress, setUploadInProgress] = useState(false);
+  const [uploadError, setUploadError] = useState(null);
 
   useEffect(() => {
     if (!content) {
@@ -1776,6 +1778,67 @@ const ContentManagementPanel = props => {
 
   const handleInputChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  // File upload handler
+  const handleFileUpload = async (file, uploadType) => {
+    if (!file) return;
+
+    setUploadInProgress(true);
+    setUploadError(null);
+
+    try {
+      const formDataUpload = new FormData();
+      formDataUpload.append('file', file);
+
+      // Determine the upload endpoint based on type
+      const endpoints = {
+        logo: '/api/admin/upload/logo',
+        favicon: '/api/admin/upload/favicon',
+        heroImage: '/api/admin/upload/hero-image',
+        heroVideo: '/api/admin/upload/hero-video',
+      };
+
+      const endpoint = endpoints[uploadType];
+      if (!endpoint) {
+        throw new Error('Invalid upload type');
+      }
+
+      // Use the API base URL for dev server
+      const baseUrl = typeof window !== 'undefined' && process.env.NODE_ENV === 'development'
+        ? `http://localhost:${process.env.REACT_APP_DEV_API_SERVER_PORT || 3500}`
+        : '';
+
+      const response = await fetch(`${baseUrl}${endpoint}`, {
+        method: 'POST',
+        credentials: 'include',
+        body: formDataUpload,
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Upload failed');
+      }
+
+      // Update the form data with the uploaded file URL
+      const fieldMap = {
+        logo: 'logoUrl',
+        favicon: 'faviconUrl',
+        heroImage: 'backgroundImage',
+        heroVideo: 'backgroundVideo',
+      };
+
+      const field = fieldMap[uploadType];
+      handleInputChange(field, result.url);
+      setSuccessMessage(`${uploadType.charAt(0).toUpperCase() + uploadType.slice(1)} uploaded successfully!`);
+      setTimeout(() => setSuccessMessage(''), 3000);
+    } catch (error) {
+      console.error('Upload failed:', error);
+      setUploadError(error.message || 'Failed to upload file');
+    } finally {
+      setUploadInProgress(false);
+    }
   };
 
   const handleSaveSection = async () => {
@@ -1843,21 +1906,50 @@ const ContentManagementPanel = props => {
               Upload your company logo and set the site tagline. These appear across the entire site.
             </p>
 
+            {uploadError && (
+              <div className={css.uploadError}>
+                {uploadError}
+              </div>
+            )}
+
             <div className={css.formGroup}>
-              <label className={css.formLabel}>Logo URL</label>
-              <input
-                type="url"
-                className={css.formInput}
-                placeholder="https://example.com/logo.png"
-                defaultValue={sectionData?.logoUrl || ''}
-                onChange={e => handleInputChange('logoUrl', e.target.value)}
-              />
-              <span className={css.formHint}>
-                Enter the URL of your logo image (PNG, JPG, SVG recommended). For best results, use a transparent PNG.
-              </span>
-              {sectionData?.logoUrl && (
+              <label className={css.formLabel}>Logo</label>
+              <div className={css.uploadSection}>
+                <div className={css.fileUploadWrapper}>
+                  <input
+                    type="file"
+                    id="logo-upload"
+                    className={css.fileInput}
+                    accept="image/png,image/jpeg,image/jpg,image/gif,image/svg+xml,image/webp"
+                    onChange={e => {
+                      const file = e.target.files?.[0];
+                      if (file) handleFileUpload(file, 'logo');
+                    }}
+                    disabled={uploadInProgress}
+                  />
+                  <label htmlFor="logo-upload" className={css.fileUploadButton}>
+                    {uploadInProgress ? 'Uploading...' : '📁 Choose Logo File'}
+                  </label>
+                  <span className={css.uploadHint}>PNG, JPG, SVG, GIF, WebP (max 5MB)</span>
+                </div>
+                <div className={css.orDivider}>
+                  <span>OR</span>
+                </div>
+                <input
+                  type="url"
+                  className={css.formInput}
+                  placeholder="Enter logo URL"
+                  defaultValue={sectionData?.logoUrl || ''}
+                  onChange={e => handleInputChange('logoUrl', e.target.value)}
+                />
+              </div>
+              {(formData.logoUrl || sectionData?.logoUrl) && (
                 <div className={css.imagePreview}>
-                  <img src={sectionData.logoUrl} alt="Logo preview" className={css.previewImage} />
+                  <img
+                    src={formData.logoUrl || sectionData.logoUrl}
+                    alt="Logo preview"
+                    className={css.previewImage}
+                  />
                 </div>
               )}
             </div>
@@ -1877,23 +1969,42 @@ const ContentManagementPanel = props => {
             </div>
 
             <div className={css.formGroup}>
-              <label className={css.formLabel}>Favicon URL (optional)</label>
-              <input
-                type="url"
-                className={css.formInput}
-                placeholder="https://example.com/favicon.ico"
-                defaultValue={sectionData?.faviconUrl || ''}
-                onChange={e => handleInputChange('faviconUrl', e.target.value)}
-              />
-              <span className={css.formHint}>
-                The small icon that appears in browser tabs. Use a square image (ICO, PNG, 32x32 or 64x64 pixels).
-              </span>
+              <label className={css.formLabel}>Favicon (optional)</label>
+              <div className={css.uploadSection}>
+                <div className={css.fileUploadWrapper}>
+                  <input
+                    type="file"
+                    id="favicon-upload"
+                    className={css.fileInput}
+                    accept="image/x-icon,image/vnd.microsoft.icon,image/png"
+                    onChange={e => {
+                      const file = e.target.files?.[0];
+                      if (file) handleFileUpload(file, 'favicon');
+                    }}
+                    disabled={uploadInProgress}
+                  />
+                  <label htmlFor="favicon-upload" className={css.fileUploadButton}>
+                    {uploadInProgress ? 'Uploading...' : '📁 Choose Favicon File'}
+                  </label>
+                  <span className={css.uploadHint}>ICO, PNG (max 1MB, 32x32 or 64x64)</span>
+                </div>
+                <div className={css.orDivider}>
+                  <span>OR</span>
+                </div>
+                <input
+                  type="url"
+                  className={css.formInput}
+                  placeholder="Enter favicon URL"
+                  defaultValue={sectionData?.faviconUrl || ''}
+                  onChange={e => handleInputChange('faviconUrl', e.target.value)}
+                />
+              </div>
             </div>
 
             <button
               className={css.saveButton}
               onClick={handleSaveSection}
-              disabled={updateInProgress}
+              disabled={updateInProgress || uploadInProgress}
             >
               {updateInProgress ? 'Saving...' : 'Save Branding'}
             </button>
@@ -1956,42 +2067,87 @@ const ContentManagementPanel = props => {
             </div>
 
             <div className={css.formGroup}>
-              <label className={css.formLabel}>Background Image URL</label>
-              <input
-                type="url"
-                className={css.formInput}
-                placeholder="https://example.com/hero-background.jpg"
-                defaultValue={sectionData.backgroundImage || ''}
-                onChange={e => handleInputChange('backgroundImage', e.target.value)}
-              />
-              <span className={css.formHint}>
-                Enter the URL of your hero background image. Recommended: 1920x1080 or larger.
-              </span>
-              {sectionData.backgroundImage && (
+              <label className={css.formLabel}>Background Image</label>
+              <div className={css.uploadSection}>
+                <div className={css.fileUploadWrapper}>
+                  <input
+                    type="file"
+                    id="hero-image-upload"
+                    className={css.fileInput}
+                    accept="image/png,image/jpeg,image/jpg,image/gif,image/webp"
+                    onChange={e => {
+                      const file = e.target.files?.[0];
+                      if (file) handleFileUpload(file, 'heroImage');
+                    }}
+                    disabled={uploadInProgress}
+                  />
+                  <label htmlFor="hero-image-upload" className={css.fileUploadButton}>
+                    {uploadInProgress ? 'Uploading...' : '📁 Choose Background Image'}
+                  </label>
+                  <span className={css.uploadHint}>PNG, JPG, GIF, WebP (max 5MB, recommended 1920x1080)</span>
+                </div>
+                <div className={css.orDivider}>
+                  <span>OR</span>
+                </div>
+                <input
+                  type="url"
+                  className={css.formInput}
+                  placeholder="Enter image URL"
+                  defaultValue={sectionData.backgroundImage || ''}
+                  onChange={e => handleInputChange('backgroundImage', e.target.value)}
+                />
+              </div>
+              {(formData.backgroundImage || sectionData.backgroundImage) && (
                 <div className={css.imagePreview}>
-                  <img src={sectionData.backgroundImage} alt="Background preview" className={css.previewImage} />
+                  <img
+                    src={formData.backgroundImage || sectionData.backgroundImage}
+                    alt="Background preview"
+                    className={css.previewImage}
+                  />
                 </div>
               )}
             </div>
 
             <div className={css.formGroup}>
-              <label className={css.formLabel}>Background Video URL (optional)</label>
-              <input
-                type="url"
-                className={css.formInput}
-                placeholder="https://example.com/hero-video.mp4"
-                defaultValue={sectionData.backgroundVideo || ''}
-                onChange={e => handleInputChange('backgroundVideo', e.target.value)}
-              />
+              <label className={css.formLabel}>Background Video (optional)</label>
+              <div className={css.uploadSection}>
+                <div className={css.fileUploadWrapper}>
+                  <input
+                    type="file"
+                    id="hero-video-upload"
+                    className={css.fileInput}
+                    accept="video/mp4,video/webm,video/ogg"
+                    onChange={e => {
+                      const file = e.target.files?.[0];
+                      if (file) handleFileUpload(file, 'heroVideo');
+                    }}
+                    disabled={uploadInProgress}
+                  />
+                  <label htmlFor="hero-video-upload" className={css.fileUploadButton}>
+                    {uploadInProgress ? 'Uploading...' : '🎬 Choose Background Video'}
+                  </label>
+                  <span className={css.uploadHint}>MP4, WebM, OGG (max 50MB)</span>
+                </div>
+                <div className={css.orDivider}>
+                  <span>OR</span>
+                </div>
+                <input
+                  type="url"
+                  className={css.formInput}
+                  placeholder="Enter video URL"
+                  defaultValue={sectionData.backgroundVideo || ''}
+                  onChange={e => handleInputChange('backgroundVideo', e.target.value)}
+                />
+              </div>
               <span className={css.formHint}>
-                Enter the URL of a video file (MP4 recommended). The video will autoplay muted in the background.
+                The video will autoplay muted in the background when selected as background type.
               </span>
             </div>
 
             <button
               className={css.saveButton}
               onClick={handleSaveSection}
-              disabled={updateInProgress}
+              disabled={updateInProgress || uploadInProgress}
             >
               {updateInProgress ? 'Saving...' : 'Save Hero Section'}
             </button>
