@@ -210,7 +210,8 @@ const TopbarComponent = props => {
     });
   };
 
-  const showCreateListingsLink = showCreateListingLinkForUser(config, currentUser);
+  // Street2Ivy: Hide "Post a new listing" button - only corporate partners can post via their dashboard
+  const showCreateListingsLink = false;
   const { customer: isCustomer, provider: isProvider } = getCurrentUserTypeRoles(
     config,
     currentUser
