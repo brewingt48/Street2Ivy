@@ -8,11 +8,10 @@ import { isScrollingDisabled } from '../../ducks/ui.duck';
 import {
   Page,
   LayoutSingleColumn,
-  LayoutWrapperTopbar,
-  Footer,
   PaginationLinks,
 } from '../../components';
-import TopbarContainer from '../TopbarContainer/TopbarContainer';
+import TopbarContainer from '../../containers/TopbarContainer/TopbarContainer';
+import FooterContainer from '../../containers/FooterContainer/FooterContainer';
 import CompanyCard from './CompanyCard';
 import { searchCompanies } from './SearchCompaniesPage.duck';
 
@@ -142,12 +141,8 @@ const SearchCompaniesPageComponent = props => {
     return (
       <Page title={title} scrollingDisabled={scrollingDisabled}>
         <LayoutSingleColumn
-          topbar={
-            <LayoutWrapperTopbar>
-              <TopbarContainer />
-            </LayoutWrapperTopbar>
-          }
-          footer={<Footer />}
+          topbar={<TopbarContainer />}
+          footer={<FooterContainer />}
         >
           <div className={css.noAccess}>
             <h1><FormattedMessage id="SearchCompaniesPage.noAccessTitle" /></h1>

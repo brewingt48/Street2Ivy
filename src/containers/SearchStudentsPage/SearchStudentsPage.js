@@ -9,13 +9,10 @@ import { manageDisableScrolling } from '../../ducks/ui.duck';
 import {
   Page,
   LayoutSingleColumn,
-  LayoutWrapperTopbar,
-  LayoutWrapperMain,
-  LayoutWrapperFooter,
-  Footer,
   PaginationLinks,
 } from '../../components';
-import TopbarContainer from '../TopbarContainer/TopbarContainer';
+import TopbarContainer from '../../containers/TopbarContainer/TopbarContainer';
+import FooterContainer from '../../containers/FooterContainer/FooterContainer';
 import StudentCard from './StudentCard';
 import InviteModal from './InviteModal';
 import {
@@ -209,12 +206,8 @@ const SearchStudentsPageComponent = props => {
     return (
       <Page title={title} scrollingDisabled={scrollingDisabled}>
         <LayoutSingleColumn
-          topbar={
-            <LayoutWrapperTopbar>
-              <TopbarContainer />
-            </LayoutWrapperTopbar>
-          }
-          footer={<Footer />}
+          topbar={<TopbarContainer />}
+          footer={<FooterContainer />}
         >
           <div className={css.noAccess}>
             <h1><FormattedMessage id="SearchStudentsPage.noAccessTitle" /></h1>
