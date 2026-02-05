@@ -308,11 +308,6 @@ const LandingPageComponent = props => {
                         {ctaContent?.buttonText || <FormattedMessage id="LandingPage.joinNow" />}
                       </NamedLink>
                     )}
-                    {isAuthenticated && (
-                      <NamedLink name="SearchPage" className={css.ctaButton}>
-                        <FormattedMessage id="LandingPage.exploreProjects" />
-                      </NamedLink>
-                    )}
                   </div>
                 </section>
               </Main>
