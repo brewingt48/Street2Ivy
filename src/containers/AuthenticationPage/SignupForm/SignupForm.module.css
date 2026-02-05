@@ -59,3 +59,49 @@
     padding: 8px 0;
   }
 }
+
+/* Institution status checker */
+.institutionStatus {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  margin-top: 8px;
+  border-radius: 6px;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.institutionStatusChecking {
+  background: var(--colorGrey50);
+  color: var(--colorGrey600);
+  border: 1px solid var(--colorGrey200);
+}
+
+.institutionStatusValid {
+  background: #dcfce7;
+  color: #166534;
+  border: 1px solid #86efac;
+}
+
+.institutionStatusInvalid {
+  background: #fef2f2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+}
+
+.spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid var(--colorGrey300);
+  border-top-color: var(--marketplaceColor);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

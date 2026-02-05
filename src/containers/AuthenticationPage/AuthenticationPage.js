@@ -676,6 +676,8 @@ export const AuthenticationPageComponent = props => {
       return 'EducationDashboardPage';
     } else if (currentUserType === 'corporate-partner') {
       return 'CorporateDashboardPage';
+    } else if (currentUserType === 'student') {
+      return 'StudentDashboardPage';
     }
     return 'LandingPage';
   };

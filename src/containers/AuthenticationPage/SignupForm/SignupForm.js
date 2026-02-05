@@ -1,5 +1,5 @@
-import React from 'react';
-import { Form as FinalForm } from 'react-final-form';
+import React, { useState, useEffect } from 'react';
+import { Form as FinalForm, FormSpy } from 'react-final-form';
 import arrayMutators from 'final-form-arrays';
 import classNames from 'classnames';
 
@@ -30,6 +30,126 @@ const isPasswordUsedMoreThanOnce = formValues => {
   return false;
 };
 
+/**
+ * Check if the email domain is a valid .edu domain
+ */
+const isEduEmail = email => {
+  if (!email) return false;
+  const domain = email.split('@')[1];
+  if (!domain) return false;
+  // Accept .edu domains and common educational domains
+  return domain.endsWith('.edu') || domain.endsWith('.edu.au') || domain.endsWith('.ac.uk');
+};
+
+/**
+ * Extract domain from email
+ */
+const getDomainFromEmail = email => {
+  if (!email) return null;
+  const domain = email.split('@')[1];
+  return domain ? domain.toLowerCase() : null;
+};
+
+/**
+ * Institution Membership Checker Component
+ * Shows real-time status of institution membership while user types email
+ */
+const InstitutionChecker = ({ email, userType, intl, onStatusChange }) => {
+  const [status, setStatus] = useState({ checking: false, isMember: null, message: null });
+
+  useEffect(() => {
+    // Only check for students
+    if (userType !== 'student') {
+      setStatus({ checking: false, isMember: true, message: null });
+      onStatusChange(true);
+      return;
+    }
+
+    // Validate email format first
+    if (!email || !email.includes('@')) {
+      setStatus({ checking: false, isMember: null, message: null });
+      onStatusChange(null);
+      return;
+    }
+
+    const domain = getDomainFromEmail(email);
+    if (!domain) {
+      setStatus({ checking: false, isMember: null, message: null });
+      onStatusChange(null);
+      return;
+    }
+
+    // Check if it's a .edu email
+    if (!isEduEmail(email)) {
+      setStatus({
+        checking: false,
+        isMember: false,
+        message: intl.formatMessage({ id: 'SignupForm.eduEmailRequired' }),
+      });
+      onStatusChange(false);
+      return;
+    }
+
+    // Check institution membership
+    const checkMembership = async () => {
+      setStatus({ checking: true, isMember: null, message: intl.formatMessage({ id: 'SignupForm.checkingInstitution' }) });
+
+      try {
+        const response = await fetch(`/api/institutions/check/${encodeURIComponent(domain)}`);
+        const data = await response.json();
+
+        if (data.isMember) {
+          setStatus({
+            checking: false,
+            isMember: true,
+            message: `✓ ${data.institutionName || domain} is a member of Street2Ivy`,
+            institutionName: data.institutionName,
+          });
+          onStatusChange(true);
+        } else {
+          setStatus({
+            checking: false,
+            isMember: false,
+            message: intl.formatMessage(
+              { id: 'SignupForm.institutionNotMember' },
+              { domain }
+            ),
+          });
+          onStatusChange(false);
+        }
+      } catch (error) {
+        console.error('Failed to check institution membership:', error);
+        // On error, allow signup but warn
+        setStatus({
+          checking: false,
+          isMember: true, // Allow signup on network error
+          message: null,
+        });
+        onStatusChange(true);
+      }
+    };
+
+    // Debounce the API call
+    const timeoutId = setTimeout(checkMembership, 500);
+    return () => clearTimeout(timeoutId);
+  }, [email, userType, intl, onStatusChange]);
+
+  if (!status.message) return null;
+
+  return (
+    <div
+      className={classNames(css.institutionStatus, {
+        [css.institutionStatusChecking]: status.checking,
+        [css.institutionStatusValid]: status.isMember === true,
+        [css.institutionStatusInvalid]: status.isMember === false,
+      })}
+    >
+      {status.checking && <span className={css.spinner}></span>}
+      {status.message}
+    </div>
+  );
+};
+
 const SignupFormComponent = props => (
   <FinalForm
     {...props}
@@ -51,7 +171,8 @@ const SignupFormComponent = props => (
         values,
       } = formRenderProps;
 
-      const { userType } = values || {};
+      const { userType, email } = values || {};
+      const [institutionValid, setInstitutionValid] = React.useState(null);
 
       // email
       const emailRequired = validators.required(
@@ -64,6 +185,14 @@ const SignupFormComponent = props => (
           id: 'SignupForm.emailInvalid',
         })
       );
+
+      // Custom validation for .edu email for students
+      const eduEmailValidator = (value, allValues) => {
+        if (allValues.userType === 'student' && value && !isEduEmail(value)) {
+          return intl.formatMessage({ id: 'SignupForm.eduEmailRequired' });
+        }
+        return undefined;
+      };
 
       // password
       const passwordRequiredMessage = intl.formatMessage({
@@ -111,7 +240,14 @@ const SignupFormComponent = props => (
 
       const classes = classNames(rootClassName || css.root, className);
       const submitInProgress = inProgress;
-      const submitDisabled = invalid || submitInProgress || isPasswordUsedMoreThanOnce(values);
+
+      // Disable submit if:
+      // 1. Form is invalid
+      // 2. Form is submitting
+      // 3. Password is repeated in other fields
+      // 4. For students: institution is not a member (institutionValid === false)
+      const institutionBlocked = userType === 'student' && institutionValid === false;
+      const submitDisabled = invalid || submitInProgress || isPasswordUsedMoreThanOnce(values) || institutionBlocked;
 
       return (
         <Form className={classes} onSubmit={handleSubmit}>
@@ -132,11 +268,28 @@ const SignupFormComponent = props => (
                 label={intl.formatMessage({
                   id: 'SignupForm.emailLabel',
                 })}
-                placeholder={intl.formatMessage({
-                  id: 'SignupForm.emailPlaceholder',
-                })}
-                validate={validators.composeValidators(emailRequired, emailValid)}
+                placeholder={
+                  userType === 'student'
+                    ? intl.formatMessage({ id: 'SignupForm.emailPlaceholderStudent' }, { defaultMessage: 'your.name@university.edu' })
+                    : intl.formatMessage({ id: 'SignupForm.emailPlaceholder' })
+                }
+                validate={validators.composeValidators(emailRequired, emailValid, eduEmailValidator)}
               />
+
+              {/* Institution membership checker for students */}
+              {userType === 'student' && (
+                <FormSpy subscription={{ values: true }}>
+                  {({ values }) => (
+                    <InstitutionChecker
+                      email={values.email}
+                      userType={values.userType}
+                      intl={intl}
+                      onStatusChange={setInstitutionValid}
+                    />
+                  )}
+                </FormSpy>
+              )}
+
               <div className={css.name}>
                 <FieldTextInput
                   className={css.firstNameRoot}
@@ -222,6 +375,11 @@ const SignupFormComponent = props => (
                 <FormattedMessage id="SignupForm.passwordRepeatedOnOtherFields" />
               </div>
             ) : null}
+            {institutionBlocked && (
+              <div className={css.error}>
+                <FormattedMessage id="SignupForm.institutionNotMember" values={{ domain: getDomainFromEmail(email) || 'your institution' }} />
+              </div>
+            )}
             <PrimaryButton type="submit" inProgress={submitInProgress} disabled={submitDisabled}>
               <FormattedMessage id="SignupForm.signUp" />
             </PrimaryButton>

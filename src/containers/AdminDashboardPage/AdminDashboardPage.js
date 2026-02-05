@@ -1373,6 +1373,358 @@ const CreateAdminPanel = props => {
   );
 };
 
+// ================ Institution Management Panel ================ //
+
+const InstitutionManagementPanel = props => {
+  const [institutions, setInstitutions] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [editingInstitution, setEditingInstitution] = useState(null);
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [formData, setFormData] = useState({
+    domain: '',
+    name: '',
+    membershipStatus: 'active',
+    membershipStartDate: '',
+    membershipEndDate: '',
+    aiCoachingEnabled: false,
+    aiCoachingUrl: '',
+  });
+  const [saveInProgress, setSaveInProgress] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
+
+  const fetchInstitutions = async () => {
+    setIsLoading(true);
+    try {
+      const response = await fetch('/api/admin/institutions', { credentials: 'include' });
+      const data = await response.json();
+      setInstitutions(data.data || []);
+    } catch (error) {
+      console.error('Failed to fetch institutions:', error);
+      setErrorMessage('Failed to load institutions');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchInstitutions();
+  }, []);
+
+  const handleInputChange = (field, value) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleSave = async () => {
+    setSaveInProgress(true);
+    setErrorMessage('');
+    try {
+      const response = await fetch('/api/admin/institutions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(formData),
+      });
+      const data = await response.json();
+      if (response.ok) {
+        setSuccessMessage(editingInstitution ? 'Institution updated!' : 'Institution added!');
+        setTimeout(() => setSuccessMessage(''), 3000);
+        setShowAddForm(false);
+        setEditingInstitution(null);
+        setFormData({
+          domain: '',
+          name: '',
+          membershipStatus: 'active',
+          membershipStartDate: '',
+          membershipEndDate: '',
+          aiCoachingEnabled: false,
+          aiCoachingUrl: '',
+        });
+        fetchInstitutions();
+      } else {
+        setErrorMessage(data.error || 'Failed to save institution');
+      }
+    } catch (error) {
+      setErrorMessage('Failed to save institution');
+    } finally {
+      setSaveInProgress(false);
+    }
+  };
+
+  const handleEdit = (institution) => {
+    setFormData({
+      domain: institution.domain,
+      name: institution.name,
+      membershipStatus: institution.membershipStatus || 'pending',
+      membershipStartDate: institution.membershipStartDate || '',
+      membershipEndDate: institution.membershipEndDate || '',
+      aiCoachingEnabled: institution.aiCoachingEnabled || false,
+      aiCoachingUrl: institution.aiCoachingUrl || '',
+    });
+    setEditingInstitution(institution);
+    setShowAddForm(true);
+  };
+
+  const handleDelete = async (domain) => {
+    if (!window.confirm('Are you sure you want to delete this institution?')) return;
+    try {
+      const response = await fetch(`/api/admin/institutions/${encodeURIComponent(domain)}`, {
+        method: 'DELETE',
+        credentials: 'include',
+      });
+      if (response.ok) {
+        setSuccessMessage('Institution deleted!');
+        setTimeout(() => setSuccessMessage(''), 3000);
+        fetchInstitutions();
+      }
+    } catch (error) {
+      setErrorMessage('Failed to delete institution');
+    }
+  };
+
+  const handleToggleCoaching = async (institution) => {
+    try {
+      const response = await fetch(`/api/admin/institutions/${encodeURIComponent(institution.domain)}/coaching`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          aiCoachingEnabled: !institution.aiCoachingEnabled,
+        }),
+      });
+      if (response.ok) {
+        fetchInstitutions();
+      }
+    } catch (error) {
+      setErrorMessage('Failed to update coaching status');
+    }
+  };
+
+  return (
+    <div className={css.panel}>
+      <div className={css.panelHeader}>
+        <h2 className={css.panelTitle}>Institution Management</h2>
+        <button
+          className={css.addButton}
+          onClick={() => {
+            setShowAddForm(true);
+            setEditingInstitution(null);
+            setFormData({
+              domain: '',
+              name: '',
+              membershipStatus: 'active',
+              membershipStartDate: '',
+              membershipEndDate: '',
+              aiCoachingEnabled: false,
+              aiCoachingUrl: '',
+            });
+          }}
+        >
+          + Add Institution
+        </button>
+      </div>
+
+      <p className={css.panelDescription}>
+        Manage educational institution memberships and AI coaching access. Only students from member institutions can sign up.
+      </p>
+
+      {successMessage && <div className={css.successMessage}>{successMessage}</div>}
+      {errorMessage && <div className={css.errorMessage}>{errorMessage}</div>}
+
+      {showAddForm && (
+        <div className={css.institutionForm}>
+          <h3 className={css.formTitle}>
+            {editingInstitution ? 'Edit Institution' : 'Add New Institution'}
+          </h3>
+
+          <div className={css.formRow}>
+            <div className={css.formField}>
+              <label>Email Domain</label>
+              <input
+                type="text"
+                value={formData.domain}
+                onChange={e => handleInputChange('domain', e.target.value)}
+                placeholder="e.g. harvard.edu"
+                disabled={!!editingInstitution}
+              />
+              <span className={css.fieldHint}>The email domain students use (e.g., harvard.edu)</span>
+            </div>
+          </div>
+
+          <div className={css.formRow}>
+            <div className={css.formField}>
+              <label>Institution Name</label>
+              <input
+                type="text"
+                value={formData.name}
+                onChange={e => handleInputChange('name', e.target.value)}
+                placeholder="e.g. Harvard University"
+              />
+            </div>
+          </div>
+
+          <div className={css.formRow}>
+            <div className={css.formField}>
+              <label>Membership Status</label>
+              <select
+                value={formData.membershipStatus}
+                onChange={e => handleInputChange('membershipStatus', e.target.value)}
+              >
+                <option value="active">Active</option>
+                <option value="pending">Pending</option>
+                <option value="inactive">Inactive</option>
+              </select>
+            </div>
+          </div>
+
+          <div className={css.formRow}>
+            <div className={css.formField}>
+              <label>Membership Start Date</label>
+              <input
+                type="date"
+                value={formData.membershipStartDate}
+                onChange={e => handleInputChange('membershipStartDate', e.target.value)}
+              />
+            </div>
+            <div className={css.formField}>
+              <label>Membership End Date</label>
+              <input
+                type="date"
+                value={formData.membershipEndDate}
+                onChange={e => handleInputChange('membershipEndDate', e.target.value)}
+              />
+            </div>
+          </div>
+
+          <div className={css.formRow}>
+            <div className={css.formField}>
+              <label className={css.checkboxLabel}>
+                <input
+                  type="checkbox"
+                  checked={formData.aiCoachingEnabled}
+                  onChange={e => handleInputChange('aiCoachingEnabled', e.target.checked)}
+                />
+                <span>Enable AI Career Coaching for this institution</span>
+              </label>
+            </div>
+          </div>
+
+          {formData.aiCoachingEnabled && (
+            <div className={css.formRow}>
+              <div className={css.formField}>
+                <label>AI Coaching Platform URL</label>
+                <input
+                  type="url"
+                  value={formData.aiCoachingUrl}
+                  onChange={e => handleInputChange('aiCoachingUrl', e.target.value)}
+                  placeholder="https://coaching.example.com/harvard"
+                />
+                <span className={css.fieldHint}>The URL students will be directed to for AI coaching</span>
+              </div>
+            </div>
+          )}
+
+          <div className={css.formActions}>
+            <button
+              className={css.cancelButton}
+              onClick={() => {
+                setShowAddForm(false);
+                setEditingInstitution(null);
+              }}
+            >
+              Cancel
+            </button>
+            <button
+              className={css.saveButton}
+              onClick={handleSave}
+              disabled={saveInProgress || !formData.domain || !formData.name}
+            >
+              {saveInProgress ? 'Saving...' : editingInstitution ? 'Update Institution' : 'Add Institution'}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {isLoading ? (
+        <div className={css.loadingState}>Loading institutions...</div>
+      ) : institutions.length === 0 ? (
+        <div className={css.emptyState}>
+          No institutions added yet. Add your first institution to allow students to sign up.
+        </div>
+      ) : (
+        <table className={css.institutionsTable}>
+          <thead>
+            <tr>
+              <th>Institution</th>
+              <th>Domain</th>
+              <th>Status</th>
+              <th>AI Coaching</th>
+              <th>Valid Until</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {institutions.map(inst => (
+              <tr key={inst.domain}>
+                <td>
+                  <span className={css.institutionName}>{inst.name}</span>
+                </td>
+                <td>
+                  <span className={css.institutionDomain}>@{inst.domain}</span>
+                </td>
+                <td>
+                  <span
+                    className={classNames(css.statusBadge, {
+                      [css.statusActive]: inst.membershipStatus === 'active',
+                      [css.statusPending]: inst.membershipStatus === 'pending',
+                      [css.statusInactive]: inst.membershipStatus === 'inactive',
+                    })}
+                  >
+                    {inst.membershipStatus}
+                  </span>
+                </td>
+                <td>
+                  <button
+                    className={classNames(css.toggleButton, {
+                      [css.toggleOn]: inst.aiCoachingEnabled,
+                      [css.toggleOff]: !inst.aiCoachingEnabled,
+                    })}
+                    onClick={() => handleToggleCoaching(inst)}
+                    title={inst.aiCoachingEnabled ? 'Click to disable' : 'Click to enable'}
+                  >
+                    {inst.aiCoachingEnabled ? '✓ Enabled' : '✗ Disabled'}
+                  </button>
+                </td>
+                <td>
+                  {inst.membershipEndDate
+                    ? new Date(inst.membershipEndDate).toLocaleDateString()
+                    : 'No expiry'}
+                </td>
+                <td>
+                  <div className={css.actionButtons}>
+                    <button
+                      className={classNames(css.actionButton, css.editButton)}
+                      onClick={() => handleEdit(inst)}
+                    >
+                      Edit
+                    </button>
+                    <button
+                      className={classNames(css.actionButton, css.deleteButton)}
+                      onClick={() => handleDelete(inst.domain)}
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+    </div>
+  );
+};
+
 // ================ Content Management Panel ================ //
 
 const ContentManagementPanel = props => {
@@ -2132,6 +2484,12 @@ const AdminDashboardPageComponent = props => {
             >
               <FormattedMessage id="AdminDashboardPage.tabContent" />
             </button>
+            <button
+              className={classNames(css.tab, { [css.tabActive]: activeTab === 'institutions' })}
+              onClick={() => handleTabChange('institutions')}
+            >
+              <FormattedMessage id="AdminDashboardPage.tabInstitutions" />
+            </button>
           </div>
 
           {/* Tab Content */}
@@ -2209,6 +2567,10 @@ const AdminDashboardPageComponent = props => {
               onResetContent={onResetContent}
               onClearContentState={onClearContentState}
             />
+          )}
+
+          {activeTab === 'institutions' && (
+            <InstitutionManagementPanel />
           )}
         </div>
       </LayoutSingleColumn>

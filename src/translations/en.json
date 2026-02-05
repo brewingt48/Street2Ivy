@@ -1077,6 +1077,7 @@
   "SignupForm.emailInvalid": "A valid email address is required.",
   "SignupForm.emailLabel": "Email",
   "SignupForm.emailPlaceholder": "jane.doe@example.com",
+  "SignupForm.emailPlaceholderStudent": "your.name@university.edu",
   "SignupForm.emailRequired": "You need to add an email.",
   "SignupForm.firstNameLabel": "First name",
   "SignupForm.firstNamePlaceholder": "Jane",
@@ -1599,6 +1600,7 @@
   "AdminDashboardPage.tabMessages": "Messages",
   "AdminDashboardPage.tabReports": "Reports",
   "AdminDashboardPage.tabContent": "Content",
+  "AdminDashboardPage.tabInstitutions": "Institutions",
   "AdminDashboardPage.tabDeposits": "Deposits",
   "AdminDashboardPage.userManagement": "User Management",
   "AdminDashboardPage.filterUserType": "User Type",
@@ -1769,5 +1771,11 @@
   "SuccessStories.subtitle": "See how students have launched their careers through Street2Ivy projects",
   "SuccessStories.project": "Project",
   "SuccessStories.company": "Company",
-  "SuccessStories.viewAll": "View All Stories"
+  "SuccessStories.viewAll": "View All Stories",
+
+  "StudentDashboardPage.title": "My Dashboard | Street2Ivy",
+
+  "SignupForm.eduEmailRequired": "Please use your university .edu email address to sign up.",
+  "SignupForm.institutionNotMember": "Your institution ({domain}) is not currently a member of Street2Ivy. Please contact your school administrator to join.",
+  "SignupForm.checkingInstitution": "Checking institution membership..."
 }

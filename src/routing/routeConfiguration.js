@@ -41,6 +41,7 @@ const SearchPageWithGrid = loadable(() => import(/* webpackChunkName: "SearchPag
 const SearchStudentsPage = loadable(() => import(/* webpackChunkName: "SearchStudentsPage" */ '../containers/SearchStudentsPage/SearchStudentsPage'));
 const EducationDashboardPage = loadable(() => import(/* webpackChunkName: "EducationDashboardPage" */ '../containers/EducationDashboardPage/EducationDashboardPage'));
 const AdminDashboardPage = loadable(() => import(/* webpackChunkName: "AdminDashboardPage" */ '../containers/AdminDashboardPage/AdminDashboardPage'));
+const StudentDashboardPage = loadable(() => import(/* webpackChunkName: "StudentDashboardPage" */ '../containers/StudentDashboardPage/StudentDashboardPage'));
 const OnboardingPage = loadable(() => import(/* webpackChunkName: "OnboardingPage" */ '../containers/OnboardingPage/OnboardingPage'));
 const StripePayoutPage = loadable(() => import(/* webpackChunkName: "StripePayoutPage" */ '../containers/StripePayoutPage/StripePayoutPage'));
 const TermsOfServicePage = loadable(() => import(/* webpackChunkName: "TermsOfServicePage" */ '../containers/TermsOfServicePage/TermsOfServicePage'));
@@ -343,6 +344,13 @@ const routeConfiguration = (layoutConfig, accessControlConfig) => {
       authPage: 'LoginPage',
       component: SearchCompaniesPage,
       loadData: pageDataLoadingAPI.SearchCompaniesPage.loadData,
+    },
+    {
+      path: '/student/dashboard',
+      name: 'StudentDashboardPage',
+      auth: true,
+      authPage: 'LoginPage',
+      component: StudentDashboardPage,
     },
     {
       path: '/education/dashboard',
