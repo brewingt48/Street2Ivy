@@ -153,6 +153,14 @@ const getNonUserFieldParams = (values, userFieldConfigs) => {
   }, {});
 };
 
+// Helper function to check if email is .edu
+const isEduEmail = email => {
+  if (!email) return false;
+  const domain = email.split('@')[1];
+  if (!domain) return false;
+  return domain.endsWith('.edu') || domain.endsWith('.edu.au') || domain.endsWith('.ac.uk');
+};
+
 // Tabs for SignupForm and LoginForm
 export const AuthenticationForms = props => {
   const {
@@ -172,6 +180,7 @@ export const AuthenticationForms = props => {
   } = props;
   const config = useConfiguration();
   const intl = useIntl();
+  const [eduEmailError, setEduEmailError] = useState(null);
   const { userFields, userTypes = [], adminUserTypes = [] } = config.user;
 
   // Use admin user types if on admin portal, otherwise use regular user types
@@ -234,7 +243,20 @@ export const AuthenticationForms = props => {
 
   const handleSubmitSignup = values => {
     const { userType, email, password, fname, lname, displayName, ...rest } = values;
+
+    // Clear any previous .edu error
+    setEduEmailError(null);
+
+    // Validate .edu email for students on submit
+    if (userType === 'student' && !isEduEmail(email)) {
+      setEduEmailError(intl.formatMessage({ id: 'SignupForm.eduEmailRequired' }));
+      return; // Don't submit
+    }
+
     const displayNameMaybe = displayName ? { displayName: displayName.trim() } : {};
+
+    // Store the email domain for institution matching
+    const emailDomain = email.split('@')[1]?.toLowerCase() || null;
 
     const params = {
       email,
@@ -244,6 +266,7 @@ export const AuthenticationForms = props => {
       ...displayNameMaybe,
       publicData: {
         userType,
+        emailDomain, // Store domain for institution matching
         ...pickUserFieldsData(rest, 'public', userType, userFields),
       },
       privateData: {
@@ -280,11 +303,19 @@ export const AuthenticationForms = props => {
     </div>
   );
 
+  const eduEmailErrorMessage = eduEmailError ? (
+    <div className={css.error}>
+      {eduEmailError}
+    </div>
+  ) : null;
+
   const loginOrSignupError =
     isLogin && !!idpAuthError
       ? idpAuthErrorMessage
       : isLogin && !!loginError
       ? loginErrorMessage
+      : !!eduEmailError
+      ? eduEmailErrorMessage
       : !!signupError
       ? signupErrorMessage
       : null;

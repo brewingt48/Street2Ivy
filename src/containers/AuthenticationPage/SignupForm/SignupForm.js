@@ -76,16 +76,9 @@ const SignupFormComponent = props => (
         })
       );
 
-      // Custom validation for .edu email for students (only validates on blur/submit)
-      const eduEmailValidator = (value, allValues) => {
-        // Only validate for students and only if we have a complete email
-        if (allValues.userType === 'student' && value && value.includes('@')) {
-          if (!isEduEmail(value)) {
-            return intl.formatMessage({ id: 'SignupForm.eduEmailRequired' });
-          }
-        }
-        return undefined;
-      };
+      // Note: .edu validation is now done on form submit only, not while typing
+      // This prevents the input from being blocked while the user types
+      // The server will also validate the .edu requirement
 
       // password
       const passwordRequiredMessage = intl.formatMessage({
@@ -162,7 +155,7 @@ const SignupFormComponent = props => (
                     ? 'your.name@university.edu'
                     : intl.formatMessage({ id: 'SignupForm.emailPlaceholder' })
                 }
-                validate={validators.composeValidators(emailRequired, emailValid, eduEmailValidator)}
+                validate={validators.composeValidators(emailRequired, emailValid)}
               />
 
               {/* Student email hint */}
