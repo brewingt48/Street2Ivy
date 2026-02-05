@@ -12,7 +12,12 @@ const { deserialize } = require('./api-util/sdk');
 const {
   standardRateLimit,
   strictRateLimit,
-  securityHeaders
+  securityHeaders,
+  responseSanitizer,
+  getCSRFToken,
+  getAuditLogs,
+  validatePassword,
+  SECURITY_CONFIG
 } = require('./api-util/security');
 
 const initiateLoginAs = require('./api/initiate-login-as');
@@ -62,6 +67,9 @@ router.use(securityHeaders);
 // SECURITY: Apply standard rate limiting to all API endpoints
 router.use(standardRateLimit);
 
+// SECURITY: Sanitize API responses to remove sensitive data
+router.use(responseSanitizer);
+
 // Parse JSON bodies (for custom API endpoints like search-users)
 router.use(bodyParser.json({ limit: '1mb' })); // SECURITY: Limit body size
 
@@ -88,6 +96,30 @@ router.use((req, res, next) => {
 });
 
 // ================ API router endpoints: ================ //
+
+// SECURITY: CSRF token endpoint
+router.get('/csrf-token', getCSRFToken);
+
+// SECURITY: Password validation endpoint
+router.post('/validate-password', (req, res) => {
+  const { password } = req.body;
+  const result = validatePassword(password);
+  res.json(result);
+});
+
+// SECURITY: Security configuration endpoint (public, read-only)
+router.get('/security-config', (req, res) => {
+  res.json({
+    passwordMinLength: SECURITY_CONFIG.passwordMinLength,
+    passwordRequireUppercase: SECURITY_CONFIG.passwordRequireUppercase,
+    passwordRequireLowercase: SECURITY_CONFIG.passwordRequireLowercase,
+    passwordRequireNumber: SECURITY_CONFIG.passwordRequireNumber,
+    passwordRequireSpecial: SECURITY_CONFIG.passwordRequireSpecial,
+    maxFileSize: SECURITY_CONFIG.maxFileSize,
+    allowedMimeTypes: SECURITY_CONFIG.allowedMimeTypes,
+    allowedExtensions: SECURITY_CONFIG.allowedExtensions
+  });
+});
 
 router.get('/initiate-login-as', initiateLoginAs);
 router.get('/login-as', loginAs);
@@ -127,6 +159,26 @@ router.post('/admin/messages/:messageId/read', adminMessages.markAsRead);
 router.get('/admin/messages/unread-count', adminMessages.getUnreadCount);
 router.get('/admin/reports/:type', adminReports);
 router.get('/admin/export/:type', adminExportReport);
+
+// SECURITY: Admin audit logs endpoint
+router.get('/admin/audit-logs', async (req, res) => {
+  const { verifySystemAdmin } = require('./api-util/security');
+  const admin = await verifySystemAdmin(req, res);
+  if (!admin) {
+    return res.status(403).json({ error: 'Admin access required' });
+  }
+
+  const { eventType, userId, startDate, endDate, limit, offset } = req.query;
+  const logs = getAuditLogs({
+    eventType,
+    userId,
+    startDate,
+    endDate,
+    limit: parseInt(limit, 10) || 100,
+    offset: parseInt(offset, 10) || 0
+  });
+  res.json(logs);
+});
 
 // Street2Ivy: Deposit management endpoints (offline payment tracking)
 router.get('/admin/deposits', adminDeposits.list);
