@@ -26,6 +26,7 @@ const educationStudentTransactions = require('./api/education-student-transactio
 
 // Corporate Dashboard enhanced stats
 const corporateDashboardStats = require('./api/corporate-dashboard-stats');
+const corporateExport = require('./api/corporate-export');
 
 // System Admin endpoints
 const adminUsers = require('./api/admin/users');
@@ -97,10 +98,12 @@ router.get('/education/students/:studentId/transactions', educationStudentTransa
 
 // Street2Ivy: Enhanced Corporate Dashboard
 router.get('/corporate/dashboard-stats', corporateDashboardStats);
+router.get('/corporate/export/:type', corporateExport);
 
 // Street2Ivy: System Admin endpoints
 router.get('/admin/users', adminUsers.list);
 router.get('/admin/users/pending', adminUsers.pending);
+router.post('/admin/users/create-admin', adminUsers.createAdmin); // Create admin accounts
 router.get('/admin/users/:userId', adminUsers.get);
 router.post('/admin/users/:userId/block', adminUsers.block);
 router.post('/admin/users/:userId/unblock', adminUsers.unblock);

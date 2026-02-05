@@ -148,9 +148,27 @@ export const CorporateDashboardPageComponent = props => {
         footer={<FooterContainer />}
       >
         <div className={css.content}>
-          <H3 as="h1" className={css.title}>
-            {intl.formatMessage({ id: 'CorporateDashboardPage.heading' })}
-          </H3>
+          <div className={css.pageHeader}>
+            <H3 as="h1" className={css.title}>
+              {intl.formatMessage({ id: 'CorporateDashboardPage.heading' })}
+            </H3>
+            <div className={css.exportButtons}>
+              <button
+                className={css.exportButton}
+                onClick={() => window.open('/api/corporate/export/summary?format=csv', '_blank')}
+                title="Download summary as CSV"
+              >
+                📊 {intl.formatMessage({ id: 'CorporateDashboardPage.exportCSV' })}
+              </button>
+              <button
+                className={css.exportButton}
+                onClick={() => window.open('/api/corporate/export/summary?format=html', '_blank')}
+                title="Download summary as HTML"
+              >
+                📄 {intl.formatMessage({ id: 'CorporateDashboardPage.exportReport' })}
+              </button>
+            </div>
+          </div>
 
           {/* Quick Stats */}
           <div className={css.statsSection}>

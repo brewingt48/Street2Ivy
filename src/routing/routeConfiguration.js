@@ -243,27 +243,13 @@ const routeConfiguration = (layoutConfig, accessControlConfig) => {
       extraProps: { tab: 'signup' },
       loadData: pageDataLoadingAPI.AuthenticationPage.loadData,
     },
-    // Hidden admin portal - not linked anywhere publicly
-    // Access via: /admin-portal (login) or /admin-portal/signup (signup)
+    // Admin portal - login only (no public signup)
+    // Admin accounts can only be created by existing system admins via the Admin Dashboard
     {
       path: '/admin-portal',
       name: 'AdminPortalLoginPage',
       component: AuthenticationPage,
       extraProps: { tab: 'login', isAdminPortal: true },
-    },
-    {
-      path: '/admin-portal/signup',
-      name: 'AdminPortalSignupPage',
-      component: AuthenticationPage,
-      extraProps: { tab: 'signup', isAdminPortal: true },
-      loadData: pageDataLoadingAPI.AuthenticationPage.loadData,
-    },
-    {
-      path: '/admin-portal/signup/:userType',
-      name: 'AdminPortalSignupForUserTypePage',
-      component: AuthenticationPage,
-      extraProps: { tab: 'signup', isAdminPortal: true },
-      loadData: pageDataLoadingAPI.AuthenticationPage.loadData,
     },
     {
       path: '/confirm',

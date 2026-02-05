@@ -19,6 +19,8 @@ import {
   blockUserAction,
   unblockUserAction,
   deleteUserAction,
+  createAdminUserAction,
+  clearCreateAdminState,
   fetchMessages,
   sendMessage,
   fetchReports,
@@ -751,6 +753,11 @@ const ReportsPanel = props => {
     }
   };
 
+  const handleExport = (format) => {
+    const reportType = currentReportType || 'overview';
+    window.open(`/api/admin/export/${reportType}?format=${format}`, '_blank');
+  };
+
   return (
     <div className={css.reportsPanel}>
       <div className={css.reportTypeSelector}>
@@ -769,14 +776,34 @@ const ReportsPanel = props => {
 
       <div className={css.reportContent}>
         <div className={css.reportHeader}>
-          <h3 className={css.reportTitle}>
-            {reportTypes.find(t => t.key === currentReportType)?.label || 'Platform Overview'}
-          </h3>
-          {reports?.generatedAt && (
-            <span className={css.reportMeta}>
-              Generated: {new Date(reports.generatedAt).toLocaleString()}
-            </span>
-          )}
+          <div className={css.reportHeaderLeft}>
+            <h3 className={css.reportTitle}>
+              {reportTypes.find(t => t.key === currentReportType)?.label || 'Platform Overview'}
+            </h3>
+            {reports?.generatedAt && (
+              <span className={css.reportMeta}>
+                Generated: {new Date(reports.generatedAt).toLocaleString()}
+              </span>
+            )}
+          </div>
+          <div className={css.exportButtons}>
+            <button
+              className={css.exportButton}
+              onClick={() => handleExport('csv')}
+              title="Download as CSV (Excel-compatible)"
+            >
+              <span className={css.exportIcon}>📊</span>
+              <FormattedMessage id="AdminDashboardPage.exportCSV" />
+            </button>
+            <button
+              className={css.exportButton}
+              onClick={() => handleExport('html')}
+              title="Download as HTML (Word-compatible)"
+            >
+              <span className={css.exportIcon}>📄</span>
+              <FormattedMessage id="AdminDashboardPage.exportHTML" />
+            </button>
+          </div>
         </div>
         {renderReportContent()}
       </div>
@@ -1071,6 +1098,251 @@ const DepositsPanel = props => {
   );
 };
 
+// ================ Create Admin Panel ================ //
+
+const CreateAdminPanel = props => {
+  const {
+    createInProgress,
+    createError,
+    createSuccess,
+    onCreateAdmin,
+    onClearCreateAdminState,
+    onFetchUsers,
+  } = props;
+
+  const [formData, setFormData] = useState({
+    email: '',
+    password: '',
+    firstName: '',
+    lastName: '',
+    userType: 'educational-admin',
+    institutionName: '',
+    adminRole: '',
+  });
+
+  const [showPassword, setShowPassword] = useState(false);
+
+  useEffect(() => {
+    if (createSuccess) {
+      // Reset form on success
+      setFormData({
+        email: '',
+        password: '',
+        firstName: '',
+        lastName: '',
+        userType: 'educational-admin',
+        institutionName: '',
+        adminRole: '',
+      });
+      // Refresh users list
+      onFetchUsers({});
+      // Clear success after 5 seconds
+      const timer = setTimeout(() => onClearCreateAdminState(), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [createSuccess, onClearCreateAdminState, onFetchUsers]);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const { email, password, firstName, lastName, userType, institutionName, adminRole } = formData;
+
+    if (!email || !password || !firstName || !lastName) {
+      return;
+    }
+
+    if (userType === 'educational-admin' && !institutionName) {
+      return;
+    }
+
+    try {
+      await onCreateAdmin({
+        email,
+        password,
+        firstName,
+        lastName,
+        userType,
+        institutionName: userType === 'educational-admin' ? institutionName : undefined,
+        adminRole: userType === 'educational-admin' && adminRole ? adminRole : undefined,
+      });
+    } catch (err) {
+      console.error('Create admin failed:', err);
+    }
+  };
+
+  const handleChange = (field, value) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+    // Clear any previous errors when user starts typing
+    if (createError) {
+      onClearCreateAdminState();
+    }
+  };
+
+  return (
+    <div className={css.panel}>
+      <div className={css.panelHeader}>
+        <h2 className={css.panelTitle}>
+          <FormattedMessage id="AdminDashboardPage.createAdminTitle" />
+        </h2>
+      </div>
+
+      <p className={css.panelDescription}>
+        <FormattedMessage id="AdminDashboardPage.createAdminDescription" />
+      </p>
+
+      {createSuccess && (
+        <div className={css.successMessage}>
+          <FormattedMessage id="AdminDashboardPage.createAdminSuccess" />
+        </div>
+      )}
+
+      {createError && (
+        <div className={css.errorMessage}>
+          {createError.message || <FormattedMessage id="AdminDashboardPage.createAdminError" />}
+        </div>
+      )}
+
+      <form className={css.createAdminForm} onSubmit={handleSubmit}>
+        <div className={css.formRow}>
+          <div className={css.formField}>
+            <label>
+              <FormattedMessage id="AdminDashboardPage.adminTypeLabel" />
+            </label>
+            <select
+              value={formData.userType}
+              onChange={e => handleChange('userType', e.target.value)}
+              required
+            >
+              <option value="educational-admin">Educational Administrator</option>
+              <option value="system-admin">System Administrator</option>
+            </select>
+          </div>
+        </div>
+
+        <div className={css.formRow}>
+          <div className={css.formField}>
+            <label>
+              <FormattedMessage id="AdminDashboardPage.firstNameLabel" />
+            </label>
+            <input
+              type="text"
+              value={formData.firstName}
+              onChange={e => handleChange('firstName', e.target.value)}
+              placeholder="First name"
+              required
+            />
+          </div>
+          <div className={css.formField}>
+            <label>
+              <FormattedMessage id="AdminDashboardPage.lastNameLabel" />
+            </label>
+            <input
+              type="text"
+              value={formData.lastName}
+              onChange={e => handleChange('lastName', e.target.value)}
+              placeholder="Last name"
+              required
+            />
+          </div>
+        </div>
+
+        <div className={css.formRow}>
+          <div className={css.formField}>
+            <label>
+              <FormattedMessage id="AdminDashboardPage.emailLabel" />
+            </label>
+            <input
+              type="email"
+              value={formData.email}
+              onChange={e => handleChange('email', e.target.value)}
+              placeholder="admin@institution.edu"
+              required
+            />
+          </div>
+        </div>
+
+        <div className={css.formRow}>
+          <div className={css.formField}>
+            <label>
+              <FormattedMessage id="AdminDashboardPage.passwordLabel" />
+            </label>
+            <div className={css.passwordField}>
+              <input
+                type={showPassword ? 'text' : 'password'}
+                value={formData.password}
+                onChange={e => handleChange('password', e.target.value)}
+                placeholder="Temporary password"
+                minLength={8}
+                required
+              />
+              <button
+                type="button"
+                className={css.showPasswordButton}
+                onClick={() => setShowPassword(!showPassword)}
+              >
+                {showPassword ? 'Hide' : 'Show'}
+              </button>
+            </div>
+            <span className={css.fieldHint}>
+              <FormattedMessage id="AdminDashboardPage.passwordHint" />
+            </span>
+          </div>
+        </div>
+
+        {formData.userType === 'educational-admin' && (
+          <>
+            <div className={css.formRow}>
+              <div className={css.formField}>
+                <label>
+                  <FormattedMessage id="AdminDashboardPage.institutionNameLabel" />
+                </label>
+                <input
+                  type="text"
+                  value={formData.institutionName}
+                  onChange={e => handleChange('institutionName', e.target.value)}
+                  placeholder="e.g. Harvard University"
+                  required
+                />
+              </div>
+            </div>
+
+            <div className={css.formRow}>
+              <div className={css.formField}>
+                <label>
+                  <FormattedMessage id="AdminDashboardPage.adminRoleLabel" />
+                </label>
+                <select
+                  value={formData.adminRole}
+                  onChange={e => handleChange('adminRole', e.target.value)}
+                >
+                  <option value="">Select role (optional)</option>
+                  <option value="career-services">Career Services</option>
+                  <option value="student-affairs">Student Affairs</option>
+                  <option value="department-admin">Department Administrator</option>
+                  <option value="dean">Dean</option>
+                </select>
+              </div>
+            </div>
+          </>
+        )}
+
+        <div className={css.formActions}>
+          <button
+            type="submit"
+            className={css.createAdminButton}
+            disabled={createInProgress}
+          >
+            {createInProgress ? (
+              <FormattedMessage id="AdminDashboardPage.creating" />
+            ) : (
+              <FormattedMessage id="AdminDashboardPage.createAdminButton" />
+            )}
+          </button>
+        </div>
+      </form>
+    </div>
+  );
+};
+
 // ================ Main Component ================ //
 
 const AdminDashboardPageComponent = props => {
@@ -1083,6 +1355,10 @@ const AdminDashboardPageComponent = props => {
     fetchUsersInProgress,
     blockInProgress,
     deleteInProgress,
+    // Create Admin
+    createAdminInProgress,
+    createAdminError,
+    createAdminSuccess,
     // Messages
     messages,
     sendMessageInProgress,
@@ -1102,6 +1378,8 @@ const AdminDashboardPageComponent = props => {
     onBlockUser,
     onUnblockUser,
     onDeleteUser,
+    onCreateAdmin,
+    onClearCreateAdminState,
     onFetchMessages,
     onSendMessage,
     onFetchReports,
@@ -1178,6 +1456,12 @@ const AdminDashboardPageComponent = props => {
               <FormattedMessage id="AdminDashboardPage.tabUsers" />
             </button>
             <button
+              className={classNames(css.tab, { [css.tabActive]: activeTab === 'create-admin' })}
+              onClick={() => handleTabChange('create-admin')}
+            >
+              <FormattedMessage id="AdminDashboardPage.tabCreateAdmin" />
+            </button>
+            <button
               className={classNames(css.tab, { [css.tabActive]: activeTab === 'deposits' })}
               onClick={() => handleTabChange('deposits')}
             >
@@ -1210,6 +1494,17 @@ const AdminDashboardPageComponent = props => {
               onUnblockUser={onUnblockUser}
               onDeleteUser={onDeleteUser}
               onMessageEducator={handleMessageEducator}
+            />
+          )}
+
+          {activeTab === 'create-admin' && (
+            <CreateAdminPanel
+              createInProgress={createAdminInProgress}
+              createError={createAdminError}
+              createSuccess={createAdminSuccess}
+              onCreateAdmin={onCreateAdmin}
+              onClearCreateAdminState={onClearCreateAdminState}
+              onFetchUsers={onFetchUsers}
             />
           )}
 
@@ -1260,6 +1555,9 @@ const mapStateToProps = state => {
     fetchUsersInProgress,
     blockInProgress,
     deleteInProgress,
+    createAdminInProgress,
+    createAdminError,
+    createAdminSuccess,
     messages,
     sendMessageInProgress,
     sendMessageError,
@@ -1281,6 +1579,9 @@ const mapStateToProps = state => {
     fetchUsersInProgress,
     blockInProgress,
     deleteInProgress,
+    createAdminInProgress,
+    createAdminError,
+    createAdminSuccess,
     messages,
     sendMessageInProgress,
     sendMessageError,
@@ -1300,6 +1601,8 @@ const mapDispatchToProps = dispatch => ({
   onBlockUser: userId => dispatch(blockUserAction(userId)),
   onUnblockUser: userId => dispatch(unblockUserAction(userId)),
   onDeleteUser: userId => dispatch(deleteUserAction(userId)),
+  onCreateAdmin: data => dispatch(createAdminUserAction(data)),
+  onClearCreateAdminState: () => dispatch(clearCreateAdminState()),
   onFetchMessages: params => dispatch(fetchMessages(params)),
   onSendMessage: body => dispatch(sendMessage(body)),
   onFetchReports: type => dispatch(fetchReports(type)),

@@ -6,6 +6,7 @@ import {
   blockUser as blockUserApi,
   unblockUser as unblockUserApi,
   deleteUserAdmin as deleteUserAdminApi,
+  createAdminUser as createAdminUserApi,
   sendAdminMessage as sendAdminMessageApi,
   fetchAdminMessages as fetchAdminMessagesApi,
   fetchAdminReports as fetchAdminReportsApi,
@@ -83,6 +84,20 @@ export const deleteUserThunk = createAsyncThunk(
 );
 
 export const deleteUserAction = userId => dispatch => dispatch(deleteUserThunk(userId)).unwrap();
+
+// Create admin user thunk
+export const createAdminUserThunk = createAsyncThunk(
+  'app/AdminDashboardPage/createAdminUser',
+  async (data, { rejectWithValue }) => {
+    try {
+      return await createAdminUserApi(data);
+    } catch (e) {
+      return rejectWithValue(storableError(e));
+    }
+  }
+);
+
+export const createAdminUserAction = data => dispatch => dispatch(createAdminUserThunk(data)).unwrap();
 
 // Messages thunks
 export const fetchMessagesThunk = createAsyncThunk(
@@ -221,6 +236,11 @@ const adminDashboardPageSlice = createSlice({
     blockInProgress: null,
     deleteInProgress: null,
 
+    // Create Admin
+    createAdminInProgress: false,
+    createAdminError: null,
+    createAdminSuccess: false,
+
     // Pending Approvals
     pendingApprovals: [],
     fetchPendingInProgress: false,
@@ -259,6 +279,11 @@ const adminDashboardPageSlice = createSlice({
       state.sendMessageInProgress = false;
       state.sendMessageError = null;
       state.sendMessageSuccess = false;
+    },
+    clearCreateAdminState: state => {
+      state.createAdminInProgress = false;
+      state.createAdminError = null;
+      state.createAdminSuccess = false;
     },
   },
   extraReducers: builder => {
@@ -323,6 +348,20 @@ const adminDashboardPageSlice = createSlice({
       })
       .addCase(deleteUserThunk.rejected, state => {
         state.deleteInProgress = null;
+      })
+      // Create admin user
+      .addCase(createAdminUserThunk.pending, state => {
+        state.createAdminInProgress = true;
+        state.createAdminError = null;
+        state.createAdminSuccess = false;
+      })
+      .addCase(createAdminUserThunk.fulfilled, state => {
+        state.createAdminInProgress = false;
+        state.createAdminSuccess = true;
+      })
+      .addCase(createAdminUserThunk.rejected, (state, action) => {
+        state.createAdminInProgress = false;
+        state.createAdminError = action.payload;
       })
       // Fetch messages
       .addCase(fetchMessagesThunk.pending, state => {
@@ -443,7 +482,7 @@ const adminDashboardPageSlice = createSlice({
   },
 });
 
-export const { clearSelectedUser, clearMessageState } = adminDashboardPageSlice.actions;
+export const { clearSelectedUser, clearMessageState, clearCreateAdminState } = adminDashboardPageSlice.actions;
 
 // ================ loadData ================ //
 

@@ -180,41 +180,56 @@ export const AuthenticationForms = props => {
 
   const fromMaybe = from ? { from } : null;
 
-  // Use admin portal routes if on admin portal
-  const signupRouteName = isAdminPortal
-    ? (!!preselectedUserType ? 'AdminPortalSignupForUserTypePage' : 'AdminPortalSignupPage')
-    : (!!preselectedUserType ? 'SignupForUserTypePage' : 'SignupPage');
+  // Use admin portal routes if on admin portal (login only for admin portal)
+  const signupRouteName = !!preselectedUserType ? 'SignupForUserTypePage' : 'SignupPage';
   const loginRouteName = isAdminPortal ? 'AdminPortalLoginPage' : 'LoginPage';
 
   const userTypeMaybe = preselectedUserType ? { userType: preselectedUserType } : null;
   const fromState = { state: { ...fromMaybe, ...userTypeMaybe } };
-  const tabs = [
-    {
-      text: (
-        <Heading as={!isLogin ? 'h1' : 'h2'} rootClassName={css.tab}>
-          <FormattedMessage id={isAdminPortal ? 'AuthenticationPage.adminSignupLinkText' : 'AuthenticationPage.signupLinkText'} />
-        </Heading>
-      ),
-      selected: !isLogin,
-      linkProps: {
-        name: signupRouteName,
-        params: userTypeMaybe,
-        to: fromState,
-      },
-    },
-    {
-      text: (
-        <Heading as={isLogin ? 'h1' : 'h2'} rootClassName={css.tab}>
-          <FormattedMessage id={isAdminPortal ? 'AuthenticationPage.adminLoginLinkText' : 'AuthenticationPage.loginLinkText'} />
-        </Heading>
-      ),
-      selected: isLogin,
-      linkProps: {
-        name: loginRouteName,
-        to: fromState,
-      },
-    },
-  ];
+
+  // Admin portal only shows login (no signup tab) - admins are created via Admin Dashboard
+  const tabs = isAdminPortal
+    ? [
+        {
+          text: (
+            <Heading as="h1" rootClassName={css.tab}>
+              <FormattedMessage id="AuthenticationPage.adminLoginLinkText" />
+            </Heading>
+          ),
+          selected: true,
+          linkProps: {
+            name: loginRouteName,
+            to: fromState,
+          },
+        },
+      ]
+    : [
+        {
+          text: (
+            <Heading as={!isLogin ? 'h1' : 'h2'} rootClassName={css.tab}>
+              <FormattedMessage id="AuthenticationPage.signupLinkText" />
+            </Heading>
+          ),
+          selected: !isLogin,
+          linkProps: {
+            name: signupRouteName,
+            params: userTypeMaybe,
+            to: fromState,
+          },
+        },
+        {
+          text: (
+            <Heading as={isLogin ? 'h1' : 'h2'} rootClassName={css.tab}>
+              <FormattedMessage id="AuthenticationPage.loginLinkText" />
+            </Heading>
+          ),
+          selected: isLogin,
+          linkProps: {
+            name: loginRouteName,
+            to: fromState,
+          },
+        },
+      ];
 
   const handleSubmitSignup = values => {
     const { userType, email, password, fname, lname, displayName, ...rest } = values;
@@ -287,7 +302,8 @@ export const AuthenticationForms = props => {
       <LinkTabNavHorizontal className={css.tabs} tabs={tabs} ariaLabel={ariaLabel} />
       {loginOrSignupError}
 
-      {isLogin ? (
+      {/* Admin portal always shows login form (no signup) */}
+      {isAdminPortal || isLogin ? (
         <LoginForm className={css.loginForm} onSubmit={submitLogin} inProgress={authInProgress} />
       ) : (
         <SignupForm

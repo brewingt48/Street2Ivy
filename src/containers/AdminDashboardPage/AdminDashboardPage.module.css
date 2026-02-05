@@ -552,20 +552,56 @@
 .reportHeader {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
   margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.reportHeaderLeft {
+  flex: 1;
 }
 
 .reportTitle {
   font-size: 18px;
   font-weight: 600;
-  margin: 0;
+  margin: 0 0 4px 0;
   color: var(--colorGrey900);
 }
 
 .reportMeta {
   font-size: 12px;
   color: var(--colorGrey500);
+}
+
+.exportButtons {
+  display: flex;
+  gap: 8px;
+}
+
+.exportButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--colorGrey700);
+  background: white;
+  border: 1px solid var(--colorGrey300);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.exportButton:hover {
+  background-color: var(--colorGrey50);
+  border-color: var(--marketplaceColor);
+  color: var(--marketplaceColor);
+}
+
+.exportIcon {
+  font-size: 16px;
 }
 
 /* Stats Grid for Reports */
@@ -948,4 +984,123 @@
 
 .modalConfirmGreen:hover {
   background-color: #15803d;
+}
+
+/* ============================================ */
+/* Create Admin Panel */
+/* ============================================ */
+
+.panelDescription {
+  font-size: 14px;
+  color: var(--colorGrey600);
+  margin: 0 0 24px 0;
+  line-height: 1.6;
+}
+
+.createAdminForm {
+  max-width: 600px;
+}
+
+.formRow {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+@media (max-width: 500px) {
+  .formRow {
+    flex-direction: column;
+  }
+}
+
+.formField {
+  flex: 1;
+}
+
+.formField label {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--colorGrey700);
+  margin-bottom: 6px;
+}
+
+.formField input,
+.formField select,
+.formField textarea {
+  width: 100%;
+  padding: 10px 12px;
+  font-size: 14px;
+  border: 1px solid var(--colorGrey300);
+  border-radius: 6px;
+  background-color: white;
+  transition: border-color 0.2s;
+}
+
+.formField input:focus,
+.formField select:focus,
+.formField textarea:focus {
+  outline: none;
+  border-color: var(--marketplaceColor);
+  box-shadow: 0 0 0 3px rgba(0, 113, 227, 0.1);
+}
+
+.passwordField {
+  position: relative;
+  display: flex;
+}
+
+.passwordField input {
+  padding-right: 60px;
+}
+
+.showPasswordButton {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  padding: 4px 8px;
+  font-size: 12px;
+  color: var(--colorGrey600);
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.showPasswordButton:hover {
+  color: var(--marketplaceColor);
+}
+
+.fieldHint {
+  display: block;
+  font-size: 12px;
+  color: var(--colorGrey500);
+  margin-top: 4px;
+}
+
+.formActions {
+  margin-top: 24px;
+  padding-top: 24px;
+  border-top: 1px solid var(--colorGrey100);
+}
+
+.createAdminButton {
+  padding: 12px 24px;
+  font-size: 14px;
+  font-weight: 600;
+  color: white;
+  background-color: var(--marketplaceColor);
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.createAdminButton:hover {
+  background-color: var(--marketplaceColorDark);
+}
+
+.createAdminButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }

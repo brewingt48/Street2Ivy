@@ -275,6 +275,15 @@ export const deleteUserAdmin = userId => {
   });
 };
 
+// Create an admin user (system admin only)
+export const createAdminUser = (data) => {
+  return request('/api/admin/users/create-admin', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+};
+
 // Send admin message to educational admin
 export const sendAdminMessage = body => {
   return request('/api/admin/messages', {

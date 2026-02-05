@@ -619,6 +619,109 @@ async function getUser(req, res) {
   }
 }
 
+/**
+ * POST /api/admin/users/create-admin
+ *
+ * Create a new admin user (educational-admin or system-admin).
+ * Only system admins can create other admin accounts.
+ */
+async function createAdmin(req, res) {
+  const { email, password, firstName, lastName, userType, institutionName, adminRole } = req.body;
+
+  // Validate required fields
+  if (!email || !password || !firstName || !lastName || !userType) {
+    return res.status(400).json({
+      error: 'Missing required fields: email, password, firstName, lastName, userType',
+    });
+  }
+
+  // Only allow admin user types
+  if (!['educational-admin', 'system-admin'].includes(userType)) {
+    return res.status(400).json({
+      error: 'Invalid user type. Must be educational-admin or system-admin.',
+    });
+  }
+
+  // Educational admins require institutionName
+  if (userType === 'educational-admin' && !institutionName) {
+    return res.status(400).json({
+      error: 'Educational admins require an institution name.',
+    });
+  }
+
+  try {
+    const admin = await verifySystemAdmin(req, res);
+    if (!admin) {
+      return res.status(403).json({
+        error: 'Access denied. System administrator privileges required.',
+      });
+    }
+
+    const integrationSdk = getIntegrationSdk();
+
+    // Extract email domain for institution matching
+    const emailDomain = email.split('@')[1]?.toLowerCase();
+
+    // Prepare publicData based on user type
+    const publicData = {
+      userType,
+      emailDomain,
+      approvalStatus: 'approved', // Auto-approve admin-created accounts
+      approvedAt: new Date().toISOString(),
+      approvedBy: admin.id.uuid,
+    };
+
+    if (userType === 'educational-admin') {
+      publicData.institutionName = institutionName;
+      publicData.institutionDomain = emailDomain;
+      if (adminRole) {
+        publicData.adminRole = adminRole;
+      }
+    }
+
+    // Create the user via Integration API
+    const createResponse = await integrationSdk.users.create({
+      email,
+      password,
+      firstName,
+      lastName,
+      displayName: `${firstName} ${lastName}`,
+      publicData,
+      privateData: {},
+      protectedData: {
+        createdByAdmin: admin.id.uuid,
+        createdAt: new Date().toISOString(),
+      },
+    });
+
+    const newUser = createResponse.data.data;
+
+    res.status(201).json({
+      success: true,
+      message: `${userType === 'system-admin' ? 'System Administrator' : 'Educational Administrator'} account created successfully.`,
+      user: {
+        id: newUser.id.uuid,
+        email,
+        displayName: `${firstName} ${lastName}`,
+        userType,
+        institutionName: userType === 'educational-admin' ? institutionName : undefined,
+      },
+    });
+
+  } catch (error) {
+    console.error('Admin create admin user error:', error);
+
+    // Check for common errors
+    if (error.status === 409 || error.message?.includes('email-taken')) {
+      return res.status(409).json({
+        error: 'An account with this email address already exists.',
+      });
+    }
+
+    handleError(res, error);
+  }
+}
+
 module.exports = {
   list: listUsers,
   get: getUser,
@@ -628,4 +731,5 @@ module.exports = {
   approve: approveUser,
   reject: rejectUser,
   pending: getPendingApprovals,
+  createAdmin,
 };
