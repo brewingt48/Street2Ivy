@@ -591,6 +591,140 @@
   font-size: 14px;
 }
 
+/* Recipient Search and Sort Controls */
+.recipientControls {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.recipientSearch {
+  flex: 1;
+  padding: 10px 12px;
+  font-size: 14px;
+  border: 1px solid var(--colorGrey300);
+  border-radius: 4px;
+}
+
+.recipientSearch:focus {
+  outline: none;
+  border-color: var(--marketplaceColor);
+}
+
+.recipientTypeFilter {
+  padding: 10px 12px;
+  font-size: 14px;
+  border: 1px solid var(--colorGrey300);
+  border-radius: 4px;
+  min-width: 150px;
+}
+
+.recipientTableContainer {
+  max-height: 250px;
+  overflow-y: auto;
+  border: 1px solid var(--colorGrey200);
+  border-radius: 4px;
+}
+
+.recipientTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.recipientTable th {
+  position: sticky;
+  top: 0;
+  background-color: var(--colorGrey50);
+  padding: 10px 12px;
+  text-align: left;
+  font-weight: 600;
+  font-size: 11px;
+  text-transform: uppercase;
+  color: var(--colorGrey600);
+  border-bottom: 1px solid var(--colorGrey200);
+}
+
+.recipientTableSortable {
+  cursor: pointer;
+  user-select: none;
+}
+
+.recipientTableSortable:hover {
+  background-color: var(--colorGrey100);
+}
+
+.recipientTableSelect {
+  width: 40px;
+  text-align: center;
+}
+
+.recipientTable td {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--colorGrey100);
+  vertical-align: middle;
+}
+
+.recipientRow {
+  cursor: pointer;
+  transition: background-color 0.15s;
+}
+
+.recipientRow:hover {
+  background-color: var(--colorGrey50);
+}
+
+.recipientRowSelected {
+  background-color: #eff6ff;
+}
+
+.recipientRowSelected:hover {
+  background-color: #dbeafe;
+}
+
+.recipientName {
+  font-weight: 500;
+  color: var(--colorGrey900);
+}
+
+.recipientTypeBadge {
+  display: inline-block;
+  padding: 2px 8px;
+  font-size: 11px;
+  font-weight: 500;
+  border-radius: 12px;
+}
+
+.recipientTypeStudent {
+  background-color: #dbeafe;
+  color: #1e40af;
+}
+
+.recipientTypeAdmin {
+  background-color: #dcfce7;
+  color: #166534;
+}
+
+.noRecipientsMessage {
+  text-align: center;
+  color: var(--colorGrey500);
+  padding: 24px;
+  font-style: italic;
+}
+
+.selectedRecipient {
+  margin-top: 8px;
+  padding: 8px 12px;
+  background-color: #eff6ff;
+  border-radius: 4px;
+  font-size: 13px;
+  color: var(--colorGrey700);
+}
+
+.selectedRecipient strong {
+  color: var(--colorGrey900);
+}
+
 /* Message List */
 .messagesList {
   display: flex;

@@ -574,6 +574,89 @@ const MessagesPanel = props => {
     body: '',
   });
 
+  // Recipient search and sort state
+  const [recipientSearch, setRecipientSearch] = useState('');
+  const [recipientSort, setRecipientSort] = useState({ key: 'name', direction: 'asc' });
+  const [recipientTypeFilter, setRecipientTypeFilter] = useState('all'); // 'all', 'students', 'admins'
+
+  // Sort recipients function
+  const sortRecipients = (recipients) => {
+    return [...recipients].sort((a, b) => {
+      let aValue, bValue;
+      const aPublic = a.attributes?.profile?.publicData || {};
+      const bPublic = b.attributes?.profile?.publicData || {};
+
+      switch (recipientSort.key) {
+        case 'name':
+          aValue = a.attributes?.profile?.displayName?.toLowerCase() || '';
+          bValue = b.attributes?.profile?.displayName?.toLowerCase() || '';
+          break;
+        case 'college':
+          aValue = (aPublic.university || aPublic.institutionName || '').toLowerCase();
+          bValue = (bPublic.university || bPublic.institutionName || '').toLowerCase();
+          break;
+        case 'location':
+          aValue = (aPublic.state || aPublic.city || aPublic.location || '').toLowerCase();
+          bValue = (bPublic.state || bPublic.city || bPublic.location || '').toLowerCase();
+          break;
+        default:
+          return 0;
+      }
+
+      if (aValue < bValue) return recipientSort.direction === 'asc' ? -1 : 1;
+      if (aValue > bValue) return recipientSort.direction === 'asc' ? 1 : -1;
+      return 0;
+    });
+  };
+
+  // Filter and sort recipients
+  const getFilteredRecipients = () => {
+    let allRecipients = [];
+
+    if (recipientTypeFilter === 'all' || recipientTypeFilter === 'admins') {
+      allRecipients = [...allRecipients, ...educationalAdmins.map(a => ({ ...a, _type: 'admin' }))];
+    }
+    if (recipientTypeFilter === 'all' || recipientTypeFilter === 'students') {
+      allRecipients = [...allRecipients, ...(students || []).map(s => ({ ...s, _type: 'student' }))];
+    }
+
+    // Apply search filter
+    if (recipientSearch.trim()) {
+      const searchLower = recipientSearch.toLowerCase();
+      allRecipients = allRecipients.filter(r => {
+        const name = r.attributes?.profile?.displayName?.toLowerCase() || '';
+        const publicData = r.attributes?.profile?.publicData || {};
+        const university = (publicData.university || '').toLowerCase();
+        const institution = (publicData.institutionName || '').toLowerCase();
+        const state = (publicData.state || '').toLowerCase();
+        const city = (publicData.city || '').toLowerCase();
+
+        return name.includes(searchLower) ||
+               university.includes(searchLower) ||
+               institution.includes(searchLower) ||
+               state.includes(searchLower) ||
+               city.includes(searchLower);
+      });
+    }
+
+    // Apply sorting
+    return sortRecipients(allRecipients);
+  };
+
+  const handleRecipientSort = (key) => {
+    setRecipientSort(prev => ({
+      key,
+      direction: prev.key === key && prev.direction === 'asc' ? 'desc' : 'asc'
+    }));
+  };
+
+  const getRecipientSortIndicator = (key) => {
+    if (recipientSort.key !== key) return ' ↕';
+    return recipientSort.direction === 'asc' ? ' ↑' : ' ↓';
+  };
+
+  const filteredRecipients = getFilteredRecipients();
+
   useEffect(() => {
     if (sendSuccess) {
       setFormData({ recipientId: '', subject: '', body: '' });
@@ -752,37 +835,107 @@ const MessagesPanel = props => {
               <label>
                 <FormattedMessage id="AdminDashboardPage.recipientLabel" />
               </label>
-              <select
-                value={formData.recipientId}
-                onChange={e => setFormData(prev => ({ ...prev, recipientId: e.target.value }))}
-                required
-              >
-                <option value="">Select a recipient...</option>
-                {educationalAdmins.length > 0 && (
-                  <optgroup label="Educational Admins">
-                    {educationalAdmins.map(admin => (
-                      <option key={admin.id} value={admin.id}>
-                        {admin.attributes?.profile?.displayName || 'Unknown'}
-                        {admin.attributes?.profile?.publicData?.institutionName
-                          ? ` (${admin.attributes.profile.publicData.institutionName})`
-                          : ''}
-                      </option>
-                    ))}
-                  </optgroup>
-                )}
-                {students && students.length > 0 && (
-                  <optgroup label="Students">
-                    {students.map(student => (
-                      <option key={student.id} value={student.id}>
-                        {student.attributes?.profile?.displayName || 'Unknown'}
-                        {student.attributes?.profile?.publicData?.university
-                          ? ` (${student.attributes.profile.publicData.university})`
-                          : ''}
-                      </option>
-                    ))}
-                  </optgroup>
-                )}
-              </select>
+
+              {/* Recipient Search and Filter Controls */}
+              <div className={css.recipientControls}>
+                <input
+                  type="text"
+                  className={css.recipientSearch}
+                  placeholder="Search by name, college, or location..."
+                  value={recipientSearch}
+                  onChange={e => setRecipientSearch(e.target.value)}
+                />
+                <select
+                  className={css.recipientTypeFilter}
+                  value={recipientTypeFilter}
+                  onChange={e => setRecipientTypeFilter(e.target.value)}
+                >
+                  <option value="all">All Recipients</option>
+                  <option value="students">Students Only</option>
+                  <option value="admins">Edu Admins Only</option>
+                </select>
+              </div>
+
+              {/* Sortable Recipient Table */}
+              <div className={css.recipientTableContainer}>
+                <table className={css.recipientTable}>
+                  <thead>
+                    <tr>
+                      <th className={css.recipientTableSelect}></th>
+                      <th
+                        className={css.recipientTableSortable}
+                        onClick={() => handleRecipientSort('name')}
+                      >
+                        Name{getRecipientSortIndicator('name')}
+                      </th>
+                      <th>Type</th>
+                      <th
+                        className={css.recipientTableSortable}
+                        onClick={() => handleRecipientSort('college')}
+                      >
+                        College/Institution{getRecipientSortIndicator('college')}
+                      </th>
+                      <th
+                        className={css.recipientTableSortable}
+                        onClick={() => handleRecipientSort('location')}
+                      >
+                        Location{getRecipientSortIndicator('location')}
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredRecipients.length === 0 ? (
+                      <tr>
+                        <td colSpan="5" className={css.noRecipientsMessage}>
+                          No recipients found matching your search.
+                        </td>
+                      </tr>
+                    ) : (
+                      filteredRecipients.map(recipient => {
+                        const publicData = recipient.attributes?.profile?.publicData || {};
+                        const displayName = recipient.attributes?.profile?.displayName || 'Unknown';
+                        const college = publicData.university || publicData.institutionName || '-';
+                        const location = publicData.state || publicData.city || publicData.location || '-';
+                        const isSelected = formData.recipientId === recipient.id;
+                        const typeLabel = recipient._type === 'student' ? 'Student' : 'Edu Admin';
+
+                        return (
+                          <tr
+                            key={recipient.id}
+                            className={classNames(css.recipientRow, { [css.recipientRowSelected]: isSelected })}
+                            onClick={() => setFormData(prev => ({ ...prev, recipientId: recipient.id }))}
+                          >
+                            <td className={css.recipientTableSelect}>
+                              <input
+                                type="radio"
+                                name="recipient"
+                                checked={isSelected}
+                                onChange={() => setFormData(prev => ({ ...prev, recipientId: recipient.id }))}
+                              />
+                            </td>
+                            <td className={css.recipientName}>{displayName}</td>
+                            <td>
+                              <span className={classNames(css.recipientTypeBadge, {
+                                [css.recipientTypeStudent]: recipient._type === 'student',
+                                [css.recipientTypeAdmin]: recipient._type === 'admin'
+                              })}>
+                                {typeLabel}
+                              </span>
+                            </td>
+                            <td>{college}</td>
+                            <td>{location}</td>
+                          </tr>
+                        );
+                      })
+                    )}
+                  </tbody>
+                </table>
+              </div>
+              {formData.recipientId && (
+                <div className={css.selectedRecipient}>
+                  Selected: <strong>{filteredRecipients.find(r => r.id === formData.recipientId)?.attributes?.profile?.displayName || 'Unknown'}</strong>
+                </div>
+              )}
             </div>
 
             <div className={css.formField}>
