@@ -241,16 +241,36 @@ export const AuthenticationForms = props => {
         },
       ];
 
-  const handleSubmitSignup = values => {
+  const handleSubmitSignup = async values => {
     const { userType, email, password, fname, lname, displayName, ...rest } = values;
 
-    // Clear any previous .edu error
+    // Clear any previous error
     setEduEmailError(null);
 
     // Validate .edu email for students on submit
     if (userType === 'student' && !isEduEmail(email)) {
       setEduEmailError(intl.formatMessage({ id: 'SignupForm.eduEmailRequired' }));
       return; // Don't submit
+    }
+
+    // For students, check if their institution is a member
+    if (userType === 'student') {
+      const emailDomain = email.split('@')[1]?.toLowerCase();
+      try {
+        const response = await fetch(`/api/institutions/check/${encodeURIComponent(emailDomain)}`);
+        const data = await response.json();
+
+        if (!data.isMember) {
+          setEduEmailError(intl.formatMessage(
+            { id: 'SignupForm.institutionNotMember' },
+            { domain: emailDomain }
+          ));
+          return; // Don't submit - institution not a member
+        }
+      } catch (error) {
+        console.error('Failed to check institution membership:', error);
+        // On network error, allow signup to proceed (server will validate)
+      }
     }
 
     const displayNameMaybe = displayName ? { displayName: displayName.trim() } : {};
