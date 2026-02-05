@@ -97,24 +97,24 @@ const routeConfiguration = (layoutConfig, accessControlConfig) => {
       component: CMSPage,
       loadData: pageDataLoadingAPI.CMSPage.loadData,
     },
-    // NOTE: when the private marketplace feature is enabled, the '/s' route is disallowed by the robots.txt resource.
-    // If you add new routes that start with '/s*' (e.g. /support), you should add them to the robotsPrivateMarketplace.txt file.
-    {
-      path: '/s',
-      name: 'SearchPage',
-      ...authForPrivateMarketplace,
-      component: SearchPage,
-      loadData: pageDataLoadingAPI.SearchPage.loadData,
-      prioritizeMapLibraryLoading: isSearchPageWithMap,
-    },
-    {
-      path: '/s/:listingType',
-      name: 'SearchPageWithListingType',
-      ...authForPrivateMarketplace,
-      component: SearchPage,
-      loadData: pageDataLoadingAPI.SearchPage.loadData,
-      prioritizeMapLibraryLoading: isSearchPageWithMap,
-    },
+    // Street2Ivy: Search listing functionality has been removed
+    // The /s routes have been disabled - users should not be able to browse listings publicly
+    // {
+    //   path: '/s',
+    //   name: 'SearchPage',
+    //   ...authForPrivateMarketplace,
+    //   component: SearchPage,
+    //   loadData: pageDataLoadingAPI.SearchPage.loadData,
+    //   prioritizeMapLibraryLoading: isSearchPageWithMap,
+    // },
+    // {
+    //   path: '/s/:listingType',
+    //   name: 'SearchPageWithListingType',
+    //   ...authForPrivateMarketplace,
+    //   component: SearchPage,
+    //   loadData: pageDataLoadingAPI.SearchPage.loadData,
+    //   prioritizeMapLibraryLoading: isSearchPageWithMap,
+    // },
     {
       path: '/l',
       name: 'ListingBasePage',
