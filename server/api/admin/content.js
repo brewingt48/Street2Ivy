@@ -29,6 +29,7 @@ const defaultContent = {
     logoUrl: null,
     tagline: 'Connecting Ivy League Talent with Industry Leaders',
     faviconUrl: null,
+    isActive: true,
     updatedAt: new Date().toISOString(),
     updatedBy: null,
   },
@@ -199,12 +200,15 @@ const defaultContent = {
 
 /**
  * Load content from file or return defaults
+ * Merges saved content with defaults to ensure new sections are always available
  */
 function loadContent() {
   try {
     if (fs.existsSync(CONTENT_FILE)) {
       const data = fs.readFileSync(CONTENT_FILE, 'utf8');
-      return JSON.parse(data);
+      const savedContent = JSON.parse(data);
+      // Merge with defaults to ensure new sections (like branding) are available
+      return { ...defaultContent, ...savedContent };
     }
   } catch (error) {
     console.error('Error loading content file:', error);

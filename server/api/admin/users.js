@@ -248,6 +248,9 @@ async function unblockUser(req, res) {
  * DELETE /api/admin/users/:userId
  *
  * Delete a user account.
+ * Note: Sharetribe doesn't support direct user deletion via API.
+ * Instead, we ban the user and update their profile to mark them as deleted.
+ * This is a "soft delete" approach that prevents the user from logging in.
  */
 async function deleteUser(req, res) {
   const { userId } = req.params;
@@ -273,17 +276,33 @@ async function deleteUser(req, res) {
 
     const integrationSdk = getIntegrationSdk();
 
-    // Delete the user
-    await integrationSdk.users.delete({
+    // Sharetribe doesn't have a users.delete endpoint.
+    // Instead, we ban the user to prevent login and mark them as deleted in their profile.
+    // First, ban the user
+    await integrationSdk.users.updateProfile(
+      {
+        id: userId,
+        publicData: {
+          accountDeleted: true,
+          deletedAt: new Date().toISOString(),
+          deletedBy: admin.id.uuid,
+        },
+      },
+      { expand: true }
+    );
+
+    // Then ban the user to prevent login
+    await integrationSdk.users.ban({
       id: userId,
     });
 
     res.status(200).json({
       success: true,
-      message: 'User has been deleted.',
+      message: 'User account has been deactivated and banned.',
       user: {
         id: userId,
         deleted: true,
+        banned: true,
       },
     });
   } catch (error) {
