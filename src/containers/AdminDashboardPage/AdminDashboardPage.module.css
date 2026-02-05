@@ -170,6 +170,30 @@
   border-bottom: 1px solid var(--colorGrey200);
 }
 
+.sortableHeader {
+  cursor: pointer;
+  user-select: none;
+  transition: background-color 0.15s ease;
+}
+
+.sortableHeader:hover {
+  background-color: var(--colorGrey100);
+}
+
+.sortIndicator {
+  font-size: 10px;
+  margin-left: 4px;
+  color: var(--colorGrey400);
+}
+
+.collegeCell,
+.locationCell {
+  max-width: 150px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .usersTable td {
   padding: 16px;
   font-size: 14px;

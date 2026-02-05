@@ -144,7 +144,63 @@ const UserManagementPanel = props => {
     status: '',
     search: '',
   });
+  const [sortConfig, setSortConfig] = useState({ key: 'createdAt', direction: 'desc' });
   const [confirmModal, setConfirmModal] = useState(null);
+
+  // Sorting function for users
+  const sortUsers = (usersToSort) => {
+    if (!sortConfig.key) return usersToSort;
+
+    return [...usersToSort].sort((a, b) => {
+      let aValue, bValue;
+
+      switch (sortConfig.key) {
+        case 'name':
+          aValue = a.attributes?.profile?.displayName?.toLowerCase() || '';
+          bValue = b.attributes?.profile?.displayName?.toLowerCase() || '';
+          break;
+        case 'location':
+          // For students: use state from publicData
+          // For corporate: use company location/state
+          const aPublic = a.attributes?.profile?.publicData || {};
+          const bPublic = b.attributes?.profile?.publicData || {};
+          aValue = (aPublic.state || aPublic.city || aPublic.location || '').toLowerCase();
+          bValue = (bPublic.state || bPublic.city || bPublic.location || '').toLowerCase();
+          break;
+        case 'college':
+          // For students: university, For corporate: companyName
+          const aData = a.attributes?.profile?.publicData || {};
+          const bData = b.attributes?.profile?.publicData || {};
+          aValue = (aData.university || aData.companyName || aData.institutionName || '').toLowerCase();
+          bValue = (bData.university || bData.companyName || bData.institutionName || '').toLowerCase();
+          break;
+        case 'createdAt':
+          aValue = new Date(a.attributes?.createdAt || 0).getTime();
+          bValue = new Date(b.attributes?.createdAt || 0).getTime();
+          break;
+        default:
+          return 0;
+      }
+
+      if (aValue < bValue) return sortConfig.direction === 'asc' ? -1 : 1;
+      if (aValue > bValue) return sortConfig.direction === 'asc' ? 1 : -1;
+      return 0;
+    });
+  };
+
+  const handleSort = (key) => {
+    setSortConfig(prev => ({
+      key,
+      direction: prev.key === key && prev.direction === 'asc' ? 'desc' : 'asc'
+    }));
+  };
+
+  const getSortIndicator = (key) => {
+    if (sortConfig.key !== key) return ' ↕';
+    return sortConfig.direction === 'asc' ? ' ↑' : ' ↓';
+  };
+
+  const sortedUsers = sortUsers(users);
 
   const handleFilterChange = (key, value) => {
     setFilters(prev => ({ ...prev, [key]: value }));
@@ -283,11 +339,32 @@ const UserManagementPanel = props => {
           <table className={css.usersTable}>
             <thead>
               <tr>
-                <th>
+                <th
+                  className={css.sortableHeader}
+                  onClick={() => handleSort('name')}
+                  title="Sort by name"
+                >
                   <FormattedMessage id="AdminDashboardPage.tableUser" />
+                  <span className={css.sortIndicator}>{getSortIndicator('name')}</span>
                 </th>
                 <th>
                   <FormattedMessage id="AdminDashboardPage.tableType" />
+                </th>
+                <th
+                  className={css.sortableHeader}
+                  onClick={() => handleSort('college')}
+                  title="Sort by college/company"
+                >
+                  College/Company
+                  <span className={css.sortIndicator}>{getSortIndicator('college')}</span>
+                </th>
+                <th
+                  className={css.sortableHeader}
+                  onClick={() => handleSort('location')}
+                  title="Sort by location"
+                >
+                  Location
+                  <span className={css.sortIndicator}>{getSortIndicator('location')}</span>
                 </th>
                 <th>
                   <FormattedMessage id="AdminDashboardPage.tableStats" />
@@ -295,8 +372,13 @@ const UserManagementPanel = props => {
                 <th>
                   <FormattedMessage id="AdminDashboardPage.tableStatus" />
                 </th>
-                <th>
+                <th
+                  className={css.sortableHeader}
+                  onClick={() => handleSort('createdAt')}
+                  title="Sort by join date"
+                >
                   <FormattedMessage id="AdminDashboardPage.tableJoined" />
+                  <span className={css.sortIndicator}>{getSortIndicator('createdAt')}</span>
                 </th>
                 <th>
                   <FormattedMessage id="AdminDashboardPage.tableActions" />
@@ -304,7 +386,7 @@ const UserManagementPanel = props => {
               </tr>
             </thead>
             <tbody>
-              {users.map(user => {
+              {sortedUsers.map(user => {
                 const publicData = user.attributes?.profile?.publicData || {};
                 const userType = publicData.userType || 'unknown';
                 const status = getUserStatus(user);
@@ -312,6 +394,12 @@ const UserManagementPanel = props => {
                 const createdAt = user.attributes?.createdAt
                   ? new Date(user.attributes.createdAt).toLocaleDateString()
                   : 'N/A';
+
+                // Get college/company name based on user type
+                const collegeOrCompany = publicData.university || publicData.companyName || publicData.institutionName || '-';
+
+                // Get location (state/city)
+                const location = publicData.state || publicData.city || publicData.location || '-';
 
                 return (
                   <tr key={user.id}>
@@ -347,6 +435,8 @@ const UserManagementPanel = props => {
                         {getUserTypeLabel(userType)}
                       </span>
                     </td>
+                    <td className={css.collegeCell}>{collegeOrCompany}</td>
+                    <td className={css.locationCell}>{location}</td>
                     <td>
                       <UserStatsCell
                         user={user}
