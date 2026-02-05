@@ -34,8 +34,10 @@ const PrivacyPolicyPage = loadable(() => import(/* webpackChunkName: "PrivacyPol
 const ProfilePage = loadable(() => import(/* webpackChunkName: "ProfilePage" */ '../containers/ProfilePage/ProfilePage'));
 const ProfileSettingsPage = loadable(() => import(/* webpackChunkName: "ProfileSettingsPage" */ '../containers/ProfileSettingsPage/ProfileSettingsPage'));
 const RequestQuotePage = loadable(() => import(/* webpackChunkName: "RequestQuotePage" */ '../containers/RequestQuotePage/RequestQuotePage'));
+const SearchCompaniesPage = loadable(() => import(/* webpackChunkName: "SearchCompaniesPage" */ '../containers/SearchCompaniesPage/SearchCompaniesPage'));
 const SearchPageWithMap = loadable(() => import(/* webpackChunkName: "SearchPageWithMap" */ /* webpackPrefetch: true */  '../containers/SearchPage/SearchPageWithMap'));
 const SearchPageWithGrid = loadable(() => import(/* webpackChunkName: "SearchPageWithGrid" */ /* webpackPrefetch: true */  '../containers/SearchPage/SearchPageWithGrid'));
+const SearchStudentsPage = loadable(() => import(/* webpackChunkName: "SearchStudentsPage" */ '../containers/SearchStudentsPage/SearchStudentsPage'));
 const StripePayoutPage = loadable(() => import(/* webpackChunkName: "StripePayoutPage" */ '../containers/StripePayoutPage/StripePayoutPage'));
 const TermsOfServicePage = loadable(() => import(/* webpackChunkName: "TermsOfServicePage" */ '../containers/TermsOfServicePage/TermsOfServicePage'));
 const TransactionPage = loadable(() => import(/* webpackChunkName: "TransactionPage" */ '../containers/TransactionPage/TransactionPage'));
@@ -305,6 +307,22 @@ const routeConfiguration = (layoutConfig, accessControlConfig) => {
       authPage: 'LoginPage',
       component: CorporateDashboardPage,
       loadData: pageDataLoadingAPI.CorporateDashboardPage.loadData,
+    },
+    {
+      path: '/search/students',
+      name: 'SearchStudentsPage',
+      auth: true,
+      authPage: 'LoginPage',
+      component: SearchStudentsPage,
+      loadData: pageDataLoadingAPI.SearchStudentsPage.loadData,
+    },
+    {
+      path: '/search/companies',
+      name: 'SearchCompaniesPage',
+      auth: true,
+      authPage: 'LoginPage',
+      component: SearchCompaniesPage,
+      loadData: pageDataLoadingAPI.SearchCompaniesPage.loadData,
     },
     {
       path: '/listings',

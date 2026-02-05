@@ -19,7 +19,9 @@ import ManageAccountPage from './ManageAccountPage/ManageAccountPage.duck';
 import ProfilePage from './ProfilePage/ProfilePage.duck';
 import ProfileSettingsPage from './ProfileSettingsPage/ProfileSettingsPage.duck';
 import RequestQuotePage from './RequestQuotePage/RequestQuotePage.duck';
+import SearchCompaniesPage from './SearchCompaniesPage/SearchCompaniesPage.duck';
 import SearchPage from './SearchPage/SearchPage.duck';
+import SearchStudentsPage from './SearchStudentsPage/SearchStudentsPage.duck';
 import StripePayoutPage from './StripePayoutPage/StripePayoutPage.duck';
 import TransactionPage from './TransactionPage/TransactionPage.duck';
 
@@ -40,7 +42,9 @@ export {
   ProfilePage,
   ProfileSettingsPage,
   RequestQuotePage,
+  SearchCompaniesPage,
   SearchPage,
+  SearchStudentsPage,
   StripePayoutPage,
   TransactionPage,
 };

@@ -16,6 +16,8 @@ const transactionLineItems = require('./api/transaction-line-items');
 const initiatePrivileged = require('./api/initiate-privileged');
 const transitionPrivileged = require('./api/transition-privileged');
 const deleteAccount = require('./api/delete-account');
+const searchUsers = require('./api/search-users');
+const inviteToApply = require('./api/invite-to-apply');
 
 const createUserWithIdp = require('./api/auth/createUserWithIdp');
 
@@ -25,6 +27,9 @@ const { authenticateGoogle, authenticateGoogleCallback } = require('./api/auth/g
 const router = express.Router();
 
 // ================ API router middleware: ================ //
+
+// Parse JSON bodies (for custom API endpoints like search-users)
+router.use(bodyParser.json());
 
 // Parse Transit body first to a string
 router.use(
@@ -56,6 +61,10 @@ router.post('/transaction-line-items', transactionLineItems);
 router.post('/initiate-privileged', initiatePrivileged);
 router.post('/transition-privileged', transitionPrivileged);
 router.post('/delete-account', deleteAccount);
+
+// Street2Ivy: User search and invitation endpoints
+router.get('/search-users', searchUsers);
+router.post('/invite-to-apply', inviteToApply);
 
 // Create user with identity provider (e.g. Facebook or Google)
 // This endpoint is called to create a new user after user has confirmed

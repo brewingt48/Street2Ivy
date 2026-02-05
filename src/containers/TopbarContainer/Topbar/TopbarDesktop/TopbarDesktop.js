@@ -63,6 +63,11 @@ const ProfileMenu = ({ currentPage, currentUser, onLogout, showManageListingsLin
     return currentPage === page || isAccountSettingsPage ? css.currentPage : null;
   };
 
+  // Street2Ivy: Determine user type for conditional navigation
+  const userType = currentUser?.attributes?.profile?.publicData?.userType;
+  const isCorporatePartner = userType === 'corporate-partner';
+  const isStudent = userType === 'student';
+
   return (
     <Menu skipFocusOnNavigation={true}>
       <MenuLabel
@@ -82,6 +87,39 @@ const ProfileMenu = ({ currentPage, currentUser, onLogout, showManageListingsLin
             >
               <span className={css.menuItemBorder} />
               <FormattedMessage id="TopbarDesktop.yourListingsLink" />
+            </NamedLink>
+          </MenuItem>
+        ) : null}
+        {isCorporatePartner ? (
+          <MenuItem key="SearchStudentsPage">
+            <NamedLink
+              className={classNames(css.menuLink, currentPageClass('SearchStudentsPage'))}
+              name="SearchStudentsPage"
+            >
+              <span className={css.menuItemBorder} />
+              <FormattedMessage id="TopbarDesktop.findStudentsLink" />
+            </NamedLink>
+          </MenuItem>
+        ) : null}
+        {isCorporatePartner ? (
+          <MenuItem key="CorporateDashboardPage">
+            <NamedLink
+              className={classNames(css.menuLink, currentPageClass('CorporateDashboardPage'))}
+              name="CorporateDashboardPage"
+            >
+              <span className={css.menuItemBorder} />
+              <FormattedMessage id="TopbarDesktop.dashboardLink" />
+            </NamedLink>
+          </MenuItem>
+        ) : null}
+        {isStudent ? (
+          <MenuItem key="SearchCompaniesPage">
+            <NamedLink
+              className={classNames(css.menuLink, currentPageClass('SearchCompaniesPage'))}
+              name="SearchCompaniesPage"
+            >
+              <span className={css.menuItemBorder} />
+              <FormattedMessage id="TopbarDesktop.findCompaniesLink" />
             </NamedLink>
           </MenuItem>
         ) : null}

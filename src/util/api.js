@@ -151,3 +151,33 @@ export const createUserWithIdp = body => {
 export const deleteUserAccount = body => {
   return post('/api/delete-account', body);
 };
+
+// Street2Ivy: Search users via Integration API
+//
+// Queries users by extended data fields (userType, state, skills, etc.)
+// This calls a server-side endpoint that uses the Integration API SDK
+// since the Marketplace API doesn't support users.query().
+//
+// See `server/api/search-users.js` for supported query parameters.
+export const searchUsers = params => {
+  const queryString = Object.entries(params)
+    .filter(([, v]) => v != null && v !== '')
+    .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`)
+    .join('&');
+
+  return request(`/api/search-users?${queryString}`, {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
+  });
+};
+
+// Street2Ivy: Invite a student to apply for a project
+//
+// Corporate partners can invite students to apply for their project listings.
+// This uses the trusted SDK on the server to initiate a transaction
+// on behalf of the student (since only the customer can initiate transactions).
+//
+// See `server/api/invite-to-apply.js` for implementation details.
+export const inviteToApply = body => {
+  return post('/api/invite-to-apply', body);
+};

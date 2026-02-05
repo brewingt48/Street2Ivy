@@ -17,7 +17,9 @@ import { loadData as PaymentMethodsPageLoader } from './PaymentMethodsPage/Payme
 import { loadData as PrivacyPolicyPageLoader } from './PrivacyPolicyPage/PrivacyPolicyPage.duck';
 import { loadData as ProfilePageLoader } from './ProfilePage/ProfilePage.duck';
 import { loadData as RequestQuotePageLoader } from './RequestQuotePage/RequestQuotePage.duck';
+import { loadData as SearchCompaniesPageLoader } from './SearchCompaniesPage/SearchCompaniesPage.duck';
 import { loadData as SearchPageLoader } from './SearchPage/SearchPage.duck';
+import { loadData as SearchStudentsPageLoader } from './SearchStudentsPage/SearchStudentsPage.duck';
 import { loadData as StripePayoutPageLoader } from './StripePayoutPage/StripePayoutPage.duck';
 import { loadData as TermsOfServicePageLoader } from './TermsOfServicePage/TermsOfServicePage.duck';
 import {
@@ -75,8 +77,14 @@ const getPageDataLoadingAPI = () => {
     RequestQuotePage: {
       loadData: RequestQuotePageLoader,
     },
+    SearchCompaniesPage: {
+      loadData: SearchCompaniesPageLoader,
+    },
     SearchPage: {
       loadData: SearchPageLoader,
+    },
+    SearchStudentsPage: {
+      loadData: SearchStudentsPageLoader,
     },
     StripePayoutPage: {
       loadData: StripePayoutPageLoader,

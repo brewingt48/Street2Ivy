@@ -162,6 +162,35 @@ const TopbarMobileMenu = props => {
     </li>
   ) : null;
 
+  // Street2Ivy: Determine user type for conditional navigation
+  const userType = user?.attributes?.profile?.publicData?.userType;
+  const isCorporatePartner = userType === 'corporate-partner';
+  const isStudent = userType === 'student';
+
+  const findStudentsLinkMaybe = isCorporatePartner ? (
+    <li className={classNames(css.navigationLink, currentPageClass('SearchStudentsPage'))}>
+      <NamedLink name="SearchStudentsPage">
+        <FormattedMessage id="TopbarMobileMenu.findStudentsLink" />
+      </NamedLink>
+    </li>
+  ) : null;
+
+  const dashboardLinkMaybe = isCorporatePartner ? (
+    <li className={classNames(css.navigationLink, currentPageClass('CorporateDashboardPage'))}>
+      <NamedLink name="CorporateDashboardPage">
+        <FormattedMessage id="TopbarMobileMenu.dashboardLink" />
+      </NamedLink>
+    </li>
+  ) : null;
+
+  const findCompaniesLinkMaybe = isStudent ? (
+    <li className={classNames(css.navigationLink, currentPageClass('SearchCompaniesPage'))}>
+      <NamedLink name="SearchCompaniesPage">
+        <FormattedMessage id="TopbarMobileMenu.findCompaniesLink" />
+      </NamedLink>
+    </li>
+  ) : null;
+
   return (
     <div className={css.root}>
       <AvatarLarge className={css.avatar} user={currentUser} />
@@ -181,6 +210,9 @@ const TopbarMobileMenu = props => {
             </NamedLink>
           </li>
           {manageListingsLinkMaybe}
+          {findStudentsLinkMaybe}
+          {dashboardLinkMaybe}
+          {findCompaniesLinkMaybe}
           <li className={classNames(css.navigationLink, currentPageClass('ProfileSettingsPage'))}>
             <NamedLink name="ProfileSettingsPage">
               <FormattedMessage id="TopbarMobileMenu.profileSettingsLink" />
