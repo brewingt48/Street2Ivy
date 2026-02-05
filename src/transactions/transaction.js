@@ -3,6 +3,7 @@ import * as purchaseProcess from './transactionProcessPurchase';
 import * as bookingProcess from './transactionProcessBooking';
 import * as inquiryProcess from './transactionProcessInquiry';
 import * as negotiationProcess from './transactionProcessNegotiation';
+import * as projectApplicationProcess from './transactionProcessProjectApplication';
 
 // Supported unit types
 // Note: These are passed to translations/microcopy in certain cases.
@@ -21,6 +22,7 @@ export const PURCHASE_PROCESS_NAME = 'default-purchase';
 export const BOOKING_PROCESS_NAME = 'default-booking';
 export const INQUIRY_PROCESS_NAME = 'default-inquiry';
 export const NEGOTIATION_PROCESS_NAME = 'default-negotiation';
+export const PROJECT_APPLICATION_PROCESS_NAME = 'default-project-application';
 
 /**
  * A process should export:
@@ -59,6 +61,12 @@ const PROCESSES = [
     alias: `${NEGOTIATION_PROCESS_NAME}/release-1`,
     process: negotiationProcess,
     unitTypes: [OFFER, REQUEST],
+  },
+  {
+    name: PROJECT_APPLICATION_PROCESS_NAME,
+    alias: `${PROJECT_APPLICATION_PROCESS_NAME}/release-1`,
+    process: projectApplicationProcess,
+    unitTypes: [INQUIRY],
   },
 ];
 
@@ -229,6 +237,8 @@ export const resolveLatestProcessName = processName => {
       return INQUIRY_PROCESS_NAME;
     case NEGOTIATION_PROCESS_NAME:
       return NEGOTIATION_PROCESS_NAME;
+    case PROJECT_APPLICATION_PROCESS_NAME:
+      return PROJECT_APPLICATION_PROCESS_NAME;
     default:
       return processName;
   }
@@ -356,6 +366,27 @@ export const isNegotiationProcess = processName => {
 export const isNegotiationProcessAlias = processAlias => {
   const processName = processAlias ? processAlias.split('/')[0] : null;
   return processAlias ? isNegotiationProcess(processName) : false;
+};
+
+/**
+ * Check if the process is project application process
+ *
+ * @param {String} processName
+ */
+export const isProjectApplicationProcess = processName => {
+  const latestProcessName = resolveLatestProcessName(processName);
+  const processInfo = PROCESSES.find(process => process.name === latestProcessName);
+  return [PROJECT_APPLICATION_PROCESS_NAME].includes(processInfo?.name);
+};
+
+/**
+ * Check if the process/alias points to a project application process
+ *
+ * @param {String} processAlias
+ */
+export const isProjectApplicationProcessAlias = processAlias => {
+  const processName = processAlias ? processAlias.split('/')[0] : null;
+  return processAlias ? isProjectApplicationProcess(processName) : false;
 };
 
 /**

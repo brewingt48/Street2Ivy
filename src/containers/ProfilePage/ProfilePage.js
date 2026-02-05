@@ -63,14 +63,26 @@ const MIN_LENGTH_FOR_LONG_WORDS = 20;
 
 export const AsideContent = props => {
   const { user, displayName, showLinkToProfileSettingsPage } = props;
+  const publicData = user?.attributes?.profile?.publicData || {};
+  const isCorporatePartner = publicData?.userType === 'corporate-partner';
+  const companyName = publicData?.companyName;
+
+  // For corporate partners, show company name as the heading
+  const headingName = isCorporatePartner && companyName ? companyName : displayName;
+
   return (
     <div className={css.asideContent}>
       <AvatarLarge className={css.avatar} user={user} disableProfileLink />
       <H2 as="h1" className={css.mobileHeading}>
-        {displayName ? (
-          <FormattedMessage id="ProfilePage.mobileHeading" values={{ name: displayName }} />
+        {headingName ? (
+          <FormattedMessage id="ProfilePage.mobileHeading" values={{ name: headingName }} />
         ) : null}
       </H2>
+      {isCorporatePartner && companyName ? (
+        <p className={css.companySubtitle}>
+          <FormattedMessage id="ProfilePage.corporatePartnerLabel" />
+        </p>
+      ) : null}
       {showLinkToProfileSettingsPage ? (
         <>
           <NamedLink className={css.editLinkMobile} name="ProfileSettingsPage">
@@ -237,6 +249,12 @@ export const MainContent = props => {
     userTypeRoles,
   } = props;
 
+  // Street2Ivy: detect corporate partner
+  const isCorporatePartner = publicData?.userType === 'corporate-partner';
+  const companyName = publicData?.companyName;
+  const companyWebsite = publicData?.companyWebsite;
+  const companyDescription = publicData?.companyDescription;
+
   const hasListings = listings.length > 0;
   const hasMatchMedia = typeof window !== 'undefined' && window?.matchMedia;
   const isMobileLayout =
@@ -251,9 +269,22 @@ export const MainContent = props => {
     longWordClass: css.longWord,
   });
 
+  // Use company description as the bio for corporate partners if no personal bio is set
+  const hasCompanyDescription = isCorporatePartner && !!companyDescription;
+  const companyDescriptionWithLinks = hasCompanyDescription
+    ? richText(companyDescription, {
+        linkify: true,
+        longWordMinLength: MIN_LENGTH_FOR_LONG_WORDS,
+        longWordClass: css.longWord,
+      })
+    : null;
+
   const listingsContainerClasses = classNames(css.listingsContainer, {
-    [css.withBioMissingAbove]: !hasBio,
+    [css.withBioMissingAbove]: !hasBio && !hasCompanyDescription,
   });
+
+  // For corporate partners, show company name as heading
+  const headingName = isCorporatePartner && companyName ? companyName : displayName;
 
   if (userShowError || queryListingsError) {
     return (
@@ -265,8 +296,26 @@ export const MainContent = props => {
   return (
     <div>
       <H2 as="h1" className={css.desktopHeading}>
-        <FormattedMessage id="ProfilePage.desktopHeading" values={{ name: displayName }} />
+        <FormattedMessage id="ProfilePage.desktopHeading" values={{ name: headingName }} />
       </H2>
+      {isCorporatePartner && companyWebsite ? (
+        <a
+          href={companyWebsite.startsWith('http') ? companyWebsite : `https://${companyWebsite}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className={css.companyWebsiteLink}
+        >
+          {companyWebsite.replace(/^https?:\/\//, '')}
+        </a>
+      ) : null}
+      {hasCompanyDescription ? (
+        <div className={css.companyDescriptionSection}>
+          <H4 as="h2" className={css.companyDescriptionHeading}>
+            <FormattedMessage id="ProfilePage.aboutCompanyTitle" />
+          </H4>
+          <p className={css.bio}>{companyDescriptionWithLinks}</p>
+        </div>
+      ) : null}
       {hasBio ? <p className={css.bio}>{bioWithLinks}</p> : null}
 
       {displayName ? (

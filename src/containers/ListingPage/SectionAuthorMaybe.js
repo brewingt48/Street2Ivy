@@ -33,10 +33,17 @@ const SectionAuthorMaybe = props => {
   const processName = resolveLatestProcessName(transactionProcessAlias.split('/')[0]);
   const isInquiryProcess = processName === INQUIRY_PROCESS_NAME;
 
+  // Street2Ivy: Use company-focused heading for corporate partners
+  const authorPublicData = listing.author?.attributes?.profile?.publicData;
+  const isCorporatePartner = authorPublicData?.userType === 'corporate-partner';
+  const sectionHeadingId = isCorporatePartner
+    ? 'ListingPage.aboutCompanyTitle'
+    : 'ListingPage.aboutProviderTitle';
+
   return (
     <section id="author" className={css.sectionAuthor}>
       <Heading as="h2" rootClassName={css.sectionHeadingWithExtraMargin}>
-        <FormattedMessage id="ListingPage.aboutProviderTitle" />
+        <FormattedMessage id={sectionHeadingId} />
       </Heading>
       <UserCard
         user={listing.author}

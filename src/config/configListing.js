@@ -53,166 +53,190 @@
  *   - requiredMessage (optional):    Message for those fields, which are mandatory.
  */
 export const listingFields = [
-  // {
-  //   "scope": "public",
-  //   "label": "Gears",
-  //   "key": "gears",
-  //   "schemaType": "long",
-  //   "numberConfig": {
-  //     "minimum": 1,
-  //     "maximum": 24
-  //   },
-  //   "filterConfig": {
-  //     "indexForSearch": true,
-  //     "group": "primary",
-  //     "label": "Gears"
-  //   }
-  // }
-  // {
-  //   key: 'bikeType',
-  //   scope: 'public',
-  //   schemaType: 'enum',
-  //   enumOptions: [
-  //     { option: 'city-bikes', label: 'City bikes' },
-  //     { option: 'electric-bikes', label: 'Electric bikes' },
-  //     { option: 'mountain-bikes', label: 'Mountain bikes' },
-  //     { option: 'childrens-bikes', label: "Children's bikes" },
-  //   ],
-  //   categoryConfig: {
-  //     limitToCategoryIds: true,
-  //     categoryIds: ['cats'],
-  //   },
-  //   filterConfig: {
-  //     indexForSearch: true,
-  //     filterType: 'SelectMultipleFilter', //'SelectSingleFilter',
-  //     label: 'Bike type',
-  //     group: 'primary',
-  //   },
-  //   showConfig: {
-  //     label: 'Bike type',
-  //     isDetail: true,
-  //   },
-  //   saveConfig: {
-  //     label: 'Bike type',
-  //     placeholderMessage: 'Select an option…',
-  //     isRequired: true,
-  //     requiredMessage: 'You need to select a bike type.',
-  //   },
-  // },
-  // {
-  //   key: 'tire',
-  //   scope: 'public',
-  //   schemaType: 'enum',
-  //   enumOptions: [
-  //     { option: '29', label: '29' },
-  //     { option: '28', label: '28' },
-  //     { option: '27', label: '27' },
-  //     { option: '26', label: '26' },
-  //     { option: '24', label: '24' },
-  //     { option: '20', label: '20' },
-  //     { option: '18', label: '18' },
-  //   ],
-  //   filterConfig: {
-  //     indexForSearch: true,
-  //     label: 'Tire size',
-  //     group: 'secondary',
-  //   },
-  //   showConfig: {
-  //     label: 'Tire size',
-  //     isDetail: true,
-  //   },
-  //   saveConfig: {
-  //     label: 'Tire size',
-  //     placeholderMessage: 'Select an option…',
-  //     isRequired: true,
-  //     requiredMessage: 'You need to select a tire size.',
-  //   },
-  // },
-  // {
-  //   key: 'brand',
-  //   scope: 'public',
-  //   schemaType: 'enum',
-  //   enumOptions: [
-  //     { option: 'cube', label: 'Cube' },
-  //     { option: 'diamant', label: 'Diamant' },
-  //     { option: 'ghost', label: 'GHOST' },
-  //     { option: 'giant', label: 'Giant' },
-  //     { option: 'kalkhoff', label: 'Kalkhoff' },
-  //     { option: 'kona', label: 'Kona' },
-  //     { option: 'otler', label: 'Otler' },
-  //     { option: 'vermont', label: 'Vermont' },
-  //   ],
-  //   filterConfig: {
-  //     indexForSearch: true,
-  //     label: 'Brand',
-  //     group: 'secondary',
-  //   },
-  //   showConfig: {
-  //     label: 'Brand',
-  //     isDetail: true,
-  //   },
-  //   saveConfig: {
-  //     label: 'Brand',
-  //     placeholderMessage: 'Select an option…',
-  //     isRequired: true,
-  //     requiredMessage: 'You need to select a brand.',
-  //   },
-  // },
-  // {
-  //   key: 'accessories',
-  //   scope: 'public',
-  //   schemaType: 'multi-enum',
-  //   enumOptions: [
-  //     { option: 'bell', label: 'Bell' },
-  //     { option: 'lights', label: 'Lights' },
-  //     { option: 'lock', label: 'Lock' },
-  //     { option: 'mudguard', label: 'Mudguard' },
-  //   ],
-  //   filterConfig: {
-  //     indexForSearch: true,
-  //     label: 'Accessories',
-  //     searchMode: 'has_all',
-  //     group: 'secondary',
-  //   },
-  //   showConfig: {
-  //     label: 'Accessories',
-  //   },
-  //   saveConfig: {
-  //     label: 'Accessories',
-  //     placeholderMessage: 'Select an option…',
-  //     isRequired: false,
-  //   },
-  // },
-  // // An example of how to use transaction type specific custom fields and private data.
-  // {
-  //   key: 'note',
-  //   scope: 'public',
-  //   schemaType: 'text',
-  //   listingTypeConfig: {
-  //     limitToListingTypeIds: true,
-  //     listingTypeIds: ['product-selling'],
-  //   },
-  //   showConfig: {
-  //     label: 'Extra notes',
-  //   },
-  //   saveConfig: {
-  //     label: 'Extra notes',
-  //     placeholderMessage: 'Some public extra note about this bike...',
-  //   },
-  // },
-  // {
-  //   key: 'privatenote',
-  //   scope: 'private',
-  //   schemaType: 'text',
-  //   listingTypeConfig: {
-  //     limitToListingTypeIds: true,
-  //     listingTypeIds: ['daily-booking'],
-  //   },
-  //   saveConfig: {
-  //     label: 'Private notes',
-  //     placeholderMessage: 'Some private note about this bike...',
-  //   },
-  // },
+  // ─── Street2Ivy: Project listing fields ────────────────────────────
+  {
+    key: 'requiredSkills',
+    scope: 'public',
+    schemaType: 'multi-enum',
+    enumOptions: [
+      { option: 'leadership', label: 'Leadership' },
+      { option: 'communication', label: 'Communication' },
+      { option: 'problem-solving', label: 'Problem Solving' },
+      { option: 'teamwork', label: 'Teamwork' },
+      { option: 'data-analysis', label: 'Data Analysis' },
+      { option: 'project-management', label: 'Project Management' },
+      { option: 'marketing', label: 'Marketing' },
+      { option: 'finance', label: 'Finance' },
+      { option: 'engineering', label: 'Engineering' },
+      { option: 'design', label: 'Design' },
+      { option: 'sales', label: 'Sales' },
+      { option: 'research', label: 'Research' },
+      { option: 'writing', label: 'Writing' },
+      { option: 'software-development', label: 'Software Development' },
+      { option: 'public-speaking', label: 'Public Speaking' },
+    ],
+    listingTypeConfig: {
+      limitToListingTypeIds: true,
+      listingTypeIds: ['project'],
+    },
+    filterConfig: {
+      indexForSearch: true,
+      filterType: 'SelectMultipleFilter',
+      label: 'Required Skills',
+      searchMode: 'has_any',
+      group: 'primary',
+    },
+    showConfig: {
+      label: 'Required Skills',
+    },
+    saveConfig: {
+      label: 'Required Skills',
+      placeholderMessage: 'Select the skills needed for this project...',
+      isRequired: true,
+      requiredMessage: 'Please select at least one required skill.',
+    },
+  },
+  {
+    key: 'estimatedHours',
+    scope: 'public',
+    schemaType: 'enum',
+    enumOptions: [
+      { option: '1-10', label: '1-10 hours' },
+      { option: '11-20', label: '11-20 hours' },
+      { option: '21-40', label: '21-40 hours' },
+      { option: '41-80', label: '41-80 hours' },
+      { option: '80+', label: '80+ hours' },
+    ],
+    listingTypeConfig: {
+      limitToListingTypeIds: true,
+      listingTypeIds: ['project'],
+    },
+    filterConfig: {
+      indexForSearch: true,
+      filterType: 'SelectMultipleFilter',
+      label: 'Estimated Hours',
+      group: 'secondary',
+    },
+    showConfig: {
+      label: 'Estimated Hours',
+      isDetail: true,
+    },
+    saveConfig: {
+      label: 'Estimated Hours',
+      placeholderMessage: 'Select estimated time commitment...',
+      isRequired: true,
+      requiredMessage: 'Please select the estimated hours for this project.',
+    },
+  },
+  {
+    key: 'compensationAmount',
+    scope: 'public',
+    schemaType: 'text',
+    listingTypeConfig: {
+      limitToListingTypeIds: true,
+      listingTypeIds: ['project'],
+    },
+    showConfig: {
+      label: 'Compensation',
+    },
+    saveConfig: {
+      label: 'Compensation',
+      placeholderMessage: 'e.g. $500, Unpaid/Credit, $25/hr',
+      isRequired: true,
+      requiredMessage: 'Please specify the compensation for this project.',
+    },
+  },
+  {
+    key: 'deadline',
+    scope: 'public',
+    schemaType: 'text',
+    listingTypeConfig: {
+      limitToListingTypeIds: true,
+      listingTypeIds: ['project'],
+    },
+    showConfig: {
+      label: 'Deadline',
+    },
+    saveConfig: {
+      label: 'Project Deadline',
+      placeholderMessage: 'e.g. March 30, 2025 or 4 weeks from start',
+      isRequired: true,
+      requiredMessage: 'Please specify a deadline for this project.',
+    },
+  },
+  {
+    key: 'studentsNeeded',
+    scope: 'public',
+    schemaType: 'enum',
+    enumOptions: [
+      { option: '1', label: '1 student' },
+      { option: '2', label: '2 students' },
+      { option: '3', label: '3 students' },
+      { option: '4', label: '4 students' },
+      { option: '5+', label: '5+ students' },
+    ],
+    listingTypeConfig: {
+      limitToListingTypeIds: true,
+      listingTypeIds: ['project'],
+    },
+    filterConfig: {
+      indexForSearch: true,
+      filterType: 'SelectSingleFilter',
+      label: 'Students Needed',
+      group: 'secondary',
+    },
+    showConfig: {
+      label: 'Students Needed',
+      isDetail: true,
+    },
+    saveConfig: {
+      label: 'Number of Students Needed',
+      placeholderMessage: 'Select how many students you need...',
+      isRequired: true,
+      requiredMessage: 'Please select the number of students needed.',
+    },
+  },
+  {
+    key: 'industryCategory',
+    scope: 'public',
+    schemaType: 'enum',
+    enumOptions: [
+      { option: 'technology', label: 'Technology' },
+      { option: 'finance', label: 'Finance' },
+      { option: 'consulting', label: 'Consulting' },
+      { option: 'healthcare', label: 'Healthcare' },
+      { option: 'education', label: 'Education' },
+      { option: 'manufacturing', label: 'Manufacturing' },
+      { option: 'retail', label: 'Retail' },
+      { option: 'media', label: 'Media & Entertainment' },
+      { option: 'nonprofit', label: 'Nonprofit' },
+      { option: 'government', label: 'Government' },
+      { option: 'energy', label: 'Energy' },
+      { option: 'real-estate', label: 'Real Estate' },
+      { option: 'legal', label: 'Legal' },
+      { option: 'other', label: 'Other' },
+    ],
+    listingTypeConfig: {
+      limitToListingTypeIds: true,
+      listingTypeIds: ['project'],
+    },
+    filterConfig: {
+      indexForSearch: true,
+      filterType: 'SelectMultipleFilter',
+      label: 'Industry',
+      group: 'primary',
+    },
+    showConfig: {
+      label: 'Industry',
+      isDetail: true,
+    },
+    saveConfig: {
+      label: 'Industry Category',
+      placeholderMessage: 'Select an industry...',
+      isRequired: true,
+      requiredMessage: 'Please select an industry category.',
+    },
+  },
 ];
 
 ///////////////////////////////////////////////////////////////////////
@@ -270,68 +294,22 @@ export const listingFields = [
  */
 
 export const listingTypes = [
-  // // Here are some examples of listingTypes
-  // // TODO: SearchPage does not work well if both booking and product selling are used at the same time
-  // {
-  //   listingType: 'daily-booking',
-  //   label: 'Daily booking',
-  //   transactionType: {
-  //     process: 'default-booking',
-  //     alias: 'default-booking/release-1',
-  //     unitType: 'day',
-  //   },
-  //   availabilityType: 'oneSeat',
-  //   defaultListingFields: {
-  //     location: true,
-  //     payoutDetails: true,
-  //   },
-  // },
-  // {
-  //   listingType: 'nightly-booking',
-  //   label: 'Nightly booking',
-  //   transactionType: {
-  //     process: 'default-booking',
-  //     alias: 'default-booking/release-1',
-  //     unitType: 'night',
-  //   },
-  // },
-  // {
-  //   listingType: 'hourly-booking',
-  //   label: 'Hourly booking',
-  //   transactionType: {
-  //     process: 'default-booking',
-  //     alias: 'default-booking/release-1',
-  //     unitType: 'hour',
-  //   },
-  // },
-  // {
-  //   listingType: 'product-selling',
-  //   label: 'Sell bicycles',
-  //   transactionType: {
-  //     process: 'default-purchase',
-  //     alias: 'default-purchase/release-1',
-  //     unitType: 'item',
-  //   },
-  //   stockType: 'multipleItems',
-  //   defaultListingFields: {
-  //     shipping: true,
-  //     pickup: true,
-  //     payoutDetails: true,
-  //   },
-  // },
-  // {
-  //   listingType: 'inquiry',
-  //   label: 'Inquiry',
-  //   transactionType: {
-  //     process: 'default-inquiry',
-  //     alias: 'default-inquiry/release-1',
-  //     unitType: 'inquiry',
-  //   },
-  //   defaultListingFields: {
-  //     price: false,
-  //     location: true,
-  //   },
-  // },
+  // ─── Street2Ivy: Project listing type ──────────────────────────────
+  {
+    listingType: 'project',
+    label: 'Project',
+    transactionType: {
+      process: 'default-project-application',
+      alias: 'default-project-application/release-1',
+      unitType: 'inquiry',
+    },
+    defaultListingFields: {
+      price: false,
+      location: false,
+      images: false,
+      payoutDetails: false,
+    },
+  },
 ];
 
 // SearchPage can enforce listing query to only those listings with valid listingType

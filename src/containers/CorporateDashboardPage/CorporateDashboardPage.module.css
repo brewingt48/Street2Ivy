@@ -1,0 +1,224 @@
+@import '../../styles/customMediaQueries.css';
+
+.root {
+}
+
+.content {
+  max-width: 1056px;
+  margin: 0 auto;
+  padding: 24px;
+
+  @media (--viewportMedium) {
+    padding: 48px 24px;
+  }
+}
+
+.title {
+  composes: marketplaceModalTitleStyles from global;
+  margin-bottom: 24px;
+
+  @media (--viewportMedium) {
+    margin-bottom: 36px;
+  }
+}
+
+/* Quick Stats Section */
+.statsSection {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+  margin-bottom: 36px;
+
+  @media (--viewportMedium) {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+  }
+}
+
+.statCard {
+  background-color: var(--colorWhite);
+  border: 1px solid var(--colorGrey100);
+  border-radius: 8px;
+  padding: 24px;
+  text-align: center;
+}
+
+.statValue {
+  font-size: 36px;
+  font-weight: var(--fontWeightBold);
+  color: var(--marketplaceColor);
+  line-height: 1;
+  margin-bottom: 8px;
+}
+
+.statLabel {
+  font-size: 14px;
+  color: var(--colorGrey500);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Action Bar */
+.actionBar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.sectionTitle {
+  font-size: 20px;
+  font-weight: var(--fontWeightSemiBold);
+  color: var(--colorGrey900);
+  margin: 0;
+}
+
+.postProjectButton {
+  composes: marketplaceButtonStyles from global;
+  display: inline-block;
+  padding: 10px 24px;
+  min-height: auto;
+  font-size: 14px;
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: none;
+  }
+}
+
+/* Projects List */
+.projectsSection {
+  margin-bottom: 48px;
+}
+
+.projectsList {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+
+  @media (--viewportMedium) {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
+  }
+}
+
+.projectCard {
+  background-color: var(--colorWhite);
+  border: 1px solid var(--colorGrey100);
+  border-radius: 8px;
+  padding: 20px;
+  transition: box-shadow 0.2s ease;
+  text-decoration: none;
+  display: block;
+  color: inherit;
+
+  &:hover {
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+    text-decoration: none;
+    color: inherit;
+  }
+}
+
+.projectCardTitle {
+  font-size: 18px;
+  font-weight: var(--fontWeightSemiBold);
+  color: var(--colorGrey900);
+  margin: 0 0 8px 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.projectCardMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.projectCardMetaItem {
+  font-size: 13px;
+  color: var(--colorGrey500);
+}
+
+.projectCardStatus {
+  display: inline-block;
+  font-size: 12px;
+  font-weight: var(--fontWeightSemiBold);
+  padding: 4px 12px;
+  border-radius: 16px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.statusPublished {
+  background-color: #e6f4ea;
+  color: #1e7e34;
+}
+
+.statusDraft {
+  background-color: #fff3cd;
+  color: #856404;
+}
+
+.statusClosed {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+
+.statusPendingApproval {
+  background-color: #e2e3f1;
+  color: #383d6e;
+}
+
+/* Empty State */
+.emptyState {
+  text-align: center;
+  padding: 48px 24px;
+  background-color: var(--colorGrey50);
+  border-radius: 8px;
+}
+
+.emptyStateTitle {
+  font-size: 20px;
+  font-weight: var(--fontWeightSemiBold);
+  color: var(--colorGrey900);
+  margin-bottom: 12px;
+}
+
+.emptyStateText {
+  font-size: 14px;
+  color: var(--colorGrey500);
+  margin-bottom: 24px;
+}
+
+/* Loading & Error */
+.loading {
+  text-align: center;
+  padding: 48px 24px;
+  color: var(--colorGrey500);
+}
+
+.error {
+  text-align: center;
+  padding: 48px 24px;
+  color: var(--colorFail);
+}
+
+/* Access Denied */
+.accessDenied {
+  text-align: center;
+  padding: 96px 24px;
+}
+
+.accessDeniedTitle {
+  font-size: 24px;
+  font-weight: var(--fontWeightBold);
+  color: var(--colorGrey900);
+  margin-bottom: 12px;
+}
+
+.accessDeniedText {
+  font-size: 16px;
+  color: var(--colorGrey500);
+}

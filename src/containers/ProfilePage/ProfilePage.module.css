@@ -324,3 +324,37 @@
   width: 100%;
   height: 100%;
 }
+
+/* ─── Street2Ivy: Corporate Partner Profile styles ─── */
+
+.companySubtitle {
+  font-size: 13px;
+  color: var(--colorGrey500);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 4px 0 0 0;
+  width: 100%;
+}
+
+.companyWebsiteLink {
+  display: inline-block;
+  font-size: 14px;
+  color: var(--marketplaceColor);
+  text-decoration: none;
+  margin-bottom: 16px;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.companyDescriptionSection {
+  margin-bottom: 24px;
+}
+
+.companyDescriptionHeading {
+  font-size: 16px;
+  font-weight: var(--fontWeightSemiBold);
+  color: var(--colorGrey900);
+  margin: 0 0 8px 0;
+}
