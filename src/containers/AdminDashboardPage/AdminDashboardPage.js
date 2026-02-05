@@ -1742,7 +1742,7 @@ const ContentManagementPanel = props => {
     onClearContentState,
   } = props;
 
-  const [activeSection, setActiveSection] = useState('hero');
+  const [activeSection, setActiveSection] = useState('branding');
   const [editingItem, setEditingItem] = useState(null);
   const [formData, setFormData] = useState({});
   const [successMessage, setSuccessMessage] = useState('');
@@ -1765,6 +1765,7 @@ const ContentManagementPanel = props => {
   }, [updateSuccess, onClearContentState, onFetchContent]);
 
   const sections = [
+    { key: 'branding', label: 'Logo & Branding', icon: '🎨' },
     { key: 'hero', label: 'Hero Section', icon: '🏠' },
     { key: 'features', label: 'Features', icon: '✨' },
     { key: 'howItWorks', label: 'How It Works', icon: '📋' },
@@ -1834,6 +1835,71 @@ const ContentManagementPanel = props => {
     if (!sectionData) return <p>No content data available.</p>;
 
     switch (activeSection) {
+      case 'branding':
+        return (
+          <div className={css.contentForm}>
+            <h4 className={css.subSectionTitle}>Logo & Branding</h4>
+            <p className={css.formHint}>
+              Upload your company logo and set the site tagline. These appear across the entire site.
+            </p>
+
+            <div className={css.formGroup}>
+              <label className={css.formLabel}>Logo URL</label>
+              <input
+                type="url"
+                className={css.formInput}
+                placeholder="https://example.com/logo.png"
+                defaultValue={sectionData?.logoUrl || ''}
+                onChange={e => handleInputChange('logoUrl', e.target.value)}
+              />
+              <span className={css.formHint}>
+                Enter the URL of your logo image (PNG, JPG, SVG recommended). For best results, use a transparent PNG.
+              </span>
+              {sectionData?.logoUrl && (
+                <div className={css.imagePreview}>
+                  <img src={sectionData.logoUrl} alt="Logo preview" className={css.previewImage} />
+                </div>
+              )}
+            </div>
+
+            <div className={css.formGroup}>
+              <label className={css.formLabel}>Site Tagline</label>
+              <input
+                type="text"
+                className={css.formInput}
+                placeholder="Your company tagline"
+                defaultValue={sectionData?.tagline || ''}
+                onChange={e => handleInputChange('tagline', e.target.value)}
+              />
+              <span className={css.formHint}>
+                A short, memorable phrase that describes your platform (e.g., "Connecting Ivy League Talent with Industry Leaders")
+              </span>
+            </div>
+
+            <div className={css.formGroup}>
+              <label className={css.formLabel}>Favicon URL (optional)</label>
+              <input
+                type="url"
+                className={css.formInput}
+                placeholder="https://example.com/favicon.ico"
+                defaultValue={sectionData?.faviconUrl || ''}
+                onChange={e => handleInputChange('faviconUrl', e.target.value)}
+              />
+              <span className={css.formHint}>
+                The small icon that appears in browser tabs. Use a square image (ICO, PNG, 32x32 or 64x64 pixels).
+              </span>
+            </div>
+
+            <button
+              className={css.saveButton}
+              onClick={handleSaveSection}
+              disabled={updateInProgress}
+            >
+              {updateInProgress ? 'Saving...' : 'Save Branding'}
+            </button>
+          </div>
+        );
+
       case 'hero':
         return (
           <div className={css.contentForm}>
@@ -1873,6 +1939,55 @@ const ContentManagementPanel = props => {
                 onChange={e => handleInputChange('secondaryButtonText', e.target.value)}
               />
             </div>
+
+            {/* Background Settings */}
+            <h4 className={css.subSectionTitle}>Background Settings</h4>
+
+            <div className={css.formGroup}>
+              <label className={css.formLabel}>Background Type</label>
+              <select
+                className={css.formSelect}
+                defaultValue={sectionData.backgroundType || 'image'}
+                onChange={e => handleInputChange('backgroundType', e.target.value)}
+              >
+                <option value="image">Image</option>
+                <option value="video">Video</option>
+              </select>
+            </div>
+
+            <div className={css.formGroup}>
+              <label className={css.formLabel}>Background Image URL</label>
+              <input
+                type="url"
+                className={css.formInput}
+                placeholder="https://example.com/hero-background.jpg"
+                defaultValue={sectionData.backgroundImage || ''}
+                onChange={e => handleInputChange('backgroundImage', e.target.value)}
+              />
+              <span className={css.formHint}>
+                Enter the URL of your hero background image. Recommended: 1920x1080 or larger.
+              </span>
+              {sectionData.backgroundImage && (
+                <div className={css.imagePreview}>
+                  <img src={sectionData.backgroundImage} alt="Background preview" className={css.previewImage} />
+                </div>
+              )}
+            </div>
+
+            <div className={css.formGroup}>
+              <label className={css.formLabel}>Background Video URL (optional)</label>
+              <input
+                type="url"
+                className={css.formInput}
+                placeholder="https://example.com/hero-video.mp4"
+                defaultValue={sectionData.backgroundVideo || ''}
+                onChange={e => handleInputChange('backgroundVideo', e.target.value)}
+              />
+              <span className={css.formHint}>
+                Enter the URL of a video file (MP4 recommended). The video will autoplay muted in the background.
+              </span>
+            </div>
+
             <button
               className={css.saveButton}
               onClick={handleSaveSection}

@@ -23,6 +23,15 @@ if (!fs.existsSync(dataDir)) {
 
 // Default content structure
 const defaultContent = {
+  branding: {
+    id: 'branding',
+    section: 'branding',
+    logoUrl: null,
+    tagline: 'Connecting Ivy League Talent with Industry Leaders',
+    faviconUrl: null,
+    updatedAt: new Date().toISOString(),
+    updatedBy: null,
+  },
   hero: {
     id: 'hero',
     section: 'hero',
@@ -32,6 +41,8 @@ const defaultContent = {
     primaryButtonText: 'Get Started',
     secondaryButtonText: 'Sign In',
     backgroundImage: null,
+    backgroundVideo: null,
+    backgroundType: 'image', // 'image' or 'video'
     isActive: true,
     updatedAt: new Date().toISOString(),
     updatedBy: null,

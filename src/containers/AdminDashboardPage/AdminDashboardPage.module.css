@@ -1262,6 +1262,37 @@
   margin-top: 4px;
 }
 
+.formSelect {
+  width: 100%;
+  padding: 10px 12px;
+  font-size: 14px;
+  border: 1px solid var(--colorGrey200);
+  border-radius: 6px;
+  background: white;
+  transition: border-color 0.2s;
+  cursor: pointer;
+}
+
+.formSelect:focus {
+  outline: none;
+  border-color: var(--marketplaceColor);
+}
+
+.imagePreview {
+  margin-top: 12px;
+  padding: 12px;
+  background: var(--colorGrey50);
+  border-radius: 8px;
+  border: 1px solid var(--colorGrey200);
+}
+
+.previewImage {
+  max-width: 100%;
+  max-height: 200px;
+  object-fit: contain;
+  border-radius: 4px;
+}
+
 .saveButton {
   padding: 12px 24px;
   font-size: 15px;

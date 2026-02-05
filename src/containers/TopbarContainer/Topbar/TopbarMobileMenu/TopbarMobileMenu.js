@@ -167,6 +167,9 @@ const TopbarMobileMenu = props => {
   const userType = user?.attributes?.profile?.publicData?.userType;
   const isCorporatePartner = userType === 'corporate-partner';
   const isStudent = userType === 'student';
+  const isSystemAdmin = userType === 'system-admin';
+  const isEducationalAdmin = userType === 'educational-admin';
+  const isAdmin = isSystemAdmin || isEducationalAdmin;
 
   const findStudentsLinkMaybe = isCorporatePartner ? (
     <li className={classNames(css.navigationLink, currentPageClass('SearchStudentsPage'))}>
@@ -204,6 +207,25 @@ const TopbarMobileMenu = props => {
     </li>
   ) : null;
 
+  // Admin dashboard links
+  const adminDashboardLinkMaybe = isSystemAdmin ? (
+    <li className={classNames(css.inbox, currentPageClass('AdminDashboardPage'))}>
+      <NamedLink name="AdminDashboardPage">
+        <FormattedMessage id="TopbarMobileMenu.adminDashboardLink" />
+        {notificationCountBadge}
+      </NamedLink>
+    </li>
+  ) : null;
+
+  const educationDashboardLinkMaybe = isEducationalAdmin ? (
+    <li className={classNames(css.inbox, currentPageClass('EducationDashboardPage'))}>
+      <NamedLink name="EducationDashboardPage">
+        <FormattedMessage id="TopbarMobileMenu.educationDashboardLink" />
+        {notificationCountBadge}
+      </NamedLink>
+    </li>
+  ) : null;
+
   return (
     <div className={css.root}>
       <AvatarLarge className={css.avatar} user={currentUser} />
@@ -216,12 +238,20 @@ const TopbarMobileMenu = props => {
         </InlineTextButton>
 
         <ul className={css.accountLinksWrapper}>
-          <li className={classNames(css.inbox, currentPageClass(`InboxPage:${inboxTab}`))}>
-            <NamedLink name="InboxPage" params={{ tab: inboxTab }}>
-              <FormattedMessage id="TopbarMobileMenu.inboxLink" />
-              {notificationCountBadge}
-            </NamedLink>
-          </li>
+          {/* Show Admin Dashboard link for admins, Inbox for regular users */}
+          {isAdmin ? (
+            <>
+              {adminDashboardLinkMaybe}
+              {educationDashboardLinkMaybe}
+            </>
+          ) : (
+            <li className={classNames(css.inbox, currentPageClass(`InboxPage:${inboxTab}`))}>
+              <NamedLink name="InboxPage" params={{ tab: inboxTab }}>
+                <FormattedMessage id="TopbarMobileMenu.inboxLink" />
+                {notificationCountBadge}
+              </NamedLink>
+            </li>
+          )}
           {manageListingsLinkMaybe}
           {findStudentsLinkMaybe}
           {dashboardLinkMaybe}

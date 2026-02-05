@@ -13,18 +13,43 @@ const { getIntegrationSdk, handleError, serialize } = require('../../api-util/sd
 // This maps email domains to institution membership data
 let institutionMemberships = new Map();
 
-// Initialize with some sample data (remove in production)
-// institutionMemberships.set('harvard.edu', {
-//   domain: 'harvard.edu',
-//   name: 'Harvard University',
-//   membershipStatus: 'active',
-//   membershipStartDate: '2024-01-01',
-//   membershipEndDate: '2025-12-31',
-//   aiCoachingEnabled: true,
-//   aiCoachingUrl: 'https://coaching.street2ivy.com/harvard',
-//   createdAt: new Date().toISOString(),
-//   updatedAt: new Date().toISOString(),
-// });
+// Initialize with test institutions for development
+institutionMemberships.set('test.edu', {
+  domain: 'test.edu',
+  name: 'Test University',
+  membershipStatus: 'active',
+  membershipStartDate: '2024-01-01',
+  membershipEndDate: '2026-12-31',
+  aiCoachingEnabled: true,
+  aiCoachingUrl: 'https://coaching.street2ivy.com/test',
+  createdAt: new Date().toISOString(),
+  updatedAt: new Date().toISOString(),
+});
+
+institutionMemberships.set('holycross.edu', {
+  domain: 'holycross.edu',
+  name: 'College of the Holy Cross',
+  membershipStatus: 'active',
+  membershipStartDate: '2024-01-01',
+  membershipEndDate: '2026-12-31',
+  aiCoachingEnabled: true,
+  aiCoachingUrl: 'https://coaching.street2ivy.com/holycross',
+  createdAt: new Date().toISOString(),
+  updatedAt: new Date().toISOString(),
+});
+
+// Gmail for testing (remove in production)
+institutionMemberships.set('gmail.com', {
+  domain: 'gmail.com',
+  name: 'Gmail Test Institution',
+  membershipStatus: 'active',
+  membershipStartDate: '2024-01-01',
+  membershipEndDate: '2026-12-31',
+  aiCoachingEnabled: true,
+  aiCoachingUrl: 'https://coaching.street2ivy.com/test',
+  createdAt: new Date().toISOString(),
+  updatedAt: new Date().toISOString(),
+});
 
 /**
  * Helper to verify user is a system admin

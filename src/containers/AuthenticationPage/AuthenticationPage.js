@@ -153,12 +153,19 @@ const getNonUserFieldParams = (values, userFieldConfigs) => {
   }, {});
 };
 
-// Helper function to check if email is .edu
+// Helper function to check if email is .edu (or allowed test domains in dev)
 const isEduEmail = email => {
   if (!email) return false;
-  const domain = email.split('@')[1];
+  const domain = email.split('@')[1]?.toLowerCase();
   if (!domain) return false;
-  return domain.endsWith('.edu') || domain.endsWith('.edu.au') || domain.endsWith('.ac.uk');
+
+  // Allow .edu and international equivalents
+  const isEdu = domain.endsWith('.edu') || domain.endsWith('.edu.au') || domain.endsWith('.ac.uk');
+
+  // In development, also allow gmail.com for testing
+  const isTestDomain = process.env.NODE_ENV === 'development' && domain === 'gmail.com';
+
+  return isEdu || isTestDomain;
 };
 
 // Tabs for SignupForm and LoginForm

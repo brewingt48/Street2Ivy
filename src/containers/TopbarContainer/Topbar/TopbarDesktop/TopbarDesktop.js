@@ -57,6 +57,23 @@ const InboxLink = ({ notificationCount, inboxTab }) => {
   );
 };
 
+// Admin Dashboard link for system admins
+const AdminDashboardLink = ({ notificationCount }) => {
+  const notificationDot = notificationCount > 0 ? <div className={css.notificationDot} /> : null;
+  return (
+    <NamedLink
+      id="admin-dashboard-link"
+      className={css.topbarLink}
+      name="AdminDashboardPage"
+    >
+      <span className={css.topbarLinkLabel}>
+        <FormattedMessage id="TopbarDesktop.adminDashboard" />
+        {notificationDot}
+      </span>
+    </NamedLink>
+  );
+};
+
 const ProfileMenu = ({
   currentPage,
   currentUser,
@@ -75,6 +92,9 @@ const ProfileMenu = ({
   const userType = currentUser?.attributes?.profile?.publicData?.userType;
   const isCorporatePartner = userType === 'corporate-partner';
   const isStudent = userType === 'student';
+  const isSystemAdmin = userType === 'system-admin';
+  const isEducationalAdmin = userType === 'educational-admin';
+  const isAdmin = isSystemAdmin || isEducationalAdmin;
 
   // AI Coaching link for students (if their institution has it enabled)
   const showAiCoachingLink =
@@ -91,6 +111,28 @@ const ProfileMenu = ({
         <Avatar className={css.avatar} user={currentUser} disableProfileLink />
       </MenuLabel>
       <MenuContent className={css.profileMenuContent}>
+        {isSystemAdmin ? (
+          <MenuItem key="AdminDashboardPage">
+            <NamedLink
+              className={classNames(css.menuLink, currentPageClass('AdminDashboardPage'))}
+              name="AdminDashboardPage"
+            >
+              <span className={css.menuItemBorder} />
+              <FormattedMessage id="TopbarDesktop.adminDashboardLink" />
+            </NamedLink>
+          </MenuItem>
+        ) : null}
+        {isEducationalAdmin ? (
+          <MenuItem key="EducationDashboardPage">
+            <NamedLink
+              className={classNames(css.menuLink, currentPageClass('EducationDashboardPage'))}
+              name="EducationDashboardPage"
+            >
+              <span className={css.menuItemBorder} />
+              <FormattedMessage id="TopbarDesktop.educationDashboardLink" />
+            </NamedLink>
+          </MenuItem>
+        ) : null}
         {showManageListingsLink ? (
           <MenuItem key="ManageListingsPage">
             <NamedLink
@@ -225,11 +267,22 @@ const TopbarDesktop = props => {
   const authenticatedOnClientSide = mounted && isAuthenticated;
   const isAuthenticatedOrJustHydrated = isAuthenticated || !mounted;
 
+  // Street2Ivy: Check if user is admin
+  const userType = currentUser?.attributes?.profile?.publicData?.userType;
+  const isSystemAdmin = userType === 'system-admin';
+  const isEducationalAdmin = userType === 'educational-admin';
+  const isAdmin = isSystemAdmin || isEducationalAdmin;
+
   const giveSpaceForSearch = customLinks == null || customLinks?.length === 0;
   const classes = classNames(rootClassName || css.root, className);
 
+  // For admin users, show Admin Dashboard link instead of Inbox
   const inboxLinkMaybe = authenticatedOnClientSide ? (
-    <InboxLink notificationCount={notificationCount} inboxTab={inboxTab} />
+    isAdmin ? (
+      <AdminDashboardLink notificationCount={notificationCount} />
+    ) : (
+      <InboxLink notificationCount={notificationCount} inboxTab={inboxTab} />
+    )
   ) : null;
 
   const profileMenuMaybe = authenticatedOnClientSide ? (
