@@ -25,14 +25,14 @@ async function verifySystemAdmin(req, res) {
 /**
  * POST /api/admin/messages
  *
- * Send a message from system admin to an educational admin.
- * Used for communicating about student behavior or platform matters.
+ * Send a message from system admin to an educational admin or student.
+ * Used for communicating about student behavior, platform matters, or direct student outreach.
  *
  * Body:
- *   recipientId  - User ID of the educational admin
+ *   recipientId  - User ID of the recipient (educational admin or student)
  *   subject      - Message subject
  *   content      - Message content
- *   studentId    - (optional) Related student ID
+ *   studentId    - (optional) Related student ID (for messages to educational admins about a student)
  *   severity     - (optional) Message severity: info, warning, urgent
  */
 async function sendMessage(req, res) {
@@ -56,21 +56,24 @@ async function sendMessage(req, res) {
 
     const integrationSdk = getIntegrationSdk();
 
-    // Verify recipient is an educational admin
+    // Get recipient info
     const recipientResponse = await integrationSdk.users.show({
       id: recipientId,
     });
 
     const recipient = recipientResponse.data.data;
     const recipientPublicData = recipient.attributes.profile.publicData || {};
+    const recipientType = recipientPublicData.userType;
 
-    if (recipientPublicData.userType !== 'educational-admin') {
+    // System admin can message educational admins and students
+    const allowedRecipientTypes = ['educational-admin', 'student'];
+    if (!allowedRecipientTypes.includes(recipientType)) {
       return res.status(400).json({
-        error: 'Messages can only be sent to educational administrators.',
+        error: 'Messages can only be sent to educational administrators or students.',
       });
     }
 
-    // Get student info if studentId is provided
+    // Get student info if studentId is provided (for messages to educational admins about a student)
     let studentInfo = null;
     if (studentId) {
       try {
@@ -94,8 +97,10 @@ async function sendMessage(req, res) {
       senderId: admin.id.uuid,
       senderName: admin.attributes.profile.displayName,
       recipientId,
+      recipientType,
       recipientName: recipient.attributes.profile.displayName,
-      recipientInstitution: recipientPublicData.institutionName,
+      recipientInstitution: recipientPublicData.institutionName || null,
+      recipientUniversity: recipientPublicData.university || null,
       subject,
       content,
       student: studentInfo,
@@ -122,7 +127,7 @@ async function sendMessage(req, res) {
  * GET /api/admin/messages
  *
  * List messages. System admins see all messages they've sent.
- * Educational admins see messages addressed to them.
+ * Educational admins and students see messages addressed to them.
  *
  * Query params:
  *   page     - Pagination page (default: 1)
@@ -143,8 +148,8 @@ async function listMessages(req, res) {
     if (userType === 'system-admin') {
       // System admins see all messages they've sent
       filteredMessages = adminMessages.filter(m => m.senderId === currentUser.id.uuid);
-    } else if (userType === 'educational-admin') {
-      // Educational admins see messages addressed to them
+    } else if (userType === 'educational-admin' || userType === 'student') {
+      // Educational admins and students see messages addressed to them
       filteredMessages = adminMessages.filter(m => m.recipientId === currentUser.id.uuid);
     } else {
       return res.status(403).json({
@@ -233,7 +238,8 @@ async function getUnreadCount(req, res) {
     const currentUser = currentUserResponse.data.data;
     const publicData = currentUser.attributes.profile.publicData || {};
 
-    if (publicData.userType !== 'educational-admin') {
+    // Educational admins and students can have unread messages
+    if (publicData.userType !== 'educational-admin' && publicData.userType !== 'student') {
       return res.status(200).json({ unreadCount: 0 });
     }
 

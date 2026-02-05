@@ -471,6 +471,7 @@ const MessagesPanel = props => {
     sendError,
     sendSuccess,
     educationalAdmins,
+    students,
     onSendMessage,
     onClearMessageState,
   } = props;
@@ -666,15 +667,31 @@ const MessagesPanel = props => {
                 onChange={e => setFormData(prev => ({ ...prev, recipientId: e.target.value }))}
                 required
               >
-                <option value="">Select an educational admin...</option>
-                {educationalAdmins.map(admin => (
-                  <option key={admin.id} value={admin.id}>
-                    {admin.attributes?.profile?.displayName || 'Unknown'}
-                    {admin.attributes?.profile?.publicData?.institutionName
-                      ? ` (${admin.attributes.profile.publicData.institutionName})`
-                      : ''}
-                  </option>
-                ))}
+                <option value="">Select a recipient...</option>
+                {educationalAdmins.length > 0 && (
+                  <optgroup label="Educational Admins">
+                    {educationalAdmins.map(admin => (
+                      <option key={admin.id} value={admin.id}>
+                        {admin.attributes?.profile?.displayName || 'Unknown'}
+                        {admin.attributes?.profile?.publicData?.institutionName
+                          ? ` (${admin.attributes.profile.publicData.institutionName})`
+                          : ''}
+                      </option>
+                    ))}
+                  </optgroup>
+                )}
+                {students && students.length > 0 && (
+                  <optgroup label="Students">
+                    {students.map(student => (
+                      <option key={student.id} value={student.id}>
+                        {student.attributes?.profile?.displayName || 'Unknown'}
+                        {student.attributes?.profile?.publicData?.university
+                          ? ` (${student.attributes.profile.publicData.university})`
+                          : ''}
+                      </option>
+                    ))}
+                  </optgroup>
+                )}
               </select>
             </div>
 
@@ -3327,6 +3344,11 @@ const AdminDashboardPageComponent = props => {
     u => u.attributes?.profile?.publicData?.userType === 'educational-admin'
   );
 
+  // Get students for messaging
+  const students = users.filter(
+    u => u.attributes?.profile?.publicData?.userType === 'student'
+  );
+
   const [selectedEducator, setSelectedEducator] = useState(null);
 
   const handleTabChange = useCallback(
@@ -3466,6 +3488,7 @@ const AdminDashboardPageComponent = props => {
               sendError={sendMessageError}
               sendSuccess={sendMessageSuccess}
               educationalAdmins={educationalAdmins}
+              students={students}
               selectedEducator={selectedEducator}
               onSendMessage={onSendMessage}
               onClearMessageState={onClearMessageState}
