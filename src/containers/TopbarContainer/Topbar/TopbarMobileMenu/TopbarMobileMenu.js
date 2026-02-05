@@ -187,6 +187,14 @@ const TopbarMobileMenu = props => {
     </li>
   ) : null;
 
+  const studentDashboardLinkMaybe = isStudent ? (
+    <li className={classNames(css.navigationLink, currentPageClass('StudentDashboardPage'))}>
+      <NamedLink name="StudentDashboardPage">
+        <FormattedMessage id="TopbarMobileMenu.studentDashboardLink" />
+      </NamedLink>
+    </li>
+  ) : null;
+
   const findCompaniesLinkMaybe = isStudent ? (
     <li className={classNames(css.navigationLink, currentPageClass('SearchCompaniesPage'))}>
       <NamedLink name="SearchCompaniesPage">
@@ -255,6 +263,7 @@ const TopbarMobileMenu = props => {
           {manageListingsLinkMaybe}
           {findStudentsLinkMaybe}
           {dashboardLinkMaybe}
+          {studentDashboardLinkMaybe}
           {findCompaniesLinkMaybe}
           {aiCoachingLinkMaybe}
           <li className={classNames(css.navigationLink, currentPageClass('ProfileSettingsPage'))}>

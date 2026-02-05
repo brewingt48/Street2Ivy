@@ -167,6 +167,17 @@ const ProfileMenu = ({
           </MenuItem>
         ) : null}
         {isStudent ? (
+          <MenuItem key="StudentDashboardPage">
+            <NamedLink
+              className={classNames(css.menuLink, currentPageClass('StudentDashboardPage'))}
+              name="StudentDashboardPage"
+            >
+              <span className={css.menuItemBorder} />
+              <FormattedMessage id="TopbarDesktop.studentDashboardLink" />
+            </NamedLink>
+          </MenuItem>
+        ) : null}
+        {isStudent ? (
           <MenuItem key="SearchCompaniesPage">
             <NamedLink
               className={classNames(css.menuLink, currentPageClass('SearchCompaniesPage'))}
