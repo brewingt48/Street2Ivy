@@ -9,6 +9,11 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const { deserialize } = require('./api-util/sdk');
+const {
+  standardRateLimit,
+  strictRateLimit,
+  securityHeaders
+} = require('./api-util/security');
 
 const initiateLoginAs = require('./api/initiate-login-as');
 const loginAs = require('./api/login-as');
@@ -51,8 +56,14 @@ const router = express.Router();
 
 // ================ API router middleware: ================ //
 
+// SECURITY: Add security headers to all API responses
+router.use(securityHeaders);
+
+// SECURITY: Apply standard rate limiting to all API endpoints
+router.use(standardRateLimit);
+
 // Parse JSON bodies (for custom API endpoints like search-users)
-router.use(bodyParser.json());
+router.use(bodyParser.json({ limit: '1mb' })); // SECURITY: Limit body size
 
 // Parse Transit body first to a string
 router.use(
@@ -83,7 +94,7 @@ router.get('/login-as', loginAs);
 router.post('/transaction-line-items', transactionLineItems);
 router.post('/initiate-privileged', initiatePrivileged);
 router.post('/transition-privileged', transitionPrivileged);
-router.post('/delete-account', deleteAccount);
+router.post('/delete-account', strictRateLimit, deleteAccount); // SECURITY: strict rate limit
 
 // Street2Ivy: User search and invitation endpoints
 router.get('/search-users', searchUsers);
@@ -103,13 +114,13 @@ router.get('/corporate/export/:type', corporateExport);
 // Street2Ivy: System Admin endpoints
 router.get('/admin/users', adminUsers.list);
 router.get('/admin/users/pending', adminUsers.pending);
-router.post('/admin/users/create-admin', adminUsers.createAdmin); // Create admin accounts
+router.post('/admin/users/create-admin', strictRateLimit, adminUsers.createAdmin); // Create admin accounts - SECURITY: strict rate limit
 router.get('/admin/users/:userId', adminUsers.get);
-router.post('/admin/users/:userId/block', adminUsers.block);
-router.post('/admin/users/:userId/unblock', adminUsers.unblock);
+router.post('/admin/users/:userId/block', strictRateLimit, adminUsers.block); // SECURITY: strict rate limit
+router.post('/admin/users/:userId/unblock', strictRateLimit, adminUsers.unblock); // SECURITY: strict rate limit
 router.post('/admin/users/:userId/approve', adminUsers.approve);
 router.post('/admin/users/:userId/reject', adminUsers.reject);
-router.delete('/admin/users/:userId', adminUsers.delete);
+router.delete('/admin/users/:userId', strictRateLimit, adminUsers.delete); // SECURITY: strict rate limit
 router.post('/admin/messages', adminMessages.send);
 router.get('/admin/messages', adminMessages.list);
 router.post('/admin/messages/:messageId/read', adminMessages.markAsRead);
