@@ -221,12 +221,8 @@ const SearchStudentsPageComponent = props => {
   return (
     <Page title={title} scrollingDisabled={scrollingDisabled}>
       <LayoutSingleColumn
-        topbar={
-          <LayoutWrapperTopbar>
-            <TopbarContainer />
-          </LayoutWrapperTopbar>
-        }
-        footer={<Footer />}
+        topbar={<TopbarContainer />}
+        footer={<FooterContainer />}
       >
         <div className={css.pageContent}>
           <h1 className={css.pageHeading}>
