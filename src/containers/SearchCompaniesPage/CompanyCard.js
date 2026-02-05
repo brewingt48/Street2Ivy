@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { FormattedMessage } from '../../util/reactIntl';
 
 import { AvatarMedium, NamedLink, VerificationBadge } from '../../components';
@@ -95,10 +95,12 @@ const getSizeLabel = option => {
 };
 
 const CompanyCard = props => {
-  const { user } = props;
+  const { user, companyListingsData, onLoadListings } = props;
   const { attributes, profileImage } = user;
   const { profile } = attributes;
   const { displayName, publicData = {} } = profile;
+
+  const [showProjects, setShowProjects] = useState(false);
 
   const {
     companyName,
@@ -111,6 +113,17 @@ const CompanyCard = props => {
   } = publicData;
 
   const name = companyName || displayName;
+
+  // Load listings when the projects section is expanded
+  useEffect(() => {
+    if (showProjects && !companyListingsData && onLoadListings) {
+      onLoadListings();
+    }
+  }, [showProjects, companyListingsData, onLoadListings]);
+
+  const listings = companyListingsData?.listings || [];
+  const listingsLoading = companyListingsData?.isLoading;
+  const totalProjects = companyListingsData?.pagination?.totalItems;
 
   // Build a user-like object for AvatarMedium
   const userForAvatar = {
@@ -131,6 +144,10 @@ const CompanyCard = props => {
       : null,
   };
 
+  const toggleProjects = () => {
+    setShowProjects(!showProjects);
+  };
+
   return (
     <div className={css.companyCard}>
       <div className={css.cardHeader}>
@@ -139,6 +156,7 @@ const CompanyCard = props => {
           <div className={css.companyNameRow}>
             <NamedLink className={css.companyNameLink} name="ProfilePage" params={{ id: user.id }}>
               {name}
+              <span className={css.profileArrow}>→</span>
             </NamedLink>
             {isVerified && <VerificationBadge type="company" size="small" showLabel={false} />}
           </div>
@@ -161,6 +179,76 @@ const CompanyCard = props => {
             : companyDescription}
         </p>
       )}
+
+      {/* Open Projects Section */}
+      <div className={css.projectsSection}>
+        <button
+          type="button"
+          className={css.projectsToggle}
+          onClick={toggleProjects}
+          aria-expanded={showProjects}
+        >
+          <span className={css.projectsToggleText}>
+            <FormattedMessage id="CompanyCard.openProjects" />
+            {totalProjects !== undefined && (
+              <span className={css.projectCount}>({totalProjects})</span>
+            )}
+          </span>
+          <span className={`${css.projectsToggleIcon} ${showProjects ? css.expanded : ''}`}>
+            ▼
+          </span>
+        </button>
+
+        {showProjects && (
+          <div className={css.projectsList}>
+            {listingsLoading && (
+              <p className={css.projectsLoading}>
+                <FormattedMessage id="CompanyCard.loadingProjects" />
+              </p>
+            )}
+
+            {!listingsLoading && listings.length === 0 && (
+              <p className={css.noProjects}>
+                <FormattedMessage id="CompanyCard.noOpenProjects" />
+              </p>
+            )}
+
+            {!listingsLoading &&
+              listings.length > 0 &&
+              listings.map(listing => (
+                <NamedLink
+                  key={listing.id}
+                  className={css.projectItem}
+                  name="ListingPage"
+                  params={{ id: listing.id, slug: listing.attributes.title?.replace(/\s+/g, '-').toLowerCase() || 'project' }}
+                >
+                  <div className={css.projectItemContent}>
+                    <span className={css.projectTitle}>{listing.attributes.title}</span>
+                    {listing.attributes.publicData?.projectType && (
+                      <span className={css.projectType}>
+                        {listing.attributes.publicData.projectType}
+                      </span>
+                    )}
+                  </div>
+                  <span className={css.projectArrow}>→</span>
+                </NamedLink>
+              ))}
+
+            {!listingsLoading && totalProjects > 5 && (
+              <NamedLink
+                className={css.viewAllProjects}
+                name="SearchPage"
+                to={{ search: `?pub_authorId=${user.id}` }}
+              >
+                <FormattedMessage
+                  id="CompanyCard.viewAllProjects"
+                  values={{ count: totalProjects }}
+                />
+              </NamedLink>
+            )}
+          </div>
+        )}
+      </div>
 
       <div className={css.cardActions}>
         <NamedLink className={css.viewProfileLink} name="ProfilePage" params={{ id: user.id }}>

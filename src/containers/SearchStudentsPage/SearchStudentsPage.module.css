@@ -196,7 +196,9 @@
 }
 
 .studentName {
-  display: block;
+  display: flex;
+  align-items: center;
+  gap: 4px;
   font-size: 16px;
   font-weight: var(--fontWeightSemiBold);
   color: var(--colorGrey900);
@@ -208,6 +210,17 @@
   &:hover {
     color: var(--marketplaceColor);
   }
+
+  &:hover .profileArrow {
+    transform: translateX(3px);
+    opacity: 1;
+  }
+}
+
+.profileArrow {
+  font-size: 14px;
+  opacity: 0.5;
+  transition: transform 0.2s ease, opacity 0.2s ease;
 }
 
 .university {
@@ -261,6 +274,99 @@
   padding: 3px 10px;
   border-radius: 12px;
   white-space: nowrap;
+}
+
+/* ─── Project Stats Section ─── */
+
+.statsSection {
+  margin-bottom: 16px;
+  border: 1px solid var(--colorGrey200);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.statsToggle {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 14px;
+  background-color: var(--colorGrey50);
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+
+  &:hover {
+    background-color: var(--colorGrey100);
+  }
+}
+
+.statsToggleText {
+  font-size: 13px;
+  font-weight: var(--fontWeightSemiBold);
+  color: var(--colorGrey700);
+}
+
+.statsToggleIcon {
+  font-size: 10px;
+  color: var(--colorGrey500);
+  transition: transform 0.2s ease;
+}
+
+.statsToggleIcon.expanded {
+  transform: rotate(180deg);
+}
+
+.statsContent {
+  padding: 12px;
+  background-color: var(--colorWhite);
+}
+
+.statsLoading {
+  font-size: 12px;
+  color: var(--colorGrey500);
+  text-align: center;
+  padding: 8px 0;
+  margin: 0;
+}
+
+.statsError {
+  font-size: 12px;
+  color: var(--colorGrey500);
+  text-align: center;
+  padding: 8px 0;
+  margin: 0;
+  font-style: italic;
+}
+
+.statsGrid {
+  display: flex;
+  justify-content: space-around;
+  gap: 8px;
+}
+
+.statItem {
+  text-align: center;
+  flex: 1;
+  padding: 8px 4px;
+  background-color: var(--colorGrey50);
+  border-radius: 6px;
+}
+
+.statValue {
+  display: block;
+  font-size: 20px;
+  font-weight: var(--fontWeightBold);
+  color: var(--marketplaceColor);
+}
+
+.statLabel {
+  display: block;
+  font-size: 10px;
+  color: var(--colorGrey600);
+  margin-top: 2px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 /* ─── Card Actions ─── */

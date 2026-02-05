@@ -1,6 +1,10 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { storableError } from '../../util/errors';
-import { searchUsers as searchUsersApi, inviteToApply as inviteToApplyApi } from '../../util/api';
+import {
+  searchUsers as searchUsersApi,
+  inviteToApply as inviteToApplyApi,
+  fetchUserStats as fetchUserStatsApi,
+} from '../../util/api';
 import { fetchCurrentUser } from '../../ducks/user.duck';
 
 // ================ Thunks ================ //
@@ -63,6 +67,22 @@ export const queryOwnListings = params => dispatch => {
   return dispatch(queryOwnListingsThunk(params)).unwrap();
 };
 
+// Thunk to fetch user stats (completed projects, pending projects)
+const fetchUserStatsPayloadCreator = (userId, { rejectWithValue }) => {
+  return fetchUserStatsApi(userId)
+    .then(response => ({ userId, ...response }))
+    .catch(e => rejectWithValue({ userId, error: storableError(e) }));
+};
+
+export const fetchUserStatsThunk = createAsyncThunk(
+  'app/SearchStudentsPage/fetchUserStats',
+  fetchUserStatsPayloadCreator
+);
+
+export const fetchUserStats = userId => dispatch => {
+  return dispatch(fetchUserStatsThunk(userId)).unwrap();
+};
+
 // ================ Slice ================ //
 
 const searchStudentsPageSlice = createSlice({
@@ -77,12 +97,17 @@ const searchStudentsPageSlice = createSlice({
     inviteSuccess: false,
     ownListings: [],
     ownListingsInProgress: false,
+    // Map of userId -> { stats, isLoading, error }
+    userStats: {},
   },
   reducers: {
     clearInviteState: state => {
       state.inviteInProgress = false;
       state.inviteError = null;
       state.inviteSuccess = false;
+    },
+    clearUserStats: state => {
+      state.userStats = {};
     },
   },
   extraReducers: builder => {
@@ -96,6 +121,8 @@ const searchStudentsPageSlice = createSlice({
         state.searchInProgress = false;
         state.users = action.payload.users || [];
         state.pagination = action.payload.pagination || null;
+        // Clear user stats when search results change
+        state.userStats = {};
       })
       .addCase(searchStudentsThunk.rejected, (state, action) => {
         state.searchInProgress = false;
@@ -125,11 +152,36 @@ const searchStudentsPageSlice = createSlice({
       })
       .addCase(queryOwnListingsThunk.rejected, state => {
         state.ownListingsInProgress = false;
+      })
+      // User stats
+      .addCase(fetchUserStatsThunk.pending, (state, action) => {
+        const userId = action.meta.arg;
+        state.userStats[userId] = {
+          stats: null,
+          isLoading: true,
+          error: null,
+        };
+      })
+      .addCase(fetchUserStatsThunk.fulfilled, (state, action) => {
+        const { userId, stats } = action.payload;
+        state.userStats[userId] = {
+          stats: stats || {},
+          isLoading: false,
+          error: null,
+        };
+      })
+      .addCase(fetchUserStatsThunk.rejected, (state, action) => {
+        const userId = action.meta.arg;
+        state.userStats[userId] = {
+          stats: null,
+          isLoading: false,
+          error: action.payload?.error || 'Failed to load stats',
+        };
       });
   },
 });
 
-export const { clearInviteState } = searchStudentsPageSlice.actions;
+export const { clearInviteState, clearUserStats } = searchStudentsPageSlice.actions;
 
 // ================ loadData ================ //
 

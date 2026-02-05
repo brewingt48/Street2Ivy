@@ -171,13 +171,8 @@ const TopbarMobileMenu = props => {
   const isEducationalAdmin = userType === 'educational-admin';
   const isAdmin = isSystemAdmin || isEducationalAdmin;
 
-  const findStudentsLinkMaybe = isCorporatePartner ? (
-    <li className={classNames(css.navigationLink, currentPageClass('SearchStudentsPage'))}>
-      <NamedLink name="SearchStudentsPage">
-        <FormattedMessage id="TopbarMobileMenu.findStudentsLink" />
-      </NamedLink>
-    </li>
-  ) : null;
+  // Removed: Search Students link for corporate partners
+  const findStudentsLinkMaybe = null;
 
   const dashboardLinkMaybe = isCorporatePartner ? (
     <li className={classNames(css.navigationLink, currentPageClass('CorporateDashboardPage'))}>
@@ -246,12 +241,14 @@ const TopbarMobileMenu = props => {
         </InlineTextButton>
 
         <ul className={css.accountLinksWrapper}>
-          {/* Show Admin Dashboard link for admins, Inbox for regular users */}
+          {/* Show Admin Dashboard link for admins, hide inbox for corporate partners (they have it in dashboard), show inbox for others */}
           {isAdmin ? (
             <>
               {adminDashboardLinkMaybe}
               {educationDashboardLinkMaybe}
             </>
+          ) : isCorporatePartner ? (
+            null /* Corporate partners have inbox built into their dashboard */
           ) : (
             <li className={classNames(css.inbox, currentPageClass(`InboxPage:${inboxTab}`))}>
               <NamedLink name="InboxPage" params={{ tab: inboxTab }}>

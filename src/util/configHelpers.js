@@ -1152,7 +1152,16 @@ const mergeListingConfig = (hostedConfig, defaultConfigs, categoriesInUse) => {
 
   // Street2Ivy: Always merge default listing types and fields so that local
   // configuration (project listing type and fields) is always included
-  const listingTypes = union(hostedListingTypes, defaultListingTypes, 'listingType');
+  const mergedListingTypes = union(hostedListingTypes, defaultListingTypes, 'listingType');
+
+  // Street2Ivy: Filter out free listing types (default-inquiry process)
+  // to only show the "project" listing type
+  const listingTypes = mergedListingTypes.filter(lt => {
+    const processAlias = lt.transactionType?.alias || '';
+    // Only include project listing type, exclude default-inquiry (free listings)
+    return !processAlias.startsWith('default-inquiry');
+  });
+
   const listingFields = union(hostedListingFields, defaultListingFields, 'key');
 
   const listingTypesInUse = listingTypes.map(lt => `${lt.listingType}`);

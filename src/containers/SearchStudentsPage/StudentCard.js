@@ -1,7 +1,5 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { FormattedMessage } from '../../util/reactIntl';
-import { createResourceLocatorString } from '../../util/routes';
-import { useRouteConfiguration } from '../../context/routeConfigurationContext';
 
 import { AvatarMedium, NamedLink } from '../../components';
 
@@ -86,12 +84,24 @@ const getSkillLabel = option => {
 };
 
 const StudentCard = props => {
-  const { user, onInvite } = props;
+  const { user, onInvite, userStatsData, onLoadStats } = props;
   const { attributes, profileImage } = user;
   const { profile } = attributes;
   const { displayName, publicData = {} } = profile;
 
+  const [showStats, setShowStats] = useState(false);
+
   const { university, major, graduationYear, skills = [], studentState } = publicData;
+
+  // Load stats when the stats section is expanded
+  useEffect(() => {
+    if (showStats && !userStatsData && onLoadStats) {
+      onLoadStats();
+    }
+  }, [showStats, userStatsData, onLoadStats]);
+
+  const stats = userStatsData?.stats;
+  const statsLoading = userStatsData?.isLoading;
 
   // Build a user-like object for AvatarMedium
   const userForAvatar = {
@@ -112,6 +122,10 @@ const StudentCard = props => {
       : null,
   };
 
+  const toggleStats = () => {
+    setShowStats(!showStats);
+  };
+
   return (
     <div className={css.studentCard}>
       <div className={css.cardHeader}>
@@ -119,6 +133,7 @@ const StudentCard = props => {
         <div className={css.cardInfo}>
           <NamedLink className={css.studentName} name="ProfilePage" params={{ id: user.id }}>
             {displayName}
+            <span className={css.profileArrow}>→</span>
           </NamedLink>
           {university && <p className={css.university}>{university}</p>}
         </div>
@@ -161,6 +176,60 @@ const StudentCard = props => {
           {skills.length > 5 && <span className={css.skillPill}>+{skills.length - 5}</span>}
         </div>
       )}
+
+      {/* Project Stats Section */}
+      <div className={css.statsSection}>
+        <button
+          type="button"
+          className={css.statsToggle}
+          onClick={toggleStats}
+          aria-expanded={showStats}
+        >
+          <span className={css.statsToggleText}>
+            <FormattedMessage id="StudentCard.projectStats" />
+          </span>
+          <span className={`${css.statsToggleIcon} ${showStats ? css.expanded : ''}`}>▼</span>
+        </button>
+
+        {showStats && (
+          <div className={css.statsContent}>
+            {statsLoading && (
+              <p className={css.statsLoading}>
+                <FormattedMessage id="StudentCard.loadingStats" />
+              </p>
+            )}
+
+            {!statsLoading && stats && (
+              <div className={css.statsGrid}>
+                <div className={css.statItem}>
+                  <span className={css.statValue}>{stats.completedProjects || 0}</span>
+                  <span className={css.statLabel}>
+                    <FormattedMessage id="StudentCard.completedProjects" />
+                  </span>
+                </div>
+                <div className={css.statItem}>
+                  <span className={css.statValue}>{stats.activeProjects || 0}</span>
+                  <span className={css.statLabel}>
+                    <FormattedMessage id="StudentCard.activeProjects" />
+                  </span>
+                </div>
+                <div className={css.statItem}>
+                  <span className={css.statValue}>{stats.pendingProjects || 0}</span>
+                  <span className={css.statLabel}>
+                    <FormattedMessage id="StudentCard.pendingProjects" />
+                  </span>
+                </div>
+              </div>
+            )}
+
+            {!statsLoading && !stats && (
+              <p className={css.statsError}>
+                <FormattedMessage id="StudentCard.statsUnavailable" />
+              </p>
+            )}
+          </div>
+        )}
+      </div>
 
       <div className={css.cardActions}>
         <NamedLink className={css.viewProfileLink} name="ProfilePage" params={{ id: user.id }}>

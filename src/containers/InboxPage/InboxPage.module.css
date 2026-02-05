@@ -67,6 +67,27 @@
   }
 }
 
+.dashboardLink {
+  display: block;
+  width: 100%;
+  padding: 12px 0;
+  margin-bottom: 16px;
+  font-size: 14px;
+  font-weight: var(--fontWeightMedium);
+  color: var(--marketplaceColor);
+  text-decoration: none;
+  border-bottom: 1px solid var(--colorGrey100);
+
+  &:hover {
+    color: var(--marketplaceColorDark);
+    text-decoration: underline;
+  }
+
+  @media (--viewportLarge) {
+    margin-bottom: 24px;
+  }
+}
+
 .title {
   align-self: center;
   padding: 0px 0 8px 0;

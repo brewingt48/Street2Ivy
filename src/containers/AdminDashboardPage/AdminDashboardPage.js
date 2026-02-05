@@ -6,9 +6,10 @@ import { FormattedMessage, useIntl } from '../../util/reactIntl';
 import { isScrollingDisabled } from '../../ducks/ui.duck';
 import classNames from 'classnames';
 
-import { Page, LayoutSingleColumn, PaginationLinks } from '../../components';
+import { Page, LayoutSingleColumn, PaginationLinks, NamedLink } from '../../components';
 import TopbarContainer from '../../containers/TopbarContainer/TopbarContainer';
 import FooterContainer from '../../containers/FooterContainer/FooterContainer';
+import { exportAdminReport } from '../../util/api';
 
 import {
   fetchUsers,
@@ -31,9 +32,94 @@ import {
   deleteContentItemAction,
   resetContentAction,
   clearContentState,
+  fetchUserStatsAction,
 } from './AdminDashboardPage.duck';
 
 import css from './AdminDashboardPage.module.css';
+
+// ================ User Stats Cell ================ //
+
+const UserStatsCell = ({ user, userStats, onFetchStats }) => {
+  const [expanded, setExpanded] = useState(false);
+  const publicData = user.attributes?.profile?.publicData || {};
+  const userType = publicData.userType;
+
+  const statsData = userStats?.[user.id];
+  const stats = statsData?.stats;
+  const isLoading = statsData?.isLoading;
+
+  const handleToggle = () => {
+    if (!expanded && !statsData && onFetchStats) {
+      onFetchStats(user.id);
+    }
+    setExpanded(!expanded);
+  };
+
+  // Only show stats for students and corporate partners
+  if (userType !== 'student' && userType !== 'corporate-partner') {
+    return <span className={css.statsNA}>N/A</span>;
+  }
+
+  return (
+    <div className={css.statsCell}>
+      <button
+        type="button"
+        className={css.statsToggleBtn}
+        onClick={handleToggle}
+        aria-expanded={expanded}
+      >
+        <span className={css.statsToggleText}>
+          {expanded ? 'Hide Stats' : 'View Stats'}
+        </span>
+        <span className={`${css.statsToggleIcon} ${expanded ? css.expanded : ''}`}>▼</span>
+      </button>
+
+      {expanded && (
+        <div className={css.statsDropdown}>
+          {isLoading && <span className={css.statsLoading}>Loading...</span>}
+
+          {!isLoading && stats && userType === 'student' && (
+            <div className={css.statsItems}>
+              <div className={css.statsItem}>
+                <span className={css.statsValue}>{stats.completedProjects || 0}</span>
+                <span className={css.statsLabel}>Completed</span>
+              </div>
+              <div className={css.statsItem}>
+                <span className={css.statsValue}>{stats.activeProjects || 0}</span>
+                <span className={css.statsLabel}>Active</span>
+              </div>
+              <div className={css.statsItem}>
+                <span className={css.statsValue}>{stats.pendingProjects || 0}</span>
+                <span className={css.statsLabel}>Pending</span>
+              </div>
+            </div>
+          )}
+
+          {!isLoading && stats && userType === 'corporate-partner' && (
+            <div className={css.statsItems}>
+              <div className={css.statsItem}>
+                <span className={css.statsValue}>{stats.openProjects || 0}</span>
+                <span className={css.statsLabel}>Open</span>
+              </div>
+              <div className={css.statsItem}>
+                <span className={css.statsValue}>{stats.completedTransactions || 0}</span>
+                <span className={css.statsLabel}>Completed</span>
+              </div>
+              <div className={css.statsItem}>
+                <span className={css.statsValue}>{stats.activeTransactions || 0}</span>
+                <span className={css.statsLabel}>Active</span>
+              </div>
+            </div>
+          )}
+
+          {!isLoading && !stats && (
+            <span className={css.statsError}>Stats unavailable</span>
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
 
 // ================ User Management Panel ================ //
 
@@ -44,11 +130,13 @@ const UserManagementPanel = props => {
     fetchInProgress,
     blockInProgress,
     deleteInProgress,
+    userStats,
     onFetchUsers,
     onBlockUser,
     onUnblockUser,
     onDeleteUser,
     onMessageEducator,
+    onFetchUserStats,
   } = props;
 
   const [filters, setFilters] = useState({
@@ -202,6 +290,9 @@ const UserManagementPanel = props => {
                   <FormattedMessage id="AdminDashboardPage.tableType" />
                 </th>
                 <th>
+                  <FormattedMessage id="AdminDashboardPage.tableStats" />
+                </th>
+                <th>
                   <FormattedMessage id="AdminDashboardPage.tableStatus" />
                 </th>
                 <th>
@@ -237,7 +328,14 @@ const UserManagementPanel = props => {
                           )}
                         </div>
                         <div className={css.userInfo}>
-                          <span className={css.userName}>{displayName}</span>
+                          <NamedLink
+                            className={css.userNameLink}
+                            name="ProfilePage"
+                            params={{ id: user.id }}
+                          >
+                            {displayName}
+                            <span className={css.profileArrow}>→</span>
+                          </NamedLink>
                           <span className={css.userEmail}>
                             {user.attributes?.email || publicData.email || ''}
                           </span>
@@ -248,6 +346,13 @@ const UserManagementPanel = props => {
                       <span className={classNames(css.userTypeBadge, css[userType])}>
                         {getUserTypeLabel(userType)}
                       </span>
+                    </td>
+                    <td>
+                      <UserStatsCell
+                        user={user}
+                        userStats={userStats}
+                        onFetchStats={onFetchUserStats}
+                      />
                     </td>
                     <td>
                       <span
@@ -370,6 +475,8 @@ const MessagesPanel = props => {
     onClearMessageState,
   } = props;
 
+  const [activeMessageTab, setActiveMessageTab] = useState('sent'); // 'inbox', 'sent', 'compose'
+  const [selectedMessage, setSelectedMessage] = useState(null);
   const [formData, setFormData] = useState({
     recipientId: '',
     subject: '',
@@ -379,6 +486,7 @@ const MessagesPanel = props => {
   useEffect(() => {
     if (sendSuccess) {
       setFormData({ recipientId: '', subject: '', body: '' });
+      setActiveMessageTab('sent');
       // Clear success message after 3 seconds
       const timer = setTimeout(() => onClearMessageState(), 3000);
       return () => clearTimeout(timer);
@@ -393,115 +501,275 @@ const MessagesPanel = props => {
   };
 
   const formatDate = dateString => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const isToday = date.toDateString() === now.toDateString();
+
+    if (isToday) {
+      return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    }
+    return date.toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' });
+  };
+
+  const formatFullDate = dateString => {
     return new Date(dateString).toLocaleString();
+  };
+
+  // For system admin: sent messages are what they sent
+  const sentMessages = messages;
+  const inboxMessages = []; // System admin typically receives messages through different channels
+
+  const renderMessageList = (messageList, isSent = false) => {
+    if (messageList.length === 0) {
+      return (
+        <div className={css.noMessages}>
+          {isSent ? 'No sent messages yet.' : 'No messages in your inbox.'}
+        </div>
+      );
+    }
+
+    return (
+      <div className={css.emailList}>
+        <table className={css.emailTable}>
+          <thead>
+            <tr>
+              <th className={css.emailTableHeader}>{isSent ? 'To' : 'From'}</th>
+              <th className={css.emailTableHeader}>Subject</th>
+              <th className={css.emailTableHeader}>Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            {messageList.map(message => (
+              <tr
+                key={message.id}
+                className={classNames(css.emailRow, { [css.emailRowUnread]: !message.read && !isSent })}
+                onClick={() => setSelectedMessage(message)}
+              >
+                <td className={css.emailFrom}>
+                  {isSent
+                    ? (message.recipientName || message.recipientId)
+                    : (message.senderName || 'System')
+                  }
+                </td>
+                <td className={css.emailSubject}>{message.subject}</td>
+                <td className={css.emailDate}>{formatDate(message.createdAt)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    );
+  };
+
+  const renderMessageDetail = () => {
+    if (!selectedMessage) return null;
+
+    return (
+      <div className={css.messageDetailOverlay} onClick={() => setSelectedMessage(null)}>
+        <div className={css.messageDetailPanel} onClick={e => e.stopPropagation()}>
+          <div className={css.messageDetailHeader}>
+            <button className={css.messageDetailClose} onClick={() => setSelectedMessage(null)}>
+              ← Back
+            </button>
+          </div>
+          <div className={css.messageDetailContent}>
+            <h3 className={css.messageDetailSubject}>{selectedMessage.subject}</h3>
+            <div className={css.messageDetailMeta}>
+              <div className={css.messageDetailMetaRow}>
+                <span className={css.messageDetailLabel}>From:</span>
+                <span>{selectedMessage.senderName || 'System Admin'}</span>
+              </div>
+              <div className={css.messageDetailMetaRow}>
+                <span className={css.messageDetailLabel}>To:</span>
+                <span>{selectedMessage.recipientName || selectedMessage.recipientId}</span>
+              </div>
+              <div className={css.messageDetailMetaRow}>
+                <span className={css.messageDetailLabel}>Date:</span>
+                <span>{formatFullDate(selectedMessage.createdAt)}</span>
+              </div>
+            </div>
+            <div className={css.messageDetailBody}>
+              {selectedMessage.content || selectedMessage.body}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
   };
 
   return (
     <div className={css.messagesPanel}>
-      {/* Compose Section */}
-      <div className={css.composeSection}>
-        <h3 className={css.sectionTitle}>
-          <FormattedMessage id="AdminDashboardPage.composeMessage" />
-        </h3>
-
-        {sendSuccess && (
-          <div className={css.successMessage}>
-            <FormattedMessage id="AdminDashboardPage.messageSent" />
-          </div>
-        )}
-
-        {sendError && (
-          <div className={css.errorMessage}>
-            <FormattedMessage id="AdminDashboardPage.messageError" />
-          </div>
-        )}
-
-        <form className={css.composeForm} onSubmit={handleSubmit}>
-          <div className={css.formField}>
-            <label>
-              <FormattedMessage id="AdminDashboardPage.recipientLabel" />
-            </label>
-            <select
-              value={formData.recipientId}
-              onChange={e => setFormData(prev => ({ ...prev, recipientId: e.target.value }))}
-              required
-            >
-              <option value="">Select an educational admin...</option>
-              {educationalAdmins.map(admin => (
-                <option key={admin.id} value={admin.id}>
-                  {admin.attributes?.profile?.displayName || 'Unknown'}
-                  {admin.attributes?.profile?.publicData?.institutionName
-                    ? ` (${admin.attributes.profile.publicData.institutionName})`
-                    : ''}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className={css.formField}>
-            <label>
-              <FormattedMessage id="AdminDashboardPage.subjectLabel" />
-            </label>
-            <input
-              type="text"
-              value={formData.subject}
-              onChange={e => setFormData(prev => ({ ...prev, subject: e.target.value }))}
-              placeholder="Message subject..."
-              required
-            />
-          </div>
-
-          <div className={css.formField}>
-            <label>
-              <FormattedMessage id="AdminDashboardPage.messageLabel" />
-            </label>
-            <textarea
-              value={formData.body}
-              onChange={e => setFormData(prev => ({ ...prev, body: e.target.value }))}
-              placeholder="Write your message..."
-              required
-            />
-          </div>
-
+      {/* Message Tabs */}
+      <div className={css.messageTabsContainer}>
+        <div className={css.messageTabs}>
           <button
-            type="submit"
-            className={css.sendButton}
-            disabled={
-              sendInProgress || !formData.recipientId || !formData.subject || !formData.body
-            }
+            className={classNames(css.messageTab, { [css.messageTabActive]: activeMessageTab === 'inbox' })}
+            onClick={() => setActiveMessageTab('inbox')}
           >
-            {sendInProgress ? 'Sending...' : 'Send Message'}
+            📥 Inbox
           </button>
-        </form>
+          <button
+            className={classNames(css.messageTab, { [css.messageTabActive]: activeMessageTab === 'sent' })}
+            onClick={() => setActiveMessageTab('sent')}
+          >
+            📤 Sent
+          </button>
+          <button
+            className={classNames(css.messageTab, css.messageTabCompose, { [css.messageTabActive]: activeMessageTab === 'compose' })}
+            onClick={() => setActiveMessageTab('compose')}
+          >
+            ✏️ Compose
+          </button>
+        </div>
       </div>
 
-      {/* Messages List Section */}
-      <div className={css.messagesListSection}>
-        <h3 className={css.sectionTitle}>
-          <FormattedMessage id="AdminDashboardPage.sentMessages" />
-        </h3>
+      {/* Tab Content */}
+      {activeMessageTab === 'inbox' && (
+        <div className={css.messagesListSection}>
+          <h3 className={css.sectionTitle}>Inbox</h3>
+          {renderMessageList(inboxMessages, false)}
+        </div>
+      )}
 
-        {messages.length === 0 ? (
-          <div className={css.noMessages}>
-            <FormattedMessage id="AdminDashboardPage.noMessages" />
-          </div>
-        ) : (
-          <div className={css.messagesList}>
-            {messages.map(message => (
-              <div key={message.id} className={css.messageItem}>
-                <div className={css.messageHeader}>
-                  <span className={css.messageRecipient}>
-                    To: {message.recipientName || message.recipientId}
-                  </span>
-                  <span className={css.messageDate}>{formatDate(message.createdAt)}</span>
-                </div>
-                <div className={css.messageSubject}>{message.subject}</div>
-                <div className={css.messageBody}>{message.body}</div>
-              </div>
-            ))}
-          </div>
-        )}
+      {activeMessageTab === 'sent' && (
+        <div className={css.messagesListSection}>
+          <h3 className={css.sectionTitle}>Sent Messages</h3>
+          {renderMessageList(sentMessages, true)}
+        </div>
+      )}
+
+      {activeMessageTab === 'compose' && (
+        <div className={css.composeSection}>
+          <h3 className={css.sectionTitle}>
+            <FormattedMessage id="AdminDashboardPage.composeMessage" />
+          </h3>
+
+          {sendSuccess && (
+            <div className={css.successMessage}>
+              <FormattedMessage id="AdminDashboardPage.messageSent" />
+            </div>
+          )}
+
+          {sendError && (
+            <div className={css.errorMessage}>
+              <FormattedMessage id="AdminDashboardPage.messageError" />
+            </div>
+          )}
+
+          <form className={css.composeForm} onSubmit={handleSubmit}>
+            <div className={css.formField}>
+              <label>
+                <FormattedMessage id="AdminDashboardPage.recipientLabel" />
+              </label>
+              <select
+                value={formData.recipientId}
+                onChange={e => setFormData(prev => ({ ...prev, recipientId: e.target.value }))}
+                required
+              >
+                <option value="">Select an educational admin...</option>
+                {educationalAdmins.map(admin => (
+                  <option key={admin.id} value={admin.id}>
+                    {admin.attributes?.profile?.displayName || 'Unknown'}
+                    {admin.attributes?.profile?.publicData?.institutionName
+                      ? ` (${admin.attributes.profile.publicData.institutionName})`
+                      : ''}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className={css.formField}>
+              <label>
+                <FormattedMessage id="AdminDashboardPage.subjectLabel" />
+              </label>
+              <input
+                type="text"
+                value={formData.subject}
+                onChange={e => setFormData(prev => ({ ...prev, subject: e.target.value }))}
+                placeholder="Message subject..."
+                required
+              />
+            </div>
+
+            <div className={css.formField}>
+              <label>
+                <FormattedMessage id="AdminDashboardPage.messageLabel" />
+              </label>
+              <textarea
+                value={formData.body}
+                onChange={e => setFormData(prev => ({ ...prev, body: e.target.value }))}
+                placeholder="Write your message..."
+                required
+              />
+            </div>
+
+            <button
+              type="submit"
+              className={css.sendButton}
+              disabled={
+                sendInProgress || !formData.recipientId || !formData.subject || !formData.body
+              }
+            >
+              {sendInProgress ? 'Sending...' : 'Send Message'}
+            </button>
+          </form>
+        </div>
+      )}
+
+      {/* Message Detail Modal */}
+      {selectedMessage && renderMessageDetail()}
+    </div>
+  );
+};
+
+// ================ Stat Detail Modal ================ //
+
+const StatDetailModal = ({ title, items, onClose, renderItem }) => {
+  if (!items) return null;
+
+  return (
+    <div className={css.statDetailOverlay} onClick={onClose}>
+      <div className={css.statDetailModal} onClick={e => e.stopPropagation()}>
+        <div className={css.statDetailHeader}>
+          <h3 className={css.statDetailTitle}>{title}</h3>
+          <button className={css.statDetailClose} onClick={onClose}>×</button>
+        </div>
+        <div className={css.statDetailContent}>
+          {items.length === 0 ? (
+            <p className={css.statDetailEmpty}>No items to display</p>
+          ) : (
+            <ul className={css.statDetailList}>
+              {items.map((item, index) => (
+                <li key={item.id || index} className={css.statDetailItem}>
+                  {renderItem ? renderItem(item) : (
+                    <span>{item.name || item.title || `Item ${index + 1}`}</span>
+                  )}
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
       </div>
+    </div>
+  );
+};
+
+// ================ Clickable Stat Card ================ //
+
+const ClickableStatCard = ({ value, label, onClick, hasData }) => {
+  const isClickable = hasData && value > 0;
+
+  return (
+    <div
+      className={classNames(css.statCard, { [css.statCardClickable]: isClickable })}
+      onClick={isClickable ? onClick : undefined}
+      role={isClickable ? 'button' : undefined}
+      tabIndex={isClickable ? 0 : undefined}
+      onKeyPress={isClickable ? (e) => e.key === 'Enter' && onClick() : undefined}
+    >
+      <p className={css.statValue}>{value}</p>
+      <p className={css.statLabel}>{label}</p>
+      {isClickable && <span className={css.statClickHint}>Click to view details</span>}
     </div>
   );
 };
@@ -509,7 +777,9 @@ const MessagesPanel = props => {
 // ================ Reports Panel ================ //
 
 const ReportsPanel = props => {
-  const { reports, fetchInProgress, currentReportType, onFetchReports } = props;
+  const { reports, fetchInProgress, currentReportType, onFetchReports, users } = props;
+
+  const [statDetailModal, setStatDetailModal] = useState(null);
 
   const reportTypes = [
     { key: 'overview', label: 'Platform Overview' },
@@ -517,6 +787,77 @@ const ReportsPanel = props => {
     { key: 'institutions', label: 'Institutions' },
     { key: 'transactions', label: 'Transactions' },
   ];
+
+  // Helper to get users by type
+  const getUsersByType = (userType) => {
+    if (!users) return [];
+    return users.filter(u => u.attributes?.profile?.publicData?.userType === userType);
+  };
+
+  // Render user item in modal - clickable to view profile
+  const renderUserItem = (user) => {
+    const displayName = user.attributes?.profile?.displayName || 'Unknown User';
+    const email = user.attributes?.email || '';
+    const userType = user.attributes?.profile?.publicData?.userType || 'unknown';
+    const userId = user.id?.uuid || user.id;
+
+    return (
+      <NamedLink
+        name="ProfilePage"
+        params={{ id: userId }}
+        className={css.statDetailLink}
+      >
+        <div className={css.statDetailUserInfo}>
+          <span className={css.statDetailUserName}>{displayName}</span>
+          <span className={css.statDetailUserEmail}>{email}</span>
+        </div>
+        <div className={css.statDetailUserRight}>
+          <span className={classNames(css.statDetailUserType, css[userType])}>
+            {userType.replace('-', ' ')}
+          </span>
+          <span className={css.viewProfileArrow}>→</span>
+        </div>
+      </NamedLink>
+    );
+  };
+
+  // Handle stat click
+  const handleStatClick = (modalType) => {
+    let modalData = null;
+
+    switch (modalType) {
+      case 'totalUsers':
+        modalData = { title: 'All Users', items: users || [], renderItem: renderUserItem };
+        break;
+      case 'students':
+        modalData = { title: 'Students', items: getUsersByType('student'), renderItem: renderUserItem };
+        break;
+      case 'corporatePartners':
+        modalData = { title: 'Corporate Partners', items: getUsersByType('corporate-partner'), renderItem: renderUserItem };
+        break;
+      case 'educationalAdmins':
+        modalData = { title: 'Educational Admins', items: getUsersByType('educational-admin'), renderItem: renderUserItem };
+        break;
+      case 'activeUsers':
+        modalData = {
+          title: 'Active Users',
+          items: (users || []).filter(u => !u.attributes?.banned && !u.attributes?.deleted),
+          renderItem: renderUserItem
+        };
+        break;
+      case 'bannedUsers':
+        modalData = {
+          title: 'Banned Users',
+          items: (users || []).filter(u => u.attributes?.banned),
+          renderItem: renderUserItem
+        };
+        break;
+      default:
+        break;
+    }
+
+    setStatDetailModal(modalData);
+  };
 
   const renderOverviewReport = () => {
     if (!reports) return null;
@@ -526,22 +867,30 @@ const ReportsPanel = props => {
     return (
       <>
         <div className={css.statsGrid}>
-          <div className={css.statCard}>
-            <p className={css.statValue}>{userCounts?.total || 0}</p>
-            <p className={css.statLabel}>Total Users</p>
-          </div>
-          <div className={css.statCard}>
-            <p className={css.statValue}>{userCounts?.students || 0}</p>
-            <p className={css.statLabel}>Students</p>
-          </div>
-          <div className={css.statCard}>
-            <p className={css.statValue}>{userCounts?.corporatePartners || 0}</p>
-            <p className={css.statLabel}>Corporate Partners</p>
-          </div>
-          <div className={css.statCard}>
-            <p className={css.statValue}>{userCounts?.educationalAdmins || 0}</p>
-            <p className={css.statLabel}>Educational Admins</p>
-          </div>
+          <ClickableStatCard
+            value={userCounts?.total || 0}
+            label="Total Users"
+            onClick={() => handleStatClick('totalUsers')}
+            hasData={users?.length > 0}
+          />
+          <ClickableStatCard
+            value={userCounts?.students || 0}
+            label="Students"
+            onClick={() => handleStatClick('students')}
+            hasData={users?.length > 0}
+          />
+          <ClickableStatCard
+            value={userCounts?.corporatePartners || 0}
+            label="Corporate Partners"
+            onClick={() => handleStatClick('corporatePartners')}
+            hasData={users?.length > 0}
+          />
+          <ClickableStatCard
+            value={userCounts?.educationalAdmins || 0}
+            label="Educational Admins"
+            onClick={() => handleStatClick('educationalAdmins')}
+            hasData={users?.length > 0}
+          />
         </div>
 
         <div className={css.reportSection}>
@@ -591,18 +940,24 @@ const ReportsPanel = props => {
     return (
       <>
         <div className={css.statsGrid}>
-          <div className={css.statCard}>
-            <p className={css.statValue}>{summary?.totalUsers || 0}</p>
-            <p className={css.statLabel}>Total Users</p>
-          </div>
-          <div className={css.statCard}>
-            <p className={css.statValue}>{summary?.totalActive || 0}</p>
-            <p className={css.statLabel}>Active Users</p>
-          </div>
-          <div className={css.statCard}>
-            <p className={css.statValue}>{summary?.totalBanned || 0}</p>
-            <p className={css.statLabel}>Banned Users</p>
-          </div>
+          <ClickableStatCard
+            value={summary?.totalUsers || 0}
+            label="Total Users"
+            onClick={() => handleStatClick('totalUsers')}
+            hasData={users?.length > 0}
+          />
+          <ClickableStatCard
+            value={summary?.totalActive || 0}
+            label="Active Users"
+            onClick={() => handleStatClick('activeUsers')}
+            hasData={users?.length > 0}
+          />
+          <ClickableStatCard
+            value={summary?.totalBanned || 0}
+            label="Banned Users"
+            onClick={() => handleStatClick('bannedUsers')}
+            hasData={users?.length > 0}
+          />
           <div className={css.statCard}>
             <p className={css.statValue}>{summary?.newUsersThisMonth || 0}</p>
             <p className={css.statLabel}>New This Month</p>
@@ -775,9 +1130,14 @@ const ReportsPanel = props => {
     }
   };
 
-  const handleExport = format => {
+  const handleExport = async format => {
     const reportType = currentReportType || 'overview';
-    window.open(`/api/admin/export/${reportType}?format=${format}`, '_blank');
+    try {
+      await exportAdminReport(reportType, format);
+    } catch (error) {
+      console.error('Export failed:', error);
+      // Could show a toast notification here
+    }
   };
 
   return (
@@ -829,6 +1189,16 @@ const ReportsPanel = props => {
         </div>
         {renderReportContent()}
       </div>
+
+      {/* Stat Detail Modal */}
+      {statDetailModal && (
+        <StatDetailModal
+          title={statDetailModal.title}
+          items={statDetailModal.items}
+          onClose={() => setStatDetailModal(null)}
+          renderItem={statDetailModal.renderItem}
+        />
+      )}
     </div>
   );
 };
@@ -2635,6 +3005,8 @@ const AdminDashboardPageComponent = props => {
     fetchContentInProgress,
     updateContentInProgress,
     updateContentSuccess,
+    // User Stats
+    userStats,
     // Actions
     onFetchUsers,
     onBlockUser,
@@ -2656,6 +3028,7 @@ const AdminDashboardPageComponent = props => {
     onDeleteItem,
     onResetContent,
     onClearContentState,
+    onFetchUserStats,
   } = props;
 
   const intl = useIntl();
@@ -2771,11 +3144,13 @@ const AdminDashboardPageComponent = props => {
               fetchInProgress={fetchUsersInProgress}
               blockInProgress={blockInProgress}
               deleteInProgress={deleteInProgress}
+              userStats={userStats}
               onFetchUsers={onFetchUsers}
               onBlockUser={onBlockUser}
               onUnblockUser={onUnblockUser}
               onDeleteUser={onDeleteUser}
               onMessageEducator={handleMessageEducator}
+              onFetchUserStats={onFetchUserStats}
             />
           )}
 
@@ -2821,6 +3196,7 @@ const AdminDashboardPageComponent = props => {
               fetchInProgress={fetchReportsInProgress}
               currentReportType={currentReportType}
               onFetchReports={onFetchReports}
+              users={users}
             />
           )}
 
@@ -2875,6 +3251,7 @@ const mapStateToProps = state => {
     fetchContentInProgress,
     updateContentInProgress,
     updateContentSuccess,
+    userStats,
   } = state.AdminDashboardPage;
 
   return {
@@ -2903,6 +3280,7 @@ const mapStateToProps = state => {
     fetchContentInProgress,
     updateContentInProgress,
     updateContentSuccess,
+    userStats,
   };
 };
 
@@ -2927,6 +3305,7 @@ const mapDispatchToProps = dispatch => ({
   onDeleteItem: (section, itemId) => dispatch(deleteContentItemAction(section, itemId)),
   onResetContent: () => dispatch(resetContentAction()),
   onClearContentState: () => dispatch(clearContentState()),
+  onFetchUserStats: userId => dispatch(fetchUserStatsAction(userId)),
 });
 
 const AdminDashboardPage = compose(

@@ -145,17 +145,6 @@ const ProfileMenu = ({
           </MenuItem>
         ) : null}
         {isCorporatePartner ? (
-          <MenuItem key="SearchStudentsPage">
-            <NamedLink
-              className={classNames(css.menuLink, currentPageClass('SearchStudentsPage'))}
-              name="SearchStudentsPage"
-            >
-              <span className={css.menuItemBorder} />
-              <FormattedMessage id="TopbarDesktop.findStudentsLink" />
-            </NamedLink>
-          </MenuItem>
-        ) : null}
-        {isCorporatePartner ? (
           <MenuItem key="CorporateDashboardPage">
             <NamedLink
               className={classNames(css.menuLink, currentPageClass('CorporateDashboardPage'))}
@@ -278,19 +267,23 @@ const TopbarDesktop = props => {
   const authenticatedOnClientSide = mounted && isAuthenticated;
   const isAuthenticatedOrJustHydrated = isAuthenticated || !mounted;
 
-  // Street2Ivy: Check if user is admin
+  // Street2Ivy: Check if user is admin or corporate partner
   const userType = currentUser?.attributes?.profile?.publicData?.userType;
   const isSystemAdmin = userType === 'system-admin';
   const isEducationalAdmin = userType === 'educational-admin';
+  const isCorporatePartner = userType === 'corporate-partner';
   const isAdmin = isSystemAdmin || isEducationalAdmin;
 
   const giveSpaceForSearch = customLinks == null || customLinks?.length === 0;
   const classes = classNames(rootClassName || css.root, className);
 
   // For admin users, show Admin Dashboard link instead of Inbox
+  // For corporate partners, hide inbox link (they have inbox in their dashboard)
   const inboxLinkMaybe = authenticatedOnClientSide ? (
     isAdmin ? (
       <AdminDashboardLink notificationCount={notificationCount} />
+    ) : isCorporatePartner ? (
+      null // Corporate partners have inbox built into their dashboard
     ) : (
       <InboxLink notificationCount={notificationCount} inboxTab={inboxTab} />
     )

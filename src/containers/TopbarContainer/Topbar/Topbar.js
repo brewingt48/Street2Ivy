@@ -293,6 +293,10 @@ const TopbarComponent = props => {
   // Street2Ivy: Always hide search on LandingPage - users must sign up to see listings
   const isLandingPage = resolvedCurrentPage === 'LandingPage';
 
+  // Street2Ivy: Hide search for corporate partners - they don't need to search listings
+  const userType = currentUser?.attributes?.profile?.publicData?.userType;
+  const isCorporatePartner = userType === 'corporate-partner';
+
   const showSearchOnAllPages = searchFormDisplay === SEARCH_DISPLAY_ALWAYS && !isLandingPage;
   const showSearchOnSearchPage =
     searchFormDisplay === SEARCH_DISPLAY_ONLY_SEARCH_PAGE &&
@@ -300,8 +304,10 @@ const TopbarComponent = props => {
   const showSearchNotOnLandingPage =
     searchFormDisplay === SEARCH_DISPLAY_NOT_LANDING_PAGE && !isLandingPage;
 
-  const showSearchForm =
-    showSearchOnAllPages || showSearchOnSearchPage || showSearchNotOnLandingPage;
+  // Hide search for corporate partners
+  const showSearchForm = isCorporatePartner
+    ? false
+    : showSearchOnAllPages || showSearchOnSearchPage || showSearchNotOnLandingPage;
 
   const mobileSearchButtonMaybe = showSearchForm ? (
     <Button

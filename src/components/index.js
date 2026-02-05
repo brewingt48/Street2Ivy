@@ -136,6 +136,7 @@ export { default as SuccessStories } from './SuccessStories/SuccessStories';
 export { default as SavedCardDetails } from './SavedCardDetails/SavedCardDetails';
 export { default as StripeConnectAccountStatusBox } from './StripeConnectAccountStatusBox/StripeConnectAccountStatusBox';
 export { default as StripePaymentAddress } from './StripePaymentAddress/StripePaymentAddress';
+export { default as StudentAssessmentForm } from './StudentAssessmentForm/StudentAssessmentForm';
 export { default as TopbarSimplified } from './TopbarSimplified/TopbarSimplified';
 
 // Forms

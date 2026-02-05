@@ -53,7 +53,195 @@
  *   - requiredMessage (optional):    Message for those fields, which are mandatory.
  */
 export const listingFields = [
-  // ─── Street2Ivy: Project listing fields ────────────────────────────
+  // ─── Street2Ivy: Section 1 - Company Information ────────────────────────────
+  {
+    key: 'companyName',
+    scope: 'public',
+    schemaType: 'text',
+    listingTypeConfig: {
+      limitToListingTypeIds: true,
+      listingTypeIds: ['project'],
+    },
+    showConfig: {
+      label: 'Company Name',
+    },
+    saveConfig: {
+      label: 'Company Name',
+      placeholderMessage: 'Enter your company name...',
+      isRequired: true,
+      requiredMessage: 'Company name is required.',
+    },
+  },
+  {
+    key: 'companySector',
+    scope: 'public',
+    schemaType: 'enum',
+    enumOptions: [
+      { option: 'technology', label: 'Technology' },
+      { option: 'finance', label: 'Finance & Banking' },
+      { option: 'consulting', label: 'Consulting' },
+      { option: 'healthcare', label: 'Healthcare & Life Sciences' },
+      { option: 'education', label: 'Education' },
+      { option: 'manufacturing', label: 'Manufacturing' },
+      { option: 'retail', label: 'Retail & E-commerce' },
+      { option: 'media', label: 'Media & Entertainment' },
+      { option: 'nonprofit', label: 'Nonprofit & NGO' },
+      { option: 'government', label: 'Government & Public Sector' },
+      { option: 'energy', label: 'Energy & Utilities' },
+      { option: 'real-estate', label: 'Real Estate' },
+      { option: 'legal', label: 'Legal Services' },
+      { option: 'transportation', label: 'Transportation & Logistics' },
+      { option: 'hospitality', label: 'Hospitality & Travel' },
+      { option: 'agriculture', label: 'Agriculture & Food' },
+      { option: 'telecommunications', label: 'Telecommunications' },
+      { option: 'other', label: 'Other' },
+    ],
+    listingTypeConfig: {
+      limitToListingTypeIds: true,
+      listingTypeIds: ['project'],
+    },
+    filterConfig: {
+      indexForSearch: true,
+      filterType: 'SelectMultipleFilter',
+      label: 'Industry/Sector',
+      group: 'primary',
+    },
+    showConfig: {
+      label: 'Industry/Sector',
+      isDetail: true,
+    },
+    saveConfig: {
+      label: 'Industry/Sector',
+      placeholderMessage: 'Select your industry...',
+      isRequired: true,
+      requiredMessage: 'Please select your industry/sector.',
+    },
+  },
+  {
+    key: 'companySize',
+    scope: 'public',
+    schemaType: 'enum',
+    enumOptions: [
+      { option: '1-10', label: '1-10 employees' },
+      { option: '11-50', label: '11-50 employees' },
+      { option: '51-200', label: '51-200 employees' },
+      { option: '201-500', label: '201-500 employees' },
+      { option: '501-1000', label: '501-1,000 employees' },
+      { option: '1001-5000', label: '1,001-5,000 employees' },
+      { option: '5001-10000', label: '5,001-10,000 employees' },
+      { option: '10001+', label: '10,001+ employees' },
+    ],
+    listingTypeConfig: {
+      limitToListingTypeIds: true,
+      listingTypeIds: ['project'],
+    },
+    filterConfig: {
+      indexForSearch: true,
+      filterType: 'SelectMultipleFilter',
+      label: 'Company Size',
+      group: 'secondary',
+    },
+    showConfig: {
+      label: 'Company Size',
+      isDetail: true,
+    },
+    saveConfig: {
+      label: 'Company Size (employees)',
+      placeholderMessage: 'Select company size...',
+      isRequired: true,
+      requiredMessage: 'Please select your company size.',
+    },
+  },
+  {
+    key: 'companyWebsite',
+    scope: 'public',
+    schemaType: 'text',
+    listingTypeConfig: {
+      limitToListingTypeIds: true,
+      listingTypeIds: ['project'],
+    },
+    showConfig: {
+      label: 'Company Website',
+    },
+    saveConfig: {
+      label: 'Company Website',
+      placeholderMessage: 'https://www.yourcompany.com',
+      isRequired: false,
+    },
+  },
+  // ─── Street2Ivy: Section 2 - Project Mentor Information ────────────────────────────
+  {
+    key: 'mentorName',
+    scope: 'public',
+    schemaType: 'text',
+    listingTypeConfig: {
+      limitToListingTypeIds: true,
+      listingTypeIds: ['project'],
+    },
+    showConfig: {
+      label: 'Project Mentor Name',
+    },
+    saveConfig: {
+      label: 'Project Mentor Name',
+      placeholderMessage: 'Name of primary contact and mentor for the student...',
+      isRequired: true,
+      requiredMessage: 'Please provide a mentor name.',
+    },
+  },
+  {
+    key: 'mentorTitle',
+    scope: 'public',
+    schemaType: 'text',
+    listingTypeConfig: {
+      limitToListingTypeIds: true,
+      listingTypeIds: ['project'],
+    },
+    showConfig: {
+      label: 'Mentor Title',
+    },
+    saveConfig: {
+      label: 'Mentor Title',
+      placeholderMessage: 'e.g., Marketing Director, Senior Engineer...',
+      isRequired: true,
+      requiredMessage: 'Please provide the mentor\'s job title.',
+    },
+  },
+  {
+    key: 'mentorEmail',
+    scope: 'public',
+    schemaType: 'text',
+    listingTypeConfig: {
+      limitToListingTypeIds: true,
+      listingTypeIds: ['project'],
+    },
+    showConfig: {
+      label: 'Mentor Email',
+    },
+    saveConfig: {
+      label: 'Mentor Email',
+      placeholderMessage: 'mentor@company.com',
+      isRequired: true,
+      requiredMessage: 'Please provide the mentor\'s email address.',
+    },
+  },
+  {
+    key: 'mentorPhone',
+    scope: 'public',
+    schemaType: 'text',
+    listingTypeConfig: {
+      limitToListingTypeIds: true,
+      listingTypeIds: ['project'],
+    },
+    showConfig: {
+      label: 'Mentor Phone',
+    },
+    saveConfig: {
+      label: 'Mentor Phone',
+      placeholderMessage: '+1 (555) 123-4567',
+      isRequired: false,
+    },
+  },
+  // ─── Street2Ivy: Project Details ────────────────────────────
   {
     key: 'requiredSkills',
     scope: 'public',

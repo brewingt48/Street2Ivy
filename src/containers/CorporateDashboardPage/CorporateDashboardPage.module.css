@@ -32,6 +32,36 @@
   }
 }
 
+.headerButtons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+}
+
+.inboxButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 18px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--colorWhite);
+  background: var(--marketplaceColor);
+  border: 1px solid var(--marketplaceColor);
+  border-radius: 6px;
+  text-decoration: none;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.inboxButton:hover {
+  background-color: var(--marketplaceColorDark);
+  border-color: var(--marketplaceColorDark);
+  color: var(--colorWhite);
+  text-decoration: none;
+}
+
 .exportButtons {
   display: flex;
   gap: 8px;
@@ -327,4 +357,581 @@
   font-size: 16px;
   font-weight: var(--fontWeightBold);
   color: var(--marketplaceColor);
+}
+
+/* ================ Messages Panel Styles ================ */
+
+.messagesSection {
+  margin-bottom: 36px;
+  padding: 24px;
+  background-color: var(--colorWhite);
+  border: 1px solid var(--colorGrey100);
+  border-radius: 8px;
+}
+
+.messagesPanel {
+  margin-top: 16px;
+}
+
+.messageTabsContainer {
+  margin-bottom: 20px;
+}
+
+.messageTabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 1px solid var(--colorGrey200);
+}
+
+.messageTab {
+  padding: 12px 20px;
+  font-size: 14px;
+  font-weight: var(--fontWeightMedium);
+  color: var(--colorGrey600);
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.messageTab:hover {
+  color: var(--marketplaceColor);
+}
+
+.messageTabActive {
+  color: var(--marketplaceColor);
+  border-bottom-color: var(--marketplaceColor);
+}
+
+.messagesListSection {
+  padding-top: 16px;
+}
+
+.messagesListTitle {
+  font-size: 16px;
+  font-weight: var(--fontWeightSemiBold);
+  color: var(--colorGrey900);
+  margin: 0 0 4px 0;
+}
+
+.messagesListSubtitle {
+  font-size: 13px;
+  color: var(--colorGrey500);
+  margin: 0 0 16px 0;
+}
+
+.noMessages {
+  text-align: center;
+  padding: 32px 16px;
+  color: var(--colorGrey500);
+  font-size: 14px;
+  background-color: var(--colorGrey50);
+  border-radius: 6px;
+}
+
+.emailList {
+  overflow-x: auto;
+}
+
+.emailTable {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.emailTableHeader {
+  text-align: left;
+  padding: 10px 12px;
+  font-size: 12px;
+  font-weight: var(--fontWeightSemiBold);
+  color: var(--colorGrey500);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid var(--colorGrey200);
+}
+
+.emailRow {
+  cursor: pointer;
+  border-bottom: 1px solid var(--colorGrey100);
+  transition: background-color 0.15s;
+}
+
+.emailRow:hover {
+  background-color: var(--colorGrey50);
+}
+
+.emailFrom,
+.emailSubject,
+.emailStatus,
+.emailDate {
+  padding: 12px;
+  font-size: 14px;
+  color: var(--colorGrey700);
+}
+
+.emailFrom {
+  font-weight: var(--fontWeightMedium);
+  white-space: nowrap;
+}
+
+.emailSubject {
+  max-width: 250px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.emailStatus {
+  white-space: nowrap;
+}
+
+.emailDate {
+  color: var(--colorGrey500);
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.statusBadge {
+  display: inline-block;
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: var(--fontWeightSemiBold);
+  border-radius: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.statusBadgeAccepted {
+  background-color: #e6f4ea;
+  color: #1e7e34;
+}
+
+.statusBadgeDeclined {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+
+.statusBadgePending {
+  background-color: #fff3cd;
+  color: #856404;
+}
+
+.statusBadgeCompleted {
+  background-color: #d1ecf1;
+  color: #0c5460;
+}
+
+/* Message Detail Modal */
+.messageDetailOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.messageDetailPanel {
+  background-color: var(--colorWhite);
+  border-radius: 8px;
+  max-width: 600px;
+  width: 100%;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+.messageDetailHeader {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--colorGrey100);
+}
+
+.messageDetailClose {
+  background: none;
+  border: none;
+  font-size: 14px;
+  font-weight: var(--fontWeightMedium);
+  color: var(--marketplaceColor);
+  cursor: pointer;
+  padding: 0;
+}
+
+.messageDetailClose:hover {
+  text-decoration: underline;
+}
+
+.messageDetailContent {
+  padding: 20px;
+}
+
+.messageDetailSubject {
+  font-size: 20px;
+  font-weight: var(--fontWeightSemiBold);
+  color: var(--colorGrey900);
+  margin: 0 0 20px 0;
+}
+
+.messageDetailMeta {
+  background-color: var(--colorGrey50);
+  border-radius: 6px;
+  padding: 16px;
+  margin-bottom: 20px;
+}
+
+.messageDetailMetaRow {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.messageDetailMetaRow:last-child {
+  margin-bottom: 0;
+}
+
+.messageDetailLabel {
+  font-weight: var(--fontWeightSemiBold);
+  color: var(--colorGrey600);
+  min-width: 100px;
+}
+
+.messageDetailActions {
+  padding-top: 16px;
+  border-top: 1px solid var(--colorGrey100);
+}
+
+.viewDetailsLink {
+  display: inline-block;
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: var(--fontWeightMedium);
+  color: var(--colorWhite);
+  background-color: var(--marketplaceColor);
+  border-radius: 6px;
+  text-decoration: none;
+  transition: background-color 0.2s;
+}
+
+.viewDetailsLink:hover {
+  background-color: var(--marketplaceColorDark);
+  text-decoration: none;
+  color: var(--colorWhite);
+}
+
+/* ================ Pending Assessments Styles ================ */
+
+.assessmentsSection {
+  margin-bottom: 36px;
+  padding: 24px;
+  background-color: var(--colorWhite);
+  border: 1px solid var(--colorGrey100);
+  border-radius: 8px;
+}
+
+.assessmentFormContainer {
+  margin-top: 16px;
+}
+
+.noAssessments {
+  text-align: center;
+  padding: 32px 16px;
+  background-color: #e6f4ea;
+  border-radius: 6px;
+}
+
+.noAssessmentsIcon {
+  display: inline-block;
+  width: 48px;
+  height: 48px;
+  background-color: #1e7e34;
+  color: var(--colorWhite);
+  border-radius: 50%;
+  font-size: 24px;
+  line-height: 48px;
+  margin-bottom: 12px;
+}
+
+.noAssessments p {
+  margin: 0;
+  font-size: 14px;
+  color: #1e7e34;
+}
+
+.pendingAssessmentsList {
+  margin-top: 16px;
+}
+
+.pendingAssessmentsIntro {
+  font-size: 14px;
+  color: var(--colorGrey600);
+  margin: 0 0 16px 0;
+}
+
+.assessmentCards {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.assessmentCard {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  background-color: #fff3cd;
+  border: 1px solid #ffc107;
+  border-radius: 8px;
+}
+
+.assessmentCardInfo {
+  flex: 1;
+}
+
+.assessmentStudentName {
+  font-size: 16px;
+  font-weight: var(--fontWeightSemiBold);
+  color: var(--colorGrey900);
+  margin: 0 0 4px 0;
+}
+
+.assessmentProjectTitle {
+  font-size: 14px;
+  color: var(--colorGrey700);
+  margin: 0 0 4px 0;
+}
+
+.assessmentDate {
+  font-size: 12px;
+  color: var(--colorGrey500);
+}
+
+.assessButton {
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: var(--fontWeightMedium);
+  color: var(--colorWhite);
+  background-color: #1a365d;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  white-space: nowrap;
+}
+
+.assessButton:hover {
+  background-color: #2d4a6f;
+}
+
+/* ================ Clickable Stat Cards ================ */
+
+.statCardClickable {
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+}
+
+.statCardClickable:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border-color: var(--marketplaceColor);
+}
+
+.statCardClickable:focus {
+  outline: 2px solid var(--marketplaceColor);
+  outline-offset: 2px;
+}
+
+.statClickHint {
+  display: block;
+  font-size: 11px;
+  color: var(--marketplaceColor);
+  margin-top: 8px;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.statCardClickable:hover .statClickHint {
+  opacity: 1;
+}
+
+/* ================ Stat Detail Modal ================ */
+
+.statDetailOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.statDetailModal {
+  background-color: var(--colorWhite);
+  border-radius: 8px;
+  max-width: 600px;
+  width: 100%;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+.statDetailHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--colorGrey100);
+}
+
+.statDetailTitle {
+  font-size: 18px;
+  font-weight: var(--fontWeightSemiBold);
+  color: var(--colorGrey900);
+  margin: 0;
+}
+
+.statDetailClose {
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: var(--colorGrey500);
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+}
+
+.statDetailClose:hover {
+  color: var(--colorGrey700);
+}
+
+.statDetailContent {
+  padding: 16px 20px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.statDetailEmpty {
+  text-align: center;
+  color: var(--colorGrey500);
+  padding: 24px;
+}
+
+.statDetailList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.statDetailItem {
+  border-bottom: 1px solid var(--colorGrey100);
+}
+
+.statDetailItem:last-child {
+  border-bottom: none;
+}
+
+.statDetailLink {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  text-decoration: none;
+  color: inherit;
+  transition: background-color 0.15s;
+}
+
+.statDetailLink:hover {
+  background-color: var(--colorGrey50);
+  margin: 0 -20px;
+  padding: 12px 20px;
+}
+
+.statDetailItemName {
+  font-size: 14px;
+  font-weight: var(--fontWeightMedium);
+  color: var(--colorGrey900);
+}
+
+.statDetailItemSub {
+  font-size: 12px;
+  color: var(--colorGrey500);
+  display: block;
+  margin-top: 2px;
+}
+
+.statDetailItemStatus {
+  font-size: 11px;
+  font-weight: var(--fontWeightSemiBold);
+  padding: 4px 10px;
+  border-radius: 12px;
+  text-transform: uppercase;
+}
+
+/* Transaction row in modal */
+.statDetailTransactionRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+
+.statDetailTransactionInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.statDetailStudentLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  text-decoration: none;
+  color: var(--colorGrey900);
+  transition: color 0.2s;
+}
+
+.statDetailStudentLink:hover {
+  color: var(--marketplaceColor);
+}
+
+.statDetailStudentLink:hover .statDetailItemName {
+  color: var(--marketplaceColor);
+}
+
+.viewProfileArrow {
+  font-size: 14px;
+  color: var(--marketplaceColor);
+  opacity: 0;
+  transition: opacity 0.2s, transform 0.2s;
+}
+
+.statDetailStudentLink:hover .viewProfileArrow {
+  opacity: 1;
+  transform: translateX(2px);
+}
+
+.statDetailViewTransaction {
+  flex-shrink: 0;
+  font-size: 12px;
+  font-weight: var(--fontWeightMedium);
+  color: var(--marketplaceColor);
+  text-decoration: none;
+  padding: 6px 12px;
+  border: 1px solid var(--marketplaceColor);
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.statDetailViewTransaction:hover {
+  background-color: var(--marketplaceColor);
+  color: var(--colorWhite);
 }

@@ -22,6 +22,7 @@ import {
   updateContentItem as updateContentItemApi,
   deleteContentItem as deleteContentItemApi,
   resetLandingContent as resetLandingContentApi,
+  fetchUserStats as fetchUserStatsApi,
 } from '../../util/api';
 import { fetchCurrentUser } from '../../ducks/user.duck';
 
@@ -314,6 +315,22 @@ export const resetContentThunk = createAsyncThunk(
 
 export const resetContentAction = () => dispatch => dispatch(resetContentThunk()).unwrap();
 
+// User stats thunk
+export const fetchUserStatsThunk = createAsyncThunk(
+  'app/AdminDashboardPage/fetchUserStats',
+  async (userId, { rejectWithValue }) => {
+    try {
+      const response = await fetchUserStatsApi(userId);
+      return { userId, ...response };
+    } catch (e) {
+      return rejectWithValue({ userId, error: storableError(e) });
+    }
+  }
+);
+
+export const fetchUserStatsAction = userId => dispatch =>
+  dispatch(fetchUserStatsThunk(userId)).unwrap();
+
 // ================ Slice ================ //
 
 const adminDashboardPageSlice = createSlice({
@@ -327,6 +344,8 @@ const adminDashboardPageSlice = createSlice({
     selectedUser: null,
     blockInProgress: null,
     deleteInProgress: null,
+    // Map of userId -> { stats, isLoading, error }
+    userStats: {},
 
     // Create Admin
     createAdminInProgress: false,
@@ -389,6 +408,9 @@ const adminDashboardPageSlice = createSlice({
       state.updateContentInProgress = false;
       state.updateContentError = null;
       state.updateContentSuccess = false;
+    },
+    clearUserStats: state => {
+      state.userStats = {};
     },
   },
   extraReducers: builder => {
@@ -632,6 +654,31 @@ const adminDashboardPageSlice = createSlice({
       .addCase(resetContentThunk.fulfilled, (state, action) => {
         state.content = action.payload.data;
         state.updateContentSuccess = true;
+      })
+      // User stats
+      .addCase(fetchUserStatsThunk.pending, (state, action) => {
+        const userId = action.meta.arg;
+        state.userStats[userId] = {
+          stats: null,
+          isLoading: true,
+          error: null,
+        };
+      })
+      .addCase(fetchUserStatsThunk.fulfilled, (state, action) => {
+        const { userId, stats } = action.payload;
+        state.userStats[userId] = {
+          stats: stats || {},
+          isLoading: false,
+          error: null,
+        };
+      })
+      .addCase(fetchUserStatsThunk.rejected, (state, action) => {
+        const userId = action.meta.arg;
+        state.userStats[userId] = {
+          stats: null,
+          isLoading: false,
+          error: action.payload?.error || 'Failed to load stats',
+        };
       });
   },
 });
@@ -641,6 +688,7 @@ export const {
   clearMessageState,
   clearCreateAdminState,
   clearContentState,
+  clearUserStats,
 } = adminDashboardPageSlice.actions;
 
 // ================ loadData ================ //

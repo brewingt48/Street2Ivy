@@ -131,6 +131,219 @@
   color: var(--colorGrey500);
 }
 
+.statCardClickable {
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.statCardClickable:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  border-color: var(--marketplaceColor);
+}
+
+.statCardClickable:active {
+  transform: translateY(0);
+}
+
+.statCardClickable:focus {
+  outline: 2px solid var(--marketplaceColor);
+  outline-offset: 2px;
+}
+
+.statArrow {
+  font-size: 18px;
+  color: var(--colorGrey300);
+  margin-left: auto;
+  transition: all 0.2s ease;
+}
+
+.statCardClickable:hover .statArrow {
+  color: var(--marketplaceColor);
+  transform: translateX(4px);
+}
+
+/* ================ Stat Detail Modal ================ */
+
+.statDetailOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.statDetailModal {
+  background: white;
+  border-radius: 12px;
+  max-width: 600px;
+  width: 90%;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+}
+
+.statDetailHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--colorGrey200);
+}
+
+.statDetailTitle {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--colorGrey900);
+  margin: 0;
+}
+
+.statDetailClose {
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: var(--colorGrey100);
+  border-radius: 50%;
+  font-size: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s;
+}
+
+.statDetailClose:hover {
+  background-color: var(--colorGrey200);
+}
+
+.statDetailContent {
+  padding: 16px 24px 24px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.statDetailEmpty {
+  text-align: center;
+  color: var(--colorGrey500);
+  padding: 40px 20px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.statDetailList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.statDetailItem {
+  border-bottom: 1px solid var(--colorGrey100);
+}
+
+.statDetailItem:last-child {
+  border-bottom: none;
+}
+
+.statDetailProjectRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 12px;
+  cursor: pointer;
+  transition: background-color 0.15s;
+  border-radius: 8px;
+  margin: 0 -12px;
+}
+
+.statDetailProjectRow:hover {
+  background-color: var(--colorGrey50);
+}
+
+.statDetailProjectInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+  min-width: 0;
+}
+
+.statDetailProjectTitle {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--colorGrey900);
+}
+
+.statDetailProjectRow:hover .statDetailProjectTitle {
+  color: var(--marketplaceColor);
+}
+
+.statDetailProjectCompany {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--colorGrey500);
+}
+
+.companyIconSmall {
+  font-size: 12px;
+}
+
+.statDetailProjectRight {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.statDetailProjectStatus {
+  font-size: 11px;
+  font-weight: 500;
+  padding: 4px 10px;
+  border-radius: 12px;
+  text-transform: capitalize;
+}
+
+.statDetailProjectStatus.statusActive {
+  background-color: #dcfce7;
+  color: #166534;
+}
+
+.statDetailProjectStatus.statusPending {
+  background-color: #fef3c7;
+  color: #92400e;
+}
+
+.statDetailProjectStatus.statusCompleted {
+  background-color: #e0f2fe;
+  color: #0369a1;
+}
+
+.statDetailProjectStatus.statusInvited {
+  background-color: #f3e8ff;
+  color: #7c3aed;
+}
+
+.statDetailArrow {
+  font-size: 16px;
+  color: var(--colorGrey300);
+  opacity: 0;
+  transition: opacity 0.2s, transform 0.2s;
+}
+
+.statDetailProjectRow:hover .statDetailArrow {
+  opacity: 1;
+  color: var(--marketplaceColor);
+  transform: translateX(4px);
+}
+
 /* ================ Tab Navigation ================ */
 
 .tabNavigation {
@@ -500,6 +713,312 @@
   font-size: 11px;
   font-weight: 600;
   text-transform: uppercase;
+}
+
+/* ================ Messages Section Header ================ */
+
+.messagesSectionHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.messagesSectionTitle {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--colorGrey900);
+  margin: 0;
+}
+
+.viewAllMessagesLink {
+  font-size: 14px;
+  color: var(--marketplaceColor);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.viewAllMessagesLink:hover {
+  text-decoration: underline;
+}
+
+/* ================ Email Table View ================ */
+
+.emailTableContainer {
+  overflow-x: auto;
+  background: white;
+  border-radius: 12px;
+  border: 1px solid var(--colorGrey100);
+}
+
+.emailTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.emailTable thead tr {
+  background-color: var(--colorGrey50);
+}
+
+.emailTableHeader {
+  padding: 14px 16px;
+  text-align: left;
+  font-weight: 600;
+  color: var(--colorGrey700);
+  border-bottom: 1px solid var(--colorGrey200);
+}
+
+.emailRow {
+  cursor: pointer;
+  border-bottom: 1px solid var(--colorGrey100);
+  transition: background-color 0.15s ease;
+}
+
+.emailRow:last-child {
+  border-bottom: none;
+}
+
+.emailRow:hover {
+  background-color: var(--colorGrey50);
+}
+
+.emailRowUnread {
+  background-color: #f0f7ff;
+  font-weight: 600;
+}
+
+.emailRowUnread:hover {
+  background-color: #e6f0fa;
+}
+
+.emailFrom {
+  padding: 16px;
+  color: var(--colorGrey900);
+  width: 200px;
+}
+
+.emailFromContent {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.emailSenderName {
+  font-weight: 500;
+}
+
+.emailSenderCompany {
+  font-size: 12px;
+  color: var(--colorGrey500);
+  font-weight: 400;
+}
+
+.emailSubject {
+  padding: 16px;
+  color: var(--colorGrey800);
+}
+
+.emailStatus {
+  padding: 16px;
+  width: 120px;
+}
+
+.emailNewBadge {
+  display: inline-block;
+  margin-left: 8px;
+  background: var(--colorFail);
+  color: white;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  vertical-align: middle;
+}
+
+.emailDate {
+  padding: 16px;
+  color: var(--colorGrey500);
+  text-align: right;
+  white-space: nowrap;
+  width: 120px;
+}
+
+/* Email List Container */
+.emailList {
+  overflow-x: auto;
+  background: white;
+  border-radius: 8px;
+  border: 1px solid var(--colorGrey200);
+}
+
+/* Status Badges for Messages */
+.statusBadgeSmall {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.statusBadgeAccepted {
+  background-color: #dcfce7;
+  color: #166534;
+}
+
+.statusBadgeDeclined {
+  background-color: #fee2e2;
+  color: #dc2626;
+}
+
+.statusBadgePending {
+  background-color: #fef3c7;
+  color: #92400e;
+}
+
+.statusBadgeCompleted {
+  background-color: #dbeafe;
+  color: #1e40af;
+}
+
+.noMessages {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--colorGrey500);
+  font-size: 14px;
+}
+
+.viewDetailsLink {
+  display: inline-block;
+  padding: 10px 20px;
+  background-color: var(--marketplaceColor);
+  color: white;
+  text-decoration: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.viewDetailsLink:hover {
+  background-color: var(--marketplaceColorDark);
+  color: white;
+}
+
+/* ================ Message Detail Modal ================ */
+
+.messageDetailOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.messageDetailPanel {
+  background: white;
+  border-radius: 12px;
+  max-width: 600px;
+  width: 100%;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+.messageDetailHeader {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--colorGrey200);
+}
+
+.messageDetailClose {
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--marketplaceColor);
+  background: none;
+  border: 1px solid var(--marketplaceColor);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.messageDetailClose:hover {
+  background-color: var(--marketplaceColor);
+  color: white;
+}
+
+.messageDetailContent {
+  padding: 24px;
+}
+
+.messageDetailSubject {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--colorGrey900);
+  margin: 0 0 20px 0;
+}
+
+.messageDetailMeta {
+  background-color: var(--colorGrey50);
+  padding: 16px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+.messageDetailMetaRow {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+.messageDetailMetaRow:last-child {
+  margin-bottom: 0;
+}
+
+.messageDetailLabel {
+  font-weight: 600;
+  color: var(--colorGrey700);
+  min-width: 50px;
+}
+
+.messageDetailBody {
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--colorGrey800);
+  white-space: pre-wrap;
+}
+
+.messageDetailActions {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid var(--colorGrey200);
+}
+
+.viewFullConversation {
+  display: inline-block;
+  padding: 10px 20px;
+  background: var(--marketplaceColor);
+  color: white;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+
+.viewFullConversation:hover {
+  background: var(--marketplaceColorDark);
+  color: white;
+  text-decoration: none;
 }
 
 /* ================ Empty State ================ */

@@ -102,6 +102,36 @@ const AICoachingWarningModal = ({ isOpen, onClose, onConfirm, coachingUrl }) => 
   );
 };
 
+// ================ Stat Detail Modal ================ //
+
+const StatDetailModal = ({ title, items, onClose, renderItem, emptyMessage }) => {
+  if (!items) return null;
+
+  return (
+    <div className={css.statDetailOverlay} onClick={onClose}>
+      <div className={css.statDetailModal} onClick={e => e.stopPropagation()}>
+        <div className={css.statDetailHeader}>
+          <h3 className={css.statDetailTitle}>{title}</h3>
+          <button className={css.statDetailClose} onClick={onClose}>×</button>
+        </div>
+        <div className={css.statDetailContent}>
+          {items.length === 0 ? (
+            <p className={css.statDetailEmpty}>{emptyMessage || 'No items to display'}</p>
+          ) : (
+            <ul className={css.statDetailList}>
+              {items.map((item, index) => (
+                <li key={item.id || item.transactionId || index} className={css.statDetailItem}>
+                  {renderItem(item)}
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
 // ================ Project Card Component ================ //
 
 const ProjectCard = ({ project, type }) => {
@@ -177,39 +207,185 @@ const ProjectCard = ({ project, type }) => {
   );
 };
 
-// ================ Message Card Component ================ //
+// ================ Messages Panel Component (Corporate Style) ================ //
 
-const MessageCard = ({ message }) => {
-  const isUnread = !message.read;
+const MessagesPanel = ({ transactions, isLoading, onSelectMessage }) => {
+  const formatDate = dateString => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const isToday = date.toDateString() === now.toDateString();
+
+    if (isToday) {
+      return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    }
+    return date.toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' });
+  };
+
+  const getTransactionStatus = tx => {
+    const lastTransition = tx.attributes?.lastTransition;
+    const statusMap = {
+      'transition/inquire': 'Inquiry',
+      'transition/request-project-application': 'Applied',
+      'transition/accept': 'Accepted',
+      'transition/decline': 'Declined',
+      'transition/complete': 'Completed',
+      'transition/review-1-by-provider': 'Reviewed',
+      'transition/review-1-by-customer': 'Reviewed',
+      'transition/review-2-by-provider': 'Reviewed',
+      'transition/review-2-by-customer': 'Reviewed',
+    };
+    return statusMap[lastTransition] || lastTransition?.replace('transition/', '').replace(/-/g, ' ') || 'Pending';
+  };
+
+  if (isLoading) {
+    return <div className={css.noMessages}>Loading messages...</div>;
+  }
+
+  if (!transactions || transactions.length === 0) {
+    return null;
+  }
 
   return (
-    <div className={classNames(css.messageCard, { [css.messageUnread]: isUnread })}>
-      <div className={css.messageHeader}>
-        <div className={css.messageSender}>
-          <div className={css.senderAvatar}>
-            {message.senderInitials || message.senderName?.charAt(0) || '?'}
+    <div className={css.emailList}>
+      <table className={css.emailTable}>
+        <thead>
+          <tr>
+            <th className={css.emailTableHeader}>From</th>
+            <th className={css.emailTableHeader}>Project</th>
+            <th className={css.emailTableHeader}>Status</th>
+            <th className={css.emailTableHeader}>Date</th>
+          </tr>
+        </thead>
+        <tbody>
+          {transactions.map(tx => {
+            const providerName = tx.provider?.attributes?.profile?.displayName || 'Unknown Company';
+            const listingTitle = tx.listing?.attributes?.title || 'Unknown Project';
+            const status = getTransactionStatus(tx);
+            const lastUpdated = tx.attributes?.lastTransitionedAt;
+
+            return (
+              <tr
+                key={tx.id?.uuid || tx.id}
+                className={css.emailRow}
+                onClick={() => onSelectMessage({ ...tx, providerName, listingTitle, status })}
+              >
+                <td className={css.emailFrom}>{providerName}</td>
+                <td className={css.emailSubject}>{listingTitle}</td>
+                <td className={css.emailStatus}>
+                  <span className={classNames(css.statusBadgeSmall, {
+                    [css.statusBadgeAccepted]: status === 'Accepted',
+                    [css.statusBadgeDeclined]: status === 'Declined',
+                    [css.statusBadgePending]: status === 'Applied' || status === 'Inquiry' || status === 'Pending',
+                    [css.statusBadgeCompleted]: status === 'Completed',
+                  })}>
+                    {status}
+                  </span>
+                </td>
+                <td className={css.emailDate}>{formatDate(lastUpdated)}</td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+  );
+};
+
+// ================ Message Detail Modal ================ //
+
+const MessageDetailModal = ({ message, onClose }) => {
+  if (!message) return null;
+
+  const formatFullDate = dateString => {
+    return new Date(dateString).toLocaleString();
+  };
+
+  // Handle both old message format and new transaction format
+  const isTransaction = message.attributes !== undefined;
+
+  if (isTransaction) {
+    return (
+      <div className={css.messageDetailOverlay} onClick={onClose}>
+        <div className={css.messageDetailPanel} onClick={e => e.stopPropagation()}>
+          <div className={css.messageDetailHeader}>
+            <button className={css.messageDetailClose} onClick={onClose}>
+              ← Back
+            </button>
           </div>
-          <div className={css.senderInfo}>
-            <span className={css.senderName}>{message.senderName}</span>
-            <span className={css.senderCompany}>{message.companyName}</span>
+          <div className={css.messageDetailContent}>
+            <h3 className={css.messageDetailSubject}>{message.listingTitle}</h3>
+            <div className={css.messageDetailMeta}>
+              <div className={css.messageDetailMetaRow}>
+                <span className={css.messageDetailLabel}>Company:</span>
+                <span>{message.providerName}</span>
+              </div>
+              <div className={css.messageDetailMetaRow}>
+                <span className={css.messageDetailLabel}>Status:</span>
+                <span className={classNames(css.statusBadgeSmall, {
+                  [css.statusBadgeAccepted]: message.status === 'Accepted',
+                  [css.statusBadgeDeclined]: message.status === 'Declined',
+                  [css.statusBadgePending]: message.status === 'Applied' || message.status === 'Inquiry' || message.status === 'Pending',
+                  [css.statusBadgeCompleted]: message.status === 'Completed',
+                })}>
+                  {message.status}
+                </span>
+              </div>
+              <div className={css.messageDetailMetaRow}>
+                <span className={css.messageDetailLabel}>Last Updated:</span>
+                <span>{formatFullDate(message.attributes?.lastTransitionedAt)}</span>
+              </div>
+            </div>
+            <div className={css.messageDetailActions}>
+              <NamedLink
+                name="OrderDetailsPage"
+                params={{ id: message.id?.uuid || message.id }}
+                className={css.viewDetailsLink}
+              >
+                View Full Details →
+              </NamedLink>
+            </div>
           </div>
         </div>
-        <span className={css.messageDate}>
-          {new Date(message.createdAt).toLocaleDateString()}
-        </span>
       </div>
-      <div className={css.messageContent}>
-        <p className={css.messagePreview}>{message.preview}</p>
-      </div>
-      <div className={css.messageActions}>
-        <NamedLink
-          name="OrderDetailsPage"
-          params={{ id: message.transactionId }}
-          className={css.viewMessageLink}
-        >
-          View Full Message
-        </NamedLink>
-        {isUnread && <span className={css.unreadBadge}>New</span>}
+    );
+  }
+
+  // Legacy message format support
+  return (
+    <div className={css.messageDetailOverlay} onClick={onClose}>
+      <div className={css.messageDetailPanel} onClick={e => e.stopPropagation()}>
+        <div className={css.messageDetailHeader}>
+          <button className={css.messageDetailClose} onClick={onClose}>
+            ← Back to Messages
+          </button>
+        </div>
+        <div className={css.messageDetailContent}>
+          <h3 className={css.messageDetailSubject}>{message.subject || 'Message'}</h3>
+          <div className={css.messageDetailMeta}>
+            <div className={css.messageDetailMetaRow}>
+              <span className={css.messageDetailLabel}>From:</span>
+              <span>{message.senderName}{message.companyName ? ` (${message.companyName})` : ''}</span>
+            </div>
+            <div className={css.messageDetailMetaRow}>
+              <span className={css.messageDetailLabel}>Date:</span>
+              <span>{formatFullDate(message.createdAt)}</span>
+            </div>
+          </div>
+          <div className={css.messageDetailBody}>
+            {message.preview || message.content}
+          </div>
+          {message.transactionId && (
+            <div className={css.messageDetailActions}>
+              <NamedLink
+                name="OrderDetailsPage"
+                params={{ id: message.transactionId }}
+                className={css.viewDetailsLink}
+              >
+                View Full Conversation
+              </NamedLink>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -244,6 +420,8 @@ const StudentDashboardPageComponent = props => {
   const [showCoachingModal, setShowCoachingModal] = useState(false);
   const [institutionInfo, setInstitutionInfo] = useState(null);
   const [isLoadingInstitution, setIsLoadingInstitution] = useState(true);
+  const [selectedMessage, setSelectedMessage] = useState(null);
+  const [statDetailModal, setStatDetailModal] = useState(null);
 
   // Mock data - in production, this would come from API
   const [projects, setProjects] = useState({
@@ -329,15 +507,28 @@ const StudentDashboardPageComponent = props => {
         });
 
         setMessages([
+          // Example messages - uncomment to test the UI
           // {
           //   id: 'm1',
           //   transactionId: 'tx-123',
           //   senderName: 'John Smith',
           //   senderInitials: 'JS',
           //   companyName: 'Acme Corp',
+          //   subject: 'Project Application Update',
           //   preview: 'Hi! I wanted to follow up on your project submission...',
           //   createdAt: '2024-01-20T10:30:00Z',
           //   read: false,
+          // },
+          // {
+          //   id: 'm2',
+          //   transactionId: 'tx-124',
+          //   senderName: 'Sarah Johnson',
+          //   senderInitials: 'SJ',
+          //   companyName: 'Tech Solutions Inc',
+          //   subject: 'Interview Invitation',
+          //   preview: 'Congratulations! We would like to schedule an interview...',
+          //   createdAt: '2024-01-19T14:00:00Z',
+          //   read: true,
           // },
         ]);
       } catch (error) {
@@ -362,6 +553,84 @@ const StudentDashboardPageComponent = props => {
   const handleCoachingConfirm = (url) => {
     // Open coaching platform in new tab
     window.open(url, '_blank', 'noopener,noreferrer');
+  };
+
+  // Render project item in modal
+  const renderProjectItem = (project) => {
+    const handleClick = () => {
+      if (project.transactionId) {
+        history.push(`/order/${project.transactionId}/details`);
+      }
+    };
+
+    return (
+      <div
+        className={css.statDetailProjectRow}
+        onClick={handleClick}
+        role="button"
+        tabIndex={0}
+        onKeyPress={(e) => e.key === 'Enter' && handleClick()}
+      >
+        <div className={css.statDetailProjectInfo}>
+          <span className={css.statDetailProjectTitle}>{project.title}</span>
+          <span className={css.statDetailProjectCompany}>
+            <span className={css.companyIconSmall}>🏢</span>
+            {project.companyName}
+          </span>
+        </div>
+        <div className={css.statDetailProjectRight}>
+          <span className={classNames(css.statDetailProjectStatus, {
+            [css.statusActive]: project.status === 'active',
+            [css.statusPending]: project.status === 'pending',
+            [css.statusCompleted]: project.status === 'completed',
+            [css.statusInvited]: project.status === 'invited',
+          })}>
+            {project.status}
+          </span>
+          <span className={css.statDetailArrow}>→</span>
+        </div>
+      </div>
+    );
+  };
+
+  // Handle stat card clicks - show detail modal
+  const handleStatClick = (modalType) => {
+    let modalData = null;
+
+    switch (modalType) {
+      case 'activeProjects':
+        modalData = {
+          title: 'Active Projects',
+          items: projects.active,
+          renderItem: renderProjectItem,
+          emptyMessage: 'You have no active projects. Browse opportunities to find your next project!'
+        };
+        break;
+      case 'invites':
+        modalData = {
+          title: 'Pending Invites',
+          items: projects.invites,
+          renderItem: renderProjectItem,
+          emptyMessage: 'You have no pending invites. Keep your profile updated to attract corporate partners!'
+        };
+        break;
+      case 'history':
+        modalData = {
+          title: 'Completed Projects',
+          items: projects.history,
+          renderItem: renderProjectItem,
+          emptyMessage: 'You haven\'t completed any projects yet. Your completed projects will appear here.'
+        };
+        break;
+      case 'messages':
+        // For messages, just switch to the messages tab
+        setActiveTab('messages');
+        return;
+      default:
+        break;
+    }
+
+    setStatDetailModal(modalData);
   };
 
   const publicData = currentUser?.attributes?.profile?.publicData || {};
@@ -415,35 +684,63 @@ const StudentDashboardPageComponent = props => {
             )}
           </div>
 
-          {/* Stats Cards */}
+          {/* Stats Cards - Clickable to show detail modal */}
           <div className={css.statsGrid}>
-            <div className={css.statCard}>
+            <div
+              className={classNames(css.statCard, css.statCardClickable)}
+              onClick={() => handleStatClick('activeProjects')}
+              role="button"
+              tabIndex={0}
+              onKeyPress={(e) => e.key === 'Enter' && handleStatClick('activeProjects')}
+            >
               <span className={css.statIcon}>📋</span>
               <div className={css.statContent}>
                 <span className={css.statValue}>{totalActiveProjects}</span>
                 <span className={css.statLabel}>Active Projects</span>
               </div>
+              <span className={css.statArrow}>→</span>
             </div>
-            <div className={css.statCard}>
+            <div
+              className={classNames(css.statCard, css.statCardClickable)}
+              onClick={() => handleStatClick('invites')}
+              role="button"
+              tabIndex={0}
+              onKeyPress={(e) => e.key === 'Enter' && handleStatClick('invites')}
+            >
               <span className={css.statIcon}>✉️</span>
               <div className={css.statContent}>
                 <span className={css.statValue}>{totalInvites}</span>
                 <span className={css.statLabel}>Pending Invites</span>
               </div>
+              <span className={css.statArrow}>→</span>
             </div>
-            <div className={css.statCard}>
+            <div
+              className={classNames(css.statCard, css.statCardClickable)}
+              onClick={() => handleStatClick('messages')}
+              role="button"
+              tabIndex={0}
+              onKeyPress={(e) => e.key === 'Enter' && handleStatClick('messages')}
+            >
               <span className={css.statIcon}>💬</span>
               <div className={css.statContent}>
                 <span className={css.statValue}>{unreadMessages}</span>
                 <span className={css.statLabel}>Unread Messages</span>
               </div>
+              <span className={css.statArrow}>→</span>
             </div>
-            <div className={css.statCard}>
+            <div
+              className={classNames(css.statCard, css.statCardClickable)}
+              onClick={() => handleStatClick('history')}
+              role="button"
+              tabIndex={0}
+              onKeyPress={(e) => e.key === 'Enter' && handleStatClick('history')}
+            >
               <span className={css.statIcon}>🏆</span>
               <div className={css.statContent}>
                 <span className={css.statValue}>{projects.history.length}</span>
                 <span className={css.statLabel}>Completed Projects</span>
               </div>
+              <span className={css.statArrow}>→</span>
             </div>
           </div>
 
@@ -561,17 +858,27 @@ const StudentDashboardPageComponent = props => {
                 {/* Messages Tab */}
                 {activeTab === 'messages' && (
                   <div className={css.messagesSection}>
+                    <div className={css.messagesSectionHeader}>
+                      <h3 className={css.messagesSectionTitle}>Your Messages</h3>
+                    </div>
                     {messages.length > 0 ? (
-                      <div className={css.messagesList}>
-                        {messages.map(message => (
-                          <MessageCard key={message.id} message={message} />
-                        ))}
-                      </div>
+                      <MessagesPanel
+                        transactions={messages}
+                        isLoading={false}
+                        onSelectMessage={setSelectedMessage}
+                      />
                     ) : (
                       <EmptyState
                         icon="💬"
                         title="No Messages"
                         description="You don't have any messages yet. Messages from corporate partners will appear here."
+                      />
+                    )}
+                    {/* Message Detail Modal */}
+                    {selectedMessage && (
+                      <MessageDetailModal
+                        message={selectedMessage}
+                        onClose={() => setSelectedMessage(null)}
                       />
                     )}
                   </div>
@@ -615,6 +922,17 @@ const StudentDashboardPageComponent = props => {
             onClose={() => setShowCoachingModal(false)}
             onConfirm={handleCoachingConfirm}
             coachingUrl={institutionInfo?.aiCoachingUrl}
+          />
+        )}
+
+        {/* Stat Detail Modal */}
+        {statDetailModal && (
+          <StatDetailModal
+            title={statDetailModal.title}
+            items={statDetailModal.items}
+            onClose={() => setStatDetailModal(null)}
+            renderItem={statDetailModal.renderItem}
+            emptyMessage={statDetailModal.emptyMessage}
           />
         )}
       </LayoutSingleColumn>

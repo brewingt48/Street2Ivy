@@ -11,7 +11,7 @@ import TopbarContainer from '../../containers/TopbarContainer/TopbarContainer';
 import FooterContainer from '../../containers/FooterContainer/FooterContainer';
 import StudentCard from './StudentCard';
 import InviteModal from './InviteModal';
-import { searchStudents, inviteToApply, clearInviteState } from './SearchStudentsPage.duck';
+import { searchStudents, inviteToApply, clearInviteState, fetchUserStats } from './SearchStudentsPage.duck';
 
 import css from './SearchStudentsPage.module.css';
 
@@ -130,10 +130,12 @@ const SearchStudentsPageComponent = props => {
     inviteInProgress,
     inviteError,
     inviteSuccess,
+    userStats,
     onSearchStudents,
     onInviteToApply,
     onClearInviteState,
     onManageDisableScrolling,
+    onFetchUserStats,
   } = props;
 
   const intl = useIntl();
@@ -400,7 +402,13 @@ const SearchStudentsPageComponent = props => {
                 </p>
                 <div className={css.resultsGrid}>
                   {users.map(user => (
-                    <StudentCard key={user.id} user={user} onInvite={handleInvite} />
+                    <StudentCard
+                      key={user.id}
+                      user={user}
+                      onInvite={handleInvite}
+                      userStatsData={userStats[user.id]}
+                      onLoadStats={() => onFetchUserStats(user.id)}
+                    />
                   ))}
                 </div>
 
@@ -448,6 +456,7 @@ const mapStateToProps = state => {
     inviteInProgress,
     inviteError,
     inviteSuccess,
+    userStats,
   } = state.SearchStudentsPage;
 
   return {
@@ -461,6 +470,7 @@ const mapStateToProps = state => {
     inviteInProgress,
     inviteError,
     inviteSuccess,
+    userStats,
   };
 };
 
@@ -470,6 +480,7 @@ const mapDispatchToProps = dispatch => ({
   onClearInviteState: () => dispatch(clearInviteState()),
   onManageDisableScrolling: (componentId, disableScrolling) =>
     dispatch(manageDisableScrolling(componentId, disableScrolling)),
+  onFetchUserStats: userId => dispatch(fetchUserStats(userId)),
 });
 
 const SearchStudentsPage = compose(

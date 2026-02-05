@@ -278,6 +278,32 @@ export const InboxPageComponent = props => {
     currentUser
   );
 
+  // Check user type for dashboard link
+  const userType = currentUser?.attributes?.profile?.publicData?.userType;
+  const isSystemAdmin = userType === 'system-admin';
+  const isEducationalAdmin = userType === 'educational-admin';
+  const isStudent = userType === 'student';
+  const isCorporatePartner = userType === 'corporate-partner';
+
+  // Determine which dashboard link to show
+  const getDashboardLink = () => {
+    if (isSystemAdmin) {
+      return { name: 'AdminDashboardPage', label: intl.formatMessage({ id: 'InboxPage.backToAdminDashboard' }) };
+    }
+    if (isEducationalAdmin) {
+      return { name: 'EducationDashboardPage', label: intl.formatMessage({ id: 'InboxPage.backToEducationDashboard' }) };
+    }
+    if (isStudent) {
+      return { name: 'StudentDashboardPage', label: intl.formatMessage({ id: 'InboxPage.backToStudentDashboard' }) };
+    }
+    if (isCorporatePartner) {
+      return { name: 'CorporateDashboardPage', label: intl.formatMessage({ id: 'InboxPage.backToCorporateDashboard' }) };
+    }
+    return null;
+  };
+
+  const dashboardLink = getDashboardLink();
+
   const isOrders = tab === 'orders';
   const hasNoResults = !fetchInProgress && transactions.length === 0 && !fetchOrdersOrSalesError;
   const ordersTitle = intl.formatMessage({ id: 'InboxPage.ordersTitle' });
@@ -389,6 +415,11 @@ export const InboxPageComponent = props => {
         }
         sideNav={
           <>
+            {dashboardLink && (
+              <NamedLink name={dashboardLink.name} className={css.dashboardLink}>
+                ← {dashboardLink.label}
+              </NamedLink>
+            )}
             <H2 as="h1" className={css.title}>
               <FormattedMessage id="InboxPage.title" />
             </H2>

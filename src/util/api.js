@@ -182,6 +182,37 @@ export const inviteToApply = body => {
   return post('/api/invite-to-apply', body);
 };
 
+// Street2Ivy: Fetch company listings (open projects)
+//
+// Fetch published listings for a corporate partner (by author ID)
+// Used on the search companies page to show a company's open projects.
+//
+// See `server/api/company-listings.js` for implementation details.
+export const fetchCompanyListings = (authorId, params = {}) => {
+  const queryString = Object.entries(params)
+    .filter(([, v]) => v != null && v !== '')
+    .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`)
+    .join('&');
+
+  return request(`/api/company/${authorId}/listings${queryString ? `?${queryString}` : ''}`, {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
+  });
+};
+
+// Street2Ivy: Fetch user statistics (projects completed, pending, etc.)
+//
+// Fetch project statistics for a user (student or corporate partner)
+// Used on search pages to show project stats alongside user info.
+//
+// See `server/api/user-stats.js` for implementation details.
+export const fetchUserStats = userId => {
+  return request(`/api/user-stats/${userId}`, {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
+  });
+};
+
 // =====================================================
 // Street2Ivy: Educational Admin Dashboard APIs
 // =====================================================
@@ -222,6 +253,47 @@ export const fetchStudentTransactions = (studentId, params = {}) => {
 // Fetch enhanced corporate dashboard statistics
 export const fetchCorporateDashboardStats = () => {
   return request('/api/corporate/dashboard-stats', {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
+  });
+};
+
+// =====================================================
+// Street2Ivy: Student Performance Assessments
+// =====================================================
+
+// Fetch assessment criteria configuration
+export const fetchAssessmentCriteria = () => {
+  return request('/api/assessments/criteria', {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
+  });
+};
+
+// Submit a student performance assessment
+export const submitAssessment = body => {
+  return post('/api/assessments', body);
+};
+
+// Fetch pending assessments for corporate partner
+export const fetchPendingAssessments = () => {
+  return request('/api/assessments/pending', {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
+  });
+};
+
+// Fetch assessment for a specific transaction
+export const fetchAssessmentByTransaction = transactionId => {
+  return request(`/api/assessments/transaction/${transactionId}`, {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
+  });
+};
+
+// Fetch all assessments for a student
+export const fetchStudentAssessments = studentId => {
+  return request(`/api/assessments/student/${studentId}`, {
     method: 'GET',
     headers: { 'Content-Type': 'application/json' },
   });
@@ -586,6 +658,54 @@ export const exportAdminReport = (reportType, format = 'csv') => {
           // Get filename from Content-Disposition header
           const contentDisposition = response.headers.get('Content-Disposition');
           let filename = `report.${format}`;
+          if (contentDisposition) {
+            const filenameMatch = contentDisposition.match(/filename="(.+?)"/);
+            if (filenameMatch) {
+              filename = filenameMatch[1];
+            }
+          }
+
+          // Create download link
+          const downloadUrl = window.URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = downloadUrl;
+          a.download = filename;
+          document.body.appendChild(a);
+          a.click();
+          window.URL.revokeObjectURL(downloadUrl);
+          document.body.removeChild(a);
+
+          resolve({ success: true, filename });
+        });
+      })
+      .catch(err => {
+        reject(err);
+      });
+  });
+};
+
+// Export corporate report to CSV or HTML format (corporate partners only)
+// format: 'csv' for Excel-compatible, 'html' for Word-compatible
+export const exportCorporateReport = (reportType = 'summary', format = 'csv') => {
+  const url = `${apiBaseUrl()}/api/corporate/export/${reportType}?format=${format}`;
+
+  // Use a download approach for file exports
+  return new Promise((resolve, reject) => {
+    fetch(url, {
+      method: 'GET',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+    })
+      .then(response => {
+        if (!response.ok) {
+          return response.json().then(err => {
+            throw new Error(err.error || 'Export failed');
+          });
+        }
+        return response.blob().then(blob => {
+          // Get filename from Content-Disposition header
+          const contentDisposition = response.headers.get('Content-Disposition');
+          let filename = `corporate-report.${format}`;
           if (contentDisposition) {
             const filenameMatch = contentDisposition.match(/filename="(.+?)"/);
             if (filenameMatch) {

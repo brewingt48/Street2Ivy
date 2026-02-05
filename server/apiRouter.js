@@ -29,6 +29,8 @@ const deleteAccount = require('./api/delete-account');
 const searchUsers = require('./api/search-users');
 const inviteToApply = require('./api/invite-to-apply');
 const checkDepositStatus = require('./api/check-deposit-status');
+const companyListings = require('./api/company-listings');
+const userStats = require('./api/user-stats');
 
 // Educational Admin endpoints
 const educationDashboard = require('./api/education-dashboard');
@@ -56,6 +58,9 @@ const projectWorkspace = require('./api/project-workspace');
 
 // NDA E-Signature
 const ndaSignature = require('./api/nda-signature');
+
+// Student Performance Assessments
+const assessments = require('./api/assessments');
 
 const createUserWithIdp = require('./api/auth/createUserWithIdp');
 
@@ -146,6 +151,12 @@ router.post('/delete-account', strictRateLimit, deleteAccount); // SECURITY: str
 // Street2Ivy: User search and invitation endpoints
 router.get('/search-users', searchUsers);
 router.post('/invite-to-apply', inviteToApply);
+
+// Street2Ivy: Company/Corporate partner listings (for student search)
+router.get('/company/:authorId/listings', companyListings);
+
+// Street2Ivy: User statistics (projects completed, pending, etc.)
+router.get('/user-stats/:userId', userStats);
 
 // Street2Ivy: Deposit status check (for corporate partners)
 router.get('/check-deposit-status/:transactionId', checkDepositStatus);
@@ -246,6 +257,13 @@ router.get('/nda/signature-status/:transactionId', ndaSignature.getSignatureStat
 router.post('/nda/sign/:transactionId', ndaSignature.sign);
 router.get('/nda/download/:transactionId', ndaSignature.download);
 router.post('/nda/webhook', ndaSignature.webhook);
+
+// Street2Ivy: Student Performance Assessments
+router.get('/assessments/criteria', assessments.getAssessmentCriteria);
+router.post('/assessments', assessments.submitAssessment);
+router.get('/assessments/pending', assessments.getPendingAssessments);
+router.get('/assessments/transaction/:transactionId', assessments.getAssessmentByTransaction);
+router.get('/assessments/student/:studentId', assessments.getStudentAssessments);
 
 // Create user with identity provider (e.g. Facebook or Google)
 // This endpoint is called to create a new user after user has confirmed

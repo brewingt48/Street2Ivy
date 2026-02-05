@@ -9,7 +9,7 @@ import { Page, LayoutSingleColumn, PaginationLinks } from '../../components';
 import TopbarContainer from '../../containers/TopbarContainer/TopbarContainer';
 import FooterContainer from '../../containers/FooterContainer/FooterContainer';
 import CompanyCard from './CompanyCard';
-import { searchCompanies } from './SearchCompaniesPage.duck';
+import { searchCompanies, fetchCompanyListings } from './SearchCompaniesPage.duck';
 
 import css from './SearchCompaniesPage.module.css';
 
@@ -106,7 +106,9 @@ const SearchCompaniesPageComponent = props => {
     searchInProgress,
     searchError,
     currentUser,
+    companyListings,
     onSearchCompanies,
+    onFetchCompanyListings,
   } = props;
 
   const intl = useIntl();
@@ -290,7 +292,12 @@ const SearchCompaniesPageComponent = props => {
                 </p>
                 <div className={css.resultsGrid}>
                   {users.map(user => (
-                    <CompanyCard key={user.id} user={user} />
+                    <CompanyCard
+                      key={user.id}
+                      user={user}
+                      companyListingsData={companyListings[user.id]}
+                      onLoadListings={() => onFetchCompanyListings(user.id)}
+                    />
                   ))}
                 </div>
 
@@ -316,7 +323,8 @@ const SearchCompaniesPageComponent = props => {
 
 const mapStateToProps = state => {
   const { currentUser } = state.user;
-  const { users, pagination, searchInProgress, searchError } = state.SearchCompaniesPage;
+  const { users, pagination, searchInProgress, searchError, companyListings } =
+    state.SearchCompaniesPage;
 
   return {
     scrollingDisabled: isScrollingDisabled(state),
@@ -325,18 +333,17 @@ const mapStateToProps = state => {
     pagination,
     searchInProgress,
     searchError,
+    companyListings,
   };
 };
 
 const mapDispatchToProps = dispatch => ({
   onSearchCompanies: params => dispatch(searchCompanies(params)),
+  onFetchCompanyListings: authorId => dispatch(fetchCompanyListings(authorId)),
 });
 
 const SearchCompaniesPage = compose(
-  connect(
-    mapStateToProps,
-    mapDispatchToProps
-  )
+  connect(mapStateToProps, mapDispatchToProps)
 )(SearchCompaniesPageComponent);
 
 export default SearchCompaniesPage;

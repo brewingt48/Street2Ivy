@@ -3,6 +3,7 @@ import { updatedEntities, denormalisedEntities } from '../../util/data';
 import { storableError } from '../../util/errors';
 import { createImageVariantConfig } from '../../util/sdkLoader';
 import { fetchCorporateDashboardStats as fetchCorporateDashboardStatsApi } from '../../util/api';
+import { getMarketplaceEntities } from '../../ducks/marketplaceData.duck';
 
 import { fetchCurrentUser } from '../../ducks/user.duck';
 
@@ -60,6 +61,49 @@ export const fetchDashboardStatsThunk = createAsyncThunk(
 
 export const fetchDashboardStats = () => dispatch => dispatch(fetchDashboardStatsThunk()).unwrap();
 
+// Fetch corporate inbox transactions (orders)
+export const fetchCorporateInboxThunk = createAsyncThunk(
+  'app/CorporateDashboardPage/fetchCorporateInbox',
+  async (_, { extra: sdk, rejectWithValue, dispatch }) => {
+    try {
+      // Fetch sales (applications to corporate's projects)
+      const salesResponse = await sdk.transactions.query({
+        only: 'sale',
+        lastTransitions: [
+          'transition/inquire',
+          'transition/request-project-application',
+          'transition/accept',
+          'transition/decline',
+          'transition/complete',
+          'transition/review-1-by-provider',
+          'transition/review-1-by-customer',
+          'transition/review-2-by-provider',
+          'transition/review-2-by-customer',
+        ],
+        include: ['customer', 'customer.profileImage', 'provider', 'listing'],
+        perPage: 50,
+      });
+
+      // Fetch orders (as customer)
+      const ordersResponse = await sdk.transactions.query({
+        only: 'order',
+        include: ['customer', 'provider', 'provider.profileImage', 'listing'],
+        perPage: 50,
+      });
+
+      return {
+        sales: salesResponse.data.data,
+        orders: ordersResponse.data.data,
+        included: [...(salesResponse.data.included || []), ...(ordersResponse.data.included || [])],
+      };
+    } catch (e) {
+      return rejectWithValue(storableError(e));
+    }
+  }
+);
+
+export const fetchCorporateInbox = () => dispatch => dispatch(fetchCorporateInboxThunk()).unwrap();
+
 // ================ Slice ================ //
 
 const resultIds = data => data.data.map(l => l.id);
@@ -77,6 +121,11 @@ const corporateDashboardPageSlice = createSlice({
     dashboardStats: null,
     statsInProgress: false,
     statsError: null,
+    // Inbox messages (transactions)
+    inboxSales: [],
+    inboxOrders: [],
+    inboxInProgress: false,
+    inboxError: null,
   },
   reducers: {
     addOwnEntities: (state, action) => {
@@ -114,6 +163,20 @@ const corporateDashboardPageSlice = createSlice({
       .addCase(fetchDashboardStatsThunk.rejected, (state, action) => {
         state.statsInProgress = false;
         state.statsError = action.payload;
+      })
+      // Inbox messages
+      .addCase(fetchCorporateInboxThunk.pending, state => {
+        state.inboxInProgress = true;
+        state.inboxError = null;
+      })
+      .addCase(fetchCorporateInboxThunk.fulfilled, (state, action) => {
+        state.inboxInProgress = false;
+        state.inboxSales = action.payload.sales;
+        state.inboxOrders = action.payload.orders;
+      })
+      .addCase(fetchCorporateInboxThunk.rejected, (state, action) => {
+        state.inboxInProgress = false;
+        state.inboxError = action.payload;
       });
   },
 });
@@ -144,5 +207,6 @@ export const loadData = (params, search, config) => (dispatch, getState, sdk) =>
       })
     ),
     dispatch(fetchDashboardStatsThunk()),
+    dispatch(fetchCorporateInboxThunk()),
   ]);
 };
