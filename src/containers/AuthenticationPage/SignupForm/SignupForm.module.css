@@ -105,3 +105,11 @@
     transform: rotate(360deg);
   }
 }
+
+/* Student email hint */
+.emailHint {
+  font-size: 13px;
+  color: var(--colorGrey600);
+  margin: 6px 0 0 0;
+  line-height: 1.4;
+}
