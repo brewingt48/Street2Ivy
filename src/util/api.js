@@ -181,3 +181,421 @@ export const searchUsers = params => {
 export const inviteToApply = body => {
   return post('/api/invite-to-apply', body);
 };
+
+// =====================================================
+// Street2Ivy: Educational Admin Dashboard APIs
+// =====================================================
+
+// Fetch educational admin dashboard stats and student list
+export const fetchEducationDashboard = (params = {}) => {
+  const queryString = Object.entries(params)
+    .filter(([, v]) => v != null && v !== '')
+    .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`)
+    .join('&');
+
+  return request(`/api/education/dashboard${queryString ? `?${queryString}` : ''}`, {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
+  });
+};
+
+// Fetch transaction history for a specific student (for educational admins)
+export const fetchStudentTransactions = (studentId, params = {}) => {
+  const queryString = Object.entries(params)
+    .filter(([, v]) => v != null && v !== '')
+    .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`)
+    .join('&');
+
+  return request(`/api/education/students/${studentId}/transactions${queryString ? `?${queryString}` : ''}`, {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
+  });
+};
+
+// =====================================================
+// Street2Ivy: Enhanced Corporate Dashboard APIs
+// =====================================================
+
+// Fetch enhanced corporate dashboard statistics
+export const fetchCorporateDashboardStats = () => {
+  return request('/api/corporate/dashboard-stats', {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
+  });
+};
+
+// =====================================================
+// Street2Ivy: System Admin APIs
+// =====================================================
+
+// Fetch list of all users (admin only)
+export const fetchAdminUsers = (params = {}) => {
+  const queryString = Object.entries(params)
+    .filter(([, v]) => v != null && v !== '')
+    .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`)
+    .join('&');
+
+  return request(`/api/admin/users${queryString ? `?${queryString}` : ''}`, {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
+  });
+};
+
+// Get detailed info about a specific user (admin only)
+export const fetchAdminUser = userId => {
+  return request(`/api/admin/users/${userId}`, {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
+  });
+};
+
+// Block a user (admin only)
+export const blockUser = userId => {
+  return request(`/api/admin/users/${userId}/block`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({}),
+  });
+};
+
+// Unblock a user (admin only)
+export const unblockUser = userId => {
+  return request(`/api/admin/users/${userId}/unblock`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({}),
+  });
+};
+
+// Delete a user (admin only)
+export const deleteUserAdmin = userId => {
+  return request(`/api/admin/users/${userId}`, {
+    method: 'DELETE',
+    headers: { 'Content-Type': 'application/json' },
+  });
+};
+
+// Send admin message to educational admin
+export const sendAdminMessage = body => {
+  return request('/api/admin/messages', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+};
+
+// Fetch admin messages
+export const fetchAdminMessages = (params = {}) => {
+  const queryString = Object.entries(params)
+    .filter(([, v]) => v != null && v !== '')
+    .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`)
+    .join('&');
+
+  return request(`/api/admin/messages${queryString ? `?${queryString}` : ''}`, {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
+  });
+};
+
+// Mark admin message as read
+export const markAdminMessageRead = messageId => {
+  return request(`/api/admin/messages/${messageId}/read`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({}),
+  });
+};
+
+// Get unread message count for educational admins
+export const fetchUnreadMessageCount = () => {
+  return request('/api/admin/messages/unread-count', {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
+  });
+};
+
+// Fetch admin reports
+export const fetchAdminReports = type => {
+  return request(`/api/admin/reports/${type}`, {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
+  });
+};
+
+// Fetch users pending approval (admin only)
+export const fetchPendingApprovals = (params = {}) => {
+  const queryString = Object.entries(params)
+    .filter(([, v]) => v != null && v !== '')
+    .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`)
+    .join('&');
+
+  return request(`/api/admin/users/pending${queryString ? `?${queryString}` : ''}`, {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
+  });
+};
+
+// Approve a corporate partner or educational admin profile (admin only)
+export const approveUserProfile = userId => {
+  return request(`/api/admin/users/${userId}/approve`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({}),
+  });
+};
+
+// Reject a corporate partner or educational admin profile (admin only)
+export const rejectUserProfile = (userId, reason) => {
+  return request(`/api/admin/users/${userId}/reject`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ reason }),
+  });
+};
+
+// ========== Deposit Management (Admin) ==========
+
+// Get list of transactions awaiting deposit confirmation (admin only)
+export const fetchPendingDeposits = (params = {}) => {
+  const queryString = Object.entries(params)
+    .map(([key, value]) => `${key}=${encodeURIComponent(value)}`)
+    .join('&');
+  return request(`/api/admin/deposits${queryString ? `?${queryString}` : ''}`);
+};
+
+// Confirm deposit received for a transaction (admin only)
+export const confirmDeposit = (transactionId, { amount, paymentMethod, notes }) => {
+  return request(`/api/admin/deposits/${transactionId}/confirm`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ amount, paymentMethod, notes }),
+  });
+};
+
+// Revoke deposit confirmation (admin only)
+export const revokeDeposit = (transactionId, reason) => {
+  return request(`/api/admin/deposits/${transactionId}/revoke`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ reason }),
+  });
+};
+
+// Get deposit status for a transaction (admin only)
+export const getDepositStatus = transactionId => {
+  return request(`/api/admin/deposits/${transactionId}`);
+};
+
+// ========== Deposit Status Check (Corporate Partners) ==========
+
+// Check if deposit is confirmed for a transaction (for corporate partners)
+export const checkDepositStatus = transactionId => {
+  return request(`/api/check-deposit-status/${transactionId}`);
+};
+
+// ========== Project Workspace (Secure Portal) ==========
+
+// Get project workspace data (for accepted students with confirmed deposits)
+export const fetchProjectWorkspace = transactionId => {
+  return request(`/api/project-workspace/${transactionId}`, {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
+  });
+};
+
+// Send a secure message in the project workspace
+export const sendProjectMessage = (transactionId, { content, attachments }) => {
+  return request(`/api/project-workspace/${transactionId}/messages`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ content, attachments }),
+  });
+};
+
+// Accept NDA for a project
+export const acceptProjectNda = transactionId => {
+  return request(`/api/project-workspace/${transactionId}/accept-nda`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({}),
+  });
+};
+
+// Mark messages as read
+export const markProjectMessagesRead = (transactionId, messageIds) => {
+  return request(`/api/project-workspace/${transactionId}/mark-read`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ messageIds }),
+  });
+};
+
+// ========== Institution Membership Management ==========
+
+// Check if a domain is a member institution (public - for signup validation)
+export const checkInstitutionMembership = domain => {
+  return request(`/api/institutions/check/${encodeURIComponent(domain)}`, {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
+  });
+};
+
+// Get current student's institution info (AI coaching, membership status)
+export const fetchMyInstitution = () => {
+  return request('/api/institutions/my-institution', {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
+  });
+};
+
+// Admin: List all institutions
+export const fetchInstitutions = () => {
+  return request('/api/admin/institutions', {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
+  });
+};
+
+// Admin: Get institution by domain
+export const fetchInstitution = domain => {
+  return request(`/api/admin/institutions/${encodeURIComponent(domain)}`, {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
+  });
+};
+
+// Admin: Create or update institution
+export const saveInstitution = institutionData => {
+  return request('/api/admin/institutions', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(institutionData),
+  });
+};
+
+// Admin: Update institution membership status
+export const updateInstitutionStatus = (domain, membershipStatus) => {
+  return request(`/api/admin/institutions/${encodeURIComponent(domain)}/status`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ membershipStatus }),
+  });
+};
+
+// Admin: Update institution AI coaching settings
+export const updateInstitutionCoaching = (domain, { aiCoachingEnabled, aiCoachingUrl }) => {
+  return request(`/api/admin/institutions/${encodeURIComponent(domain)}/coaching`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ aiCoachingEnabled, aiCoachingUrl }),
+  });
+};
+
+// Admin: Delete institution
+export const deleteInstitution = domain => {
+  return request(`/api/admin/institutions/${encodeURIComponent(domain)}`, {
+    method: 'DELETE',
+    headers: { 'Content-Type': 'application/json' },
+  });
+};
+
+// ========== NDA E-Signature Management ==========
+
+// Upload NDA document for a listing (corporate partners)
+export const uploadNdaDocument = ({ listingId, documentUrl, documentName, ndaText }) => {
+  return request('/api/nda/upload', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ listingId, documentUrl, documentName, ndaText }),
+  });
+};
+
+// Get NDA document info for a listing
+export const getNdaDocument = listingId => {
+  return request(`/api/nda/${listingId}`, {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
+  });
+};
+
+// Request signatures for NDA (creates signature request)
+export const requestNdaSignature = transactionId => {
+  return request(`/api/nda/request-signature/${transactionId}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({}),
+  });
+};
+
+// Get NDA signature status for a transaction
+export const getNdaSignatureStatus = transactionId => {
+  return request(`/api/nda/signature-status/${transactionId}`, {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
+  });
+};
+
+// Sign the NDA (for in-app signature)
+export const signNda = (transactionId, { signatureData, agreedToTerms }) => {
+  return request(`/api/nda/sign/${transactionId}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ signatureData, agreedToTerms }),
+  });
+};
+
+// Download signed NDA document
+export const downloadSignedNda = transactionId => {
+  return request(`/api/nda/download/${transactionId}`, {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
+  });
+};
+
+// Export admin report to CSV or HTML format (admin only)
+// format: 'csv' for Excel-compatible, 'html' for Word-compatible
+export const exportAdminReport = (reportType, format = 'csv') => {
+  const url = `${apiBaseUrl()}/api/admin/export/${reportType}?format=${format}`;
+
+  // Use a download approach for file exports
+  return new Promise((resolve, reject) => {
+    fetch(url, {
+      method: 'GET',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+    })
+      .then(response => {
+        if (!response.ok) {
+          return response.json().then(err => {
+            throw new Error(err.error || 'Export failed');
+          });
+        }
+        return response.blob().then(blob => {
+          // Get filename from Content-Disposition header
+          const contentDisposition = response.headers.get('Content-Disposition');
+          let filename = `report.${format}`;
+          if (contentDisposition) {
+            const filenameMatch = contentDisposition.match(/filename="(.+?)"/);
+            if (filenameMatch) {
+              filename = filenameMatch[1];
+            }
+          }
+
+          // Create download link
+          const downloadUrl = window.URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = downloadUrl;
+          a.download = filename;
+          document.body.appendChild(a);
+          a.click();
+          window.URL.revokeObjectURL(downloadUrl);
+          document.body.removeChild(a);
+
+          resolve({ success: true, filename });
+        });
+      })
+      .catch(err => {
+        reject(err);
+      });
+  });
+};

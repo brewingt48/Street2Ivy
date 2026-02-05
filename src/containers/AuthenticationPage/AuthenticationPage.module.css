@@ -303,3 +303,18 @@
   position: relative;
   margin: 0;
 }
+
+/* ================ Admin Portal ================ */
+
+.adminPortalBanner {
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  color: var(--colorWhite);
+  padding: 12px 20px;
+  border-radius: 8px;
+  margin-bottom: 24px;
+  font-weight: var(--fontWeightSemiBold);
+  font-size: 14px;
+  text-align: center;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}

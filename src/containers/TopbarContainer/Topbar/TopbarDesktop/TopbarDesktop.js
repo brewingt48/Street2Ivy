@@ -5,6 +5,7 @@ import { FormattedMessage } from '../../../../util/reactIntl';
 import { ACCOUNT_SETTINGS_PAGES } from '../../../../routing/routeConfiguration';
 import {
   Avatar,
+  ExternalLink,
   InlineTextButton,
   LinkedLogo,
   Menu,
@@ -56,7 +57,14 @@ const InboxLink = ({ notificationCount, inboxTab }) => {
   );
 };
 
-const ProfileMenu = ({ currentPage, currentUser, onLogout, showManageListingsLink, intl }) => {
+const ProfileMenu = ({
+  currentPage,
+  currentUser,
+  onLogout,
+  showManageListingsLink,
+  intl,
+  institutionInfo,
+}) => {
   const currentPageClass = page => {
     const isAccountSettingsPage =
       page === 'AccountSettingsPage' && ACCOUNT_SETTINGS_PAGES.includes(currentPage);
@@ -67,6 +75,10 @@ const ProfileMenu = ({ currentPage, currentUser, onLogout, showManageListingsLin
   const userType = currentUser?.attributes?.profile?.publicData?.userType;
   const isCorporatePartner = userType === 'corporate-partner';
   const isStudent = userType === 'student';
+
+  // AI Coaching link for students (if their institution has it enabled)
+  const showAiCoachingLink =
+    isStudent && institutionInfo?.aiCoachingEnabled && institutionInfo?.aiCoachingUrl;
 
   return (
     <Menu skipFocusOnNavigation={true}>
@@ -121,6 +133,17 @@ const ProfileMenu = ({ currentPage, currentUser, onLogout, showManageListingsLin
               <span className={css.menuItemBorder} />
               <FormattedMessage id="TopbarDesktop.findCompaniesLink" />
             </NamedLink>
+          </MenuItem>
+        ) : null}
+        {showAiCoachingLink ? (
+          <MenuItem key="AiCoaching">
+            <ExternalLink
+              className={classNames(css.menuLink, css.aiCoachingLink)}
+              href={institutionInfo.aiCoachingUrl}
+            >
+              <span className={css.menuItemBorder} />
+              <FormattedMessage id="TopbarDesktop.aiCoachingLink" />
+            </ExternalLink>
           </MenuItem>
         ) : null}
         <MenuItem key="ProfileSettingsPage">
@@ -190,6 +213,7 @@ const TopbarDesktop = props => {
     showSearchForm,
     showCreateListingsLink,
     inboxTab,
+    institutionInfo,
   } = props;
   const [mounted, setMounted] = useState(false);
 
@@ -215,6 +239,7 @@ const TopbarDesktop = props => {
       onLogout={onLogout}
       showManageListingsLink={showCreateListingsLink}
       intl={intl}
+      institutionInfo={institutionInfo}
     />
   ) : null;
 

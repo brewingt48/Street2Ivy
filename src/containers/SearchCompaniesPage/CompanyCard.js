@@ -1,7 +1,7 @@
 import React from 'react';
 import { FormattedMessage } from '../../util/reactIntl';
 
-import { AvatarMedium, NamedLink } from '../../components';
+import { AvatarMedium, NamedLink, VerificationBadge } from '../../components';
 
 import css from './SearchCompaniesPage.module.css';
 
@@ -67,6 +67,7 @@ const CompanyCard = props => {
     companyState,
     companyWebsite,
     companyDescription,
+    isVerified,
   } = publicData;
 
   const name = companyName || displayName;
@@ -95,13 +96,18 @@ const CompanyCard = props => {
       <div className={css.cardHeader}>
         <AvatarMedium user={userForAvatar} />
         <div className={css.cardInfo}>
-          <NamedLink
-            className={css.companyNameLink}
-            name="ProfilePage"
-            params={{ id: user.id }}
-          >
-            {name}
-          </NamedLink>
+          <div className={css.companyNameRow}>
+            <NamedLink
+              className={css.companyNameLink}
+              name="ProfilePage"
+              params={{ id: user.id }}
+            >
+              {name}
+            </NamedLink>
+            {isVerified && (
+              <VerificationBadge type="company" size="small" showLabel={false} />
+            )}
+          </div>
           {industry && (
             <p className={css.industryLabel}>{getIndustryLabel(industry)}</p>
           )}

@@ -28,6 +28,7 @@ import TopbarDesktop from './TopbarDesktop/TopbarDesktop';
 
 import css from './Topbar.module.css';
 import { getCurrentUserTypeRoles, showCreateListingLinkForUser } from '../../../util/userHelpers';
+import { useInstitutionInfo } from '../../../hooks/useInstitutionInfo';
 
 const MAX_MOBILE_SCREEN_WIDTH = 1024;
 
@@ -156,6 +157,7 @@ const TopbarComponent = props => {
     showGenericError,
     config,
     routeConfiguration,
+    institutionInfo,
   } = props;
 
   const handleSubmit = values => {
@@ -257,6 +259,7 @@ const TopbarComponent = props => {
       customLinks={customLinks}
       showCreateListingsLink={showCreateListingsLink}
       inboxTab={topbarInboxTab}
+      institutionInfo={institutionInfo}
     />
   );
 
@@ -383,6 +386,7 @@ const TopbarComponent = props => {
           showSearchForm={showSearchForm}
           showCreateListingsLink={showCreateListingsLink}
           inboxTab={topbarInboxTab}
+          institutionInfo={institutionInfo}
         />
       </div>
       <Modal
@@ -468,11 +472,16 @@ const Topbar = props => {
   const config = useConfiguration();
   const routeConfiguration = useRouteConfiguration();
   const intl = useIntl();
+
+  // Fetch institution info for students (AI coaching, membership status)
+  const { institutionInfo } = useInstitutionInfo(props.currentUser);
+
   return (
     <TopbarComponent
       config={config}
       routeConfiguration={routeConfiguration}
       intl={intl}
+      institutionInfo={institutionInfo}
       {...props}
     />
   );

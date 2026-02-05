@@ -99,6 +99,8 @@ export const CorporateDashboardPageComponent = props => {
     queryInProgress,
     queryListingsError,
     listings,
+    dashboardStats,
+    statsInProgress,
   } = props;
   const intl = useIntl();
   const config = useConfiguration();
@@ -166,6 +168,123 @@ export const CorporateDashboardPageComponent = props => {
             </div>
           </div>
 
+          {/* Enhanced Stats Section */}
+          {dashboardStats && (
+            <>
+              {/* Application Stats */}
+              <div className={css.enhancedStatsSection}>
+                <h3 className={css.sectionTitle}>
+                  {intl.formatMessage({ id: 'CorporateDashboardPage.applicationStats' })}
+                </h3>
+                <div className={css.statsGrid}>
+                  <div className={css.statCard}>
+                    <div className={css.statValue}>
+                      {dashboardStats.applicationStats?.total || 0}
+                    </div>
+                    <div className={css.statLabel}>Total Applications</div>
+                  </div>
+                  <div className={css.statCard}>
+                    <div className={css.statValue}>
+                      {dashboardStats.applicationStats?.accepted || 0}
+                    </div>
+                    <div className={css.statLabel}>Accepted</div>
+                  </div>
+                  <div className={css.statCard}>
+                    <div className={css.statValue}>
+                      {dashboardStats.applicationStats?.declined || 0}
+                    </div>
+                    <div className={css.statLabel}>Declined</div>
+                  </div>
+                  <div className={css.statCard}>
+                    <div className={css.statValue}>
+                      {dashboardStats.applicationStats?.pending || 0}
+                    </div>
+                    <div className={css.statLabel}>Pending</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Completion Stats */}
+              <div className={css.enhancedStatsSection}>
+                <h3 className={css.sectionTitle}>
+                  {intl.formatMessage({ id: 'CorporateDashboardPage.completionStats' })}
+                </h3>
+                <div className={css.statsGrid}>
+                  <div className={css.statCard}>
+                    <div className={css.statValue}>
+                      {dashboardStats.completionStats?.completed || 0}
+                    </div>
+                    <div className={css.statLabel}>Completed Projects</div>
+                  </div>
+                  <div className={css.statCard}>
+                    <div className={css.statValue}>
+                      {dashboardStats.completionStats?.completionRate || 0}%
+                    </div>
+                    <div className={css.statLabel}>Completion Rate</div>
+                  </div>
+                  <div className={css.statCard}>
+                    <div className={css.statValue}>
+                      {dashboardStats.completionStats?.avgDaysToCompletion || 'N/A'}
+                    </div>
+                    <div className={css.statLabel}>Avg. Days to Complete</div>
+                  </div>
+                  <div className={css.statCard}>
+                    <div className={css.statValue}>
+                      {dashboardStats.completionStats?.reviewed || 0}
+                    </div>
+                    <div className={css.statLabel}>Reviews Received</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Projects by Category */}
+              {dashboardStats.projectsByCategory && Object.keys(dashboardStats.projectsByCategory).length > 0 && (
+                <div className={css.enhancedStatsSection}>
+                  <h3 className={css.sectionTitle}>
+                    {intl.formatMessage({ id: 'CorporateDashboardPage.projectsByCategory' })}
+                  </h3>
+                  <div className={css.categoryList}>
+                    {Object.entries(dashboardStats.projectsByCategory).map(([category, count]) => (
+                      <div key={category} className={css.categoryItem}>
+                        <span className={css.categoryName}>
+                          {category.charAt(0).toUpperCase() + category.slice(1).replace(/-/g, ' ')}
+                        </span>
+                        <span className={css.categoryCount}>{count}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Financial Summary */}
+              {dashboardStats.financialStats && (
+                <div className={css.enhancedStatsSection}>
+                  <h3 className={css.sectionTitle}>
+                    {intl.formatMessage({ id: 'CorporateDashboardPage.financialSummary' })}
+                  </h3>
+                  <div className={css.statsGrid}>
+                    <div className={css.statCard}>
+                      <div className={css.statValue}>
+                        ${(dashboardStats.financialStats.totalSpent / 100).toLocaleString()}
+                      </div>
+                      <div className={css.statLabel}>Total Spent</div>
+                    </div>
+                    <div className={css.statCard}>
+                      <div className={css.statValue}>
+                        ${(dashboardStats.financialStats.avgCostPerProject / 100).toLocaleString()}
+                      </div>
+                      <div className={css.statLabel}>Avg. Cost/Project</div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+
+          {statsInProgress && !dashboardStats && (
+            <div className={css.loading}>Loading stats...</div>
+          )}
+
           {/* Active Projects */}
           <div className={css.projectsSection}>
             <div className={css.actionBar}>
@@ -217,6 +336,8 @@ const mapStateToProps = state => {
     currentPageResultIds,
     queryInProgress,
     queryListingsError,
+    dashboardStats,
+    statsInProgress,
   } = state.CorporateDashboardPage;
 
   const listings = getOwnListingsById(state, currentPageResultIds);
@@ -227,6 +348,8 @@ const mapStateToProps = state => {
     queryInProgress,
     queryListingsError,
     listings,
+    dashboardStats,
+    statsInProgress,
   };
 };
 

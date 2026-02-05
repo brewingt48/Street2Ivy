@@ -5,7 +5,11 @@
 .pageContent {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 24px 24px 48px;
+  padding: 16px 16px 32px;
+
+  @media (--viewportSmall) {
+    padding: 24px 24px 48px;
+  }
 
   @media (--viewportMedium) {
     padding: 36px 36px 64px;
@@ -48,8 +52,13 @@
 }
 
 .filterItem {
-  flex: 1;
-  min-width: 160px;
+  flex: 1 1 100%;
+  min-width: 0;
+
+  @media (--viewportSmall) {
+    flex: 1;
+    min-width: 160px;
+  }
 
   @media (--viewportMedium) {
     min-width: 180px;
@@ -84,7 +93,8 @@
 }
 
 .resetButton {
-  padding: 8px 16px;
+  padding: 10px 16px;
+  min-height: 44px;
   border: 1px solid var(--colorGrey300);
   border-radius: 6px;
   background-color: var(--colorWhite);
@@ -92,6 +102,11 @@
   font-size: 14px;
   cursor: pointer;
   white-space: nowrap;
+  width: 100%;
+
+  @media (--viewportSmall) {
+    width: auto;
+  }
 
   &:hover {
     background-color: var(--colorGrey100);

@@ -1,0 +1,403 @@
+@import '../../styles/customMediaQueries.css';
+
+.pageContent {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 16px;
+
+  @media (--viewportSmall) {
+    padding: 24px;
+  }
+}
+
+.pageHeading {
+  font-size: 22px;
+  font-weight: var(--fontWeightBold);
+  color: var(--colorGrey900);
+  margin: 0 0 8px 0;
+
+  @media (--viewportSmall) {
+    font-size: 28px;
+  }
+}
+
+.institutionInfo {
+  font-size: 16px;
+  color: var(--colorGrey600);
+  margin-bottom: 32px;
+}
+
+.institutionDomain {
+  font-weight: var(--fontWeightMedium);
+  color: var(--marketplaceColor);
+}
+
+/* Stats Section */
+.statsSection {
+  margin-bottom: 40px;
+}
+
+.statsSectionTitle {
+  font-size: 20px;
+  font-weight: var(--fontWeightSemiBold);
+  color: var(--colorGrey800);
+  margin: 0 0 16px 0;
+}
+
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+
+  @media (--viewportMedium) {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  @media (--viewportLarge) {
+    grid-template-columns: repeat(5, 1fr);
+  }
+}
+
+.statCard {
+  background-color: var(--colorWhite);
+  border: 1px solid var(--colorGrey100);
+  border-radius: 8px;
+  padding: 20px;
+  text-align: center;
+  transition: box-shadow 0.2s ease;
+}
+
+.statCard:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.statValue {
+  font-size: 24px;
+  font-weight: var(--fontWeightBold);
+  color: var(--marketplaceColor);
+  margin-bottom: 4px;
+
+  @media (--viewportSmall) {
+    font-size: 32px;
+  }
+}
+
+.statLabel {
+  font-size: 13px;
+  color: var(--colorGrey600);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Students Section */
+.studentsSection {
+  margin-bottom: 40px;
+}
+
+.sectionHeader {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 16px;
+
+  @media (--viewportSmall) {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+  }
+}
+
+.sectionTitle {
+  font-size: 20px;
+  font-weight: var(--fontWeightSemiBold);
+  color: var(--colorGrey800);
+  margin: 0;
+}
+
+.searchInput {
+  padding: 10px 12px;
+  min-height: 44px;
+  border: 1px solid var(--colorGrey300);
+  border-radius: 4px;
+  font-size: 14px;
+  width: 100%;
+  box-sizing: border-box;
+
+  @media (--viewportSmall) {
+    width: 250px;
+  }
+}
+
+.searchInput:focus {
+  outline: none;
+  border-color: var(--marketplaceColor);
+}
+
+/* Students Table */
+.studentsTable {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: var(--colorWhite);
+  border: 1px solid var(--colorGrey100);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.studentsTable th,
+.studentsTable td {
+  padding: 12px 16px;
+  text-align: left;
+  border-bottom: 1px solid var(--colorGrey100);
+}
+
+.studentsTable th {
+  background-color: var(--colorGrey50);
+  font-weight: var(--fontWeightSemiBold);
+  color: var(--colorGrey700);
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.studentsTable tr:hover {
+  background-color: var(--colorGrey50);
+}
+
+.studentRow {
+  cursor: pointer;
+}
+
+.studentInfo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.studentName {
+  font-weight: var(--fontWeightMedium);
+  color: var(--colorGrey900);
+}
+
+.studentMeta {
+  font-size: 14px;
+  color: var(--colorGrey600);
+}
+
+.viewButton {
+  padding: 6px 12px;
+  background-color: var(--marketplaceColor);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.viewButton:hover {
+  background-color: var(--marketplaceColorDark);
+}
+
+/* Mobile card view */
+.studentsCards {
+  display: none;
+
+  @media (max-width: 767px) {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+}
+
+.studentCard {
+  background-color: var(--colorWhite);
+  border: 1px solid var(--colorGrey100);
+  border-radius: 8px;
+  padding: 16px;
+}
+
+.studentCardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+
+.studentCardName {
+  font-weight: var(--fontWeightMedium);
+  color: var(--colorGrey900);
+  font-size: 16px;
+}
+
+.studentCardDetails {
+  font-size: 14px;
+  color: var(--colorGrey600);
+  margin-bottom: 12px;
+}
+
+.desktopTable {
+  @media (max-width: 767px) {
+    display: none;
+  }
+}
+
+/* Loading and Error States */
+.loading {
+  text-align: center;
+  padding: 48px;
+  color: var(--colorGrey600);
+}
+
+.error {
+  text-align: center;
+  padding: 48px;
+  color: var(--colorFail);
+  background-color: #fdf2f2;
+  border-radius: 8px;
+  margin-bottom: 24px;
+}
+
+.noResults {
+  text-align: center;
+  padding: 48px;
+  color: var(--colorGrey600);
+  background-color: var(--colorGrey50);
+  border-radius: 8px;
+}
+
+/* Access Denied */
+.noAccess {
+  text-align: center;
+  padding: 64px 24px;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.noAccess h1 {
+  font-size: 24px;
+  color: var(--colorGrey900);
+  margin-bottom: 16px;
+}
+
+.noAccess p {
+  color: var(--colorGrey600);
+  font-size: 16px;
+}
+
+/* Pagination */
+.pagination {
+  margin-top: 24px;
+}
+
+/* Modal Styles */
+.modalContent {
+  padding: 24px;
+}
+
+.modalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--colorGrey100);
+}
+
+.modalTitle {
+  font-size: 20px;
+  font-weight: var(--fontWeightSemiBold);
+  color: var(--colorGrey900);
+  margin: 0;
+}
+
+.modalStudentInfo {
+  font-size: 14px;
+  color: var(--colorGrey600);
+  margin-top: 4px;
+}
+
+.closeButton {
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: var(--colorGrey600);
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+}
+
+.closeButton:hover {
+  color: var(--colorGrey900);
+}
+
+.transactionsList {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.transactionItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  border: 1px solid var(--colorGrey100);
+  border-radius: 6px;
+  margin-bottom: 8px;
+}
+
+.transactionProject {
+  font-weight: var(--fontWeightMedium);
+  color: var(--colorGrey900);
+}
+
+.transactionCompany {
+  font-size: 13px;
+  color: var(--colorGrey600);
+  margin-top: 2px;
+}
+
+.transactionDate {
+  font-size: 12px;
+  color: var(--colorGrey500);
+  margin-top: 4px;
+}
+
+.transactionStatus {
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: var(--fontWeightMedium);
+  text-transform: capitalize;
+}
+
+.statusApplied {
+  background-color: #fef3c7;
+  color: #92400e;
+}
+
+.statusAccepted {
+  background-color: #d1fae5;
+  color: #065f46;
+}
+
+.statusDeclined {
+  background-color: #fee2e2;
+  color: #991b1b;
+}
+
+.statusCompleted {
+  background-color: #dbeafe;
+  color: #1e40af;
+}
+
+.statusReviewed {
+  background-color: #e0e7ff;
+  color: #3730a3;
+}
+
+.noTransactions {
+  text-align: center;
+  padding: 32px;
+  color: var(--colorGrey500);
+}

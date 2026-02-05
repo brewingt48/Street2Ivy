@@ -1,0 +1,140 @@
+@import '../../styles/customMediaQueries.css';
+
+.root {
+  width: 100%;
+  margin-bottom: 32px;
+
+  @media (--viewportMedium) {
+    margin-bottom: 48px;
+  }
+}
+
+/* ================ Header ================ */
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.title {
+  font-size: 20px;
+  font-weight: var(--fontWeightBold);
+  color: var(--colorGrey900);
+  margin: 0;
+
+  @media (--viewportMedium) {
+    font-size: 24px;
+  }
+}
+
+.subtitle {
+  font-size: 14px;
+  color: var(--colorGrey600);
+  margin: 0 0 16px;
+
+  @media (--viewportMedium) {
+    margin-bottom: 20px;
+  }
+}
+
+.viewAllLink {
+  font-size: 14px;
+  font-weight: var(--fontWeightMedium);
+  color: var(--marketplaceColor);
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+/* ================ Listings Grid ================ */
+
+.listingsGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+
+  @media (--viewportSmall) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  @media (--viewportMedium) {
+    gap: 20px;
+  }
+
+  @media (--viewportLarge) {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.listingCard {
+  width: 100%;
+}
+
+/* ================ Loading State ================ */
+
+.loadingContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 48px 24px;
+  background-color: var(--colorGrey50);
+  border-radius: 12px;
+}
+
+.loadingText {
+  font-size: 14px;
+  color: var(--colorGrey600);
+}
+
+/* ================ Empty State ================ */
+
+.emptyState {
+  text-align: center;
+  padding: 32px 24px;
+  background-color: var(--colorGrey50);
+  border-radius: 12px;
+}
+
+.emptyText {
+  font-size: 14px;
+  color: var(--colorGrey600);
+  margin: 0 0 16px;
+}
+
+.browseLink {
+  display: inline-block;
+  padding: 10px 24px;
+  background-color: var(--marketplaceColor);
+  color: var(--colorWhite);
+  font-size: 14px;
+  font-weight: var(--fontWeightSemiBold);
+  border-radius: 8px;
+  text-decoration: none;
+  transition: background-color 0.2s ease;
+
+  &:hover {
+    background-color: var(--marketplaceColorDark);
+    text-decoration: none;
+    color: var(--colorWhite);
+  }
+}
+
+/* ================ Match Badge (optional enhancement) ================ */
+
+.matchBadge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  padding: 4px 8px;
+  background-color: var(--successColor);
+  color: var(--colorWhite);
+  font-size: 11px;
+  font-weight: var(--fontWeightSemiBold);
+  border-radius: 4px;
+  z-index: 1;
+}

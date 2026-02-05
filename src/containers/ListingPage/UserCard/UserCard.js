@@ -7,7 +7,7 @@ import { richText } from '../../../util/richText';
 import { ensureUser, ensureCurrentUser } from '../../../util/data';
 import { propTypes } from '../../../util/types';
 
-import { AvatarLarge, NamedLink, InlineTextButton } from '../../../components';
+import { AvatarLarge, NamedLink, InlineTextButton, VerificationBadge } from '../../../components';
 
 import css from './UserCard.module.css';
 
@@ -109,6 +109,7 @@ const CorporatePartnerContent = props => {
   const companyWebsite = publicData?.companyWebsite;
   const companyDescription = publicData?.companyDescription;
   const companySize = publicData?.companySize;
+  const isVerified = publicData?.isVerified;
 
   const industryLabel = getEnumLabel(INDUSTRY_OPTIONS, industry);
 
@@ -165,6 +166,9 @@ const CorporatePartnerContent = props => {
         <div className={css.info}>
           <div className={css.headingRow}>
             <span className={css.companyName}>{companyName}</span>
+            {isVerified && (
+              <VerificationBadge type="company" size="small" showLabel={false} className={css.verifiedBadge} />
+            )}
             {editProfileDesktop}
           </div>
           <div className={css.companyMeta}>

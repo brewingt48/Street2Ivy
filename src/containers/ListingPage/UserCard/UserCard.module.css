@@ -122,12 +122,18 @@
 .headingRow {
   display: flex;
   flex-direction: column;
+  gap: 6px;
 
   @media (--viewportMedium) {
     flex-direction: row;
-    justify-content: space-between;
-    align-items: baseline;
+    justify-content: flex-start;
+    align-items: center;
+    flex-wrap: wrap;
   }
+}
+
+.verifiedBadge {
+  flex-shrink: 0;
 }
 
 .editProfileDesktop {

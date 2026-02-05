@@ -336,6 +336,22 @@
   width: 100%;
 }
 
+.headingWithBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.verifiedBadge {
+  flex-shrink: 0;
+}
+
+.verifiedBadgeContainer {
+  width: 100%;
+  margin-top: 12px;
+}
+
 .companyWebsiteLink {
   display: inline-block;
   font-size: 14px;

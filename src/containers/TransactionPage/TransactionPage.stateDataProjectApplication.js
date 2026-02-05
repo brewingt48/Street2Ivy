@@ -59,10 +59,12 @@ export const getStateDataForProjectApplicationProcess = (txInfo, processInfo) =>
     })
     .cond([states.ACCEPTED, TX_TRANSITION_ACTOR_CUSTOMER], () => {
       // Student sees "Application accepted" - project in progress
+      // Show link to secure project workspace
       return {
         processName,
         processState,
         showDetailCardHeadings: true,
+        showWorkspaceLink: true,
       };
     })
     .cond([states.DECLINED, _], () => {
@@ -80,6 +82,7 @@ export const getStateDataForProjectApplicationProcess = (txInfo, processInfo) =>
         showReviewAsFirstLink: true,
         showActionButtons: true,
         primaryButtonProps: leaveReviewProps,
+        showWorkspaceLink: true,
       };
     })
     .cond([states.REVIEWED_BY_CUSTOMER, TX_TRANSITION_ACTOR_CUSTOMER], () => {

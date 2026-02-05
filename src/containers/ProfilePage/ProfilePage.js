@@ -46,6 +46,7 @@ import {
   ButtonTabNavHorizontal,
   LayoutSideNavigation,
   NamedRedirect,
+  VerificationBadge,
 } from '../../components';
 
 import TopbarContainer from '../../containers/TopbarContainer/TopbarContainer';
@@ -65,17 +66,37 @@ export const AsideContent = props => {
   const { user, displayName, showLinkToProfileSettingsPage } = props;
   const publicData = user?.attributes?.profile?.publicData || {};
   const isCorporatePartner = publicData?.userType === 'corporate-partner';
+  const isEducationalAdmin = publicData?.userType === 'educational-admin';
   const companyName = publicData?.companyName;
+  const institutionName = publicData?.institutionName;
+  const isVerified = publicData?.isVerified;
 
   // For corporate partners, show company name as the heading
-  const headingName = isCorporatePartner && companyName ? companyName : displayName;
+  const headingName = isCorporatePartner && companyName
+    ? companyName
+    : isEducationalAdmin && institutionName
+    ? institutionName
+    : displayName;
+
+  // Determine verification badge type
+  const badgeType = isEducationalAdmin ? 'institution' : isCorporatePartner ? 'company' : 'user';
 
   return (
     <div className={css.asideContent}>
       <AvatarLarge className={css.avatar} user={user} disableProfileLink />
       <H2 as="h1" className={css.mobileHeading}>
         {headingName ? (
-          <FormattedMessage id="ProfilePage.mobileHeading" values={{ name: headingName }} />
+          <span className={css.headingWithBadge}>
+            <FormattedMessage id="ProfilePage.mobileHeading" values={{ name: headingName }} />
+            {isVerified && (
+              <VerificationBadge
+                type={badgeType}
+                size="small"
+                showLabel={false}
+                className={css.verifiedBadge}
+              />
+            )}
+          </span>
         ) : null}
       </H2>
       {isCorporatePartner && companyName ? (
@@ -83,6 +104,16 @@ export const AsideContent = props => {
           <FormattedMessage id="ProfilePage.corporatePartnerLabel" />
         </p>
       ) : null}
+      {isEducationalAdmin && institutionName ? (
+        <p className={css.companySubtitle}>
+          <FormattedMessage id="ProfilePage.educationalAdminLabel" />
+        </p>
+      ) : null}
+      {isVerified && (
+        <div className={css.verifiedBadgeContainer}>
+          <VerificationBadge type={badgeType} size="medium" />
+        </div>
+      )}
       {showLinkToProfileSettingsPage ? (
         <>
           <NamedLink className={css.editLinkMobile} name="ProfileSettingsPage">

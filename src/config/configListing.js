@@ -237,6 +237,115 @@ export const listingFields = [
       requiredMessage: 'Please select an industry category.',
     },
   },
+  // ─── Street2Ivy: Confidential Project Details (visible only in workspace) ────
+  {
+    key: 'confidentialBrief',
+    scope: 'public', // Stored in publicData but only shown in workspace after acceptance
+    schemaType: 'text',
+    listingTypeConfig: {
+      limitToListingTypeIds: true,
+      listingTypeIds: ['project'],
+    },
+    showConfig: {
+      label: 'Confidential Project Brief',
+      isDetail: false, // Don't show on public listing page
+    },
+    saveConfig: {
+      label: 'Confidential Project Brief',
+      placeholderMessage: 'Detailed project brief that will only be visible to accepted students...',
+      isRequired: false,
+    },
+  },
+  {
+    key: 'confidentialDeliverables',
+    scope: 'public',
+    schemaType: 'text',
+    listingTypeConfig: {
+      limitToListingTypeIds: true,
+      listingTypeIds: ['project'],
+    },
+    showConfig: {
+      label: 'Detailed Deliverables',
+      isDetail: false,
+    },
+    saveConfig: {
+      label: 'Detailed Deliverables (Confidential)',
+      placeholderMessage: 'Specific deliverables and requirements that will only be visible to accepted students...',
+      isRequired: false,
+    },
+  },
+  {
+    key: 'ndaRequired',
+    scope: 'public',
+    schemaType: 'boolean',
+    listingTypeConfig: {
+      limitToListingTypeIds: true,
+      listingTypeIds: ['project'],
+    },
+    showConfig: {
+      label: 'NDA Required',
+      isDetail: false,
+    },
+    saveConfig: {
+      label: 'Require NDA Acceptance',
+      placeholderMessage: 'Students must accept NDA before viewing confidential details',
+      isRequired: false,
+    },
+  },
+  {
+    key: 'contactName',
+    scope: 'public',
+    schemaType: 'text',
+    listingTypeConfig: {
+      limitToListingTypeIds: true,
+      listingTypeIds: ['project'],
+    },
+    showConfig: {
+      label: 'Project Contact Name',
+      isDetail: false,
+    },
+    saveConfig: {
+      label: 'Project Contact Name (Confidential)',
+      placeholderMessage: 'Name of person students should contact...',
+      isRequired: false,
+    },
+  },
+  {
+    key: 'contactEmail',
+    scope: 'public',
+    schemaType: 'text',
+    listingTypeConfig: {
+      limitToListingTypeIds: true,
+      listingTypeIds: ['project'],
+    },
+    showConfig: {
+      label: 'Project Contact Email',
+      isDetail: false,
+    },
+    saveConfig: {
+      label: 'Project Contact Email (Confidential)',
+      placeholderMessage: 'Email for project communication...',
+      isRequired: false,
+    },
+  },
+  {
+    key: 'contactPhone',
+    scope: 'public',
+    schemaType: 'text',
+    listingTypeConfig: {
+      limitToListingTypeIds: true,
+      listingTypeIds: ['project'],
+    },
+    showConfig: {
+      label: 'Project Contact Phone',
+      isDetail: false,
+    },
+    saveConfig: {
+      label: 'Project Contact Phone (Confidential)',
+      placeholderMessage: 'Phone number for project communication...',
+      isRequired: false,
+    },
+  },
 ];
 
 ///////////////////////////////////////////////////////////////////////

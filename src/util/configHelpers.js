@@ -1169,7 +1169,12 @@ const mergeUserConfig = (hostedConfig, defaultConfigs) => {
   const hostedUserTypes = restructureUserTypes(hostedConfig?.userTypes?.userTypes);
   const hostedUserFields = restructureUserFields(hostedConfig?.userFields?.userFields);
 
-  const { userFields: defaultUserFields, userTypes: defaultUserTypes } = defaultConfigs.user;
+  const {
+    userFields: defaultUserFields,
+    userTypes: defaultUserTypes,
+    adminUserTypes: defaultAdminUserTypes,
+    allUserTypes: defaultAllUserTypes,
+  } = defaultConfigs.user;
 
   // Street2Ivy: Always merge default user types and fields so that local
   // configUser.js definitions (student/corporate-partner types and their
@@ -1179,10 +1184,14 @@ const mergeUserConfig = (hostedConfig, defaultConfigs) => {
 
   // To include user type validation (if you have user types in your default configuration),
   // pass userTypes to the validUserFields function as well:
-  const userTypesInUse = userTypes.map(ut => `${ut.userType}`);
+  // Include all user types (including admin types) for field validation
+  const allUserTypesForValidation = defaultAllUserTypes || [...userTypes, ...(defaultAdminUserTypes || [])];
+  const userTypesInUse = allUserTypesForValidation.map(ut => `${ut.userType}`);
   return {
     userTypes: validUserTypes(userTypes),
     userFields: validUserFields(userFields, userTypesInUse),
+    // Street2Ivy: Include admin user types for admin portal signup
+    adminUserTypes: defaultAdminUserTypes || [],
   };
 };
 

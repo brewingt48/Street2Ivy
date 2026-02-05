@@ -24,6 +24,7 @@ import BookingLocationMaybe from './BookingLocationMaybe';
 import FeedSection from './FeedSection';
 import DiminishedActionButtonMaybe from './DiminishedActionButtonMaybe';
 import PanelHeading from './PanelHeading';
+import WorkspaceLinkMaybe from './WorkspaceLinkMaybe';
 
 import css from './TransactionPanel.module.css';
 
@@ -168,6 +169,7 @@ export class TransactionPanelComponent extends Component {
       className,
       currentUser,
       transactionRole,
+      transactionId,
       listing,
       customer,
       provider,
@@ -294,6 +296,11 @@ export class TransactionPanelComponent extends Component {
               text={inquiryMessage}
               isOwn={isCustomer}
               showText={isInquiryProcess}
+            />
+
+            <WorkspaceLinkMaybe
+              showWorkspaceLink={stateData.showWorkspaceLink}
+              transactionId={transactionId?.uuid}
             />
 
             {requestQuote}

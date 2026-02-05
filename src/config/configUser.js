@@ -465,28 +465,235 @@ export const userFields = [
       userTypeIds: ['corporate-partner'],
     },
   },
+
+  // =====================================
+  // Educational Admin-specific fields
+  // =====================================
+  {
+    key: 'institutionName',
+    scope: 'public',
+    schemaType: 'text',
+    showConfig: {
+      label: 'Institution Name',
+    },
+    saveConfig: {
+      label: 'Institution Name',
+      placeholderMessage: 'e.g. Harvard University',
+      displayInSignUp: true,
+      isRequired: true,
+    },
+    userTypeConfig: {
+      limitToUserTypeIds: true,
+      userTypeIds: ['educational-admin'],
+    },
+  },
+  {
+    key: 'institutionDomain',
+    scope: 'public',
+    schemaType: 'text',
+    showConfig: {
+      label: 'Institution Email Domain',
+      displayInProfile: true,
+    },
+    saveConfig: {
+      label: 'Institution Email Domain',
+      placeholderMessage: 'Auto-extracted from your email (e.g., harvard.edu)',
+      displayInSignUp: false,
+      isRequired: false,
+    },
+    userTypeConfig: {
+      limitToUserTypeIds: true,
+      userTypeIds: ['educational-admin'],
+    },
+  },
+  {
+    key: 'adminRole',
+    scope: 'public',
+    schemaType: 'enum',
+    enumOptions: [
+      { option: 'career-services', label: 'Career Services' },
+      { option: 'student-affairs', label: 'Student Affairs' },
+      { option: 'department-admin', label: 'Department Administrator' },
+      { option: 'dean', label: 'Dean / Associate Dean' },
+      { option: 'academic-advisor', label: 'Academic Advisor' },
+      { option: 'program-director', label: 'Program Director' },
+    ],
+    showConfig: {
+      label: 'Administrative Role',
+    },
+    saveConfig: {
+      label: 'Administrative Role',
+      placeholderMessage: 'Select your role...',
+      displayInSignUp: true,
+      isRequired: true,
+    },
+    userTypeConfig: {
+      limitToUserTypeIds: true,
+      userTypeIds: ['educational-admin'],
+    },
+  },
+  {
+    key: 'adminDepartment',
+    scope: 'public',
+    schemaType: 'text',
+    showConfig: {
+      label: 'Department',
+    },
+    saveConfig: {
+      label: 'Department',
+      placeholderMessage: 'e.g. Career Center, Computer Science Department',
+      displayInSignUp: true,
+      isRequired: false,
+    },
+    userTypeConfig: {
+      limitToUserTypeIds: true,
+      userTypeIds: ['educational-admin'],
+    },
+  },
+
+  // =====================================
+  // Email domain field (for institution matching)
+  // Auto-extracted from user's email during signup
+  // =====================================
+  {
+    key: 'emailDomain',
+    scope: 'public',
+    schemaType: 'text',
+    showConfig: {
+      label: 'Email Domain',
+      displayInProfile: false,
+    },
+    saveConfig: {
+      label: 'Email Domain',
+      placeholderMessage: 'Auto-extracted from your email',
+      displayInSignUp: false,
+      isRequired: false,
+    },
+    userTypeConfig: {
+      limitToUserTypeIds: true,
+      userTypeIds: ['student', 'educational-admin'],
+    },
+  },
+
+  // =====================================
+  // Approval status for corporate & edu-admin profiles
+  // Set by system admin; new users are 'pending' by default
+  // =====================================
+  {
+    key: 'approvalStatus',
+    scope: 'public',
+    schemaType: 'enum',
+    enumOptions: [
+      { option: 'pending', label: 'Pending Approval' },
+      { option: 'approved', label: 'Approved' },
+      { option: 'rejected', label: 'Rejected' },
+    ],
+    showConfig: {
+      label: 'Approval Status',
+      displayInProfile: false,
+    },
+    saveConfig: {
+      label: 'Approval Status',
+      displayInSignUp: false,
+      isRequired: false,
+    },
+    userTypeConfig: {
+      limitToUserTypeIds: true,
+      userTypeIds: ['corporate-partner', 'educational-admin'],
+    },
+  },
 ];
 
 /////////////////////////////////////
 // Street2Ivy user types           //
 /////////////////////////////////////
 /**
- * Two user types for Street2Ivy:
+ * User types for Street2Ivy:
  * - student: College students looking for career opportunities
  * - corporate-partner: Companies offering opportunities to students
+ * - educational-admin: University administrators (hidden from public signup)
+ * - system-admin: Platform administrators (hidden from public signup)
  *
  * These match the user types created in Sharetribe Console.
  * Users choose their type when signing up, and see different
  * profile fields based on their selection.
  */
 
+// User types available for public signup (shown in dropdown)
+// Note: All user types have payment disabled - billing is handled offline
 export const userTypes = [
   {
     userType: 'student',
     label: 'Student',
+    // Hide payment tabs - students don't handle payments through the platform
+    accountLinksVisibility: {
+      paymentMethods: false,
+      payoutDetails: false,
+    },
   },
   {
     userType: 'corporate-partner',
     label: 'Corporate Partner',
+    // Hide payment tabs - corporate partners are billed offline
+    accountLinksVisibility: {
+      paymentMethods: false,
+      payoutDetails: false,
+    },
+  },
+];
+
+// All user types including admin types (used for profile settings, etc.)
+export const allUserTypes = [
+  {
+    userType: 'student',
+    label: 'Student',
+    accountLinksVisibility: {
+      paymentMethods: false,
+      payoutDetails: false,
+    },
+  },
+  {
+    userType: 'corporate-partner',
+    label: 'Corporate Partner',
+    accountLinksVisibility: {
+      paymentMethods: false,
+      payoutDetails: false,
+    },
+  },
+  {
+    userType: 'educational-admin',
+    label: 'Educational Administrator',
+    accountLinksVisibility: {
+      paymentMethods: false,
+      payoutDetails: false,
+    },
+  },
+  {
+    userType: 'system-admin',
+    label: 'System Administrator',
+    accountLinksVisibility: {
+      paymentMethods: false,
+      payoutDetails: false,
+    },
+  },
+];
+
+// Admin user types (for special admin portal signup)
+export const adminUserTypes = [
+  {
+    userType: 'educational-admin',
+    label: 'Educational Administrator',
+    accountLinksVisibility: {
+      paymentMethods: false,
+      payoutDetails: false,
+    },
+  },
+  {
+    userType: 'system-admin',
+    label: 'System Administrator',
+    accountLinksVisibility: {
+      paymentMethods: false,
+      payoutDetails: false,
+    },
   },
 ];

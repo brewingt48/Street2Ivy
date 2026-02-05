@@ -1,6 +1,7 @@
 /**
  * Export loadData calls from ducks modules of different containers
  */
+import { loadData as AdminDashboardPageLoader } from './AdminDashboardPage/AdminDashboardPage.duck';
 import { loadData as AuthenticationPageLoader } from './AuthenticationPage/AuthenticationPage.duck';
 import { loadData as LandingPageLoader } from './LandingPage/LandingPage.duck';
 import { setInitialValues as CheckoutPageInitialValues } from './CheckoutPage/CheckoutPage.duck';
@@ -8,6 +9,7 @@ import { loadData as CMSPageLoader } from './CMSPage/CMSPage.duck';
 import { loadData as CorporateDashboardPageLoader } from './CorporateDashboardPage/CorporateDashboardPage.duck';
 import { loadData as ContactDetailsPageLoader } from './ContactDetailsPage/ContactDetailsPage.duck';
 import { loadData as EditListingPageLoader } from './EditListingPage/EditListingPage.duck';
+import { loadData as EducationDashboardPageLoader } from './EducationDashboardPage/EducationDashboardPage.duck';
 import { loadData as EmailVerificationPageLoader } from './EmailVerificationPage/EmailVerificationPage.duck';
 import { loadData as InboxPageLoader } from './InboxPage/InboxPage.duck';
 import { loadData as ListingPageLoader } from './ListingPage/ListingPage.duck';
@@ -16,6 +18,7 @@ import { loadData as ManageListingsPageLoader } from './ManageListingsPage/Manag
 import { loadData as PaymentMethodsPageLoader } from './PaymentMethodsPage/PaymentMethodsPage.duck';
 import { loadData as PrivacyPolicyPageLoader } from './PrivacyPolicyPage/PrivacyPolicyPage.duck';
 import { loadData as ProfilePageLoader } from './ProfilePage/ProfilePage.duck';
+import { loadData as ProjectWorkspacePageLoader } from './ProjectWorkspacePage/ProjectWorkspacePage.duck';
 import { loadData as RequestQuotePageLoader } from './RequestQuotePage/RequestQuotePage.duck';
 import { loadData as SearchCompaniesPageLoader } from './SearchCompaniesPage/SearchCompaniesPage.duck';
 import { loadData as SearchPageLoader } from './SearchPage/SearchPage.duck';
@@ -29,6 +32,9 @@ import {
 
 const getPageDataLoadingAPI = () => {
   return {
+    AdminDashboardPage: {
+      loadData: AdminDashboardPageLoader,
+    },
     AuthenticationPage: {
       loadData: AuthenticationPageLoader,
     },
@@ -46,6 +52,9 @@ const getPageDataLoadingAPI = () => {
     },
     CorporateDashboardPage: {
       loadData: CorporateDashboardPageLoader,
+    },
+    EducationDashboardPage: {
+      loadData: EducationDashboardPageLoader,
     },
     EditListingPage: {
       loadData: EditListingPageLoader,
@@ -73,6 +82,9 @@ const getPageDataLoadingAPI = () => {
     },
     ProfilePage: {
       loadData: ProfilePageLoader,
+    },
+    ProjectWorkspacePage: {
+      loadData: ProjectWorkspacePageLoader,
     },
     RequestQuotePage: {
       loadData: RequestQuotePageLoader,

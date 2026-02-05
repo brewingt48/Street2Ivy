@@ -524,3 +524,48 @@
     margin-top: 16px;
   }
 }
+
+/* Project Workspace Link */
+.workspaceLinkContainer {
+  margin: 24px 24px 0 24px;
+  padding: 20px;
+  background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+  border: 1px solid #fcd34d;
+  border-radius: 8px;
+  text-align: center;
+
+  @media (--viewportLarge) {
+    margin: 24px 0 0 0;
+  }
+}
+
+.workspaceLinkTitle {
+  font-size: 16px;
+  font-weight: 600;
+  color: #92400e;
+  margin: 0 0 8px 0;
+}
+
+.workspaceLinkDescription {
+  font-size: 14px;
+  color: #78350f;
+  margin: 0 0 16px 0;
+  line-height: 1.5;
+}
+
+.workspaceLink {
+  display: inline-block;
+  padding: 12px 24px;
+  font-size: 14px;
+  font-weight: 500;
+  color: white;
+  background-color: #d97706;
+  border-radius: 4px;
+  text-decoration: none;
+  transition: background-color 0.2s;
+}
+
+.workspaceLink:hover {
+  background-color: #b45309;
+  text-decoration: none;
+}

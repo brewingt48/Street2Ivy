@@ -81,6 +81,7 @@ const TopbarMobileMenu = props => {
     customLinks,
     onLogout,
     showCreateListingsLink,
+    institutionInfo,
   } = props;
 
   const user = ensureCurrentUser(currentUser);
@@ -191,6 +192,18 @@ const TopbarMobileMenu = props => {
     </li>
   ) : null;
 
+  // AI Coaching link for students (if their institution has it enabled)
+  const showAiCoachingLink =
+    isStudent && institutionInfo?.aiCoachingEnabled && institutionInfo?.aiCoachingUrl;
+
+  const aiCoachingLinkMaybe = showAiCoachingLink ? (
+    <li className={css.navigationLink}>
+      <ExternalLink href={institutionInfo.aiCoachingUrl} className={css.aiCoachingLink}>
+        <FormattedMessage id="TopbarMobileMenu.aiCoachingLink" />
+      </ExternalLink>
+    </li>
+  ) : null;
+
   return (
     <div className={css.root}>
       <AvatarLarge className={css.avatar} user={currentUser} />
@@ -213,6 +226,7 @@ const TopbarMobileMenu = props => {
           {findStudentsLinkMaybe}
           {dashboardLinkMaybe}
           {findCompaniesLinkMaybe}
+          {aiCoachingLinkMaybe}
           <li className={classNames(css.navigationLink, currentPageClass('ProfileSettingsPage'))}>
             <NamedLink name="ProfileSettingsPage">
               <FormattedMessage id="TopbarMobileMenu.profileSettingsLink" />

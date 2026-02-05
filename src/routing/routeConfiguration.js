@@ -33,11 +33,15 @@ const PaymentMethodsPage = loadable(() => import(/* webpackChunkName: "PaymentMe
 const PrivacyPolicyPage = loadable(() => import(/* webpackChunkName: "PrivacyPolicyPage" */ '../containers/PrivacyPolicyPage/PrivacyPolicyPage'));
 const ProfilePage = loadable(() => import(/* webpackChunkName: "ProfilePage" */ '../containers/ProfilePage/ProfilePage'));
 const ProfileSettingsPage = loadable(() => import(/* webpackChunkName: "ProfileSettingsPage" */ '../containers/ProfileSettingsPage/ProfileSettingsPage'));
+const ProjectWorkspacePage = loadable(() => import(/* webpackChunkName: "ProjectWorkspacePage" */ '../containers/ProjectWorkspacePage/ProjectWorkspacePage'));
 const RequestQuotePage = loadable(() => import(/* webpackChunkName: "RequestQuotePage" */ '../containers/RequestQuotePage/RequestQuotePage'));
 const SearchCompaniesPage = loadable(() => import(/* webpackChunkName: "SearchCompaniesPage" */ '../containers/SearchCompaniesPage/SearchCompaniesPage'));
 const SearchPageWithMap = loadable(() => import(/* webpackChunkName: "SearchPageWithMap" */ /* webpackPrefetch: true */  '../containers/SearchPage/SearchPageWithMap'));
 const SearchPageWithGrid = loadable(() => import(/* webpackChunkName: "SearchPageWithGrid" */ /* webpackPrefetch: true */  '../containers/SearchPage/SearchPageWithGrid'));
 const SearchStudentsPage = loadable(() => import(/* webpackChunkName: "SearchStudentsPage" */ '../containers/SearchStudentsPage/SearchStudentsPage'));
+const EducationDashboardPage = loadable(() => import(/* webpackChunkName: "EducationDashboardPage" */ '../containers/EducationDashboardPage/EducationDashboardPage'));
+const AdminDashboardPage = loadable(() => import(/* webpackChunkName: "AdminDashboardPage" */ '../containers/AdminDashboardPage/AdminDashboardPage'));
+const OnboardingPage = loadable(() => import(/* webpackChunkName: "OnboardingPage" */ '../containers/OnboardingPage/OnboardingPage'));
 const StripePayoutPage = loadable(() => import(/* webpackChunkName: "StripePayoutPage" */ '../containers/StripePayoutPage/StripePayoutPage'));
 const TermsOfServicePage = loadable(() => import(/* webpackChunkName: "TermsOfServicePage" */ '../containers/TermsOfServicePage/TermsOfServicePage'));
 const TransactionPage = loadable(() => import(/* webpackChunkName: "TransactionPage" */ '../containers/TransactionPage/TransactionPage'));
@@ -239,6 +243,28 @@ const routeConfiguration = (layoutConfig, accessControlConfig) => {
       extraProps: { tab: 'signup' },
       loadData: pageDataLoadingAPI.AuthenticationPage.loadData,
     },
+    // Hidden admin portal - not linked anywhere publicly
+    // Access via: /admin-portal (login) or /admin-portal/signup (signup)
+    {
+      path: '/admin-portal',
+      name: 'AdminPortalLoginPage',
+      component: AuthenticationPage,
+      extraProps: { tab: 'login', isAdminPortal: true },
+    },
+    {
+      path: '/admin-portal/signup',
+      name: 'AdminPortalSignupPage',
+      component: AuthenticationPage,
+      extraProps: { tab: 'signup', isAdminPortal: true },
+      loadData: pageDataLoadingAPI.AuthenticationPage.loadData,
+    },
+    {
+      path: '/admin-portal/signup/:userType',
+      name: 'AdminPortalSignupForUserTypePage',
+      component: AuthenticationPage,
+      extraProps: { tab: 'signup', isAdminPortal: true },
+      loadData: pageDataLoadingAPI.AuthenticationPage.loadData,
+    },
     {
       path: '/confirm',
       name: 'ConfirmPage',
@@ -309,6 +335,14 @@ const routeConfiguration = (layoutConfig, accessControlConfig) => {
       loadData: pageDataLoadingAPI.CorporateDashboardPage.loadData,
     },
     {
+      path: '/project-workspace/:id',
+      name: 'ProjectWorkspacePage',
+      auth: true,
+      authPage: 'LoginPage',
+      component: ProjectWorkspacePage,
+      loadData: pageDataLoadingAPI.ProjectWorkspacePage.loadData,
+    },
+    {
       path: '/search/students',
       name: 'SearchStudentsPage',
       auth: true,
@@ -323,6 +357,37 @@ const routeConfiguration = (layoutConfig, accessControlConfig) => {
       authPage: 'LoginPage',
       component: SearchCompaniesPage,
       loadData: pageDataLoadingAPI.SearchCompaniesPage.loadData,
+    },
+    {
+      path: '/education/dashboard',
+      name: 'EducationDashboardPage',
+      auth: true,
+      authPage: 'LoginPage',
+      component: EducationDashboardPage,
+      loadData: pageDataLoadingAPI.EducationDashboardPage.loadData,
+    },
+    {
+      path: '/admin',
+      name: 'AdminDashboardPage',
+      auth: true,
+      authPage: 'LoginPage',
+      component: AdminDashboardPage,
+      loadData: pageDataLoadingAPI.AdminDashboardPage.loadData,
+    },
+    {
+      path: '/admin/:tab',
+      name: 'AdminDashboardTabPage',
+      auth: true,
+      authPage: 'LoginPage',
+      component: AdminDashboardPage,
+      loadData: pageDataLoadingAPI.AdminDashboardPage.loadData,
+    },
+    {
+      path: '/onboarding',
+      name: 'OnboardingPage',
+      auth: true,
+      authPage: 'LoginPage',
+      component: OnboardingPage,
     },
     {
       path: '/listings',

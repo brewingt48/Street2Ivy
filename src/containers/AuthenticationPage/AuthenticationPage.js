@@ -167,21 +167,31 @@ export const AuthenticationForms = props => {
     authInProgress,
     submitSignup,
     termsAndConditions,
+    isAdminPortal,
   } = props;
   const config = useConfiguration();
   const intl = useIntl();
-  const { userFields, userTypes = [] } = config.user;
-  const preselectedUserType = userTypes.find(conf => conf.userType === userType)?.userType || null;
+  const { userFields, userTypes = [], adminUserTypes = [] } = config.user;
+
+  // Use admin user types if on admin portal, otherwise use regular user types
+  const availableUserTypes = isAdminPortal ? adminUserTypes : userTypes;
+  const preselectedUserType = availableUserTypes.find(conf => conf.userType === userType)?.userType || null;
 
   const fromMaybe = from ? { from } : null;
-  const signupRouteName = !!preselectedUserType ? 'SignupForUserTypePage' : 'SignupPage';
+
+  // Use admin portal routes if on admin portal
+  const signupRouteName = isAdminPortal
+    ? (!!preselectedUserType ? 'AdminPortalSignupForUserTypePage' : 'AdminPortalSignupPage')
+    : (!!preselectedUserType ? 'SignupForUserTypePage' : 'SignupPage');
+  const loginRouteName = isAdminPortal ? 'AdminPortalLoginPage' : 'LoginPage';
+
   const userTypeMaybe = preselectedUserType ? { userType: preselectedUserType } : null;
   const fromState = { state: { ...fromMaybe, ...userTypeMaybe } };
   const tabs = [
     {
       text: (
         <Heading as={!isLogin ? 'h1' : 'h2'} rootClassName={css.tab}>
-          <FormattedMessage id="AuthenticationPage.signupLinkText" />
+          <FormattedMessage id={isAdminPortal ? 'AuthenticationPage.adminSignupLinkText' : 'AuthenticationPage.signupLinkText'} />
         </Heading>
       ),
       selected: !isLogin,
@@ -194,12 +204,12 @@ export const AuthenticationForms = props => {
     {
       text: (
         <Heading as={isLogin ? 'h1' : 'h2'} rootClassName={css.tab}>
-          <FormattedMessage id="AuthenticationPage.loginLinkText" />
+          <FormattedMessage id={isAdminPortal ? 'AuthenticationPage.adminLoginLinkText' : 'AuthenticationPage.loginLinkText'} />
         </Heading>
       ),
       selected: isLogin,
       linkProps: {
-        name: 'LoginPage',
+        name: loginRouteName,
         to: fromState,
       },
     },
@@ -268,6 +278,11 @@ export const AuthenticationForms = props => {
 
   return (
     <div className={css.content}>
+      {isAdminPortal && (
+        <div className={css.adminPortalBanner}>
+          <FormattedMessage id="AuthenticationPage.adminPortalTitle" />
+        </div>
+      )}
       <LinkTabNavHorizontal className={css.tabs} tabs={tabs} ariaLabel={ariaLabel} />
       {loginOrSignupError}
 
@@ -280,18 +295,21 @@ export const AuthenticationForms = props => {
           inProgress={authInProgress}
           termsAndConditions={termsAndConditions}
           preselectedUserType={preselectedUserType}
-          userTypes={userTypes}
+          userTypes={availableUserTypes}
           userFields={userFields}
         />
       )}
 
-      <SocialLoginButtonsMaybe
-        isLogin={isLogin}
-        showFacebookLogin={showFacebookLogin}
-        showGoogleLogin={showGoogleLogin}
-        {...fromMaybe}
-        {...userTypeMaybe}
-      />
+      {/* Hide social login on admin portal */}
+      {!isAdminPortal && (
+        <SocialLoginButtonsMaybe
+          isLogin={isLogin}
+          showFacebookLogin={showFacebookLogin}
+          showGoogleLogin={showGoogleLogin}
+          {...fromMaybe}
+          {...userTypeMaybe}
+        />
+      )}
     </div>
   );
 };
@@ -415,6 +433,7 @@ export const AuthenticationOrConfirmInfoForm = props => {
     signupError,
     confirmError,
     termsAndConditions,
+    isAdminPortal,
   } = props;
   const isConfirm = tab === 'confirm';
   const isLogin = tab === 'login';
@@ -442,6 +461,7 @@ export const AuthenticationOrConfirmInfoForm = props => {
       authInProgress={authInProgress}
       submitSignup={submitSignup}
       termsAndConditions={termsAndConditions}
+      isAdminPortal={isAdminPortal}
     ></AuthenticationForms>
   );
 };
@@ -550,6 +570,7 @@ export const AuthenticationPageComponent = props => {
     confirmError,
     submitSingupWithIdp,
     tab = 'signup',
+    isAdminPortal = false,
     sendVerificationEmailInProgress,
     sendVerificationEmailError,
     onResendVerificationEmail,
@@ -571,8 +592,10 @@ export const AuthenticationPageComponent = props => {
   const userTypeInAuthInfo = isConfirm && authInfo?.userType ? authInfo?.userType : null;
   const userType = pathParams?.userType || userTypeInPushState || userTypeInAuthInfo || null;
 
-  const { userTypes = [] } = config.user;
-  const preselectedUserType = userTypes.find(conf => conf.userType === userType)?.userType || null;
+  const { userTypes = [], adminUserTypes = [] } = config.user;
+  // Use admin user types if on admin portal, otherwise use regular user types
+  const availableUserTypes = isAdminPortal ? adminUserTypes : userTypes;
+  const preselectedUserType = availableUserTypes.find(conf => conf.userType === userType)?.userType || null;
   const show404 = userType && !preselectedUserType;
 
   const user = ensureCurrentUser(currentUser);
@@ -682,6 +705,7 @@ export const AuthenticationPageComponent = props => {
               idpAuthError={authError}
               signupError={signupError}
               confirmError={confirmError}
+              isAdminPortal={isAdminPortal}
               termsAndConditions={
                 <TermsAndConditions
                   onOpenTermsOfService={() => setTosModalOpen(true)}

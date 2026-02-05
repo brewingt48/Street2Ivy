@@ -1,0 +1,112 @@
+@import '../../styles/customMediaQueries.css';
+
+/* ================ Base Badge Styles ================ */
+
+.root {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border-radius: 12px;
+  font-weight: var(--fontWeightSemiBold);
+  white-space: nowrap;
+  transition: all 0.2s ease;
+}
+
+/* ================ Size Variants ================ */
+
+.small {
+  padding: 2px 6px;
+  font-size: 10px;
+  border-radius: 8px;
+}
+
+.small .icon {
+  width: 12px;
+  height: 12px;
+}
+
+.medium {
+  padding: 3px 10px;
+  font-size: 12px;
+}
+
+.medium .icon {
+  width: 14px;
+  height: 14px;
+}
+
+.large {
+  padding: 6px 14px;
+  font-size: 14px;
+  border-radius: 16px;
+}
+
+.large .icon {
+  width: 18px;
+  height: 18px;
+}
+
+/* ================ Type Variants ================ */
+
+/* Verified Company - Blue theme */
+.company {
+  background-color: #eff6ff;
+  color: #1d4ed8;
+  border: 1px solid #bfdbfe;
+}
+
+.company:hover {
+  background-color: #dbeafe;
+}
+
+/* Verified Institution - Purple theme */
+.institution {
+  background-color: #f5f3ff;
+  color: #6d28d9;
+  border: 1px solid #ddd6fe;
+}
+
+.institution:hover {
+  background-color: #ede9fe;
+}
+
+/* Verified User / Identity - Green theme */
+.user,
+.identity {
+  background-color: #f0fdf4;
+  color: #15803d;
+  border: 1px solid #bbf7d0;
+}
+
+.user:hover,
+.identity:hover {
+  background-color: #dcfce7;
+}
+
+/* ================ Icon Styles ================ */
+
+.icon {
+  flex-shrink: 0;
+  display: block;
+}
+
+/* ================ Label Styles ================ */
+
+.label {
+  line-height: 1.2;
+}
+
+/* ================ Icon-only variant (no label) ================ */
+
+.root:not(:has(.label)) {
+  padding: 4px;
+  border-radius: 50%;
+}
+
+.small:not(:has(.label)) {
+  padding: 3px;
+}
+
+.large:not(:has(.label)) {
+  padding: 6px;
+}

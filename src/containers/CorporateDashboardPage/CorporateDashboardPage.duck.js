@@ -2,6 +2,7 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { updatedEntities, denormalisedEntities } from '../../util/data';
 import { storableError } from '../../util/errors';
 import { createImageVariantConfig } from '../../util/sdkLoader';
+import { fetchCorporateDashboardStats as fetchCorporateDashboardStatsApi } from '../../util/api';
 
 import { fetchCurrentUser } from '../../ducks/user.duck';
 
@@ -45,6 +46,20 @@ export const queryOwnListings = queryParams => (dispatch, getState, sdk) => {
   return dispatch(queryOwnListingsThunk(queryParams)).unwrap();
 };
 
+// Fetch enhanced dashboard stats
+export const fetchDashboardStatsThunk = createAsyncThunk(
+  'app/CorporateDashboardPage/fetchDashboardStats',
+  async (_, { rejectWithValue }) => {
+    try {
+      return await fetchCorporateDashboardStatsApi();
+    } catch (e) {
+      return rejectWithValue(storableError(e));
+    }
+  }
+);
+
+export const fetchDashboardStats = () => dispatch => dispatch(fetchDashboardStatsThunk()).unwrap();
+
 // ================ Slice ================ //
 
 const resultIds = data => data.data.map(l => l.id);
@@ -58,6 +73,10 @@ const corporateDashboardPageSlice = createSlice({
     queryListingsError: null,
     currentPageResultIds: [],
     ownEntities: {},
+    // Enhanced stats
+    dashboardStats: null,
+    statsInProgress: false,
+    statsError: null,
   },
   reducers: {
     addOwnEntities: (state, action) => {
@@ -82,6 +101,19 @@ const corporateDashboardPageSlice = createSlice({
         console.error(action.payload || action.error);
         state.queryInProgress = false;
         state.queryListingsError = action.payload;
+      })
+      // Dashboard stats
+      .addCase(fetchDashboardStatsThunk.pending, state => {
+        state.statsInProgress = true;
+        state.statsError = null;
+      })
+      .addCase(fetchDashboardStatsThunk.fulfilled, (state, action) => {
+        state.statsInProgress = false;
+        state.dashboardStats = action.payload;
+      })
+      .addCase(fetchDashboardStatsThunk.rejected, (state, action) => {
+        state.statsInProgress = false;
+        state.statsError = action.payload;
       });
   },
 });
@@ -111,5 +143,6 @@ export const loadData = (params, search, config) => (dispatch, getState, sdk) =>
         'limit.images': 1,
       })
     ),
+    dispatch(fetchDashboardStatsThunk()),
   ]);
 };
