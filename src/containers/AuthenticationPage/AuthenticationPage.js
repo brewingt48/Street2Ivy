@@ -656,10 +656,31 @@ export const AuthenticationPageComponent = props => {
     [css.hideOnMobile]: showEmailVerification,
   });
 
+  // Street2Ivy: Get user type for role-based redirects
+  const currentUserType = user.attributes?.profile?.publicData?.userType;
+  const isAdminUser = currentUserType === 'system-admin' || currentUserType === 'educational-admin';
+
+  // Street2Ivy: Admin users must use admin portal, regular users must use regular login
+  const adminOnRegularLogin = isAuthenticated && currentUserLoaded && isAdminUser && !isAdminPortal;
+  const regularUserOnAdminPortal = isAuthenticated && currentUserLoaded && !isAdminUser && isAdminPortal;
+
   const shouldRedirectToFrom = isAuthenticated && from;
-  const shouldRedirectToLandingPage =
+  const shouldRedirectAfterLogin =
     isAuthenticated && currentUserLoaded && !showEmailVerification;
-  if (!mounted && shouldRedirectToLandingPage) {
+
+  // Determine where to redirect based on user type
+  const getRedirectDestination = () => {
+    if (currentUserType === 'system-admin') {
+      return 'AdminDashboardPage';
+    } else if (currentUserType === 'educational-admin') {
+      return 'EducationDashboardPage';
+    } else if (currentUserType === 'corporate-partner') {
+      return 'CorporateDashboardPage';
+    }
+    return 'LandingPage';
+  };
+
+  if (!mounted && shouldRedirectAfterLogin) {
     // Show a blank page for already authenticated users,
     // when the first rendering on client side is not yet done
     // This is done to avoid hydration issues when full page load is happening.
@@ -672,12 +693,22 @@ export const AuthenticationPageComponent = props => {
     );
   }
 
+  // Street2Ivy: Redirect admin users to admin portal if they try to use regular login
+  if (adminOnRegularLogin) {
+    return <NamedRedirect name="AdminPortalLoginPage" />;
+  }
+
+  // Street2Ivy: Redirect regular users away from admin portal
+  if (regularUserOnAdminPortal) {
+    return <NamedRedirect name="LoginPage" />;
+  }
+
   if (shouldRedirectToFrom) {
     // Already authenticated, redirect back to the page the user tried to access
     return <Redirect to={from} />;
-  } else if (shouldRedirectToLandingPage) {
-    // Already authenticated, redirect to the landing page (this was direct access to /login or /signup)
-    return <NamedRedirect name="LandingPage" />;
+  } else if (shouldRedirectAfterLogin) {
+    // Street2Ivy: Redirect to appropriate dashboard based on user type
+    return <NamedRedirect name={getRedirectDestination()} />;
   } else if (show404) {
     // User type not found, show 404
     return <NotFoundPage staticContext={props.staticContext} />;
