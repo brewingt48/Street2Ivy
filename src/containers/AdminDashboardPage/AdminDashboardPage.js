@@ -2125,16 +2125,26 @@ const ContentManagementPanel = props => {
     }
   }, [content, onFetchContent]);
 
+  // Clear form data when changing sections
+  useEffect(() => {
+    setFormData({});
+  }, [activeSection]);
+
   useEffect(() => {
     if (updateSuccess) {
       setSuccessMessage('Content updated successfully!');
+
+      // Clear formData immediately - the content is already updated in Redux state
+      // from the fulfilled reducer before updateSuccess becomes true
+      setFormData({});
+
       setTimeout(() => {
         setSuccessMessage('');
         onClearContentState();
       }, 3000);
-      onFetchContent(); // Refresh content
+      onFetchContent(); // Refresh content to get the latest from server
     }
-  }, [updateSuccess, onClearContentState, onFetchContent]);
+  }, [updateSuccess, onClearContentState, onFetchContent, content, activeSection]);
 
   const sections = [
     { key: 'branding', label: 'Logo & Branding', icon: '🎨' },
@@ -2144,6 +2154,7 @@ const ContentManagementPanel = props => {
     { key: 'videoTestimonial', label: 'Video Testimonial', icon: '🎬' },
     { key: 'testimonials', label: 'Written Testimonials', icon: '💬' },
     { key: 'cta', label: 'Call to Action', icon: '🎯' },
+    { key: 'legalPages', label: 'Legal Pages', icon: '📜' },
   ];
 
   const handleInputChange = (field, value) => {
@@ -2213,8 +2224,25 @@ const ContentManagementPanel = props => {
 
   const handleSaveSection = async () => {
     try {
-      await onUpdateContent(activeSection, formData);
-      setFormData({});
+      // Merge current section data with form changes to ensure all fields are sent
+      const currentSectionData = content?.[activeSection] || {};
+      const dataToSave = { ...currentSectionData, ...formData };
+
+      // Remove non-editable fields that shouldn't be sent
+      delete dataToSave.id;
+      delete dataToSave.section;
+      delete dataToSave.updatedAt;
+      delete dataToSave.updatedBy;
+
+      console.log('=== Saving Section ===');
+      console.log('Section:', activeSection);
+      console.log('formData:', formData);
+      console.log('currentSectionData:', currentSectionData);
+      console.log('dataToSave:', dataToSave);
+
+      await onUpdateContent(activeSection, dataToSave);
+      console.log('Save completed successfully');
+      // Note: formData will be cleared in the updateSuccess effect after content is refreshed
     } catch (e) {
       console.error('Failed to update content:', e);
     }
@@ -2267,6 +2295,15 @@ const ContentManagementPanel = props => {
     const sectionData = content?.[activeSection];
     if (!sectionData) return <p>No content data available.</p>;
 
+    // Debug logging for form state
+    if (activeSection === 'branding') {
+      console.log('=== Branding Form Debug ===');
+      console.log('sectionData.tagline:', sectionData?.tagline);
+      console.log('formData.tagline:', formData.tagline);
+      console.log('formData.tagline !== undefined:', formData.tagline !== undefined);
+      console.log('Displayed value:', formData.tagline !== undefined ? formData.tagline : (sectionData?.tagline || ''));
+    }
+
     switch (activeSection) {
       case 'branding':
         return (
@@ -2309,7 +2346,7 @@ const ContentManagementPanel = props => {
                   type="url"
                   className={css.formInput}
                   placeholder="Enter logo URL"
-                  defaultValue={sectionData?.logoUrl || ''}
+                  value={formData.logoUrl !== undefined ? formData.logoUrl : (sectionData?.logoUrl || '')}
                   onChange={e => handleInputChange('logoUrl', e.target.value)}
                 />
               </div>
@@ -2319,9 +2356,52 @@ const ContentManagementPanel = props => {
                     src={formData.logoUrl || sectionData.logoUrl}
                     alt="Logo preview"
                     className={css.previewImage}
+                    style={{
+                      height: `${formData.logoHeight || sectionData?.logoHeight || 36}px`,
+                      width: 'auto'
+                    }}
                   />
                 </div>
               )}
+            </div>
+
+            <div className={css.formGroup}>
+              <label className={css.formLabel}>Logo Size</label>
+              <div className={css.logoSizeSelector}>
+                <label className={css.radioLabel}>
+                  <input
+                    type="radio"
+                    name="logoHeight"
+                    value="24"
+                    checked={(formData.logoHeight || sectionData?.logoHeight || 36) === 24}
+                    onChange={() => handleInputChange('logoHeight', 24)}
+                  />
+                  <span className={css.radioText}>Small (24px)</span>
+                </label>
+                <label className={css.radioLabel}>
+                  <input
+                    type="radio"
+                    name="logoHeight"
+                    value="36"
+                    checked={(formData.logoHeight || sectionData?.logoHeight || 36) === 36}
+                    onChange={() => handleInputChange('logoHeight', 36)}
+                  />
+                  <span className={css.radioText}>Medium (36px) - Default</span>
+                </label>
+                <label className={css.radioLabel}>
+                  <input
+                    type="radio"
+                    name="logoHeight"
+                    value="48"
+                    checked={(formData.logoHeight || sectionData?.logoHeight || 36) === 48}
+                    onChange={() => handleInputChange('logoHeight', 48)}
+                  />
+                  <span className={css.radioText}>Large (48px)</span>
+                </label>
+              </div>
+              <span className={css.formHint}>
+                Choose the logo height for the navigation bar
+              </span>
             </div>
 
             <div className={css.formGroup}>
@@ -2330,7 +2410,7 @@ const ContentManagementPanel = props => {
                 type="text"
                 className={css.formInput}
                 placeholder="Your company tagline"
-                defaultValue={sectionData?.tagline || ''}
+                value={formData.tagline !== undefined ? formData.tagline : (sectionData?.tagline || '')}
                 onChange={e => handleInputChange('tagline', e.target.value)}
               />
               <span className={css.formHint}>
@@ -2365,10 +2445,93 @@ const ContentManagementPanel = props => {
                   type="url"
                   className={css.formInput}
                   placeholder="Enter favicon URL"
-                  defaultValue={sectionData?.faviconUrl || ''}
+                  value={formData.faviconUrl !== undefined ? formData.faviconUrl : (sectionData?.faviconUrl || '')}
                   onChange={e => handleInputChange('faviconUrl', e.target.value)}
                 />
               </div>
+            </div>
+
+            <h4 className={css.subSectionTitle} style={{ marginTop: '30px' }}>Social Media Links</h4>
+            <p className={css.formHint}>
+              Add your social media profile URLs. These will appear in the site footer.
+            </p>
+
+            <div className={css.formGroup}>
+              <label className={css.formLabel}>
+                <span className={css.socialIcon}>📘</span> Facebook
+              </label>
+              <input
+                type="url"
+                className={css.formInput}
+                placeholder="https://facebook.com/yourpage"
+                value={formData.socialFacebook !== undefined ? formData.socialFacebook : (sectionData?.socialFacebook || '')}
+                onChange={e => handleInputChange('socialFacebook', e.target.value)}
+              />
+            </div>
+
+            <div className={css.formGroup}>
+              <label className={css.formLabel}>
+                <span className={css.socialIcon}>🐦</span> Twitter / X
+              </label>
+              <input
+                type="url"
+                className={css.formInput}
+                placeholder="https://twitter.com/yourhandle"
+                value={formData.socialTwitter !== undefined ? formData.socialTwitter : (sectionData?.socialTwitter || '')}
+                onChange={e => handleInputChange('socialTwitter', e.target.value)}
+              />
+            </div>
+
+            <div className={css.formGroup}>
+              <label className={css.formLabel}>
+                <span className={css.socialIcon}>📸</span> Instagram
+              </label>
+              <input
+                type="url"
+                className={css.formInput}
+                placeholder="https://instagram.com/yourhandle"
+                value={formData.socialInstagram !== undefined ? formData.socialInstagram : (sectionData?.socialInstagram || '')}
+                onChange={e => handleInputChange('socialInstagram', e.target.value)}
+              />
+            </div>
+
+            <div className={css.formGroup}>
+              <label className={css.formLabel}>
+                <span className={css.socialIcon}>💼</span> LinkedIn
+              </label>
+              <input
+                type="url"
+                className={css.formInput}
+                placeholder="https://linkedin.com/company/yourcompany"
+                value={formData.socialLinkedin !== undefined ? formData.socialLinkedin : (sectionData?.socialLinkedin || '')}
+                onChange={e => handleInputChange('socialLinkedin', e.target.value)}
+              />
+            </div>
+
+            <div className={css.formGroup}>
+              <label className={css.formLabel}>
+                <span className={css.socialIcon}>▶️</span> YouTube
+              </label>
+              <input
+                type="url"
+                className={css.formInput}
+                placeholder="https://youtube.com/@yourchannel"
+                value={formData.socialYoutube !== undefined ? formData.socialYoutube : (sectionData?.socialYoutube || '')}
+                onChange={e => handleInputChange('socialYoutube', e.target.value)}
+              />
+            </div>
+
+            <div className={css.formGroup}>
+              <label className={css.formLabel}>
+                <span className={css.socialIcon}>🎵</span> TikTok
+              </label>
+              <input
+                type="url"
+                className={css.formInput}
+                placeholder="https://tiktok.com/@yourhandle"
+                value={formData.socialTiktok !== undefined ? formData.socialTiktok : (sectionData?.socialTiktok || '')}
+                onChange={e => handleInputChange('socialTiktok', e.target.value)}
+              />
             </div>
 
             <button
@@ -2903,6 +3066,125 @@ const ContentManagementPanel = props => {
               disabled={updateInProgress}
             >
               {updateInProgress ? 'Saving...' : 'Save CTA Section'}
+            </button>
+          </div>
+        );
+
+      case 'legalPages':
+        const legalPageTypes = [
+          { key: 'privacyPolicy', label: 'Privacy Policy', description: 'Explain how you collect, use, and protect user data.' },
+          { key: 'termsOfService', label: 'Terms of Service', description: 'Define the rules and guidelines for using your platform.' },
+          { key: 'cookiePolicy', label: 'Cookie Policy', description: 'Describe what cookies you use and why.' },
+          { key: 'disclaimer', label: 'Disclaimer', description: 'Limit your liability and clarify your responsibilities.' },
+          { key: 'acceptableUse', label: 'Acceptable Use Policy', description: 'Define what behavior is acceptable on your platform.' },
+          { key: 'refundPolicy', label: 'Refund Policy', description: 'Explain your refund and cancellation policies.' },
+        ];
+
+        return (
+          <div className={css.contentForm}>
+            <h4 className={css.subSectionTitle}>Legal Pages</h4>
+            <p className={css.formHint}>
+              Manage your legal documents. These pages are accessible from the footer and during user registration.
+              Use HTML or Markdown formatting for the content.
+            </p>
+
+            {legalPageTypes.map(pageType => {
+              const pageData = sectionData?.[pageType.key] || {};
+              const isExpanded = formData[`${pageType.key}_expanded`];
+
+              return (
+                <div key={pageType.key} className={css.legalPageCard}>
+                  <div className={css.legalPageHeader}>
+                    <div className={css.legalPageInfo}>
+                      <h5 className={css.legalPageTitle}>{pageType.label}</h5>
+                      <p className={css.legalPageDescription}>{pageType.description}</p>
+                      {pageData.lastUpdated && (
+                        <span className={css.legalPageDate}>
+                          Last updated: {new Date(pageData.lastUpdated).toLocaleDateString()}
+                        </span>
+                      )}
+                    </div>
+                    <div className={css.legalPageActions}>
+                      <label className={css.toggleLabel}>
+                        <input
+                          type="checkbox"
+                          checked={formData[`${pageType.key}_isActive`] !== undefined
+                            ? formData[`${pageType.key}_isActive`]
+                            : pageData.isActive}
+                          onChange={e => handleInputChange(`${pageType.key}_isActive`, e.target.checked)}
+                        />
+                        <span>Active</span>
+                      </label>
+                      <button
+                        type="button"
+                        className={css.expandButton}
+                        onClick={() => handleInputChange(`${pageType.key}_expanded`, !isExpanded)}
+                      >
+                        {isExpanded ? '▲ Collapse' : '▼ Edit'}
+                      </button>
+                    </div>
+                  </div>
+
+                  {isExpanded && (
+                    <div className={css.legalPageEditor}>
+                      <div className={css.formGroup}>
+                        <label className={css.formLabel}>Page Title</label>
+                        <input
+                          type="text"
+                          className={css.formInput}
+                          value={formData[`${pageType.key}_title`] !== undefined
+                            ? formData[`${pageType.key}_title`]
+                            : (pageData.title || pageType.label)}
+                          onChange={e => handleInputChange(`${pageType.key}_title`, e.target.value)}
+                        />
+                      </div>
+                      <div className={css.formGroup}>
+                        <label className={css.formLabel}>Content (HTML or Markdown)</label>
+                        <textarea
+                          className={css.formTextarea}
+                          rows={15}
+                          placeholder={`Enter your ${pageType.label} content here...`}
+                          value={formData[`${pageType.key}_content`] !== undefined
+                            ? formData[`${pageType.key}_content`]
+                            : (pageData.content || '')}
+                          onChange={e => handleInputChange(`${pageType.key}_content`, e.target.value)}
+                        />
+                        <span className={css.formHint}>
+                          Tip: You can use HTML tags like &lt;h2&gt;, &lt;p&gt;, &lt;ul&gt;, &lt;li&gt;, &lt;strong&gt;, etc.
+                        </span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+
+            <button
+              className={css.saveButton}
+              onClick={() => {
+                // Build the legal pages data structure
+                const legalPagesData = {};
+                legalPageTypes.forEach(pageType => {
+                  const currentData = sectionData?.[pageType.key] || {};
+                  legalPagesData[pageType.key] = {
+                    title: formData[`${pageType.key}_title`] !== undefined
+                      ? formData[`${pageType.key}_title`]
+                      : currentData.title,
+                    content: formData[`${pageType.key}_content`] !== undefined
+                      ? formData[`${pageType.key}_content`]
+                      : currentData.content,
+                    isActive: formData[`${pageType.key}_isActive`] !== undefined
+                      ? formData[`${pageType.key}_isActive`]
+                      : currentData.isActive,
+                    lastUpdated: new Date().toISOString(),
+                  };
+                });
+                onUpdateContent('legalPages', legalPagesData);
+                setFormData({});
+              }}
+              disabled={updateInProgress}
+            >
+              {updateInProgress ? 'Saving...' : 'Save Legal Pages'}
             </button>
           </div>
         );

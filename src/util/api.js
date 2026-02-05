@@ -53,10 +53,17 @@ const request = (path, options = {}) => {
   const url = `${apiBaseUrl()}${path}`;
   const { credentials, headers, body, ...rest } = options;
 
-  // If headers are not set, we assume that the body should be serialized as transit format.
+  // Determine if we should serialize the body as transit format
+  // If headers specify 'application/json', don't serialize - just pass the body as-is
+  const isJsonContentType = headers && headers['Content-Type'] === 'application/json';
   const shouldSerializeBody =
     (!headers || headers['Content-Type'] === 'application/transit+json') && body;
-  const bodyMaybe = shouldSerializeBody ? { body: serialize(body) } : {};
+
+  // Build body option - either serialize for transit or pass through for JSON
+  let bodyMaybe = {};
+  if (body) {
+    bodyMaybe = shouldSerializeBody ? { body: serialize(body) } : { body };
+  }
 
   const fetchOptions = {
     credentials: credentials || 'include',
@@ -745,6 +752,22 @@ export const fetchLandingContent = () => {
 // Get public landing page content (for frontend display)
 export const fetchPublicContent = () => {
   return request('/api/content', {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
+  });
+};
+
+// Get list of active legal pages
+export const fetchLegalPagesList = () => {
+  return request('/api/legal', {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
+  });
+};
+
+// Get a specific legal page content
+export const fetchLegalPage = pageType => {
+  return request(`/api/legal/${pageType}`, {
     method: 'GET',
     headers: { 'Content-Type': 'application/json' },
   });

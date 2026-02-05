@@ -236,6 +236,10 @@ router.post('/admin/content/reset', adminContent.resetContent);
 // Public content endpoint (for frontend to fetch landing page content)
 router.get('/content', adminContent.getPublicContent);
 
+// Public legal pages endpoints
+router.get('/legal', adminContent.getLegalPagesList);
+router.get('/legal/:pageType', adminContent.getLegalPage);
+
 // Street2Ivy: File upload endpoints for admin
 router.post('/admin/upload/logo', adminUpload.uploadLogo);
 router.post('/admin/upload/favicon', adminUpload.uploadFavicon);

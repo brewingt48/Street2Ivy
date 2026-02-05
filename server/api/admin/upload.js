@@ -9,12 +9,28 @@ const fs = require('fs');
 const path = require('path');
 const { getSdk } = require('../../api-util/sdk');
 
-// Upload directory - stored in build/static for serving
-const UPLOAD_DIR = path.join(__dirname, '../../../build/static/uploads');
+// Upload directory - in dev mode, use server/uploads; in production, use build/static/uploads
+const isDev = process.env.NODE_ENV === 'development';
+const UPLOAD_DIR = isDev
+  ? path.join(__dirname, '../../uploads')
+  : path.join(__dirname, '../../../build/static/uploads');
 
 // Ensure upload directory exists
 if (!fs.existsSync(UPLOAD_DIR)) {
   fs.mkdirSync(UPLOAD_DIR, { recursive: true });
+}
+
+/**
+ * Get the public URL for an uploaded file
+ * In development, we need to include the full API server URL
+ */
+function getPublicUrl(filename) {
+  const relativePath = `/static/uploads/${filename}`;
+  if (isDev) {
+    const port = process.env.REACT_APP_DEV_API_SERVER_PORT || 3500;
+    return `http://localhost:${port}${relativePath}`;
+  }
+  return relativePath;
 }
 
 // Allowed file types
@@ -96,7 +112,7 @@ async function uploadLogo(req, res) {
     await file.mv(filepath);
 
     // Return the public URL
-    const publicUrl = `/static/uploads/${filename}`;
+    const publicUrl = getPublicUrl(filename);
 
     res.status(200).json({
       success: true,
@@ -151,7 +167,7 @@ async function uploadFavicon(req, res) {
     await file.mv(filepath);
 
     // Return the public URL
-    const publicUrl = `/static/uploads/${filename}`;
+    const publicUrl = getPublicUrl(filename);
 
     res.status(200).json({
       success: true,
@@ -204,7 +220,7 @@ async function uploadHeroImage(req, res) {
     await file.mv(filepath);
 
     // Return the public URL
-    const publicUrl = `/static/uploads/${filename}`;
+    const publicUrl = getPublicUrl(filename);
 
     res.status(200).json({
       success: true,
@@ -257,7 +273,7 @@ async function uploadHeroVideo(req, res) {
     await file.mv(filepath);
 
     // Return the public URL
-    const publicUrl = `/static/uploads/${filename}`;
+    const publicUrl = getPublicUrl(filename);
 
     res.status(200).json({
       success: true,

@@ -1,0 +1,28 @@
+.footerWrapper {
+  width: 100%;
+}
+
+.sloganBar {
+  background-color: var(--colorGrey900, #1a1a1a);
+  padding: 16px 24px;
+  text-align: center;
+  border-top: 1px solid var(--colorGrey800, #333);
+}
+
+.slogan {
+  margin: 0;
+  color: var(--colorGrey300, #b3b3b3);
+  font-size: 14px;
+  font-style: italic;
+  letter-spacing: 0.5px;
+}
+
+@media (min-width: 768px) {
+  .sloganBar {
+    padding: 20px 48px;
+  }
+
+  .slogan {
+    font-size: 16px;
+  }
+}

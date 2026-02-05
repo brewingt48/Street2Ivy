@@ -1,10 +1,15 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import classNames from 'classnames';
 
 import { useConfiguration } from '../../context/configurationContext';
 import { ResponsiveImage } from '../../components/';
+import { fetchPublicContent } from '../../util/api';
 
 import css from './Logo.module.css';
+
+// Cache for CMS logo URL to avoid repeated fetches
+let cmsLogoCache = null;
+let cmsFetchPromise = null;
 
 const HEIGHT_24 = 24;
 const HEIGHT_36 = 36;
@@ -126,13 +131,61 @@ const Logo = props => {
   // NOTE: logo images are set in hosted branding.json asset or src/config/brandingConfig.js
   const { logoImageDesktop, logoImageMobile, logoSettings } = config.branding;
 
+  // State for CMS branding data (logo URL and height)
+  const [cmsBranding, setCmsBranding] = useState(cmsLogoCache);
+
+  // Fetch CMS content to check for custom logo and settings
+  useEffect(() => {
+    // If we already have a cached value, use it
+    if (cmsLogoCache !== null) {
+      setCmsBranding(cmsLogoCache);
+      return;
+    }
+
+    // If a fetch is already in progress, wait for it
+    if (cmsFetchPromise) {
+      cmsFetchPromise.then(data => setCmsBranding(data));
+      return;
+    }
+
+    // Start fetching CMS content
+    cmsFetchPromise = fetchPublicContent()
+      .then(response => {
+        const branding = response?.data?.branding;
+        const brandingData = branding ? {
+          logoUrl: branding.logoUrl || null,
+          logoHeight: branding.logoHeight || null,
+        } : false;
+        cmsLogoCache = brandingData; // false means we checked but no branding was set
+        return cmsLogoCache;
+      })
+      .catch(() => {
+        cmsLogoCache = false;
+        return false;
+      });
+
+    cmsFetchPromise.then(data => setCmsBranding(data));
+  }, []);
+
+  // Use CMS logo if available, otherwise use default
+  const cmsLogoUrl = cmsBranding && cmsBranding !== false ? cmsBranding.logoUrl : null;
+  const cmsLogoHeight = cmsBranding && cmsBranding !== false ? cmsBranding.logoHeight : null;
+
+  const effectiveLogoDesktop = cmsLogoUrl || logoImageDesktop;
+  const effectiveLogoMobile = cmsLogoUrl || logoImageMobile;
+
+  // Use CMS logo height if set, otherwise use default logoSettings
+  const effectiveLogoSettings = cmsLogoHeight
+    ? { ...logoSettings, height: cmsLogoHeight }
+    : logoSettings;
+
   return (
     <LogoComponent
       {...rest}
       layout={layout}
-      logoImageDesktop={logoImageDesktop}
-      logoImageMobile={logoImageMobile}
-      logoSettings={logoSettings}
+      logoImageDesktop={effectiveLogoDesktop}
+      logoImageMobile={effectiveLogoMobile}
+      logoSettings={effectiveLogoSettings}
       marketplaceName={config.marketplaceName}
     />
   );

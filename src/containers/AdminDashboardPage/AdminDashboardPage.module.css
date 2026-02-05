@@ -1584,6 +1584,52 @@
   margin-top: 4px;
 }
 
+/* Logo Size Selector */
+.logoSizeSelector {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.radioLabel {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  padding: 10px 14px;
+  background: var(--colorGrey50);
+  border-radius: 8px;
+  border: 1px solid var(--colorGrey200);
+  transition: all 0.2s;
+}
+
+.radioLabel:hover {
+  background: var(--colorGrey100);
+  border-color: var(--colorGrey300);
+}
+
+.radioLabel input[type="radio"] {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--marketplaceColor);
+}
+
+.radioLabel input[type="radio"]:checked + .radioText {
+  color: var(--marketplaceColor);
+  font-weight: 600;
+}
+
+.radioText {
+  font-size: 14px;
+  color: var(--colorGrey700);
+}
+
+/* Social Media Icons */
+.socialIcon {
+  margin-right: 8px;
+}
+
 .formSelect {
   width: 100%;
   padding: 10px 12px;
@@ -2330,3 +2376,94 @@
 .statDetailLink:hover .statDetailUserName {
   color: var(--marketplaceColor);
 }
+
+/* Legal Pages Styles */
+.legalPageCard {
+  background: white;
+  border: 1px solid var(--colorGrey200);
+  border-radius: 8px;
+  margin-bottom: 16px;
+  overflow: hidden;
+}
+
+.legalPageHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 16px;
+  background: var(--colorGrey50);
+  border-bottom: 1px solid var(--colorGrey200);
+}
+
+.legalPageInfo {
+  flex: 1;
+}
+
+.legalPageTitle {
+  margin: 0 0 4px 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--colorGrey900);
+}
+
+.legalPageDescription {
+  margin: 0;
+  font-size: 13px;
+  color: var(--colorGrey600);
+}
+
+.legalPageDate {
+  display: inline-block;
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--colorGrey500);
+}
+
+.legalPageActions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.toggleLabel {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: var(--colorGrey700);
+  cursor: pointer;
+}
+
+.toggleLabel input {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
+.expandButton {
+  padding: 8px 16px;
+  font-size: 13px;
+  color: var(--marketplaceColor);
+  background: white;
+  border: 1px solid var(--marketplaceColor);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+
+.expandButton:hover {
+  background: var(--marketplaceColor);
+  color: white;
+}
+
+.legalPageEditor {
+  padding: 16px;
+  background: white;
+}
+
+.legalPageEditor .formTextarea {
+  font-family: monospace;
+  font-size: 13px;
+  line-height: 1.5;
+}
+

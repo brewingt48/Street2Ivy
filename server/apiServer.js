@@ -9,6 +9,8 @@ const compression = require('compression');
 const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
 const cors = require('cors');
+const path = require('path');
+const fs = require('fs');
 const apiRouter = require('./apiRouter');
 const wellKnownRouter = require('./wellKnownRouter');
 const webmanifestResourceRoute = require('./resources/webmanifest');
@@ -28,6 +30,15 @@ app.use(
   })
 );
 app.use(cookieParser());
+
+// Serve uploaded files in development mode
+// This makes /static/uploads/... work on the API server
+const uploadsDir = path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+}
+app.use('/static/uploads', express.static(uploadsDir));
+
 app.use('/.well-known', wellKnownRouter);
 app.use('/api', apiRouter);
 

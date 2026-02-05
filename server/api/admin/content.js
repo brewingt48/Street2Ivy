@@ -27,8 +27,16 @@ const defaultContent = {
     id: 'branding',
     section: 'branding',
     logoUrl: null,
+    logoHeight: 36, // 24, 36, or 48
     tagline: 'Connecting Ivy League Talent with Industry Leaders',
     faviconUrl: null,
+    // Social media links
+    socialFacebook: null,
+    socialTwitter: null,
+    socialInstagram: null,
+    socialLinkedin: null,
+    socialYoutube: null,
+    socialTiktok: null,
     isActive: true,
     updatedAt: new Date().toISOString(),
     updatedBy: null,
@@ -192,6 +200,49 @@ const defaultContent = {
     description:
       'Join thousands of students and companies already using Street2Ivy to create meaningful connections.',
     buttonText: 'Create Your Account',
+    isActive: true,
+    updatedAt: new Date().toISOString(),
+    updatedBy: null,
+  },
+  legalPages: {
+    id: 'legalPages',
+    section: 'legalPages',
+    privacyPolicy: {
+      title: 'Privacy Policy',
+      content: '',
+      lastUpdated: null,
+      isActive: true,
+    },
+    termsOfService: {
+      title: 'Terms of Service',
+      content: '',
+      lastUpdated: null,
+      isActive: true,
+    },
+    cookiePolicy: {
+      title: 'Cookie Policy',
+      content: '',
+      lastUpdated: null,
+      isActive: true,
+    },
+    disclaimer: {
+      title: 'Disclaimer',
+      content: '',
+      lastUpdated: null,
+      isActive: false,
+    },
+    acceptableUse: {
+      title: 'Acceptable Use Policy',
+      content: '',
+      lastUpdated: null,
+      isActive: false,
+    },
+    refundPolicy: {
+      title: 'Refund Policy',
+      content: '',
+      lastUpdated: null,
+      isActive: false,
+    },
     isActive: true,
     updatedAt: new Date().toISOString(),
     updatedBy: null,
@@ -499,6 +550,79 @@ const getPublicContent = (req, res) => {
   }
 };
 
+/**
+ * GET /api/legal/:pageType (Public endpoint)
+ * Get a specific legal page for public display
+ */
+const getLegalPage = (req, res) => {
+  try {
+    const { pageType } = req.params;
+    const content = loadContent();
+
+    if (!content.legalPages) {
+      return res.status(404).json({ error: 'Legal pages not configured' });
+    }
+
+    const legalPages = content.legalPages;
+    const pageData = legalPages[pageType];
+
+    if (!pageData) {
+      return res.status(404).json({ error: 'Legal page not found' });
+    }
+
+    if (!pageData.isActive) {
+      return res.status(404).json({ error: 'Legal page not available' });
+    }
+
+    res.status(200).json({
+      data: {
+        title: pageData.title,
+        content: pageData.content,
+        lastUpdated: pageData.lastUpdated,
+      },
+    });
+  } catch (error) {
+    console.error('Error getting legal page:', error);
+    res.status(500).json({ error: 'Failed to load legal page' });
+  }
+};
+
+/**
+ * GET /api/legal (Public endpoint)
+ * Get list of all active legal pages (without full content)
+ */
+const getLegalPagesList = (req, res) => {
+  try {
+    const content = loadContent();
+
+    if (!content.legalPages) {
+      return res.status(200).json({ data: [] });
+    }
+
+    const legalPages = content.legalPages;
+    const activePages = [];
+
+    const pageTypes = ['privacyPolicy', 'termsOfService', 'cookiePolicy', 'disclaimer', 'acceptableUse', 'refundPolicy'];
+
+    pageTypes.forEach(pageType => {
+      const pageData = legalPages[pageType];
+      if (pageData && pageData.isActive) {
+        activePages.push({
+          key: pageType,
+          title: pageData.title,
+          lastUpdated: pageData.lastUpdated,
+          slug: pageType.replace(/([A-Z])/g, '-$1').toLowerCase(), // privacyPolicy -> privacy-policy
+        });
+      }
+    });
+
+    res.status(200).json({ data: activePages });
+  } catch (error) {
+    console.error('Error getting legal pages list:', error);
+    res.status(500).json({ error: 'Failed to load legal pages' });
+  }
+};
+
 module.exports = {
   getContent,
   getSection,
@@ -508,5 +632,7 @@ module.exports = {
   deleteItem,
   resetContent,
   getPublicContent,
+  getLegalPage,
+  getLegalPagesList,
   loadContent,
 };
