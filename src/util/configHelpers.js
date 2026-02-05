@@ -1176,15 +1176,11 @@ const mergeUserConfig = (hostedConfig, defaultConfigs) => {
 
   const { userFields: defaultUserFields, userTypes: defaultUserTypes } = defaultConfigs.user;
 
-  // When debugging, include default configs by passing 'true' here.
-  // Otherwise, use user fields from hosted assets.
-  const shouldMerge = mergeDefaultTypesAndFieldsForDebugging(false);
-  const userTypes = shouldMerge
-    ? union(hostedUserTypes, defaultUserTypes, 'userType')
-    : hostedUserTypes;
-  const userFields = shouldMerge
-    ? union(hostedUserFields, defaultUserFields, 'key')
-    : hostedUserFields;
+  // Street2Ivy: Always merge default user types and fields so that local
+  // configUser.js definitions (student/corporate-partner types and their
+  // fields) are included alongside any hosted asset configuration.
+  const userTypes = union(hostedUserTypes, defaultUserTypes, 'userType');
+  const userFields = union(hostedUserFields, defaultUserFields, 'key');
 
   // To include user type validation (if you have user types in your default configuration),
   // pass userTypes to the validUserFields function as well:

@@ -56,9 +56,9 @@
   * In the future, we are planning to bring more --marketplace* CSS Properties
   * from hosted assets, which means that they could be managed through Console.
   */
-  --marketplaceColor: #6938ef; /* hsl(256, 85%, 58%) */
-  --marketplaceColorLight: #4a12e2; /* hsl(256, 85%, 48%) */
-  --marketplaceColorDark: #8d68f3; /* hsl(256, 85%, 68% */
+  --marketplaceColor: #2C5282; /* Street2Ivy professional blue */
+  --marketplaceColorLight: #2a4a72; /* darker variant */
+  --marketplaceColorDark: #3a6ba5; /* lighter variant */
 
   /** 
    * The fill color used by <PrimaryButton>
