@@ -18,8 +18,8 @@ require('dotenv').config();
 
 const sharetribeSdk = require('sharetribe-flex-integration-sdk');
 
-const clientId = process.env.SHARETRIBE_INTEGRATION_CLIENT_ID;
-const clientSecret = process.env.SHARETRIBE_INTEGRATION_CLIENT_SECRET;
+const clientId = process.env.SHARETRIBE_INTEGRATION_API_CLIENT_ID || process.env.SHARETRIBE_INTEGRATION_CLIENT_ID;
+const clientSecret = process.env.SHARETRIBE_INTEGRATION_API_CLIENT_SECRET || process.env.SHARETRIBE_INTEGRATION_CLIENT_SECRET;
 
 if (!clientId || !clientSecret) {
   console.error('Error: Missing Integration API credentials.');

@@ -45,6 +45,7 @@ const adminReports = require('./api/admin/reports');
 const adminExportReport = require('./api/admin/export-report');
 const adminDeposits = require('./api/admin/deposits');
 const adminInstitutions = require('./api/admin/institutions');
+const adminContent = require('./api/admin/content');
 
 // Project Workspace (secure portal for accepted students)
 const projectWorkspace = require('./api/project-workspace');
@@ -197,6 +198,18 @@ router.delete('/admin/institutions/:domain', adminInstitutions.delete);
 // Public institution check (for signup and students)
 router.get('/institutions/check/:domain', adminInstitutions.checkMembership);
 router.get('/institutions/my-institution', adminInstitutions.getMyInstitution);
+
+// Street2Ivy: Content Management System (CMS) endpoints
+router.get('/admin/content', adminContent.getContent);
+router.get('/admin/content/:section', adminContent.getSection);
+router.put('/admin/content/:section', adminContent.updateSection);
+router.post('/admin/content/:section/items', adminContent.addItem);
+router.put('/admin/content/:section/items/:itemId', adminContent.updateItem);
+router.delete('/admin/content/:section/items/:itemId', adminContent.deleteItem);
+router.post('/admin/content/reset', adminContent.resetContent);
+
+// Public content endpoint (for frontend to fetch landing page content)
+router.get('/content', adminContent.getPublicContent);
 
 // Street2Ivy: Secure Project Workspace (for accepted students with confirmed deposits)
 router.get('/project-workspace/:transactionId', projectWorkspace.get);

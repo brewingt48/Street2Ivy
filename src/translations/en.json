@@ -1598,6 +1598,8 @@
   "AdminDashboardPage.tabCreateAdmin": "Create Admin",
   "AdminDashboardPage.tabMessages": "Messages",
   "AdminDashboardPage.tabReports": "Reports",
+  "AdminDashboardPage.tabContent": "Content",
+  "AdminDashboardPage.tabDeposits": "Deposits",
   "AdminDashboardPage.userManagement": "User Management",
   "AdminDashboardPage.filterUserType": "User Type",
   "AdminDashboardPage.filterStatus": "Status",

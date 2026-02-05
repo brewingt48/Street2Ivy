@@ -90,34 +90,11 @@ const LayoutWrapperAccountSettingsSideNav = props => {
     }
   }, [mounted]);
 
-  const { currentPage, showPaymentMethods, showPayoutDetails } = accountSettingsNavProps;
-  const payoutDetailsMaybe = showPayoutDetails
-    ? [
-        {
-          text: <FormattedMessage id="LayoutWrapperAccountSettingsSideNav.paymentsTabTitle" />,
-          selected: currentPage === 'StripePayoutPage',
-          id: 'StripePayoutPageTab',
-          linkProps: {
-            name: 'StripePayoutPage',
-          },
-        },
-      ]
-    : [];
+  const { currentPage } = accountSettingsNavProps;
 
-  const paymentMethodsMaybe = showPaymentMethods
-    ? [
-        {
-          text: (
-            <FormattedMessage id="LayoutWrapperAccountSettingsSideNav.paymentMethodsTabTitle" />
-          ),
-          selected: currentPage === 'PaymentMethodsPage',
-          id: 'PaymentMethodsPageTab',
-          linkProps: {
-            name: 'PaymentMethodsPage',
-          },
-        },
-      ]
-    : [];
+  // Street2Ivy: Payment and payout tabs are hidden - payments handled outside platform
+  const payoutDetailsMaybe = [];
+  const paymentMethodsMaybe = [];
 
   const tabs = [
     {

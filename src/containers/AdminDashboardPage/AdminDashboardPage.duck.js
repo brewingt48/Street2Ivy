@@ -16,6 +16,12 @@ import {
   fetchPendingDeposits as fetchPendingDepositsApi,
   confirmDeposit as confirmDepositApi,
   revokeDeposit as revokeDepositApi,
+  fetchLandingContent as fetchLandingContentApi,
+  updateContentSection as updateContentSectionApi,
+  addContentItem as addContentItemApi,
+  updateContentItem as updateContentItemApi,
+  deleteContentItem as deleteContentItemApi,
+  resetLandingContent as resetLandingContentApi,
 } from '../../util/api';
 import { fetchCurrentUser } from '../../ducks/user.duck';
 
@@ -225,6 +231,89 @@ export const revokeDepositThunk = createAsyncThunk(
 export const revokeDepositAction = (transactionId, reason) => dispatch =>
   dispatch(revokeDepositThunk({ transactionId, reason })).unwrap();
 
+// Content management thunks
+export const fetchContentThunk = createAsyncThunk(
+  'app/AdminDashboardPage/fetchContent',
+  async (_, { rejectWithValue }) => {
+    try {
+      return await fetchLandingContentApi();
+    } catch (e) {
+      return rejectWithValue(storableError(e));
+    }
+  }
+);
+
+export const fetchContent = () => dispatch => dispatch(fetchContentThunk()).unwrap();
+
+export const updateContentThunk = createAsyncThunk(
+  'app/AdminDashboardPage/updateContent',
+  async ({ section, data }, { rejectWithValue }) => {
+    try {
+      return await updateContentSectionApi(section, data);
+    } catch (e) {
+      return rejectWithValue(storableError(e));
+    }
+  }
+);
+
+export const updateContentAction = (section, data) => dispatch =>
+  dispatch(updateContentThunk({ section, data })).unwrap();
+
+export const addContentItemThunk = createAsyncThunk(
+  'app/AdminDashboardPage/addContentItem',
+  async ({ section, item }, { rejectWithValue }) => {
+    try {
+      return await addContentItemApi(section, item);
+    } catch (e) {
+      return rejectWithValue(storableError(e));
+    }
+  }
+);
+
+export const addContentItemAction = (section, item) => dispatch =>
+  dispatch(addContentItemThunk({ section, item })).unwrap();
+
+export const updateContentItemThunk = createAsyncThunk(
+  'app/AdminDashboardPage/updateContentItem',
+  async ({ section, itemId, data }, { rejectWithValue }) => {
+    try {
+      return await updateContentItemApi(section, itemId, data);
+    } catch (e) {
+      return rejectWithValue(storableError(e));
+    }
+  }
+);
+
+export const updateContentItemAction = (section, itemId, data) => dispatch =>
+  dispatch(updateContentItemThunk({ section, itemId, data })).unwrap();
+
+export const deleteContentItemThunk = createAsyncThunk(
+  'app/AdminDashboardPage/deleteContentItem',
+  async ({ section, itemId }, { rejectWithValue }) => {
+    try {
+      return await deleteContentItemApi(section, itemId);
+    } catch (e) {
+      return rejectWithValue(storableError(e));
+    }
+  }
+);
+
+export const deleteContentItemAction = (section, itemId) => dispatch =>
+  dispatch(deleteContentItemThunk({ section, itemId })).unwrap();
+
+export const resetContentThunk = createAsyncThunk(
+  'app/AdminDashboardPage/resetContent',
+  async (_, { rejectWithValue }) => {
+    try {
+      return await resetLandingContentApi();
+    } catch (e) {
+      return rejectWithValue(storableError(e));
+    }
+  }
+);
+
+export const resetContentAction = () => dispatch => dispatch(resetContentThunk()).unwrap();
+
 // ================ Slice ================ //
 
 const adminDashboardPageSlice = createSlice({
@@ -273,6 +362,14 @@ const adminDashboardPageSlice = createSlice({
     currentReportType: null,
     fetchReportsInProgress: false,
     fetchReportsError: null,
+
+    // Content Management (CMS)
+    content: null,
+    fetchContentInProgress: false,
+    fetchContentError: null,
+    updateContentInProgress: false,
+    updateContentError: null,
+    updateContentSuccess: false,
   },
   reducers: {
     clearSelectedUser: state => {
@@ -287,6 +384,11 @@ const adminDashboardPageSlice = createSlice({
       state.createAdminInProgress = false;
       state.createAdminError = null;
       state.createAdminSuccess = false;
+    },
+    clearContentState: state => {
+      state.updateContentInProgress = false;
+      state.updateContentError = null;
+      state.updateContentSuccess = false;
     },
   },
   extraReducers: builder => {
@@ -481,6 +583,55 @@ const adminDashboardPageSlice = createSlice({
       })
       .addCase(revokeDepositThunk.rejected, state => {
         state.revokeDepositInProgress = null;
+      })
+      // Fetch content
+      .addCase(fetchContentThunk.pending, state => {
+        state.fetchContentInProgress = true;
+        state.fetchContentError = null;
+      })
+      .addCase(fetchContentThunk.fulfilled, (state, action) => {
+        state.fetchContentInProgress = false;
+        state.content = action.payload.data;
+      })
+      .addCase(fetchContentThunk.rejected, (state, action) => {
+        state.fetchContentInProgress = false;
+        state.fetchContentError = action.payload;
+      })
+      // Update content section
+      .addCase(updateContentThunk.pending, state => {
+        state.updateContentInProgress = true;
+        state.updateContentError = null;
+        state.updateContentSuccess = false;
+      })
+      .addCase(updateContentThunk.fulfilled, (state, action) => {
+        state.updateContentInProgress = false;
+        state.updateContentSuccess = true;
+        // Update the section in local state
+        const section = action.payload.data?.section;
+        if (section && state.content) {
+          state.content[section] = action.payload.data;
+        }
+      })
+      .addCase(updateContentThunk.rejected, (state, action) => {
+        state.updateContentInProgress = false;
+        state.updateContentError = action.payload;
+      })
+      // Add content item
+      .addCase(addContentItemThunk.fulfilled, state => {
+        state.updateContentSuccess = true;
+      })
+      // Update content item
+      .addCase(updateContentItemThunk.fulfilled, state => {
+        state.updateContentSuccess = true;
+      })
+      // Delete content item
+      .addCase(deleteContentItemThunk.fulfilled, state => {
+        state.updateContentSuccess = true;
+      })
+      // Reset content
+      .addCase(resetContentThunk.fulfilled, (state, action) => {
+        state.content = action.payload.data;
+        state.updateContentSuccess = true;
       });
   },
 });
@@ -489,6 +640,7 @@ export const {
   clearSelectedUser,
   clearMessageState,
   clearCreateAdminState,
+  clearContentState,
 } = adminDashboardPageSlice.actions;
 
 // ================ loadData ================ //
@@ -507,6 +659,8 @@ export const loadData = (params, search) => dispatch => {
     promises.push(dispatch(fetchPendingApprovalsThunk({})));
   } else if (tab === 'deposits') {
     promises.push(dispatch(fetchDepositsThunk({})));
+  } else if (tab === 'content') {
+    promises.push(dispatch(fetchContentThunk()));
   } else {
     // Default: users tab
     promises.push(dispatch(fetchUsersThunk({})));

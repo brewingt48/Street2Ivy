@@ -611,3 +611,72 @@ export const exportAdminReport = (reportType, format = 'csv') => {
       });
   });
 };
+
+// ========== Content Management System (CMS) ==========
+
+// Get all landing page content (admin)
+export const fetchLandingContent = () => {
+  return request('/api/admin/content', {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
+  });
+};
+
+// Get public landing page content (for frontend display)
+export const fetchPublicContent = () => {
+  return request('/api/content', {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
+  });
+};
+
+// Get specific content section
+export const fetchContentSection = section => {
+  return request(`/api/admin/content/${section}`, {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
+  });
+};
+
+// Update a content section
+export const updateContentSection = (section, data) => {
+  return request(`/api/admin/content/${section}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+};
+
+// Add an item to a section (testimonials, features, etc.)
+export const addContentItem = (section, item) => {
+  return request(`/api/admin/content/${section}/items`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(item),
+  });
+};
+
+// Update an item in a section
+export const updateContentItem = (section, itemId, data) => {
+  return request(`/api/admin/content/${section}/items/${itemId}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+};
+
+// Delete an item from a section
+export const deleteContentItem = (section, itemId) => {
+  return request(`/api/admin/content/${section}/items/${itemId}`, {
+    method: 'DELETE',
+    headers: { 'Content-Type': 'application/json' },
+  });
+};
+
+// Reset content to defaults
+export const resetLandingContent = () => {
+  return request('/api/admin/content/reset', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+  });
+};

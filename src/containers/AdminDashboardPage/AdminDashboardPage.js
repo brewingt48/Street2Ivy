@@ -24,6 +24,13 @@ import {
   fetchDeposits,
   confirmDepositAction,
   revokeDepositAction,
+  fetchContent,
+  updateContentAction,
+  addContentItemAction,
+  updateContentItemAction,
+  deleteContentItemAction,
+  resetContentAction,
+  clearContentState,
 } from './AdminDashboardPage.duck';
 
 import css from './AdminDashboardPage.module.css';
@@ -1366,6 +1373,610 @@ const CreateAdminPanel = props => {
   );
 };
 
+// ================ Content Management Panel ================ //
+
+const ContentManagementPanel = props => {
+  const {
+    content,
+    fetchInProgress,
+    updateInProgress,
+    updateSuccess,
+    onFetchContent,
+    onUpdateContent,
+    onAddItem,
+    onUpdateItem,
+    onDeleteItem,
+    onResetContent,
+    onClearContentState,
+  } = props;
+
+  const [activeSection, setActiveSection] = useState('hero');
+  const [editingItem, setEditingItem] = useState(null);
+  const [formData, setFormData] = useState({});
+  const [successMessage, setSuccessMessage] = useState('');
+
+  useEffect(() => {
+    if (!content) {
+      onFetchContent();
+    }
+  }, [content, onFetchContent]);
+
+  useEffect(() => {
+    if (updateSuccess) {
+      setSuccessMessage('Content updated successfully!');
+      setTimeout(() => {
+        setSuccessMessage('');
+        onClearContentState();
+      }, 3000);
+      onFetchContent(); // Refresh content
+    }
+  }, [updateSuccess, onClearContentState, onFetchContent]);
+
+  const sections = [
+    { key: 'hero', label: 'Hero Section', icon: '🏠' },
+    { key: 'features', label: 'Features', icon: '✨' },
+    { key: 'howItWorks', label: 'How It Works', icon: '📋' },
+    { key: 'videoTestimonial', label: 'Video Testimonial', icon: '🎬' },
+    { key: 'testimonials', label: 'Written Testimonials', icon: '💬' },
+    { key: 'cta', label: 'Call to Action', icon: '🎯' },
+  ];
+
+  const handleInputChange = (field, value) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleSaveSection = async () => {
+    try {
+      await onUpdateContent(activeSection, formData);
+      setFormData({});
+    } catch (e) {
+      console.error('Failed to update content:', e);
+    }
+  };
+
+  const handleAddItem = async () => {
+    try {
+      const newItem =
+        activeSection === 'testimonials'
+          ? { quote: 'New testimonial...', author: 'Name', role: 'Role', initials: 'NN' }
+          : activeSection === 'features'
+          ? { icon: '⭐', title: 'New Feature', description: 'Description here...' }
+          : { number: '?', title: 'New Step', description: 'Description here...' };
+      await onAddItem(activeSection, newItem);
+    } catch (e) {
+      console.error('Failed to add item:', e);
+    }
+  };
+
+  const handleUpdateItem = async (itemId, data) => {
+    try {
+      await onUpdateItem(activeSection, itemId, data);
+      setEditingItem(null);
+    } catch (e) {
+      console.error('Failed to update item:', e);
+    }
+  };
+
+  const handleDeleteItem = async itemId => {
+    if (window.confirm('Are you sure you want to delete this item?')) {
+      try {
+        await onDeleteItem(activeSection, itemId);
+      } catch (e) {
+        console.error('Failed to delete item:', e);
+      }
+    }
+  };
+
+  const handleReset = async () => {
+    if (window.confirm('Are you sure you want to reset all content to defaults? This cannot be undone.')) {
+      try {
+        await onResetContent();
+      } catch (e) {
+        console.error('Failed to reset content:', e);
+      }
+    }
+  };
+
+  const renderSectionEditor = () => {
+    const sectionData = content?.[activeSection];
+    if (!sectionData) return <p>No content data available.</p>;
+
+    switch (activeSection) {
+      case 'hero':
+        return (
+          <div className={css.contentForm}>
+            <div className={css.formGroup}>
+              <label className={css.formLabel}>Title</label>
+              <input
+                type="text"
+                className={css.formInput}
+                defaultValue={sectionData.title}
+                onChange={e => handleInputChange('title', e.target.value)}
+              />
+            </div>
+            <div className={css.formGroup}>
+              <label className={css.formLabel}>Subtitle</label>
+              <textarea
+                className={css.formTextarea}
+                rows={3}
+                defaultValue={sectionData.subtitle}
+                onChange={e => handleInputChange('subtitle', e.target.value)}
+              />
+            </div>
+            <div className={css.formGroup}>
+              <label className={css.formLabel}>Primary Button Text</label>
+              <input
+                type="text"
+                className={css.formInput}
+                defaultValue={sectionData.primaryButtonText}
+                onChange={e => handleInputChange('primaryButtonText', e.target.value)}
+              />
+            </div>
+            <div className={css.formGroup}>
+              <label className={css.formLabel}>Secondary Button Text</label>
+              <input
+                type="text"
+                className={css.formInput}
+                defaultValue={sectionData.secondaryButtonText}
+                onChange={e => handleInputChange('secondaryButtonText', e.target.value)}
+              />
+            </div>
+            <button
+              className={css.saveButton}
+              onClick={handleSaveSection}
+              disabled={updateInProgress}
+            >
+              {updateInProgress ? 'Saving...' : 'Save Hero Section'}
+            </button>
+          </div>
+        );
+
+      case 'features':
+      case 'howItWorks':
+        return (
+          <div className={css.contentForm}>
+            <div className={css.formGroup}>
+              <label className={css.formLabel}>Section Title</label>
+              <input
+                type="text"
+                className={css.formInput}
+                defaultValue={sectionData.sectionTitle}
+                onChange={e => handleInputChange('sectionTitle', e.target.value)}
+              />
+            </div>
+            <button
+              className={css.saveButton}
+              onClick={handleSaveSection}
+              disabled={updateInProgress}
+              style={{ marginBottom: '20px' }}
+            >
+              {updateInProgress ? 'Saving...' : 'Save Section Title'}
+            </button>
+
+            <h4 className={css.subSectionTitle}>
+              {activeSection === 'features' ? 'Feature Cards' : 'Steps'}
+            </h4>
+            <div className={css.itemsList}>
+              {sectionData.items?.map((item, idx) => (
+                <div key={item.id} className={css.itemCard}>
+                  {editingItem === item.id ? (
+                    <div className={css.editItemForm}>
+                      {activeSection === 'features' ? (
+                        <>
+                          <input
+                            type="text"
+                            className={css.formInput}
+                            defaultValue={item.icon}
+                            placeholder="Icon (emoji)"
+                            onChange={e =>
+                              setFormData(prev => ({
+                                ...prev,
+                                [item.id]: { ...prev[item.id], icon: e.target.value },
+                              }))
+                            }
+                          />
+                          <input
+                            type="text"
+                            className={css.formInput}
+                            defaultValue={item.title}
+                            placeholder="Title"
+                            onChange={e =>
+                              setFormData(prev => ({
+                                ...prev,
+                                [item.id]: { ...prev[item.id], title: e.target.value },
+                              }))
+                            }
+                          />
+                          <textarea
+                            className={css.formTextarea}
+                            defaultValue={item.description}
+                            placeholder="Description"
+                            onChange={e =>
+                              setFormData(prev => ({
+                                ...prev,
+                                [item.id]: { ...prev[item.id], description: e.target.value },
+                              }))
+                            }
+                          />
+                        </>
+                      ) : (
+                        <>
+                          <input
+                            type="text"
+                            className={css.formInput}
+                            defaultValue={item.number}
+                            placeholder="Step Number"
+                            onChange={e =>
+                              setFormData(prev => ({
+                                ...prev,
+                                [item.id]: { ...prev[item.id], number: e.target.value },
+                              }))
+                            }
+                          />
+                          <input
+                            type="text"
+                            className={css.formInput}
+                            defaultValue={item.title}
+                            placeholder="Title"
+                            onChange={e =>
+                              setFormData(prev => ({
+                                ...prev,
+                                [item.id]: { ...prev[item.id], title: e.target.value },
+                              }))
+                            }
+                          />
+                          <textarea
+                            className={css.formTextarea}
+                            defaultValue={item.description}
+                            placeholder="Description"
+                            onChange={e =>
+                              setFormData(prev => ({
+                                ...prev,
+                                [item.id]: { ...prev[item.id], description: e.target.value },
+                              }))
+                            }
+                          />
+                        </>
+                      )}
+                      <div className={css.itemActions}>
+                        <button
+                          className={css.saveItemButton}
+                          onClick={() => handleUpdateItem(item.id, formData[item.id])}
+                        >
+                          Save
+                        </button>
+                        <button
+                          className={css.cancelButton}
+                          onClick={() => setEditingItem(null)}
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <>
+                      <div className={css.itemPreview}>
+                        <span className={css.itemIcon}>
+                          {activeSection === 'features' ? item.icon : item.number}
+                        </span>
+                        <div className={css.itemContent}>
+                          <strong>{item.title}</strong>
+                          <p>{item.description}</p>
+                        </div>
+                      </div>
+                      <div className={css.itemActions}>
+                        <button
+                          className={css.editButton}
+                          onClick={() => setEditingItem(item.id)}
+                        >
+                          Edit
+                        </button>
+                        <button
+                          className={css.deleteButton}
+                          onClick={() => handleDeleteItem(item.id)}
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </>
+                  )}
+                </div>
+              ))}
+            </div>
+            <button className={css.addButton} onClick={handleAddItem}>
+              + Add {activeSection === 'features' ? 'Feature' : 'Step'}
+            </button>
+          </div>
+        );
+
+      case 'videoTestimonial':
+        return (
+          <div className={css.contentForm}>
+            <div className={css.formGroup}>
+              <label className={css.formLabel}>Section Title</label>
+              <input
+                type="text"
+                className={css.formInput}
+                defaultValue={sectionData.sectionTitle}
+                onChange={e => handleInputChange('sectionTitle', e.target.value)}
+              />
+            </div>
+            <div className={css.formGroup}>
+              <label className={css.formLabel}>YouTube Video URL</label>
+              <input
+                type="text"
+                className={css.formInput}
+                defaultValue={sectionData.videoUrl}
+                placeholder="https://www.youtube.com/embed/..."
+                onChange={e => handleInputChange('videoUrl', e.target.value)}
+              />
+              <small className={css.formHint}>
+                Use the embed URL format: https://www.youtube.com/embed/VIDEO_ID
+              </small>
+            </div>
+            <div className={css.formGroup}>
+              <label className={css.formLabel}>Placeholder Text</label>
+              <input
+                type="text"
+                className={css.formInput}
+                defaultValue={sectionData.videoPlaceholderText}
+                onChange={e => handleInputChange('videoPlaceholderText', e.target.value)}
+              />
+            </div>
+            {sectionData.videoUrl && (
+              <div className={css.videoPreview}>
+                <h5>Preview:</h5>
+                <iframe
+                  width="320"
+                  height="180"
+                  src={sectionData.videoUrl}
+                  title="Video preview"
+                  frameBorder="0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                />
+              </div>
+            )}
+            <button
+              className={css.saveButton}
+              onClick={handleSaveSection}
+              disabled={updateInProgress}
+            >
+              {updateInProgress ? 'Saving...' : 'Save Video Section'}
+            </button>
+          </div>
+        );
+
+      case 'testimonials':
+        return (
+          <div className={css.contentForm}>
+            <div className={css.formGroup}>
+              <label className={css.formLabel}>Section Title</label>
+              <input
+                type="text"
+                className={css.formInput}
+                defaultValue={sectionData.sectionTitle}
+                onChange={e => handleInputChange('sectionTitle', e.target.value)}
+              />
+            </div>
+            <button
+              className={css.saveButton}
+              onClick={handleSaveSection}
+              disabled={updateInProgress}
+              style={{ marginBottom: '20px' }}
+            >
+              {updateInProgress ? 'Saving...' : 'Save Section Title'}
+            </button>
+
+            <h4 className={css.subSectionTitle}>Testimonials</h4>
+            <div className={css.itemsList}>
+              {sectionData.items?.map(item => (
+                <div key={item.id} className={css.testimonialCard}>
+                  {editingItem === item.id ? (
+                    <div className={css.editItemForm}>
+                      <textarea
+                        className={css.formTextarea}
+                        rows={3}
+                        defaultValue={item.quote}
+                        placeholder="Quote"
+                        onChange={e =>
+                          setFormData(prev => ({
+                            ...prev,
+                            [item.id]: { ...prev[item.id], quote: e.target.value },
+                          }))
+                        }
+                      />
+                      <input
+                        type="text"
+                        className={css.formInput}
+                        defaultValue={item.author}
+                        placeholder="Author Name"
+                        onChange={e =>
+                          setFormData(prev => ({
+                            ...prev,
+                            [item.id]: { ...prev[item.id], author: e.target.value },
+                          }))
+                        }
+                      />
+                      <input
+                        type="text"
+                        className={css.formInput}
+                        defaultValue={item.role}
+                        placeholder="Role/Title"
+                        onChange={e =>
+                          setFormData(prev => ({
+                            ...prev,
+                            [item.id]: { ...prev[item.id], role: e.target.value },
+                          }))
+                        }
+                      />
+                      <input
+                        type="text"
+                        className={css.formInput}
+                        defaultValue={item.initials}
+                        placeholder="Initials (2 letters)"
+                        maxLength={2}
+                        onChange={e =>
+                          setFormData(prev => ({
+                            ...prev,
+                            [item.id]: { ...prev[item.id], initials: e.target.value.toUpperCase() },
+                          }))
+                        }
+                      />
+                      <div className={css.itemActions}>
+                        <button
+                          className={css.saveItemButton}
+                          onClick={() => handleUpdateItem(item.id, formData[item.id])}
+                        >
+                          Save
+                        </button>
+                        <button
+                          className={css.cancelButton}
+                          onClick={() => setEditingItem(null)}
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <>
+                      <div className={css.testimonialPreview}>
+                        <div className={css.testimonialAvatar}>{item.initials}</div>
+                        <div className={css.testimonialContent}>
+                          <p className={css.testimonialQuote}>"{item.quote}"</p>
+                          <p className={css.testimonialAuthor}>
+                            <strong>{item.author}</strong> - {item.role}
+                          </p>
+                        </div>
+                      </div>
+                      <div className={css.itemActions}>
+                        <button
+                          className={css.editButton}
+                          onClick={() => setEditingItem(item.id)}
+                        >
+                          Edit
+                        </button>
+                        <button
+                          className={css.deleteButton}
+                          onClick={() => handleDeleteItem(item.id)}
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </>
+                  )}
+                </div>
+              ))}
+            </div>
+            <button className={css.addButton} onClick={handleAddItem}>
+              + Add Testimonial
+            </button>
+          </div>
+        );
+
+      case 'cta':
+        return (
+          <div className={css.contentForm}>
+            <div className={css.formGroup}>
+              <label className={css.formLabel}>Title</label>
+              <input
+                type="text"
+                className={css.formInput}
+                defaultValue={sectionData.title}
+                onChange={e => handleInputChange('title', e.target.value)}
+              />
+            </div>
+            <div className={css.formGroup}>
+              <label className={css.formLabel}>Description</label>
+              <textarea
+                className={css.formTextarea}
+                rows={2}
+                defaultValue={sectionData.description}
+                onChange={e => handleInputChange('description', e.target.value)}
+              />
+            </div>
+            <div className={css.formGroup}>
+              <label className={css.formLabel}>Button Text</label>
+              <input
+                type="text"
+                className={css.formInput}
+                defaultValue={sectionData.buttonText}
+                onChange={e => handleInputChange('buttonText', e.target.value)}
+              />
+            </div>
+            <button
+              className={css.saveButton}
+              onClick={handleSaveSection}
+              disabled={updateInProgress}
+            >
+              {updateInProgress ? 'Saving...' : 'Save CTA Section'}
+            </button>
+          </div>
+        );
+
+      default:
+        return <p>Select a section to edit.</p>;
+    }
+  };
+
+  if (fetchInProgress && !content) {
+    return (
+      <div className={css.panel}>
+        <div className={css.loadingState}>Loading content...</div>
+      </div>
+    );
+  }
+
+  return (
+    <div className={css.panel}>
+      <div className={css.panelHeader}>
+        <h2 className={css.panelTitle}>Content Management</h2>
+        <p className={css.panelDescription}>
+          Edit the landing page content including text, images, videos, and testimonials.
+        </p>
+      </div>
+
+      {successMessage && <div className={css.successMessage}>{successMessage}</div>}
+
+      <div className={css.cmsLayout}>
+        {/* Section Navigation */}
+        <div className={css.cmsSidebar}>
+          <h4 className={css.sidebarTitle}>Sections</h4>
+          {sections.map(section => (
+            <button
+              key={section.key}
+              className={classNames(css.sectionButton, {
+                [css.sectionButtonActive]: activeSection === section.key,
+              })}
+              onClick={() => {
+                setActiveSection(section.key);
+                setEditingItem(null);
+                setFormData({});
+              }}
+            >
+              <span className={css.sectionIcon}>{section.icon}</span>
+              {section.label}
+            </button>
+          ))}
+          <hr className={css.sidebarDivider} />
+          <button className={css.resetButton} onClick={handleReset}>
+            Reset to Defaults
+          </button>
+        </div>
+
+        {/* Content Editor */}
+        <div className={css.cmsContent}>
+          <h3 className={css.sectionEditorTitle}>
+            {sections.find(s => s.key === activeSection)?.icon}{' '}
+            {sections.find(s => s.key === activeSection)?.label}
+          </h3>
+          {renderSectionEditor()}
+        </div>
+      </div>
+    </div>
+  );
+};
+
 // ================ Main Component ================ //
 
 const AdminDashboardPageComponent = props => {
@@ -1396,6 +2007,11 @@ const AdminDashboardPageComponent = props => {
     fetchDepositsInProgress,
     confirmDepositInProgress,
     revokeDepositInProgress,
+    // Content Management
+    content,
+    fetchContentInProgress,
+    updateContentInProgress,
+    updateContentSuccess,
     // Actions
     onFetchUsers,
     onBlockUser,
@@ -1410,6 +2026,13 @@ const AdminDashboardPageComponent = props => {
     onFetchDeposits,
     onConfirmDeposit,
     onRevokeDeposit,
+    onFetchContent,
+    onUpdateContent,
+    onAddItem,
+    onUpdateItem,
+    onDeleteItem,
+    onResetContent,
+    onClearContentState,
   } = props;
 
   const intl = useIntl();
@@ -1503,6 +2126,12 @@ const AdminDashboardPageComponent = props => {
             >
               <FormattedMessage id="AdminDashboardPage.tabReports" />
             </button>
+            <button
+              className={classNames(css.tab, { [css.tabActive]: activeTab === 'content' })}
+              onClick={() => handleTabChange('content')}
+            >
+              <FormattedMessage id="AdminDashboardPage.tabContent" />
+            </button>
           </div>
 
           {/* Tab Content */}
@@ -1565,6 +2194,22 @@ const AdminDashboardPageComponent = props => {
               onFetchReports={onFetchReports}
             />
           )}
+
+          {activeTab === 'content' && (
+            <ContentManagementPanel
+              content={content}
+              fetchInProgress={fetchContentInProgress}
+              updateInProgress={updateContentInProgress}
+              updateSuccess={updateContentSuccess}
+              onFetchContent={onFetchContent}
+              onUpdateContent={onUpdateContent}
+              onAddItem={onAddItem}
+              onUpdateItem={onUpdateItem}
+              onDeleteItem={onDeleteItem}
+              onResetContent={onResetContent}
+              onClearContentState={onClearContentState}
+            />
+          )}
         </div>
       </LayoutSingleColumn>
     </Page>
@@ -1593,6 +2238,10 @@ const mapStateToProps = state => {
     fetchDepositsInProgress,
     confirmDepositInProgress,
     revokeDepositInProgress,
+    content,
+    fetchContentInProgress,
+    updateContentInProgress,
+    updateContentSuccess,
   } = state.AdminDashboardPage;
 
   return {
@@ -1617,6 +2266,10 @@ const mapStateToProps = state => {
     fetchDepositsInProgress,
     confirmDepositInProgress,
     revokeDepositInProgress,
+    content,
+    fetchContentInProgress,
+    updateContentInProgress,
+    updateContentSuccess,
   };
 };
 
@@ -1634,6 +2287,13 @@ const mapDispatchToProps = dispatch => ({
   onFetchDeposits: params => dispatch(fetchDeposits(params)),
   onConfirmDeposit: (transactionId, data) => dispatch(confirmDepositAction(transactionId, data)),
   onRevokeDeposit: (transactionId, reason) => dispatch(revokeDepositAction(transactionId, reason)),
+  onFetchContent: () => dispatch(fetchContent()),
+  onUpdateContent: (section, data) => dispatch(updateContentAction(section, data)),
+  onAddItem: (section, item) => dispatch(addContentItemAction(section, item)),
+  onUpdateItem: (section, itemId, data) => dispatch(updateContentItemAction(section, itemId, data)),
+  onDeleteItem: (section, itemId) => dispatch(deleteContentItemAction(section, itemId)),
+  onResetContent: () => dispatch(resetContentAction()),
+  onClearContentState: () => dispatch(clearContentState()),
 });
 
 const AdminDashboardPage = compose(
