@@ -171,11 +171,7 @@ const LandingPageComponent = props => {
                       {heroContent?.subtitle || <FormattedMessage id="LandingPage.heroSubtitle" />}
                     </p>
                     <div className={css.heroButtons}>
-                      {isAuthenticated ? (
-                        <NamedLink name="SearchPage" className={css.primaryButton}>
-                          <FormattedMessage id="LandingPage.browseProjects" />
-                        </NamedLink>
-                      ) : (
+                      {!isAuthenticated && (
                         <>
                           <NamedLink name="SignupPage" className={css.primaryButton}>
                             {heroContent?.primaryButtonText || (
