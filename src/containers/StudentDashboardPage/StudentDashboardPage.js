@@ -4,6 +4,7 @@ import { compose } from 'redux';
 import { useHistory } from 'react-router-dom';
 import { FormattedMessage, useIntl } from '../../util/reactIntl';
 import { isScrollingDisabled } from '../../ducks/ui.duck';
+import { apiBaseUrl } from '../../util/api';
 import classNames from 'classnames';
 
 import { Page, LayoutSingleColumn, NamedLink, Modal } from '../../components';
@@ -257,7 +258,8 @@ const StudentDashboardPageComponent = props => {
   useEffect(() => {
     const fetchInstitutionInfo = async () => {
       try {
-        const response = await fetch('/api/institutions/my-institution', {
+        const baseUrl = apiBaseUrl();
+        const response = await fetch(`${baseUrl}/api/institutions/my-institution`, {
           credentials: 'include',
         });
         if (response.ok) {

@@ -257,7 +257,8 @@ export const AuthenticationForms = props => {
     if (userType === 'student') {
       const emailDomain = email.split('@')[1]?.toLowerCase();
       try {
-        const response = await fetch(`/api/institutions/check/${encodeURIComponent(emailDomain)}`);
+        const baseUrl = apiBaseUrl();
+        const response = await fetch(`${baseUrl}/api/institutions/check/${encodeURIComponent(emailDomain)}`);
         const data = await response.json();
 
         if (!data.isMember) {
