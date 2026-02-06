@@ -150,20 +150,11 @@ const SignupFormComponent = props => (
                 label={intl.formatMessage({
                   id: 'SignupForm.emailLabel',
                 })}
-                placeholder={
-                  isStudent
-                    ? 'your.name@university.edu'
-                    : intl.formatMessage({ id: 'SignupForm.emailPlaceholder' })
-                }
+                placeholder={intl.formatMessage({ id: 'SignupForm.emailPlaceholder' })}
                 validate={validators.composeValidators(emailRequired, emailValid)}
               />
 
-              {/* Student email hint */}
-              {isStudent && (
-                <p className={css.emailHint}>
-                  Students must use their university .edu email address to sign up.
-                </p>
-              )}
+{/* Student email hint - disabled, no longer requiring .edu */}
 
               <div className={css.name}>
                 <FieldTextInput
