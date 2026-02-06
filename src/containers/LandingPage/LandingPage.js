@@ -36,6 +36,7 @@ const LandingPageComponent = props => {
 
   // Get content from dynamic data or use static fallback
   const heroContent = dynamicContent?.hero || null;
+  const brandingContent = dynamicContent?.branding || null;
   const featuresContent = dynamicContent?.features || null;
   const howItWorksContent = dynamicContent?.howItWorks || null;
   const videoContent = dynamicContent?.videoTestimonial || null;
@@ -164,12 +165,20 @@ const LandingPageComponent = props => {
                 {/* Hero Section */}
                 <section className={css.heroSection}>
                   <div className={css.heroContent}>
+                    {/* Site Tagline - from branding section */}
+                    {brandingContent?.tagline && (
+                      <p className={css.heroTagline}>{brandingContent.tagline}</p>
+                    )}
                     <h1 className={css.heroTitle}>
                       {heroContent?.title || <FormattedMessage id="LandingPage.heroTitle" />}
                     </h1>
                     <p className={css.heroSubtitle}>
                       {heroContent?.subtitle || <FormattedMessage id="LandingPage.heroSubtitle" />}
                     </p>
+                    {/* Site Description - from branding section */}
+                    {brandingContent?.siteDescription && (
+                      <p className={css.heroDescription}>{brandingContent.siteDescription}</p>
+                    )}
                     <div className={css.heroButtons}>
                       {!isAuthenticated && (
                         <>

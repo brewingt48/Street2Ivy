@@ -36,6 +36,21 @@
   max-width: 800px;
 }
 
+/* Tagline above the title - editable from admin branding section */
+.heroTagline {
+  font-size: 14px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.8);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin: 0 0 16px 0;
+
+  @media (--viewportMedium) {
+    font-size: 16px;
+    letter-spacing: 3px;
+  }
+}
+
 .heroTitle {
   font-size: 48px;
   font-weight: 700;
@@ -55,7 +70,7 @@
 .heroSubtitle {
   font-size: 18px;
   color: rgba(255, 255, 255, 0.9);
-  margin: 0 0 40px 0;
+  margin: 0 0 20px 0;
   line-height: 1.6;
   max-width: 600px;
   margin-left: auto;
@@ -63,6 +78,21 @@
 
   @media (--viewportMedium) {
     font-size: 20px;
+  }
+}
+
+/* Site Description - additional text below subtitle, editable from admin branding section */
+.heroDescription {
+  font-size: 16px;
+  color: rgba(255, 255, 255, 0.75);
+  margin: 0 0 40px 0;
+  line-height: 1.6;
+  max-width: 550px;
+  margin-left: auto;
+  margin-right: auto;
+
+  @media (--viewportMedium) {
+    font-size: 17px;
   }
 }
 

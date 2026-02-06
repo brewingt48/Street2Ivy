@@ -29,6 +29,7 @@ const defaultContent = {
     logoUrl: null,
     logoHeight: 36, // 24, 36, or 48
     tagline: 'Connecting Ivy League Talent with Industry Leaders',
+    siteDescription: null, // Additional description text below the hero subtitle
     faviconUrl: null,
     // Social media links
     socialFacebook: null,

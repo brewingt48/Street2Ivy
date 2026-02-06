@@ -5017,7 +5017,21 @@ const ContentManagementPanel = props => {
                 onChange={e => handleInputChange('tagline', e.target.value)}
               />
               <span className={css.formHint}>
-                A short, memorable phrase that describes your platform (e.g., "Connecting Ivy League Talent with Industry Leaders")
+                A short, memorable phrase that appears above the main title on the landing page (e.g., "Bridge the Gap Between Campus and Career")
+              </span>
+            </div>
+
+            <div className={css.formGroup}>
+              <label className={css.formLabel}>Site Description (optional)</label>
+              <textarea
+                className={css.formTextarea}
+                rows={3}
+                placeholder="Additional description text for the landing page"
+                value={formData.siteDescription !== undefined ? formData.siteDescription : (sectionData?.siteDescription || '')}
+                onChange={e => handleInputChange('siteDescription', e.target.value)}
+              />
+              <span className={css.formHint}>
+                Additional text that appears below the hero subtitle on the landing page. Use this for extra messaging or calls to action.
               </span>
             </div>
 
@@ -5155,7 +5169,8 @@ const ContentManagementPanel = props => {
               <input
                 type="text"
                 className={css.formInput}
-                defaultValue={sectionData.title}
+                placeholder="Hero section title"
+                value={formData.title !== undefined ? formData.title : (sectionData?.title || '')}
                 onChange={e => handleInputChange('title', e.target.value)}
               />
             </div>
@@ -5164,7 +5179,8 @@ const ContentManagementPanel = props => {
               <textarea
                 className={css.formTextarea}
                 rows={3}
-                defaultValue={sectionData.subtitle}
+                placeholder="Hero section subtitle"
+                value={formData.subtitle !== undefined ? formData.subtitle : (sectionData?.subtitle || '')}
                 onChange={e => handleInputChange('subtitle', e.target.value)}
               />
             </div>
@@ -5173,7 +5189,8 @@ const ContentManagementPanel = props => {
               <input
                 type="text"
                 className={css.formInput}
-                defaultValue={sectionData.primaryButtonText}
+                placeholder="Primary button text"
+                value={formData.primaryButtonText !== undefined ? formData.primaryButtonText : (sectionData?.primaryButtonText || '')}
                 onChange={e => handleInputChange('primaryButtonText', e.target.value)}
               />
             </div>
@@ -5182,7 +5199,8 @@ const ContentManagementPanel = props => {
               <input
                 type="text"
                 className={css.formInput}
-                defaultValue={sectionData.secondaryButtonText}
+                placeholder="Secondary button text"
+                value={formData.secondaryButtonText !== undefined ? formData.secondaryButtonText : (sectionData?.secondaryButtonText || '')}
                 onChange={e => handleInputChange('secondaryButtonText', e.target.value)}
               />
             </div>
@@ -5194,7 +5212,7 @@ const ContentManagementPanel = props => {
               <label className={css.formLabel}>Background Type</label>
               <select
                 className={css.formSelect}
-                defaultValue={sectionData.backgroundType || 'image'}
+                value={formData.backgroundType !== undefined ? formData.backgroundType : (sectionData?.backgroundType || 'image')}
                 onChange={e => handleInputChange('backgroundType', e.target.value)}
               >
                 <option value="image">Image</option>
@@ -5229,7 +5247,7 @@ const ContentManagementPanel = props => {
                   type="url"
                   className={css.formInput}
                   placeholder="Enter image URL"
-                  defaultValue={sectionData.backgroundImage || ''}
+                  value={formData.backgroundImage !== undefined ? formData.backgroundImage : (sectionData?.backgroundImage || '')}
                   onChange={e => handleInputChange('backgroundImage', e.target.value)}
                 />
               </div>
@@ -5271,7 +5289,7 @@ const ContentManagementPanel = props => {
                   type="url"
                   className={css.formInput}
                   placeholder="Enter video URL"
-                  defaultValue={sectionData.backgroundVideo || ''}
+                  value={formData.backgroundVideo !== undefined ? formData.backgroundVideo : (sectionData?.backgroundVideo || '')}
                   onChange={e => handleInputChange('backgroundVideo', e.target.value)}
                 />
               </div>
