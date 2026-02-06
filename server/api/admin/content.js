@@ -29,7 +29,9 @@ const defaultContent = {
     logoUrl: null,
     logoHeight: 36, // 24, 36, or 48
     tagline: 'Connecting Ivy League Talent with Industry Leaders',
+    taglineColor: null, // Custom color for tagline (hex or rgba)
     siteDescription: null, // Additional description text below the hero subtitle
+    siteDescriptionColor: null, // Custom color for site description
     faviconUrl: null,
     // Social media links
     socialFacebook: null,
@@ -46,10 +48,16 @@ const defaultContent = {
     id: 'hero',
     section: 'hero',
     title: 'Connect Ivy League Talent with Industry Leaders',
+    titleColor: null, // Custom color for hero title
     subtitle:
       'Street2Ivy bridges the gap between elite university students and Fortune 500 companies through meaningful project-based collaborations.',
+    subtitleColor: null, // Custom color for hero subtitle
     primaryButtonText: 'Get Started',
+    primaryButtonBgColor: null, // Custom background color for primary button
+    primaryButtonTextColor: null, // Custom text color for primary button
     secondaryButtonText: 'Sign In',
+    secondaryButtonBorderColor: null, // Custom border color for secondary button
+    secondaryButtonTextColor: null, // Custom text color for secondary button
     backgroundImage: null,
     backgroundVideo: null,
     backgroundType: 'image', // 'image' or 'video'

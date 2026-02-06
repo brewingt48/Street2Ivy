@@ -187,27 +187,57 @@ const LandingPageComponent = props => {
                   <div className={css.heroContent}>
                     {/* Site Tagline - from branding section */}
                     {brandingContent?.tagline && (
-                      <p className={css.heroTagline}>{brandingContent.tagline}</p>
+                      <p
+                        className={css.heroTagline}
+                        style={brandingContent.taglineColor ? { color: brandingContent.taglineColor } : undefined}
+                      >
+                        {brandingContent.tagline}
+                      </p>
                     )}
-                    <h1 className={css.heroTitle}>
+                    <h1
+                      className={css.heroTitle}
+                      style={heroContent?.titleColor ? { color: heroContent.titleColor } : undefined}
+                    >
                       {heroContent?.title || <FormattedMessage id="LandingPage.heroTitle" />}
                     </h1>
-                    <p className={css.heroSubtitle}>
+                    <p
+                      className={css.heroSubtitle}
+                      style={heroContent?.subtitleColor ? { color: heroContent.subtitleColor } : undefined}
+                    >
                       {heroContent?.subtitle || <FormattedMessage id="LandingPage.heroSubtitle" />}
                     </p>
                     {/* Site Description - from branding section */}
                     {brandingContent?.siteDescription && (
-                      <p className={css.heroDescription}>{brandingContent.siteDescription}</p>
+                      <p
+                        className={css.heroDescription}
+                        style={brandingContent.siteDescriptionColor ? { color: brandingContent.siteDescriptionColor } : undefined}
+                      >
+                        {brandingContent.siteDescription}
+                      </p>
                     )}
                     <div className={css.heroButtons}>
                       {!isAuthenticated && (
                         <>
-                          <NamedLink name="SignupPage" className={css.primaryButton}>
+                          <NamedLink
+                            name="SignupPage"
+                            className={css.primaryButton}
+                            style={{
+                              ...(heroContent?.primaryButtonBgColor && { backgroundColor: heroContent.primaryButtonBgColor }),
+                              ...(heroContent?.primaryButtonTextColor && { color: heroContent.primaryButtonTextColor }),
+                            }}
+                          >
                             {heroContent?.primaryButtonText || (
                               <FormattedMessage id="LandingPage.getStarted" />
                             )}
                           </NamedLink>
-                          <NamedLink name="LoginPage" className={css.secondaryButton}>
+                          <NamedLink
+                            name="LoginPage"
+                            className={css.secondaryButton}
+                            style={{
+                              ...(heroContent?.secondaryButtonBorderColor && { borderColor: heroContent.secondaryButtonBorderColor }),
+                              ...(heroContent?.secondaryButtonTextColor && { color: heroContent.secondaryButtonTextColor }),
+                            }}
+                          >
                             {heroContent?.secondaryButtonText || (
                               <FormattedMessage id="LandingPage.signIn" />
                             )}

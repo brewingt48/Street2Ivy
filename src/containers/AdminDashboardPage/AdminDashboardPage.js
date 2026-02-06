@@ -5022,6 +5022,35 @@ const ContentManagementPanel = props => {
             </div>
 
             <div className={css.formGroup}>
+              <label className={css.formLabel}>Tagline Color (optional)</label>
+              <div className={css.colorPickerRow}>
+                <input
+                  type="color"
+                  className={css.colorPicker}
+                  value={formData.taglineColor || sectionData?.taglineColor || '#cccccc'}
+                  onChange={e => handleInputChange('taglineColor', e.target.value)}
+                />
+                <input
+                  type="text"
+                  className={css.colorInput}
+                  placeholder="#cccccc"
+                  value={formData.taglineColor !== undefined ? formData.taglineColor : (sectionData?.taglineColor || '')}
+                  onChange={e => handleInputChange('taglineColor', e.target.value)}
+                />
+                {(formData.taglineColor || sectionData?.taglineColor) && (
+                  <button
+                    type="button"
+                    className={css.clearColorButton}
+                    onClick={() => handleInputChange('taglineColor', '')}
+                  >
+                    Reset
+                  </button>
+                )}
+              </div>
+              <span className={css.formHint}>Custom color for the tagline text. Leave empty for default.</span>
+            </div>
+
+            <div className={css.formGroup}>
               <label className={css.formLabel}>Site Description (optional)</label>
               <textarea
                 className={css.formTextarea}
@@ -5033,6 +5062,35 @@ const ContentManagementPanel = props => {
               <span className={css.formHint}>
                 Additional text that appears below the hero subtitle on the landing page. Use this for extra messaging or calls to action.
               </span>
+            </div>
+
+            <div className={css.formGroup}>
+              <label className={css.formLabel}>Site Description Color (optional)</label>
+              <div className={css.colorPickerRow}>
+                <input
+                  type="color"
+                  className={css.colorPicker}
+                  value={formData.siteDescriptionColor || sectionData?.siteDescriptionColor || '#bbbbbb'}
+                  onChange={e => handleInputChange('siteDescriptionColor', e.target.value)}
+                />
+                <input
+                  type="text"
+                  className={css.colorInput}
+                  placeholder="#bbbbbb"
+                  value={formData.siteDescriptionColor !== undefined ? formData.siteDescriptionColor : (sectionData?.siteDescriptionColor || '')}
+                  onChange={e => handleInputChange('siteDescriptionColor', e.target.value)}
+                />
+                {(formData.siteDescriptionColor || sectionData?.siteDescriptionColor) && (
+                  <button
+                    type="button"
+                    className={css.clearColorButton}
+                    onClick={() => handleInputChange('siteDescriptionColor', '')}
+                  >
+                    Reset
+                  </button>
+                )}
+              </div>
+              <span className={css.formHint}>Custom color for the site description text. Leave empty for default.</span>
             </div>
 
             <div className={css.formGroup}>
@@ -5175,6 +5233,33 @@ const ContentManagementPanel = props => {
               />
             </div>
             <div className={css.formGroup}>
+              <label className={css.formLabel}>Title Color (optional)</label>
+              <div className={css.colorPickerRow}>
+                <input
+                  type="color"
+                  className={css.colorPicker}
+                  value={formData.titleColor || sectionData?.titleColor || '#ffffff'}
+                  onChange={e => handleInputChange('titleColor', e.target.value)}
+                />
+                <input
+                  type="text"
+                  className={css.colorInput}
+                  placeholder="#ffffff"
+                  value={formData.titleColor !== undefined ? formData.titleColor : (sectionData?.titleColor || '')}
+                  onChange={e => handleInputChange('titleColor', e.target.value)}
+                />
+                {(formData.titleColor || sectionData?.titleColor) && (
+                  <button
+                    type="button"
+                    className={css.clearColorButton}
+                    onClick={() => handleInputChange('titleColor', '')}
+                  >
+                    Reset
+                  </button>
+                )}
+              </div>
+            </div>
+            <div className={css.formGroup}>
               <label className={css.formLabel}>Subtitle</label>
               <textarea
                 className={css.formTextarea}
@@ -5185,6 +5270,37 @@ const ContentManagementPanel = props => {
               />
             </div>
             <div className={css.formGroup}>
+              <label className={css.formLabel}>Subtitle Color (optional)</label>
+              <div className={css.colorPickerRow}>
+                <input
+                  type="color"
+                  className={css.colorPicker}
+                  value={formData.subtitleColor || sectionData?.subtitleColor || '#e6e6e6'}
+                  onChange={e => handleInputChange('subtitleColor', e.target.value)}
+                />
+                <input
+                  type="text"
+                  className={css.colorInput}
+                  placeholder="#e6e6e6"
+                  value={formData.subtitleColor !== undefined ? formData.subtitleColor : (sectionData?.subtitleColor || '')}
+                  onChange={e => handleInputChange('subtitleColor', e.target.value)}
+                />
+                {(formData.subtitleColor || sectionData?.subtitleColor) && (
+                  <button
+                    type="button"
+                    className={css.clearColorButton}
+                    onClick={() => handleInputChange('subtitleColor', '')}
+                  >
+                    Reset
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Button Settings */}
+            <h4 className={css.subSectionTitle}>Button Settings</h4>
+
+            <div className={css.formGroup}>
               <label className={css.formLabel}>Primary Button Text</label>
               <input
                 type="text"
@@ -5193,6 +5309,44 @@ const ContentManagementPanel = props => {
                 value={formData.primaryButtonText !== undefined ? formData.primaryButtonText : (sectionData?.primaryButtonText || '')}
                 onChange={e => handleInputChange('primaryButtonText', e.target.value)}
               />
+            </div>
+            <div className={css.formGroupRow}>
+              <div className={css.formGroupHalf}>
+                <label className={css.formLabel}>Primary Button Background</label>
+                <div className={css.colorPickerRow}>
+                  <input
+                    type="color"
+                    className={css.colorPicker}
+                    value={formData.primaryButtonBgColor || sectionData?.primaryButtonBgColor || '#0084ff'}
+                    onChange={e => handleInputChange('primaryButtonBgColor', e.target.value)}
+                  />
+                  <input
+                    type="text"
+                    className={css.colorInput}
+                    placeholder="#0084ff"
+                    value={formData.primaryButtonBgColor !== undefined ? formData.primaryButtonBgColor : (sectionData?.primaryButtonBgColor || '')}
+                    onChange={e => handleInputChange('primaryButtonBgColor', e.target.value)}
+                  />
+                </div>
+              </div>
+              <div className={css.formGroupHalf}>
+                <label className={css.formLabel}>Primary Button Text Color</label>
+                <div className={css.colorPickerRow}>
+                  <input
+                    type="color"
+                    className={css.colorPicker}
+                    value={formData.primaryButtonTextColor || sectionData?.primaryButtonTextColor || '#ffffff'}
+                    onChange={e => handleInputChange('primaryButtonTextColor', e.target.value)}
+                  />
+                  <input
+                    type="text"
+                    className={css.colorInput}
+                    placeholder="#ffffff"
+                    value={formData.primaryButtonTextColor !== undefined ? formData.primaryButtonTextColor : (sectionData?.primaryButtonTextColor || '')}
+                    onChange={e => handleInputChange('primaryButtonTextColor', e.target.value)}
+                  />
+                </div>
+              </div>
             </div>
             <div className={css.formGroup}>
               <label className={css.formLabel}>Secondary Button Text</label>
@@ -5203,6 +5357,44 @@ const ContentManagementPanel = props => {
                 value={formData.secondaryButtonText !== undefined ? formData.secondaryButtonText : (sectionData?.secondaryButtonText || '')}
                 onChange={e => handleInputChange('secondaryButtonText', e.target.value)}
               />
+            </div>
+            <div className={css.formGroupRow}>
+              <div className={css.formGroupHalf}>
+                <label className={css.formLabel}>Secondary Button Border</label>
+                <div className={css.colorPickerRow}>
+                  <input
+                    type="color"
+                    className={css.colorPicker}
+                    value={formData.secondaryButtonBorderColor || sectionData?.secondaryButtonBorderColor || '#ffffff'}
+                    onChange={e => handleInputChange('secondaryButtonBorderColor', e.target.value)}
+                  />
+                  <input
+                    type="text"
+                    className={css.colorInput}
+                    placeholder="#ffffff"
+                    value={formData.secondaryButtonBorderColor !== undefined ? formData.secondaryButtonBorderColor : (sectionData?.secondaryButtonBorderColor || '')}
+                    onChange={e => handleInputChange('secondaryButtonBorderColor', e.target.value)}
+                  />
+                </div>
+              </div>
+              <div className={css.formGroupHalf}>
+                <label className={css.formLabel}>Secondary Button Text Color</label>
+                <div className={css.colorPickerRow}>
+                  <input
+                    type="color"
+                    className={css.colorPicker}
+                    value={formData.secondaryButtonTextColor || sectionData?.secondaryButtonTextColor || '#ffffff'}
+                    onChange={e => handleInputChange('secondaryButtonTextColor', e.target.value)}
+                  />
+                  <input
+                    type="text"
+                    className={css.colorInput}
+                    placeholder="#ffffff"
+                    value={formData.secondaryButtonTextColor !== undefined ? formData.secondaryButtonTextColor : (sectionData?.secondaryButtonTextColor || '')}
+                    onChange={e => handleInputChange('secondaryButtonTextColor', e.target.value)}
+                  />
+                </div>
+              </div>
             </div>
 
             {/* Background Settings */}
