@@ -5,6 +5,65 @@ const ROOT_URL = process.env.REACT_APP_MARKETPLACE_ROOT_URL;
 const CONSOLE_URL = process.env.SERVER_SHARETRIBE_CONSOLE_URL || 'https://console.sharetribe.com';
 const USING_SSL = process.env.REACT_APP_SHARETRIBE_USING_SSL === 'true';
 
+/**
+ * Validate that a target path is safe for redirect (prevents open redirect vulnerability)
+ * Only allows relative paths within the application
+ */
+const validateTargetPath = (targetPath) => {
+  if (!targetPath || typeof targetPath !== 'string') {
+    return null;
+  }
+
+  // Remove any whitespace
+  const path = targetPath.trim();
+
+  // Must start with / (relative path)
+  if (!path.startsWith('/')) {
+    console.warn('[SECURITY] Rejected target_path: must be relative path starting with /');
+    return null;
+  }
+
+  // Block protocol-relative URLs (//example.com)
+  if (path.startsWith('//')) {
+    console.warn('[SECURITY] Rejected target_path: protocol-relative URLs not allowed');
+    return null;
+  }
+
+  // Block javascript: and data: URLs
+  if (/^\/\s*javascript:/i.test(path) || /^\/\s*data:/i.test(path)) {
+    console.warn('[SECURITY] Rejected target_path: javascript/data protocols not allowed');
+    return null;
+  }
+
+  // Block backslash which can be converted to forward slash by browsers
+  if (path.includes('\\')) {
+    console.warn('[SECURITY] Rejected target_path: backslashes not allowed');
+    return null;
+  }
+
+  // Limit length to prevent DoS
+  if (path.length > 2000) {
+    console.warn('[SECURITY] Rejected target_path: exceeds maximum length');
+    return null;
+  }
+
+  // Decode and re-check for encoded attacks
+  try {
+    const decoded = decodeURIComponent(path);
+    if (decoded.startsWith('//') || decoded.includes('\\') ||
+        /javascript:/i.test(decoded) || /data:/i.test(decoded)) {
+      console.warn('[SECURITY] Rejected target_path: encoded attack detected');
+      return null;
+    }
+  } catch (e) {
+    // Invalid URL encoding
+    console.warn('[SECURITY] Rejected target_path: invalid URL encoding');
+    return null;
+  }
+
+  return path;
+};
+
 // redirect_uri param used when initiating a login as authentication flow and
 // when requesting a token using an authorization code
 const loginAsRedirectUri = `${ROOT_URL.replace(/\/$/, '')}/api/login-as`;
@@ -69,12 +128,18 @@ code_challenge_method=S256`;
   const cookieOpts = {
     maxAge: 1000 * 30, // 30 seconds
     secure: USING_SSL,
+    httpOnly: true, // Prevent XSS access to auth cookies
+    sameSite: 'lax', // CSRF protection
   };
 
   res.cookie(stateKey, state, cookieOpts);
   res.cookie(codeVerifierKey, codeVerifier, cookieOpts);
-  if (targetPath) {
-    res.cookie(targetPathKey, targetPath, cookieOpts);
+
+  // Validate target path to prevent open redirect attacks
+  const validatedTargetPath = validateTargetPath(targetPath);
+  if (validatedTargetPath) {
+    res.cookie(targetPathKey, validatedTargetPath, cookieOpts);
   }
+
   return res.redirect(location);
 };

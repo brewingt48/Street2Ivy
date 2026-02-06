@@ -58,20 +58,104 @@ const FILE_SIGNATURES = {
 };
 
 /**
+ * Comprehensive SVG XSS validation
+ * Checks for various attack vectors including script injection, event handlers,
+ * javascript: protocols, external resources, and dangerous elements
+ */
+function validateSvgSecurity(content) {
+  // Normalize content for checking (lowercase for case-insensitive matching)
+  const normalizedContent = content.toLowerCase();
+
+  // Check for SVG tag
+  if (!/<svg[\s>]/i.test(content)) {
+    return { valid: false, reason: 'Not a valid SVG file' };
+  }
+
+  // List of dangerous patterns to block
+  const dangerousPatterns = [
+    // Script tags and JavaScript execution
+    { pattern: /<script[\s>]/i, reason: 'Script tags not allowed' },
+    { pattern: /javascript\s*:/i, reason: 'JavaScript protocol not allowed' },
+    { pattern: /vbscript\s*:/i, reason: 'VBScript protocol not allowed' },
+    { pattern: /data\s*:\s*text\/html/i, reason: 'Data HTML protocol not allowed' },
+
+    // Event handlers (comprehensive list)
+    { pattern: /\son\w+\s*=/i, reason: 'Event handlers not allowed' },
+    { pattern: /\sonfocus\s*=/i, reason: 'onfocus event not allowed' },
+    { pattern: /\sonload\s*=/i, reason: 'onload event not allowed' },
+    { pattern: /\sonerror\s*=/i, reason: 'onerror event not allowed' },
+    { pattern: /\sonmouse\w*\s*=/i, reason: 'Mouse events not allowed' },
+    { pattern: /\sonclick\s*=/i, reason: 'onclick event not allowed' },
+
+    // Dangerous elements that can embed content
+    { pattern: /<foreignobject[\s>]/i, reason: 'foreignObject element not allowed' },
+    { pattern: /<iframe[\s>]/i, reason: 'iframe element not allowed' },
+    { pattern: /<embed[\s>]/i, reason: 'embed element not allowed' },
+    { pattern: /<object[\s>]/i, reason: 'object element not allowed' },
+
+    // External resource loading (potential SSRF and data exfiltration)
+    { pattern: /<use[^>]+href\s*=\s*["']https?:/i, reason: 'External use references not allowed' },
+    { pattern: /<image[^>]+href\s*=\s*["']https?:/i, reason: 'External image references not allowed' },
+
+    // Animation-based attacks
+    { pattern: /<animate[^>]+attributename\s*=\s*["']href/i, reason: 'Animated href not allowed' },
+    { pattern: /<set[^>]+to\s*=\s*["']javascript:/i, reason: 'JavaScript in set element not allowed' },
+
+    // Entity and encoding attacks
+    { pattern: /<!entity/i, reason: 'Entity declarations not allowed' },
+    { pattern: /<!doctype[^>]+\[/i, reason: 'DTD subset not allowed' },
+
+    // XLink with JavaScript
+    { pattern: /xlink:href\s*=\s*["']javascript:/i, reason: 'JavaScript in xlink:href not allowed' },
+  ];
+
+  for (const { pattern, reason } of dangerousPatterns) {
+    if (pattern.test(content)) {
+      console.warn(`[SECURITY] SVG validation failed: ${reason}`);
+      return { valid: false, reason };
+    }
+  }
+
+  // Additional check: Look for encoded versions of dangerous content
+  // Decode common encodings and re-check
+  try {
+    let decoded = content;
+    // Check for hex encoding (\xNN or &#xNN;)
+    decoded = decoded.replace(/&#x([0-9a-f]{2});/gi, (_, hex) =>
+      String.fromCharCode(parseInt(hex, 16))
+    );
+    // Check for decimal encoding (&#NNN;)
+    decoded = decoded.replace(/&#(\d+);/g, (_, dec) =>
+      String.fromCharCode(parseInt(dec, 10))
+    );
+
+    // Re-run checks on decoded content
+    if (/<script/i.test(decoded) || /javascript:/i.test(decoded) || /\son\w+\s*=/i.test(decoded)) {
+      console.warn('[SECURITY] SVG validation failed: Encoded dangerous content detected');
+      return { valid: false, reason: 'Encoded dangerous content detected' };
+    }
+  } catch (e) {
+    console.warn('[SECURITY] SVG validation: Error during decode check');
+  }
+
+  return { valid: true };
+}
+
+/**
  * Verify file content matches its claimed MIME type using magic bytes
  * Returns true if valid, false if suspicious
  */
 function verifyFileContent(buffer, mimeType) {
   const signatures = FILE_SIGNATURES[mimeType];
 
-  // SVG files are XML-based, check for XML/SVG content
+  // SVG files are XML-based, require comprehensive XSS validation
   if (mimeType === 'image/svg+xml') {
-    const content = buffer.toString('utf8', 0, Math.min(buffer.length, 1000));
-    // Check for SVG tag and ensure no script tags (XSS prevention)
-    const hasSvg = /<svg[\s>]/i.test(content);
-    const hasScript = /<script[\s>]/i.test(content);
-    const hasOnEvent = /\son\w+\s*=/i.test(content);
-    return hasSvg && !hasScript && !hasOnEvent;
+    const content = buffer.toString('utf8');
+    const validation = validateSvgSecurity(content);
+    if (!validation.valid) {
+      console.error(`[SECURITY] SVG XSS validation failed: ${validation.reason}`);
+    }
+    return validation.valid;
   }
 
   // If no signatures defined for this type, skip magic byte check

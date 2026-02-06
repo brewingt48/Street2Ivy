@@ -41,6 +41,40 @@ const strategyOptions = {
  * @param {Object} profile Object containing user information
  * @param {Function} done Session management function, introduced in `authenticateGoogleCallback`
  */
+/**
+ * Safely parse OAuth state parameter with validation
+ * @param {String} state - The state parameter from OAuth callback
+ * @returns {Object} Parsed query params or empty object on error
+ */
+const parseOAuthState = (state) => {
+  if (!state || typeof state !== 'string') {
+    console.error('[SECURITY] Invalid OAuth state parameter: missing or not a string');
+    return {};
+  }
+
+  try {
+    const parsed = JSON.parse(state);
+
+    // Validate parsed object structure - only allow expected fields
+    const allowedFields = ['from', 'defaultReturn', 'defaultConfirm', 'userType'];
+    const sanitized = {};
+
+    for (const field of allowedFields) {
+      if (parsed[field] !== undefined) {
+        // Ensure values are strings to prevent prototype pollution
+        if (typeof parsed[field] === 'string') {
+          sanitized[field] = parsed[field];
+        }
+      }
+    }
+
+    return sanitized;
+  } catch (error) {
+    console.error('[SECURITY] Failed to parse OAuth state parameter:', error.message);
+    return {};
+  }
+};
+
 const verifyCallback = (req, accessToken, refreshToken, rawReturn, profile, done) => {
   // We need to add additional parameter `rawReturn` to the callback
   // so that we can access the id_token coming from Google
@@ -49,7 +83,7 @@ const verifyCallback = (req, accessToken, refreshToken, rawReturn, profile, done
 
   const { email, given_name, family_name } = profile._json;
   const state = req.query.state;
-  const queryParams = JSON.parse(state);
+  const queryParams = parseOAuthState(state);
 
   const { from, defaultReturn, defaultConfirm, userType } = queryParams;
 

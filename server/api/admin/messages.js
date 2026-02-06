@@ -1,10 +1,53 @@
+const fs = require('fs');
+const path = require('path');
 const { getIntegrationSdk } = require('../../api-util/integrationSdk');
 const { getSdk, handleError } = require('../../api-util/sdk');
 
-// In-memory storage for admin messages (in production, use a database)
-// This is a simple implementation for demonstration purposes
-let adminMessages = [];
-let messageIdCounter = 1;
+// Persistent storage for admin messages
+// Uses file-based storage for persistence across server restarts
+const MESSAGES_FILE = path.join(__dirname, '../../data/admin-messages.json');
+
+// Ensure data directory exists
+const dataDir = path.join(__dirname, '../../data');
+if (!fs.existsSync(dataDir)) {
+  fs.mkdirSync(dataDir, { recursive: true });
+}
+
+/**
+ * Load messages from persistent storage
+ */
+function loadMessages() {
+  try {
+    if (fs.existsSync(MESSAGES_FILE)) {
+      const data = fs.readFileSync(MESSAGES_FILE, 'utf8');
+      const parsed = JSON.parse(data);
+      return {
+        messages: parsed.messages || [],
+        messageIdCounter: parsed.messageIdCounter || 1,
+      };
+    }
+  } catch (error) {
+    console.error('Error loading admin messages file:', error);
+  }
+  return { messages: [], messageIdCounter: 1 };
+}
+
+/**
+ * Save messages to persistent storage
+ */
+function saveMessages(messages, messageIdCounter) {
+  try {
+    const data = { messages, messageIdCounter, lastUpdated: new Date().toISOString() };
+    fs.writeFileSync(MESSAGES_FILE, JSON.stringify(data, null, 2), 'utf8');
+    return true;
+  } catch (error) {
+    console.error('Error saving admin messages file:', error);
+    return false;
+  }
+}
+
+// Initialize from persistent storage
+let { messages: adminMessages, messageIdCounter } = loadMessages();
 
 /**
  * Verify the current user is a system admin
@@ -25,11 +68,11 @@ async function verifySystemAdmin(req, res) {
 /**
  * POST /api/admin/messages
  *
- * Send a message from system admin to an educational admin or student.
- * Used for communicating about student behavior, platform matters, or direct student outreach.
+ * Send a message from system admin to an educational admin, student, or corporate partner.
+ * Used for communicating about platform matters, policy updates, or account-related issues.
  *
  * Body:
- *   recipientId  - User ID of the recipient (educational admin or student)
+ *   recipientId  - User ID of the recipient (educational admin, student, or corporate partner)
  *   subject      - Message subject
  *   content      - Message content
  *   studentId    - (optional) Related student ID (for messages to educational admins about a student)
@@ -65,11 +108,11 @@ async function sendMessage(req, res) {
     const recipientPublicData = recipient.attributes.profile.publicData || {};
     const recipientType = recipientPublicData.userType;
 
-    // System admin can message educational admins and students
-    const allowedRecipientTypes = ['educational-admin', 'student'];
+    // System admin can message educational admins, students, and corporate partners
+    const allowedRecipientTypes = ['educational-admin', 'student', 'corporate-partner'];
     if (!allowedRecipientTypes.includes(recipientType)) {
       return res.status(400).json({
-        error: 'Messages can only be sent to educational administrators or students.',
+        error: 'Messages can only be sent to educational administrators, students, or corporate partners.',
       });
     }
 
@@ -112,6 +155,11 @@ async function sendMessage(req, res) {
     // Store the message
     adminMessages.push(message);
 
+    // Persist to storage
+    if (!saveMessages(adminMessages, messageIdCounter)) {
+      console.error('Warning: Failed to persist admin message to storage');
+    }
+
     res.status(201).json({
       success: true,
       message: 'Message sent successfully.',
@@ -148,8 +196,12 @@ async function listMessages(req, res) {
     if (userType === 'system-admin') {
       // System admins see all messages they've sent
       filteredMessages = adminMessages.filter(m => m.senderId === currentUser.id.uuid);
-    } else if (userType === 'educational-admin' || userType === 'student') {
-      // Educational admins and students see messages addressed to them
+    } else if (
+      userType === 'educational-admin' ||
+      userType === 'student' ||
+      userType === 'corporate-partner'
+    ) {
+      // Educational admins, students, and corporate partners see messages addressed to them
       filteredMessages = adminMessages.filter(m => m.recipientId === currentUser.id.uuid);
     } else {
       return res.status(403).json({
@@ -216,6 +268,11 @@ async function markAsRead(req, res) {
     // Mark as read
     adminMessages[messageIndex].read = true;
 
+    // Persist to storage
+    if (!saveMessages(adminMessages, messageIdCounter)) {
+      console.error('Warning: Failed to persist message read status to storage');
+    }
+
     res.status(200).json({
       success: true,
       message: 'Message marked as read.',
@@ -238,8 +295,12 @@ async function getUnreadCount(req, res) {
     const currentUser = currentUserResponse.data.data;
     const publicData = currentUser.attributes.profile.publicData || {};
 
-    // Educational admins and students can have unread messages
-    if (publicData.userType !== 'educational-admin' && publicData.userType !== 'student') {
+    // Educational admins, students, and corporate partners can have unread messages
+    if (
+      publicData.userType !== 'educational-admin' &&
+      publicData.userType !== 'student' &&
+      publicData.userType !== 'corporate-partner'
+    ) {
       return res.status(200).json({ unreadCount: 0 });
     }
 

@@ -36,6 +36,9 @@ module.exports = (err, user, req, res, idpClientId, idpId) => {
         },
         {
           maxAge: 15 * 60 * 1000, // 15 minutes
+          httpOnly: false, // Frontend needs to read this for error display
+          secure: USING_SSL,
+          sameSite: 'lax',
         }
       )
       .redirect(`${rootUrl}/login#`);
@@ -59,6 +62,9 @@ module.exports = (err, user, req, res, idpClientId, idpId) => {
         },
         {
           maxAge: 15 * 60 * 1000, // 15 minutes
+          httpOnly: false, // Frontend needs to read this for error display
+          secure: USING_SSL,
+          sameSite: 'lax',
         }
       )
       .redirect(`${rootUrl}/login#`);
@@ -127,6 +133,9 @@ module.exports = (err, user, req, res, idpClientId, idpId) => {
         },
         {
           maxAge: 15 * 60 * 1000, // 15 minutes
+          httpOnly: false, // Frontend needs to read this for signup flow
+          secure: USING_SSL,
+          sameSite: 'lax',
         }
       );
 

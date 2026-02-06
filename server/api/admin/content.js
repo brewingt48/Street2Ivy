@@ -11,6 +11,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const { verifySystemAdmin, auditLog, getClientIP } = require('../../api-util/security');
 
 // Content storage file path
 const CONTENT_FILE = path.join(__dirname, '../../data/landing-content.json');
@@ -27,7 +28,7 @@ const defaultContent = {
     id: 'branding',
     section: 'branding',
     logoUrl: null,
-    logoHeight: 36, // 24, 36, or 48
+    logoHeight: 36, // 24, 36, 48, 60, or 72
     tagline: 'Connecting Ivy League Talent with Industry Leaders',
     taglineColor: null, // Custom color for tagline (hex or rgba)
     siteDescription: null, // Additional description text below the hero subtitle
@@ -40,6 +41,7 @@ const defaultContent = {
     socialLinkedin: null,
     socialYoutube: null,
     socialTiktok: null,
+    socialIconSize: 24, // 18, 24, 32, or 40
     isActive: true,
     updatedAt: new Date().toISOString(),
     updatedBy: null,
@@ -292,9 +294,24 @@ function saveContent(content) {
 /**
  * GET /api/admin/content
  * Get all landing page content
+ * Requires: system-admin authentication
  */
-const getContent = (req, res) => {
+const getContent = async (req, res) => {
   try {
+    // Verify system admin authentication
+    const currentUser = await verifySystemAdmin(req, res);
+    if (!currentUser) {
+      auditLog('UNAUTHORIZED_CONTENT_ACCESS', {
+        ip: getClientIP(req),
+        path: req.path,
+        method: 'GET',
+      });
+      return res.status(403).json({
+        error: 'Access denied. System administrator privileges required.',
+        code: 'FORBIDDEN',
+      });
+    }
+
     const content = loadContent();
     res.status(200).json({
       data: content,
@@ -314,9 +331,25 @@ const getContent = (req, res) => {
 /**
  * GET /api/admin/content/:section
  * Get specific section content
+ * Requires: system-admin authentication
  */
-const getSection = (req, res) => {
+const getSection = async (req, res) => {
   try {
+    // Verify system admin authentication
+    const currentUser = await verifySystemAdmin(req, res);
+    if (!currentUser) {
+      auditLog('UNAUTHORIZED_CONTENT_ACCESS', {
+        ip: getClientIP(req),
+        path: req.path,
+        method: 'GET',
+        section: req.params.section,
+      });
+      return res.status(403).json({
+        error: 'Access denied. System administrator privileges required.',
+        code: 'FORBIDDEN',
+      });
+    }
+
     const { section } = req.params;
     const content = loadContent();
 
@@ -334,9 +367,25 @@ const getSection = (req, res) => {
 /**
  * PUT /api/admin/content/:section
  * Update specific section content
+ * Requires: system-admin authentication
  */
-const updateSection = (req, res) => {
+const updateSection = async (req, res) => {
   try {
+    // Verify system admin authentication
+    const currentUser = await verifySystemAdmin(req, res);
+    if (!currentUser) {
+      auditLog('UNAUTHORIZED_CONTENT_MODIFICATION', {
+        ip: getClientIP(req),
+        path: req.path,
+        method: 'PUT',
+        section: req.params.section,
+      });
+      return res.status(403).json({
+        error: 'Access denied. System administrator privileges required.',
+        code: 'FORBIDDEN',
+      });
+    }
+
     const { section } = req.params;
     const updates = req.body;
     const content = loadContent();
@@ -345,8 +394,8 @@ const updateSection = (req, res) => {
       return res.status(404).json({ error: 'Section not found' });
     }
 
-    // Get user info from request (set by auth middleware)
-    const userId = req.user?.id || req.body.userId || 'system';
+    // Get user info from authenticated user
+    const userId = currentUser.id?.uuid || 'system';
 
     // Merge updates with existing content
     content[section] = {
@@ -363,6 +412,12 @@ const updateSection = (req, res) => {
       return res.status(500).json({ error: 'Failed to save content' });
     }
 
+    auditLog('CONTENT_UPDATED', {
+      userId,
+      section,
+      ip: getClientIP(req),
+    });
+
     res.status(200).json({
       data: content[section],
       message: 'Content updated successfully',
@@ -376,9 +431,25 @@ const updateSection = (req, res) => {
 /**
  * POST /api/admin/content/:section/items
  * Add an item to a section (testimonials, features, etc.)
+ * Requires: system-admin authentication
  */
-const addItem = (req, res) => {
+const addItem = async (req, res) => {
   try {
+    // Verify system admin authentication
+    const currentUser = await verifySystemAdmin(req, res);
+    if (!currentUser) {
+      auditLog('UNAUTHORIZED_CONTENT_MODIFICATION', {
+        ip: getClientIP(req),
+        path: req.path,
+        method: 'POST',
+        section: req.params.section,
+      });
+      return res.status(403).json({
+        error: 'Access denied. System administrator privileges required.',
+        code: 'FORBIDDEN',
+      });
+    }
+
     const { section } = req.params;
     const newItem = req.body;
     const content = loadContent();
@@ -391,7 +462,7 @@ const addItem = (req, res) => {
       return res.status(400).json({ error: 'Section does not support items' });
     }
 
-    const userId = req.user?.id || req.body.userId || 'system';
+    const userId = currentUser.id?.uuid || 'system';
 
     // Generate unique ID for new item
     const itemId = `${section}-item-${Date.now()}`;
@@ -408,6 +479,13 @@ const addItem = (req, res) => {
       return res.status(500).json({ error: 'Failed to save content' });
     }
 
+    auditLog('CONTENT_ITEM_ADDED', {
+      userId,
+      section,
+      itemId,
+      ip: getClientIP(req),
+    });
+
     res.status(201).json({
       data: item,
       message: 'Item added successfully',
@@ -421,9 +499,26 @@ const addItem = (req, res) => {
 /**
  * PUT /api/admin/content/:section/items/:itemId
  * Update an item in a section
+ * Requires: system-admin authentication
  */
-const updateItem = (req, res) => {
+const updateItem = async (req, res) => {
   try {
+    // Verify system admin authentication
+    const currentUser = await verifySystemAdmin(req, res);
+    if (!currentUser) {
+      auditLog('UNAUTHORIZED_CONTENT_MODIFICATION', {
+        ip: getClientIP(req),
+        path: req.path,
+        method: 'PUT',
+        section: req.params.section,
+        itemId: req.params.itemId,
+      });
+      return res.status(403).json({
+        error: 'Access denied. System administrator privileges required.',
+        code: 'FORBIDDEN',
+      });
+    }
+
     const { section, itemId } = req.params;
     const updates = req.body;
     const content = loadContent();
@@ -436,7 +531,7 @@ const updateItem = (req, res) => {
       return res.status(400).json({ error: 'Section does not support items' });
     }
 
-    const userId = req.user?.id || req.body.userId || 'system';
+    const userId = currentUser.id?.uuid || 'system';
     const itemIndex = content[section].items.findIndex(item => item.id === itemId);
 
     if (itemIndex === -1) {
@@ -455,6 +550,13 @@ const updateItem = (req, res) => {
       return res.status(500).json({ error: 'Failed to save content' });
     }
 
+    auditLog('CONTENT_ITEM_UPDATED', {
+      userId,
+      section,
+      itemId,
+      ip: getClientIP(req),
+    });
+
     res.status(200).json({
       data: content[section].items[itemIndex],
       message: 'Item updated successfully',
@@ -468,9 +570,26 @@ const updateItem = (req, res) => {
 /**
  * DELETE /api/admin/content/:section/items/:itemId
  * Delete an item from a section
+ * Requires: system-admin authentication
  */
-const deleteItem = (req, res) => {
+const deleteItem = async (req, res) => {
   try {
+    // Verify system admin authentication
+    const currentUser = await verifySystemAdmin(req, res);
+    if (!currentUser) {
+      auditLog('UNAUTHORIZED_CONTENT_MODIFICATION', {
+        ip: getClientIP(req),
+        path: req.path,
+        method: 'DELETE',
+        section: req.params.section,
+        itemId: req.params.itemId,
+      });
+      return res.status(403).json({
+        error: 'Access denied. System administrator privileges required.',
+        code: 'FORBIDDEN',
+      });
+    }
+
     const { section, itemId } = req.params;
     const content = loadContent();
 
@@ -482,7 +601,7 @@ const deleteItem = (req, res) => {
       return res.status(400).json({ error: 'Section does not support items' });
     }
 
-    const userId = req.user?.id || req.body?.userId || 'system';
+    const userId = currentUser.id?.uuid || 'system';
     const itemIndex = content[section].items.findIndex(item => item.id === itemId);
 
     if (itemIndex === -1) {
@@ -497,6 +616,13 @@ const deleteItem = (req, res) => {
       return res.status(500).json({ error: 'Failed to save content' });
     }
 
+    auditLog('CONTENT_ITEM_DELETED', {
+      userId,
+      section,
+      itemId,
+      ip: getClientIP(req),
+    });
+
     res.status(200).json({
       data: deletedItem,
       message: 'Item deleted successfully',
@@ -510,10 +636,25 @@ const deleteItem = (req, res) => {
 /**
  * POST /api/admin/content/reset
  * Reset content to defaults
+ * Requires: system-admin authentication
  */
-const resetContent = (req, res) => {
+const resetContent = async (req, res) => {
   try {
-    const userId = req.user?.id || req.body?.userId || 'system';
+    // Verify system admin authentication
+    const currentUser = await verifySystemAdmin(req, res);
+    if (!currentUser) {
+      auditLog('UNAUTHORIZED_CONTENT_RESET', {
+        ip: getClientIP(req),
+        path: req.path,
+        method: 'POST',
+      });
+      return res.status(403).json({
+        error: 'Access denied. System administrator privileges required.',
+        code: 'FORBIDDEN',
+      });
+    }
+
+    const userId = currentUser.id?.uuid || 'system';
 
     // Add updated info to default content
     const resetData = { ...defaultContent };
@@ -525,6 +666,11 @@ const resetContent = (req, res) => {
     if (!saveContent(resetData)) {
       return res.status(500).json({ error: 'Failed to reset content' });
     }
+
+    auditLog('CONTENT_RESET', {
+      userId,
+      ip: getClientIP(req),
+    });
 
     res.status(200).json({
       data: resetData,
