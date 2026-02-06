@@ -6,6 +6,27 @@ import { LayoutSingleColumn, Page } from '../../components';
 
 import css from './LegalPage.module.css';
 
+// Security: HTML sanitization to prevent XSS attacks
+const sanitizeHtml = (html) => {
+  if (!html) return '';
+  return html
+    // Remove script tags and their content
+    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+    // Remove event handlers (onclick, onerror, onload, etc.)
+    .replace(/\s*on\w+\s*=\s*["'][^"']*["']/gi, '')
+    .replace(/\s*on\w+\s*=\s*[^\s>]*/gi, '')
+    // Remove javascript: protocol
+    .replace(/javascript:/gi, '')
+    // Remove vbscript: protocol
+    .replace(/vbscript:/gi, '')
+    // Block data: URLs that could contain executable content
+    .replace(/data:\s*text\/html/gi, 'data-blocked:text/html')
+    // Remove expression() CSS (IE vulnerability)
+    .replace(/expression\s*\(/gi, 'blocked(')
+    // Remove meta refresh
+    .replace(/<meta[^>]*http-equiv\s*=\s*["']?refresh["']?[^>]*>/gi, '');
+};
+
 // Map URL slugs to API page types
 const slugToPageType = {
   'privacy-policy': 'privacyPolicy',
@@ -86,7 +107,7 @@ const LegalPage = () => {
             )}
             <div
               className={css.body}
-              dangerouslySetInnerHTML={{ __html: pageData.content }}
+              dangerouslySetInnerHTML={{ __html: sanitizeHtml(pageData.content) }}
             />
           </div>
         </div>

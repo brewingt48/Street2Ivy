@@ -46,6 +46,16 @@ import {
   reinstateWorkHoldAction,
   clearAllHoldsForPartnerAction,
   clearSelectedPartner,
+  // Blog management
+  fetchBlogPosts,
+  createBlogPostAction,
+  updateBlogPostAction,
+  deleteBlogPostAction,
+  setSelectedBlogPost,
+  clearSelectedBlogPost,
+  clearBlogPostState,
+  addBlogCategoryThunk,
+  deleteBlogCategoryThunk,
 } from './AdminDashboardPage.duck';
 
 import css from './AdminDashboardPage.module.css';
@@ -444,12 +454,45 @@ const UserManagementPanel = props => {
                       </div>
                     </td>
                     <td>
-                      <span className={classNames(css.userTypeBadge, css[userType])}>
+                      <button
+                        type="button"
+                        className={classNames(css.userTypeBadge, css[userType], css.userTypeBadgeClickable)}
+                        onClick={() => handleFilterChange('userType', userType)}
+                        title={`Filter by user type: ${getUserTypeLabel(userType)}`}
+                      >
                         {getUserTypeLabel(userType)}
-                      </span>
+                      </button>
                     </td>
-                    <td className={css.collegeCell}>{collegeOrCompany}</td>
-                    <td className={css.locationCell}>{location}</td>
+                    <td className={css.collegeCell}>
+                      {collegeOrCompany && collegeOrCompany !== '-' ? (
+                        <button
+                          type="button"
+                          className={css.clickableField}
+                          onClick={() => {
+                            handleFilterChange('search', collegeOrCompany);
+                            handleSearch();
+                          }}
+                          title={`Search for users from: ${collegeOrCompany}`}
+                        >
+                          {collegeOrCompany}
+                        </button>
+                      ) : '-'}
+                    </td>
+                    <td className={css.locationCell}>
+                      {location && location !== '-' ? (
+                        <button
+                          type="button"
+                          className={css.clickableField}
+                          onClick={() => {
+                            handleFilterChange('search', location);
+                            handleSearch();
+                          }}
+                          title={`Search for users in: ${location}`}
+                        >
+                          {location}
+                        </button>
+                      ) : '-'}
+                    </td>
                     <td>
                       <UserStatsCell
                         user={user}
@@ -733,10 +776,21 @@ const MessagesPanel = props => {
                 onClick={() => setSelectedMessage(message)}
               >
                 <td className={css.emailFrom}>
-                  {isSent
-                    ? (message.recipientName || message.recipientId)
-                    : (message.senderName || 'System')
-                  }
+                  {isSent && message.recipientId ? (
+                    <NamedLink
+                      className={css.emailRecipientLink}
+                      name="ProfilePage"
+                      params={{ id: message.recipientId }}
+                      onClick={e => e.stopPropagation()}
+                      title="View recipient profile"
+                    >
+                      {message.recipientName || message.recipientId}
+                    </NamedLink>
+                  ) : (
+                    isSent
+                      ? (message.recipientName || message.recipientId)
+                      : (message.senderName || 'System')
+                  )}
                 </td>
                 <td className={css.emailSubject}>{message.subject}</td>
                 <td className={css.emailDate}>{formatDate(message.createdAt)}</td>
@@ -768,7 +822,19 @@ const MessagesPanel = props => {
               </div>
               <div className={css.messageDetailMetaRow}>
                 <span className={css.messageDetailLabel}>To:</span>
-                <span>{selectedMessage.recipientName || selectedMessage.recipientId}</span>
+                {selectedMessage.recipientId ? (
+                  <NamedLink
+                    className={css.messageRecipientLink}
+                    name="ProfilePage"
+                    params={{ id: selectedMessage.recipientId }}
+                    title="View recipient profile"
+                  >
+                    {selectedMessage.recipientName || selectedMessage.recipientId}
+                    <span className={css.profileArrow}>→</span>
+                  </NamedLink>
+                ) : (
+                  <span>{selectedMessage.recipientName || selectedMessage.recipientId}</span>
+                )}
               </div>
               <div className={css.messageDetailMetaRow}>
                 <span className={css.messageDetailLabel}>Date:</span>
@@ -1050,7 +1116,7 @@ const ClickableStatCard = ({ value, label, onClick, hasData }) => {
 // ================ Reports Panel ================ //
 
 const ReportsPanel = props => {
-  const { reports, fetchInProgress, currentReportType, onFetchReports, users } = props;
+  const { reports, fetchInProgress, currentReportType, onFetchReports, users, onNavigateToUsersWithSearch } = props;
 
   const [statDetailModal, setStatDetailModal] = useState(null);
 
@@ -1307,10 +1373,52 @@ const ReportsPanel = props => {
               <tbody>
                 {institutions.map((inst, idx) => (
                   <tr key={idx}>
-                    <td>{inst.name || 'Unknown'}</td>
-                    <td>{inst.domain}</td>
-                    <td>{inst.studentCount}</td>
-                    <td>{inst.adminCount}</td>
+                    <td>
+                      {inst.name ? (
+                        <button
+                          type="button"
+                          className={css.clickableTableCell}
+                          onClick={() => onNavigateToUsersWithSearch?.(inst.name)}
+                          title={`View users from ${inst.name}`}
+                        >
+                          {inst.name}
+                        </button>
+                      ) : 'Unknown'}
+                    </td>
+                    <td>
+                      <button
+                        type="button"
+                        className={css.clickableTableCell}
+                        onClick={() => onNavigateToUsersWithSearch?.(inst.domain)}
+                        title={`View users with domain ${inst.domain}`}
+                      >
+                        {inst.domain}
+                      </button>
+                    </td>
+                    <td>
+                      {inst.studentCount > 0 ? (
+                        <button
+                          type="button"
+                          className={css.clickableStatInTable}
+                          onClick={() => onNavigateToUsersWithSearch?.(inst.name || inst.domain, 'student')}
+                          title={`View ${inst.studentCount} students from this institution`}
+                        >
+                          {inst.studentCount}
+                        </button>
+                      ) : '0'}
+                    </td>
+                    <td>
+                      {inst.adminCount > 0 ? (
+                        <button
+                          type="button"
+                          className={css.clickableStatInTable}
+                          onClick={() => onNavigateToUsersWithSearch?.(inst.name || inst.domain, 'educational-admin')}
+                          title={`View ${inst.adminCount} admins from this institution`}
+                        >
+                          {inst.adminCount}
+                        </button>
+                      ) : '0'}
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -4698,6 +4806,438 @@ const EducationalAdminApplicationsPanel = props => {
   );
 };
 
+// ================ Blog Management Panel ================ //
+
+const BlogManagementPanel = props => {
+  const {
+    posts,
+    pagination,
+    categories,
+    selectedPost,
+    fetchInProgress,
+    saveInProgress,
+    saveSuccess,
+    saveError,
+    deleteInProgress,
+    onFetchPosts,
+    onCreatePost,
+    onUpdatePost,
+    onDeletePost,
+    onSelectPost,
+    onClearSelectedPost,
+    onClearBlogPostState,
+    onAddCategory,
+    onDeleteCategory,
+  } = props;
+
+  const [isEditing, setIsEditing] = useState(false);
+  const [editForm, setEditForm] = useState({
+    title: '',
+    content: '',
+    excerpt: '',
+    category: 'News',
+    tags: '',
+    status: 'draft',
+    featuredImage: '',
+  });
+  const [filter, setFilter] = useState({ status: '', category: '', search: '' });
+  const [newCategory, setNewCategory] = useState('');
+  const [confirmDelete, setConfirmDelete] = useState(null);
+
+  useEffect(() => {
+    onFetchPosts({});
+  }, []);
+
+  useEffect(() => {
+    if (saveSuccess) {
+      setIsEditing(false);
+      setEditForm({ title: '', content: '', excerpt: '', category: 'News', tags: '', status: 'draft', featuredImage: '' });
+      onClearBlogPostState();
+      onClearSelectedPost();
+    }
+  }, [saveSuccess]);
+
+  const handleFilterChange = (key, value) => {
+    const newFilter = { ...filter, [key]: value };
+    setFilter(newFilter);
+    onFetchPosts(newFilter);
+  };
+
+  const handleEditPost = (post) => {
+    setEditForm({
+      title: post.title || '',
+      content: post.content || '',
+      excerpt: post.excerpt || '',
+      category: post.category || 'News',
+      tags: post.tags?.join(', ') || '',
+      status: post.status || 'draft',
+      featuredImage: post.featuredImage || '',
+    });
+    onSelectPost(post);
+    setIsEditing(true);
+  };
+
+  const handleNewPost = () => {
+    setEditForm({ title: '', content: '', excerpt: '', category: 'News', tags: '', status: 'draft', featuredImage: '' });
+    onClearSelectedPost();
+    setIsEditing(true);
+  };
+
+  const handleSavePost = () => {
+    const postData = {
+      ...editForm,
+      tags: editForm.tags.split(',').map(t => t.trim()).filter(t => t),
+    };
+
+    if (selectedPost) {
+      onUpdatePost(selectedPost.id, postData);
+    } else {
+      onCreatePost(postData);
+    }
+  };
+
+  const handleDeletePost = (postId) => {
+    onDeletePost(postId);
+    setConfirmDelete(null);
+  };
+
+  const handleAddCategory = () => {
+    if (newCategory.trim()) {
+      onAddCategory(newCategory.trim());
+      setNewCategory('');
+    }
+  };
+
+  const formatDate = (dateStr) => {
+    if (!dateStr) return '-';
+    return new Date(dateStr).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+    });
+  };
+
+  const getStatusBadgeClass = (status) => {
+    switch (status) {
+      case 'published': return css.statusPublished;
+      case 'draft': return css.statusDraft;
+      case 'archived': return css.statusArchived;
+      default: return '';
+    }
+  };
+
+  if (isEditing) {
+    return (
+      <div className={css.panel}>
+        <div className={css.panelHeader}>
+          <h2 className={css.panelTitle}>
+            {selectedPost ? 'Edit Blog Post' : 'New Blog Post'}
+          </h2>
+          <button
+            type="button"
+            className={css.secondaryButton}
+            onClick={() => {
+              setIsEditing(false);
+              onClearSelectedPost();
+            }}
+          >
+            ← Back to List
+          </button>
+        </div>
+
+        <div className={css.blogEditorForm}>
+          <div className={css.formGroup}>
+            <label className={css.formLabel}>Title *</label>
+            <input
+              type="text"
+              className={css.formInput}
+              value={editForm.title}
+              onChange={e => setEditForm({ ...editForm, title: e.target.value })}
+              placeholder="Enter post title..."
+              maxLength={200}
+            />
+          </div>
+
+          <div className={css.formRow}>
+            <div className={css.formGroup}>
+              <label className={css.formLabel}>Category</label>
+              <select
+                className={css.formSelect}
+                value={editForm.category}
+                onChange={e => setEditForm({ ...editForm, category: e.target.value })}
+              >
+                {categories.map(cat => (
+                  <option key={cat} value={cat}>{cat}</option>
+                ))}
+              </select>
+            </div>
+
+            <div className={css.formGroup}>
+              <label className={css.formLabel}>Status</label>
+              <select
+                className={css.formSelect}
+                value={editForm.status}
+                onChange={e => setEditForm({ ...editForm, status: e.target.value })}
+              >
+                <option value="draft">Draft</option>
+                <option value="published">Published</option>
+                <option value="archived">Archived</option>
+              </select>
+            </div>
+          </div>
+
+          <div className={css.formGroup}>
+            <label className={css.formLabel}>Excerpt (short description)</label>
+            <textarea
+              className={css.formTextarea}
+              value={editForm.excerpt}
+              onChange={e => setEditForm({ ...editForm, excerpt: e.target.value })}
+              placeholder="Brief summary of the post..."
+              rows={3}
+            />
+          </div>
+
+          <div className={css.formGroup}>
+            <label className={css.formLabel}>Content</label>
+            <textarea
+              className={css.formTextareaLarge}
+              value={editForm.content}
+              onChange={e => setEditForm({ ...editForm, content: e.target.value })}
+              placeholder="Write your blog post content here... (HTML supported)"
+              rows={15}
+            />
+          </div>
+
+          <div className={css.formGroup}>
+            <label className={css.formLabel}>Tags (comma separated)</label>
+            <input
+              type="text"
+              className={css.formInput}
+              value={editForm.tags}
+              onChange={e => setEditForm({ ...editForm, tags: e.target.value })}
+              placeholder="e.g., career, tips, internships"
+            />
+          </div>
+
+          <div className={css.formGroup}>
+            <label className={css.formLabel}>Featured Image URL</label>
+            <input
+              type="text"
+              className={css.formInput}
+              value={editForm.featuredImage}
+              onChange={e => setEditForm({ ...editForm, featuredImage: e.target.value })}
+              placeholder="https://example.com/image.jpg"
+            />
+          </div>
+
+          {saveError && (
+            <div className={css.errorMessage}>
+              Error: {saveError.message || 'Failed to save post'}
+            </div>
+          )}
+
+          <div className={css.formActions}>
+            <button
+              type="button"
+              className={css.secondaryButton}
+              onClick={() => {
+                setIsEditing(false);
+                onClearSelectedPost();
+              }}
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              className={css.primaryButton}
+              onClick={handleSavePost}
+              disabled={saveInProgress || !editForm.title.trim()}
+            >
+              {saveInProgress ? 'Saving...' : (selectedPost ? 'Update Post' : 'Create Post')}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className={css.panel}>
+      <div className={css.panelHeader}>
+        <h2 className={css.panelTitle}>
+          <FormattedMessage id="AdminDashboardPage.blogManagement" defaultMessage="Blog Management" />
+        </h2>
+        <button type="button" className={css.primaryButton} onClick={handleNewPost}>
+          + New Post
+        </button>
+      </div>
+
+      {/* Filters */}
+      <div className={css.filterBar}>
+        <input
+          type="text"
+          className={css.filterInput}
+          placeholder="Search posts..."
+          value={filter.search}
+          onChange={e => handleFilterChange('search', e.target.value)}
+        />
+        <select
+          className={css.filterSelect}
+          value={filter.status}
+          onChange={e => handleFilterChange('status', e.target.value)}
+        >
+          <option value="">All Statuses</option>
+          <option value="draft">Drafts</option>
+          <option value="published">Published</option>
+          <option value="archived">Archived</option>
+        </select>
+        <select
+          className={css.filterSelect}
+          value={filter.category}
+          onChange={e => handleFilterChange('category', e.target.value)}
+        >
+          <option value="">All Categories</option>
+          {categories.map(cat => (
+            <option key={cat} value={cat}>{cat}</option>
+          ))}
+        </select>
+      </div>
+
+      {/* Category Management */}
+      <div className={css.categorySection}>
+        <h4 className={css.categoryTitle}>Categories</h4>
+        <div className={css.categoryList}>
+          {categories.map(cat => (
+            <span key={cat} className={css.categoryTag}>
+              {cat}
+              <button
+                type="button"
+                className={css.categoryRemove}
+                onClick={() => onDeleteCategory(cat)}
+                title="Remove category"
+              >
+                ×
+              </button>
+            </span>
+          ))}
+        </div>
+        <div className={css.addCategoryForm}>
+          <input
+            type="text"
+            className={css.addCategoryInput}
+            value={newCategory}
+            onChange={e => setNewCategory(e.target.value)}
+            placeholder="New category..."
+          />
+          <button
+            type="button"
+            className={css.addCategoryButton}
+            onClick={handleAddCategory}
+            disabled={!newCategory.trim()}
+          >
+            Add
+          </button>
+        </div>
+      </div>
+
+      {/* Posts Table */}
+      {fetchInProgress ? (
+        <div className={css.loading}>Loading blog posts...</div>
+      ) : posts.length === 0 ? (
+        <div className={css.emptyState}>
+          <p>No blog posts yet.</p>
+          <button type="button" className={css.primaryButton} onClick={handleNewPost}>
+            Create your first post
+          </button>
+        </div>
+      ) : (
+        <>
+          <table className={css.dataTable}>
+            <thead>
+              <tr>
+                <th>Title</th>
+                <th>Category</th>
+                <th>Status</th>
+                <th>Created</th>
+                <th>Published</th>
+                <th>Views</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {posts.map(post => (
+                <tr key={post.id}>
+                  <td>
+                    <div className={css.postTitleCell}>
+                      <strong>{post.title}</strong>
+                      {post.excerpt && (
+                        <span className={css.postExcerpt}>{post.excerpt.substring(0, 60)}...</span>
+                      )}
+                    </div>
+                  </td>
+                  <td>{post.category}</td>
+                  <td>
+                    <span className={classNames(css.statusBadge, getStatusBadgeClass(post.status))}>
+                      {post.status}
+                    </span>
+                  </td>
+                  <td>{formatDate(post.createdAt)}</td>
+                  <td>{formatDate(post.publishedAt)}</td>
+                  <td>{post.viewCount || 0}</td>
+                  <td>
+                    <div className={css.actionButtons}>
+                      <button
+                        type="button"
+                        className={css.editButton}
+                        onClick={() => handleEditPost(post)}
+                      >
+                        Edit
+                      </button>
+                      {confirmDelete === post.id ? (
+                        <>
+                          <button
+                            type="button"
+                            className={css.deleteConfirmButton}
+                            onClick={() => handleDeletePost(post.id)}
+                            disabled={deleteInProgress === post.id}
+                          >
+                            Confirm
+                          </button>
+                          <button
+                            type="button"
+                            className={css.cancelButton}
+                            onClick={() => setConfirmDelete(null)}
+                          >
+                            Cancel
+                          </button>
+                        </>
+                      ) : (
+                        <button
+                          type="button"
+                          className={css.deleteButton}
+                          onClick={() => setConfirmDelete(post.id)}
+                        >
+                          Delete
+                        </button>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+
+          {pagination && pagination.totalPages > 1 && (
+            <div className={css.pagination}>
+              Page {pagination.page} of {pagination.totalPages} ({pagination.totalItems} posts)
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  );
+};
+
 // ================ Content Management Panel ================ //
 
 const ContentManagementPanel = props => {
@@ -5001,6 +5541,26 @@ const ContentManagementPanel = props => {
                   />
                   <span className={css.radioText}>Large (48px)</span>
                 </label>
+                <label className={css.radioLabel}>
+                  <input
+                    type="radio"
+                    name="logoHeight"
+                    value="60"
+                    checked={(formData.logoHeight || sectionData?.logoHeight || 36) === 60}
+                    onChange={() => handleInputChange('logoHeight', 60)}
+                  />
+                  <span className={css.radioText}>X-Large (60px)</span>
+                </label>
+                <label className={css.radioLabel}>
+                  <input
+                    type="radio"
+                    name="logoHeight"
+                    value="72"
+                    checked={(formData.logoHeight || sectionData?.logoHeight || 36) === 72}
+                    onChange={() => handleInputChange('logoHeight', 72)}
+                  />
+                  <span className={css.radioText}>XX-Large (72px)</span>
+                </label>
               </div>
               <span className={css.formHint}>
                 Choose the logo height for the navigation bar
@@ -5207,6 +5767,55 @@ const ContentManagementPanel = props => {
                 value={formData.socialTiktok !== undefined ? formData.socialTiktok : (sectionData?.socialTiktok || '')}
                 onChange={e => handleInputChange('socialTiktok', e.target.value)}
               />
+            </div>
+
+            <div className={css.formGroup} style={{ marginTop: '24px' }}>
+              <label className={css.formLabel}>Social Media Icon Size</label>
+              <div className={css.logoSizeSelector}>
+                <label className={css.radioLabel}>
+                  <input
+                    type="radio"
+                    name="socialIconSize"
+                    value="18"
+                    checked={(formData.socialIconSize || sectionData?.socialIconSize || 24) === 18}
+                    onChange={() => handleInputChange('socialIconSize', 18)}
+                  />
+                  <span className={css.radioText}>Small (18px)</span>
+                </label>
+                <label className={css.radioLabel}>
+                  <input
+                    type="radio"
+                    name="socialIconSize"
+                    value="24"
+                    checked={(formData.socialIconSize || sectionData?.socialIconSize || 24) === 24}
+                    onChange={() => handleInputChange('socialIconSize', 24)}
+                  />
+                  <span className={css.radioText}>Medium (24px) - Default</span>
+                </label>
+                <label className={css.radioLabel}>
+                  <input
+                    type="radio"
+                    name="socialIconSize"
+                    value="32"
+                    checked={(formData.socialIconSize || sectionData?.socialIconSize || 24) === 32}
+                    onChange={() => handleInputChange('socialIconSize', 32)}
+                  />
+                  <span className={css.radioText}>Large (32px)</span>
+                </label>
+                <label className={css.radioLabel}>
+                  <input
+                    type="radio"
+                    name="socialIconSize"
+                    value="40"
+                    checked={(formData.socialIconSize || sectionData?.socialIconSize || 24) === 40}
+                    onChange={() => handleInputChange('socialIconSize', 40)}
+                  />
+                  <span className={css.radioText}>X-Large (40px)</span>
+                </label>
+              </div>
+              <span className={css.formHint}>
+                Choose the size of social media icons in the footer
+              </span>
             </div>
 
             <button
@@ -6268,6 +6877,12 @@ const AdminDashboardPageComponent = props => {
             >
               <FormattedMessage id="AdminDashboardPage.tabInstitutions" />
             </button>
+            <button
+              className={classNames(css.tab, { [css.tabActive]: activeTab === 'blog' })}
+              onClick={() => handleTabChange('blog')}
+            >
+              <FormattedMessage id="AdminDashboardPage.tabBlog" />
+            </button>
           </div>
 
           {/* Tab Content */}
@@ -6348,6 +6963,17 @@ const AdminDashboardPageComponent = props => {
               currentReportType={currentReportType}
               onFetchReports={onFetchReports}
               users={users}
+              onNavigateToUsersWithSearch={(searchTerm, userType) => {
+                setActiveTab('users');
+                // Set filters and trigger search after tab change
+                setTimeout(() => {
+                  const searchInput = document.querySelector('input[placeholder*="Search by name"]');
+                  if (searchInput) {
+                    searchInput.value = searchTerm;
+                    searchInput.dispatchEvent(new Event('input', { bubbles: true }));
+                  }
+                }, 100);
+              }}
             />
           )}
 
@@ -6384,6 +7010,29 @@ const AdminDashboardPageComponent = props => {
               onFetchEducationalAdmins={onFetchEducationalAdmins}
               onUpdateSubscription={onUpdateSubscription}
               onClearSubscriptionState={onClearSubscriptionState}
+            />
+          )}
+
+          {activeTab === 'blog' && (
+            <BlogManagementPanel
+              posts={blogPosts}
+              pagination={blogPostsPagination}
+              categories={blogCategories}
+              selectedPost={selectedBlogPost}
+              fetchInProgress={fetchBlogPostsInProgress}
+              saveInProgress={saveBlogPostInProgress}
+              saveSuccess={saveBlogPostSuccess}
+              saveError={saveBlogPostError}
+              deleteInProgress={deleteBlogPostInProgress}
+              onFetchPosts={onFetchBlogPosts}
+              onCreatePost={onCreateBlogPost}
+              onUpdatePost={onUpdateBlogPost}
+              onDeletePost={onDeleteBlogPost}
+              onSelectPost={onSelectBlogPost}
+              onClearSelectedPost={onClearSelectedBlogPost}
+              onClearBlogPostState={onClearBlogPostState}
+              onAddCategory={onAddBlogCategory}
+              onDeleteCategory={onDeleteBlogCategory}
             />
           )}
 
@@ -6441,6 +7090,16 @@ const mapStateToProps = state => {
     clearHoldInProgress,
     reinstateHoldInProgress,
     clearAllHoldsInProgress,
+    // Blog Management
+    blogPosts,
+    blogPostsPagination,
+    blogCategories,
+    selectedBlogPost,
+    fetchBlogPostsInProgress,
+    saveBlogPostInProgress,
+    saveBlogPostError,
+    saveBlogPostSuccess,
+    deleteBlogPostInProgress,
   } = state.AdminDashboardPage;
 
   return {
@@ -6491,6 +7150,16 @@ const mapStateToProps = state => {
     clearHoldInProgress,
     reinstateHoldInProgress,
     clearAllHoldsInProgress,
+    // Blog Management
+    blogPosts,
+    blogPostsPagination,
+    blogCategories,
+    selectedBlogPost,
+    fetchBlogPostsInProgress,
+    saveBlogPostInProgress,
+    saveBlogPostError,
+    saveBlogPostSuccess,
+    deleteBlogPostInProgress,
   };
 };
 
@@ -6530,6 +7199,16 @@ const mapDispatchToProps = dispatch => ({
   onReinstateWorkHold: (transactionId, reason) => dispatch(reinstateWorkHoldAction(transactionId, reason)),
   onClearAllHolds: (partnerId, notes) => dispatch(clearAllHoldsForPartnerAction(partnerId, notes)),
   onClearSelectedPartner: () => dispatch(clearSelectedPartner()),
+  // Blog Management
+  onFetchBlogPosts: params => dispatch(fetchBlogPosts(params)),
+  onCreateBlogPost: postData => dispatch(createBlogPostAction(postData)),
+  onUpdateBlogPost: (postId, postData) => dispatch(updateBlogPostAction(postId, postData)),
+  onDeleteBlogPost: postId => dispatch(deleteBlogPostAction(postId)),
+  onSelectBlogPost: post => dispatch(setSelectedBlogPost(post)),
+  onClearSelectedBlogPost: () => dispatch(clearSelectedBlogPost()),
+  onClearBlogPostState: () => dispatch(clearBlogPostState()),
+  onAddBlogCategory: category => dispatch(addBlogCategoryThunk(category)),
+  onDeleteBlogCategory: category => dispatch(deleteBlogCategoryThunk(category)),
 });
 
 const AdminDashboardPage = compose(

@@ -2991,3 +2991,468 @@
   }
 }
 
+/* ================ Clickable Fields - Drill Down UX ================ */
+
+/* Clickable data fields in table cells */
+.clickableField {
+  background: transparent;
+  border: none;
+  padding: 4px 8px;
+  margin: -4px -8px;
+  border-radius: 4px;
+  font-size: 14px;
+  color: var(--colorGrey700);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+}
+
+.clickableField:hover {
+  background: rgba(0, 200, 190, 0.1);
+  color: var(--marketplaceColor);
+}
+
+/* User type badge clickable */
+.userTypeBadgeClickable {
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.userTypeBadgeClickable:hover {
+  transform: scale(1.05);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Clickable table cell in reports */
+.clickableTableCell {
+  background: transparent;
+  border: none;
+  padding: 4px 8px;
+  margin: -4px -8px;
+  border-radius: 4px;
+  font-size: 14px;
+  color: var(--colorGrey900);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+  font-weight: 500;
+}
+
+.clickableTableCell:hover {
+  background: rgba(0, 200, 190, 0.1);
+  color: var(--marketplaceColor);
+  text-decoration: underline;
+}
+
+/* Clickable stat in table (numbers) */
+.clickableStatInTable {
+  background: transparent;
+  border: none;
+  padding: 4px 10px;
+  margin: -4px 0;
+  border-radius: 6px;
+  font-size: 14px;
+  color: var(--colorGrey700);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-weight: 600;
+}
+
+.clickableStatInTable:hover {
+  background: rgba(0, 200, 190, 0.15);
+  color: var(--marketplaceColor);
+}
+
+/* User name link in tables */
+.userNameLink {
+  color: var(--colorGrey900);
+  text-decoration: none;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.2s ease;
+}
+
+.userNameLink:hover {
+  color: var(--marketplaceColor);
+}
+
+.profileArrow {
+  opacity: 0;
+  transform: translateX(-4px);
+  transition: all 0.2s ease;
+  font-size: 12px;
+  color: var(--marketplaceColor);
+}
+
+.userNameLink:hover .profileArrow {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* Stat detail link */
+.statDetailLink {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  border-radius: 8px;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  color: inherit;
+}
+
+.statDetailLink:hover {
+  background: rgba(0, 200, 190, 0.08);
+}
+
+.statDetailUserInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.statDetailUserName {
+  font-weight: 500;
+  color: var(--colorGrey900);
+}
+
+.statDetailUserEmail {
+  font-size: 13px;
+  color: var(--colorGrey500);
+}
+
+.statDetailUserRight {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.statDetailUserType {
+  font-size: 11px;
+  font-weight: 500;
+  padding: 4px 8px;
+  border-radius: 4px;
+  text-transform: capitalize;
+  background: var(--colorGrey100);
+  color: var(--colorGrey700);
+}
+
+.statDetailUserType.student {
+  background: rgba(0, 150, 136, 0.1);
+  color: #009688;
+}
+
+.statDetailUserType.corporate-partner {
+  background: rgba(33, 150, 243, 0.1);
+  color: #2196F3;
+}
+
+.statDetailUserType.educational-admin {
+  background: rgba(156, 39, 176, 0.1);
+  color: #9C27B0;
+}
+
+.viewProfileArrow {
+  color: var(--colorGrey400);
+  font-size: 16px;
+  transition: all 0.2s ease;
+}
+
+.statDetailLink:hover .viewProfileArrow {
+  color: var(--marketplaceColor);
+  transform: translateX(2px);
+}
+
+/* Email and message recipient links */
+.emailRecipientLink {
+  color: var(--colorGrey900);
+  text-decoration: none;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.emailRecipientLink:hover {
+  color: var(--marketplaceColor);
+  text-decoration: underline;
+}
+
+.messageRecipientLink {
+  color: var(--marketplaceColor);
+  text-decoration: none;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.2s ease;
+}
+
+.messageRecipientLink:hover {
+  text-decoration: underline;
+}
+
+.messageRecipientLink .profileArrow {
+  opacity: 0;
+  transform: translateX(-4px);
+  transition: all 0.2s ease;
+}
+
+.messageRecipientLink:hover .profileArrow {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* ================ Blog Management Panel ================ */
+
+.blogEditorForm {
+  max-width: 900px;
+}
+
+.formRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+@media (max-width: 600px) {
+  .formRow {
+    grid-template-columns: 1fr;
+  }
+}
+
+.formGroup {
+  margin-bottom: 20px;
+}
+
+.formLabel {
+  display: block;
+  font-weight: 500;
+  margin-bottom: 6px;
+  color: var(--colorGrey700);
+  font-size: 14px;
+}
+
+.formInput,
+.formSelect,
+.formTextarea,
+.formTextareaLarge {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--colorGrey200);
+  border-radius: 6px;
+  font-size: 14px;
+  transition: border-color 0.2s ease;
+}
+
+.formInput:focus,
+.formSelect:focus,
+.formTextarea:focus,
+.formTextareaLarge:focus {
+  outline: none;
+  border-color: var(--marketplaceColor);
+}
+
+.formTextarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.formTextareaLarge {
+  resize: vertical;
+  min-height: 300px;
+  font-family: monospace;
+}
+
+.formActions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  padding-top: 20px;
+  border-top: 1px solid var(--colorGrey200);
+  margin-top: 20px;
+}
+
+/* Category Management */
+.categorySection {
+  background: var(--colorGrey50);
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 24px;
+}
+
+.categoryTitle {
+  font-size: 14px;
+  font-weight: 600;
+  margin: 0 0 12px 0;
+  color: var(--colorGrey700);
+}
+
+.categoryList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.categoryTag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: white;
+  border: 1px solid var(--colorGrey200);
+  border-radius: 16px;
+  padding: 4px 12px;
+  font-size: 13px;
+  color: var(--colorGrey700);
+}
+
+.categoryRemove {
+  background: none;
+  border: none;
+  color: var(--colorGrey400);
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 1;
+  padding: 0;
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+}
+
+.categoryRemove:hover {
+  background: var(--colorFail);
+  color: white;
+}
+
+.addCategoryForm {
+  display: flex;
+  gap: 8px;
+}
+
+.addCategoryInput {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid var(--colorGrey200);
+  border-radius: 6px;
+  font-size: 13px;
+}
+
+.addCategoryButton {
+  padding: 8px 16px;
+  background: var(--marketplaceColor);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.addCategoryButton:hover:not(:disabled) {
+  background: var(--marketplaceColorDark);
+}
+
+.addCategoryButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Blog Post Table */
+.postTitleCell {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.postTitleCell strong {
+  color: var(--colorGrey900);
+}
+
+.postExcerpt {
+  font-size: 12px;
+  color: var(--colorGrey500);
+}
+
+/* Status Badges for Blog */
+.statusPublished {
+  background: rgba(0, 150, 136, 0.1);
+  color: #009688;
+}
+
+.statusDraft {
+  background: rgba(255, 152, 0, 0.1);
+  color: #f57c00;
+}
+
+.statusArchived {
+  background: var(--colorGrey100);
+  color: var(--colorGrey600);
+}
+
+/* Edit and Delete Buttons */
+.editButton {
+  background: var(--colorGrey100);
+  color: var(--colorGrey700);
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.editButton:hover {
+  background: var(--colorGrey200);
+}
+
+.deleteConfirmButton {
+  background: var(--colorFail);
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.cancelButton {
+  background: var(--colorGrey100);
+  color: var(--colorGrey700);
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.errorMessage {
+  background: rgba(244, 67, 54, 0.1);
+  color: #d32f2f;
+  padding: 12px 16px;
+  border-radius: 6px;
+  margin-bottom: 16px;
+  font-size: 14px;
+}
+
+.emptyState {
+  text-align: center;
+  padding: 60px 24px;
+  color: var(--colorGrey600);
+}
+
+.emptyState p {
+  margin-bottom: 16px;
+}
+
+.pagination {
+  text-align: center;
+  padding: 16px;
+  color: var(--colorGrey600);
+  font-size: 14px;
+}
+

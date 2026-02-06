@@ -35,6 +35,15 @@ import {
   clearWorkHold as clearWorkHoldApi,
   reinstateWorkHold as reinstateWorkHoldApi,
   clearAllHoldsForPartner as clearAllHoldsForPartnerApi,
+  // Blog management
+  fetchBlogPosts as fetchBlogPostsApi,
+  fetchBlogPost as fetchBlogPostApi,
+  createBlogPost as createBlogPostApi,
+  updateBlogPost as updateBlogPostApi,
+  deleteBlogPost as deleteBlogPostApi,
+  fetchBlogCategories as fetchBlogCategoriesApi,
+  addBlogCategory as addBlogCategoryApi,
+  deleteBlogCategory as deleteBlogCategoryApi,
 } from '../../util/api';
 import { fetchCurrentUser } from '../../ducks/user.duck';
 
@@ -500,6 +509,109 @@ export const clearAllHoldsForPartnerThunk = createAsyncThunk(
 export const clearAllHoldsForPartnerAction = (partnerId, notes) => dispatch =>
   dispatch(clearAllHoldsForPartnerThunk({ partnerId, notes })).unwrap();
 
+// ================ Blog Thunks ================ //
+
+export const fetchBlogPostsThunk = createAsyncThunk(
+  'app/AdminDashboardPage/fetchBlogPosts',
+  async (params, { rejectWithValue }) => {
+    try {
+      return await fetchBlogPostsApi(params);
+    } catch (e) {
+      return rejectWithValue(storableError(e));
+    }
+  }
+);
+
+export const fetchBlogPosts = params => dispatch => dispatch(fetchBlogPostsThunk(params)).unwrap();
+
+export const fetchBlogPostThunk = createAsyncThunk(
+  'app/AdminDashboardPage/fetchBlogPost',
+  async (postId, { rejectWithValue }) => {
+    try {
+      return await fetchBlogPostApi(postId);
+    } catch (e) {
+      return rejectWithValue(storableError(e));
+    }
+  }
+);
+
+export const fetchBlogPost = postId => dispatch => dispatch(fetchBlogPostThunk(postId)).unwrap();
+
+export const createBlogPostThunk = createAsyncThunk(
+  'app/AdminDashboardPage/createBlogPost',
+  async (postData, { rejectWithValue }) => {
+    try {
+      return await createBlogPostApi(postData);
+    } catch (e) {
+      return rejectWithValue(storableError(e));
+    }
+  }
+);
+
+export const createBlogPostAction = postData => dispatch =>
+  dispatch(createBlogPostThunk(postData)).unwrap();
+
+export const updateBlogPostThunk = createAsyncThunk(
+  'app/AdminDashboardPage/updateBlogPost',
+  async ({ postId, postData }, { rejectWithValue }) => {
+    try {
+      return await updateBlogPostApi(postId, postData);
+    } catch (e) {
+      return rejectWithValue(storableError(e));
+    }
+  }
+);
+
+export const updateBlogPostAction = (postId, postData) => dispatch =>
+  dispatch(updateBlogPostThunk({ postId, postData })).unwrap();
+
+export const deleteBlogPostThunk = createAsyncThunk(
+  'app/AdminDashboardPage/deleteBlogPost',
+  async (postId, { rejectWithValue }) => {
+    try {
+      return await deleteBlogPostApi(postId);
+    } catch (e) {
+      return rejectWithValue(storableError(e));
+    }
+  }
+);
+
+export const deleteBlogPostAction = postId => dispatch =>
+  dispatch(deleteBlogPostThunk(postId)).unwrap();
+
+export const fetchBlogCategoriesThunk = createAsyncThunk(
+  'app/AdminDashboardPage/fetchBlogCategories',
+  async (_, { rejectWithValue }) => {
+    try {
+      return await fetchBlogCategoriesApi();
+    } catch (e) {
+      return rejectWithValue(storableError(e));
+    }
+  }
+);
+
+export const addBlogCategoryThunk = createAsyncThunk(
+  'app/AdminDashboardPage/addBlogCategory',
+  async (category, { rejectWithValue }) => {
+    try {
+      return await addBlogCategoryApi(category);
+    } catch (e) {
+      return rejectWithValue(storableError(e));
+    }
+  }
+);
+
+export const deleteBlogCategoryThunk = createAsyncThunk(
+  'app/AdminDashboardPage/deleteBlogCategory',
+  async (category, { rejectWithValue }) => {
+    try {
+      return await deleteBlogCategoryApi(category);
+    } catch (e) {
+      return rejectWithValue(storableError(e));
+    }
+  }
+);
+
 // ================ Slice ================ //
 
 const adminDashboardPageSlice = createSlice({
@@ -588,6 +700,18 @@ const adminDashboardPageSlice = createSlice({
     clearHoldInProgress: null,
     reinstateHoldInProgress: null,
     clearAllHoldsInProgress: null,
+
+    // Blog Management
+    blogPosts: [],
+    blogPostsPagination: null,
+    blogCategories: [],
+    selectedBlogPost: null,
+    fetchBlogPostsInProgress: false,
+    fetchBlogPostsError: null,
+    saveBlogPostInProgress: false,
+    saveBlogPostError: null,
+    saveBlogPostSuccess: false,
+    deleteBlogPostInProgress: null,
   },
   reducers: {
     clearSelectedUser: state => {
@@ -619,6 +743,17 @@ const adminDashboardPageSlice = createSlice({
       state.selectedPartner = null;
       state.selectedPartnerDeposits = [];
       state.fetchPartnerDepositsError = null;
+    },
+    clearBlogPostState: state => {
+      state.saveBlogPostInProgress = false;
+      state.saveBlogPostError = null;
+      state.saveBlogPostSuccess = false;
+    },
+    setSelectedBlogPost: (state, action) => {
+      state.selectedBlogPost = action.payload;
+    },
+    clearSelectedBlogPost: state => {
+      state.selectedBlogPost = null;
     },
   },
   extraReducers: builder => {
@@ -1069,6 +1204,83 @@ const adminDashboardPageSlice = createSlice({
       })
       .addCase(clearAllHoldsForPartnerThunk.rejected, state => {
         state.clearAllHoldsInProgress = null;
+      })
+      // Blog posts
+      .addCase(fetchBlogPostsThunk.pending, state => {
+        state.fetchBlogPostsInProgress = true;
+        state.fetchBlogPostsError = null;
+      })
+      .addCase(fetchBlogPostsThunk.fulfilled, (state, action) => {
+        state.fetchBlogPostsInProgress = false;
+        state.blogPosts = action.payload.posts || [];
+        state.blogPostsPagination = action.payload.pagination;
+        state.blogCategories = action.payload.categories || state.blogCategories;
+      })
+      .addCase(fetchBlogPostsThunk.rejected, (state, action) => {
+        state.fetchBlogPostsInProgress = false;
+        state.fetchBlogPostsError = action.payload;
+      })
+      // Fetch single blog post
+      .addCase(fetchBlogPostThunk.fulfilled, (state, action) => {
+        state.selectedBlogPost = action.payload.post;
+      })
+      // Create blog post
+      .addCase(createBlogPostThunk.pending, state => {
+        state.saveBlogPostInProgress = true;
+        state.saveBlogPostError = null;
+        state.saveBlogPostSuccess = false;
+      })
+      .addCase(createBlogPostThunk.fulfilled, (state, action) => {
+        state.saveBlogPostInProgress = false;
+        state.saveBlogPostSuccess = true;
+        state.blogPosts.unshift(action.payload.post);
+      })
+      .addCase(createBlogPostThunk.rejected, (state, action) => {
+        state.saveBlogPostInProgress = false;
+        state.saveBlogPostError = action.payload;
+      })
+      // Update blog post
+      .addCase(updateBlogPostThunk.pending, state => {
+        state.saveBlogPostInProgress = true;
+        state.saveBlogPostError = null;
+        state.saveBlogPostSuccess = false;
+      })
+      .addCase(updateBlogPostThunk.fulfilled, (state, action) => {
+        state.saveBlogPostInProgress = false;
+        state.saveBlogPostSuccess = true;
+        const updatedPost = action.payload.post;
+        const index = state.blogPosts.findIndex(p => p.id === updatedPost.id);
+        if (index !== -1) {
+          state.blogPosts[index] = updatedPost;
+        }
+        state.selectedBlogPost = updatedPost;
+      })
+      .addCase(updateBlogPostThunk.rejected, (state, action) => {
+        state.saveBlogPostInProgress = false;
+        state.saveBlogPostError = action.payload;
+      })
+      // Delete blog post
+      .addCase(deleteBlogPostThunk.pending, (state, action) => {
+        state.deleteBlogPostInProgress = action.meta.arg;
+      })
+      .addCase(deleteBlogPostThunk.fulfilled, (state, action) => {
+        state.deleteBlogPostInProgress = null;
+        state.blogPosts = state.blogPosts.filter(p => p.id !== action.meta.arg);
+      })
+      .addCase(deleteBlogPostThunk.rejected, state => {
+        state.deleteBlogPostInProgress = null;
+      })
+      // Fetch blog categories
+      .addCase(fetchBlogCategoriesThunk.fulfilled, (state, action) => {
+        state.blogCategories = action.payload.categories || [];
+      })
+      // Add blog category
+      .addCase(addBlogCategoryThunk.fulfilled, (state, action) => {
+        state.blogCategories = action.payload.categories || [];
+      })
+      // Delete blog category
+      .addCase(deleteBlogCategoryThunk.fulfilled, (state, action) => {
+        state.blogCategories = action.payload.categories || [];
       });
   },
 });
@@ -1081,6 +1293,9 @@ export const {
   clearUserStats,
   clearSubscriptionState,
   clearSelectedPartner,
+  clearBlogPostState,
+  setSelectedBlogPost,
+  clearSelectedBlogPost,
 } = adminDashboardPageSlice.actions;
 
 // ================ loadData ================ //
@@ -1108,6 +1323,8 @@ export const loadData = (params, search) => dispatch => {
     promises.push(dispatch(fetchApplicationsThunk({ status: 'pending' })));
     promises.push(dispatch(fetchApplicationStatsThunk()));
     promises.push(dispatch(fetchEducationalAdminsThunk({})));
+  } else if (tab === 'blog') {
+    promises.push(dispatch(fetchBlogPostsThunk({})));
   } else {
     // Default: users tab
     promises.push(dispatch(fetchUsersThunk({})));

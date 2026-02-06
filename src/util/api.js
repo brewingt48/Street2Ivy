@@ -959,3 +959,99 @@ export const resetLandingContent = () => {
     headers: { 'Content-Type': 'application/json' },
   });
 };
+
+// ================ Blog API Functions ================ //
+
+// Fetch blog posts (admin view)
+export const fetchBlogPosts = (params = {}) => {
+  const queryString = new URLSearchParams(params).toString();
+  return request(`/api/admin/blog/posts${queryString ? `?${queryString}` : ''}`, {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
+  });
+};
+
+// Fetch a single blog post by ID (admin)
+export const fetchBlogPost = (postId) => {
+  return request(`/api/admin/blog/posts/${postId}`, {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
+  });
+};
+
+// Create a new blog post
+export const createBlogPost = (postData) => {
+  return request('/api/admin/blog/posts', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(postData),
+  });
+};
+
+// Update a blog post
+export const updateBlogPost = (postId, postData) => {
+  return request(`/api/admin/blog/posts/${postId}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(postData),
+  });
+};
+
+// Delete a blog post
+export const deleteBlogPost = (postId) => {
+  return request(`/api/admin/blog/posts/${postId}`, {
+    method: 'DELETE',
+    headers: { 'Content-Type': 'application/json' },
+  });
+};
+
+// Fetch blog categories
+export const fetchBlogCategories = () => {
+  return request('/api/admin/blog/categories', {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
+  });
+};
+
+// Add a blog category
+export const addBlogCategory = (category) => {
+  return request('/api/admin/blog/categories', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ category }),
+  });
+};
+
+// Delete a blog category
+export const deleteBlogCategory = (category) => {
+  return request(`/api/admin/blog/categories/${encodeURIComponent(category)}`, {
+    method: 'DELETE',
+    headers: { 'Content-Type': 'application/json' },
+  });
+};
+
+// Update blog settings
+export const updateBlogSettings = (settings) => {
+  return request('/api/admin/blog/settings', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(settings),
+  });
+};
+
+// Fetch public blog posts
+export const fetchPublicBlogPosts = (params = {}) => {
+  const queryString = new URLSearchParams(params).toString();
+  return request(`/api/blog/posts${queryString ? `?${queryString}` : ''}`, {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
+  });
+};
+
+// Fetch public blog post by slug
+export const fetchPublicBlogPost = (slug) => {
+  return request(`/api/blog/posts/${slug}`, {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
+  });
+};

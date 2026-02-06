@@ -25,6 +25,25 @@ const { getSdk, handleError } = require('../api-util/sdk');
 const DROPBOX_SIGN_API_KEY = process.env.DROPBOX_SIGN_API_KEY;
 const DROPBOX_SIGN_CLIENT_ID = process.env.DROPBOX_SIGN_CLIENT_ID;
 
+/**
+ * Sanitize text input to prevent XSS and injection attacks
+ */
+function sanitizeTextInput(text, maxLength = 50000) {
+  if (!text || typeof text !== 'string') return '';
+  return text
+    .substring(0, maxLength)
+    // Remove null bytes
+    .replace(/\0/g, '')
+    // Remove control characters except newlines and tabs
+    .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '')
+    // Escape HTML entities for safe display
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#x27;');
+}
+
 // In-memory store for NDA documents and signature requests
 // In production, this would be in a database
 let ndaDocuments = new Map();
@@ -77,6 +96,10 @@ async function uploadNdaDocument(req, res) {
       return res.status(400).json({ error: 'Either document URL or NDA text is required.' });
     }
 
+    // Sanitize text inputs to prevent XSS
+    const sanitizedNdaText = ndaText ? sanitizeTextInput(ndaText) : null;
+    const sanitizedDocumentName = documentName ? sanitizeTextInput(documentName, 200) : 'NDA Agreement';
+
     const ndaDocument = {
       id: `nda_${Date.now()}_${Math.random()
         .toString(36)
@@ -85,8 +108,8 @@ async function uploadNdaDocument(req, res) {
       uploadedBy: currentUser.id.uuid,
       uploadedAt: new Date().toISOString(),
       documentUrl: documentUrl || null,
-      documentName: documentName || 'NDA Agreement',
-      ndaText: ndaText || null, // For text-based NDAs
+      documentName: sanitizedDocumentName,
+      ndaText: sanitizedNdaText, // For text-based NDAs
       status: 'active',
     };
 

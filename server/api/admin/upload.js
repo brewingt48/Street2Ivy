@@ -3,11 +3,109 @@
  *
  * Handles file uploads for branding assets (logo, favicon, hero images/videos)
  * Files are stored in the server's public/uploads directory
+ *
+ * Security features:
+ * - Admin authentication required
+ * - MIME type validation
+ * - Magic byte (file signature) verification
+ * - File size limits
+ * - Path traversal prevention
+ * - Filename sanitization
  */
 
 const fs = require('fs');
 const path = require('path');
 const { getSdk } = require('../../api-util/sdk');
+
+// Magic bytes (file signatures) for content validation
+// This prevents attackers from renaming malicious files
+const FILE_SIGNATURES = {
+  // Images
+  'image/png': [
+    { offset: 0, bytes: [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a] }, // PNG
+  ],
+  'image/jpeg': [
+    { offset: 0, bytes: [0xff, 0xd8, 0xff] }, // JPEG/JPG
+  ],
+  'image/jpg': [
+    { offset: 0, bytes: [0xff, 0xd8, 0xff] }, // JPG
+  ],
+  'image/gif': [
+    { offset: 0, bytes: [0x47, 0x49, 0x46, 0x38, 0x37, 0x61] }, // GIF87a
+    { offset: 0, bytes: [0x47, 0x49, 0x46, 0x38, 0x39, 0x61] }, // GIF89a
+  ],
+  'image/webp': [
+    { offset: 0, bytes: [0x52, 0x49, 0x46, 0x46] }, // RIFF header
+  ],
+  'image/svg+xml': [], // SVG is text-based, validated differently
+  // Favicons
+  'image/x-icon': [
+    { offset: 0, bytes: [0x00, 0x00, 0x01, 0x00] }, // ICO
+  ],
+  'image/vnd.microsoft.icon': [
+    { offset: 0, bytes: [0x00, 0x00, 0x01, 0x00] }, // ICO
+  ],
+  // Videos
+  'video/mp4': [
+    { offset: 4, bytes: [0x66, 0x74, 0x79, 0x70] }, // ftyp
+  ],
+  'video/webm': [
+    { offset: 0, bytes: [0x1a, 0x45, 0xdf, 0xa3] }, // WebM
+  ],
+  'video/ogg': [
+    { offset: 0, bytes: [0x4f, 0x67, 0x67, 0x53] }, // OggS
+  ],
+};
+
+/**
+ * Verify file content matches its claimed MIME type using magic bytes
+ * Returns true if valid, false if suspicious
+ */
+function verifyFileContent(buffer, mimeType) {
+  const signatures = FILE_SIGNATURES[mimeType];
+
+  // SVG files are XML-based, check for XML/SVG content
+  if (mimeType === 'image/svg+xml') {
+    const content = buffer.toString('utf8', 0, Math.min(buffer.length, 1000));
+    // Check for SVG tag and ensure no script tags (XSS prevention)
+    const hasSvg = /<svg[\s>]/i.test(content);
+    const hasScript = /<script[\s>]/i.test(content);
+    const hasOnEvent = /\son\w+\s*=/i.test(content);
+    return hasSvg && !hasScript && !hasOnEvent;
+  }
+
+  // If no signatures defined for this type, skip magic byte check
+  if (!signatures || signatures.length === 0) {
+    return true;
+  }
+
+  // Check if any signature matches
+  return signatures.some(sig => {
+    if (buffer.length < sig.offset + sig.bytes.length) {
+      return false;
+    }
+    return sig.bytes.every((byte, i) => buffer[sig.offset + i] === byte);
+  });
+}
+
+/**
+ * Sanitize filename to prevent path traversal and other attacks
+ */
+function sanitizeOriginalFilename(filename) {
+  if (!filename) return 'upload';
+  // Remove path components
+  let sanitized = path.basename(filename);
+  // Remove null bytes
+  sanitized = sanitized.replace(/\0/g, '');
+  // Replace dangerous characters, keep only alphanumeric, dots, hyphens, underscores
+  sanitized = sanitized.replace(/[^a-zA-Z0-9._-]/g, '_');
+  // Prevent hidden files
+  if (sanitized.startsWith('.')) {
+    sanitized = '_' + sanitized.substring(1);
+  }
+  // Limit length
+  return sanitized.substring(0, 100);
+}
 
 // Upload directory - in dev mode, use server/uploads; in production, use build/static/uploads
 const isDev = process.env.NODE_ENV === 'development';
@@ -104,8 +202,17 @@ async function uploadLogo(req, res) {
       });
     }
 
-    // Generate unique filename
-    const filename = generateFilename(file.name, 'logo');
+    // Security: Verify file content matches MIME type (magic byte validation)
+    if (!verifyFileContent(file.data, file.mimetype)) {
+      console.error('File content verification failed for logo upload:', file.name, file.mimetype);
+      return res.status(400).json({
+        error: 'File content does not match file type. Please upload a valid image file.',
+      });
+    }
+
+    // Generate unique filename with sanitized original name
+    const safeName = sanitizeOriginalFilename(file.name);
+    const filename = generateFilename(safeName, 'logo');
     const filepath = path.join(UPLOAD_DIR, filename);
 
     // Save file
@@ -159,8 +266,17 @@ async function uploadFavicon(req, res) {
       });
     }
 
-    // Generate unique filename
-    const filename = generateFilename(file.name, 'favicon');
+    // Security: Verify file content matches MIME type (magic byte validation)
+    if (!verifyFileContent(file.data, file.mimetype)) {
+      console.error('File content verification failed for favicon upload:', file.name, file.mimetype);
+      return res.status(400).json({
+        error: 'File content does not match file type. Please upload a valid favicon file.',
+      });
+    }
+
+    // Generate unique filename with sanitized original name
+    const safeName = sanitizeOriginalFilename(file.name);
+    const filename = generateFilename(safeName, 'favicon');
     const filepath = path.join(UPLOAD_DIR, filename);
 
     // Save file
@@ -212,8 +328,17 @@ async function uploadHeroImage(req, res) {
       });
     }
 
-    // Generate unique filename
-    const filename = generateFilename(file.name, 'hero');
+    // Security: Verify file content matches MIME type (magic byte validation)
+    if (!verifyFileContent(file.data, file.mimetype)) {
+      console.error('File content verification failed for hero image upload:', file.name, file.mimetype);
+      return res.status(400).json({
+        error: 'File content does not match file type. Please upload a valid image file.',
+      });
+    }
+
+    // Generate unique filename with sanitized original name
+    const safeName = sanitizeOriginalFilename(file.name);
+    const filename = generateFilename(safeName, 'hero');
     const filepath = path.join(UPLOAD_DIR, filename);
 
     // Save file
@@ -265,8 +390,17 @@ async function uploadHeroVideo(req, res) {
       });
     }
 
-    // Generate unique filename
-    const filename = generateFilename(file.name, 'hero-video');
+    // Security: Verify file content matches MIME type (magic byte validation)
+    if (!verifyFileContent(file.data, file.mimetype)) {
+      console.error('File content verification failed for hero video upload:', file.name, file.mimetype);
+      return res.status(400).json({
+        error: 'File content does not match file type. Please upload a valid video file.',
+      });
+    }
+
+    // Generate unique filename with sanitized original name
+    const safeName = sanitizeOriginalFilename(file.name);
+    const filename = generateFilename(safeName, 'hero-video');
     const filepath = path.join(UPLOAD_DIR, filename);
 
     // Save file

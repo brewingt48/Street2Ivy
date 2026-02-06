@@ -52,6 +52,7 @@ const adminCorporateDeposits = require('./api/admin/corporate-deposits');
 const adminInstitutions = require('./api/admin/institutions');
 const adminContent = require('./api/admin/content');
 const adminUpload = require('./api/admin/upload');
+const adminBlog = require('./api/admin/blog');
 
 // File upload middleware
 const fileUpload = require('express-fileupload');
@@ -64,6 +65,9 @@ const ndaSignature = require('./api/nda-signature');
 
 // Student Performance Assessments
 const assessments = require('./api/assessments');
+
+// Notification Center
+const notifications = require('./api/notifications');
 
 const createUserWithIdp = require('./api/auth/createUserWithIdp');
 
@@ -265,6 +269,21 @@ router.get('/content', adminContent.getPublicContent);
 router.get('/legal', adminContent.getLegalPagesList);
 router.get('/legal/:pageType', adminContent.getLegalPage);
 
+// Street2Ivy: Blog Management System (Admin endpoints)
+router.get('/admin/blog/posts', adminBlog.listPosts);
+router.get('/admin/blog/posts/:postId', adminBlog.getPost);
+router.post('/admin/blog/posts', adminBlog.createPost);
+router.put('/admin/blog/posts/:postId', adminBlog.updatePost);
+router.delete('/admin/blog/posts/:postId', adminBlog.deletePost);
+router.get('/admin/blog/categories', adminBlog.listCategories);
+router.post('/admin/blog/categories', adminBlog.addCategory);
+router.delete('/admin/blog/categories/:category', adminBlog.deleteCategory);
+router.put('/admin/blog/settings', adminBlog.updateSettings);
+
+// Street2Ivy: Blog Public endpoints
+router.get('/blog/posts', adminBlog.listPublicPosts);
+router.get('/blog/posts/:slug', adminBlog.getPublicPost);
+
 // Street2Ivy: File upload endpoints for admin
 router.post('/admin/upload/logo', adminUpload.uploadLogo);
 router.post('/admin/upload/favicon', adminUpload.uploadFavicon);
@@ -293,6 +312,12 @@ router.post('/assessments', assessments.submitAssessment);
 router.get('/assessments/pending', assessments.getPendingAssessments);
 router.get('/assessments/transaction/:transactionId', assessments.getAssessmentByTransaction);
 router.get('/assessments/student/:studentId', assessments.getStudentAssessments);
+
+// Street2Ivy: Notification Center
+router.get('/notifications', notifications.list);
+router.get('/notifications/unread-count', notifications.unreadCount);
+router.post('/notifications/:notificationId/read', notifications.markRead);
+router.post('/notifications/read-all', notifications.markAllRead);
 
 // Create user with identity provider (e.g. Facebook or Google)
 // This endpoint is called to create a new user after user has confirmed

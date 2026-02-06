@@ -826,24 +826,60 @@ const EducationDashboardPageComponent = props => {
                                         : null,
                                     }}
                                   />
-                                  <span className={css.studentName}>
+                                  <NamedLink
+                                    className={css.studentNameLink}
+                                    name="ProfilePage"
+                                    params={{ id: student.id }}
+                                    title="View student profile"
+                                  >
                                     {student.attributes.profile.displayName}
-                                  </span>
+                                    <span className={css.profileArrow}>→</span>
+                                  </NamedLink>
                                 </div>
                               </td>
-                              <td className={css.studentMeta}>{studentPublicData.major || '-'}</td>
                               <td className={css.studentMeta}>
-                                {studentPublicData.graduationYear || '-'}
+                                {studentPublicData.major ? (
+                                  <button
+                                    type="button"
+                                    className={css.clickableField}
+                                    onClick={() => setSearchTerm(studentPublicData.major)}
+                                    title={`Filter by major: ${studentPublicData.major}`}
+                                  >
+                                    {studentPublicData.major}
+                                  </button>
+                                ) : '-'}
                               </td>
                               <td className={css.studentMeta}>
-                                <span className={css.activityBadge}>
+                                {studentPublicData.graduationYear ? (
+                                  <button
+                                    type="button"
+                                    className={css.clickableField}
+                                    onClick={() => setSearchTerm(String(studentPublicData.graduationYear))}
+                                    title={`Filter by graduation year: ${studentPublicData.graduationYear}`}
+                                  >
+                                    {studentPublicData.graduationYear}
+                                  </button>
+                                ) : '-'}
+                              </td>
+                              <td className={css.studentMeta}>
+                                <button
+                                  type="button"
+                                  className={`${css.activityBadge} ${css.activityBadgeClickable}`}
+                                  onClick={() => handleViewStudent(student)}
+                                  title="View application details"
+                                >
                                   {activity.applications || 0}
-                                </span>
+                                </button>
                               </td>
                               <td className={css.studentMeta}>
-                                <span className={`${css.activityBadge} ${activity.acceptances > 0 ? css.activityBadgeSuccess : ''}`}>
+                                <button
+                                  type="button"
+                                  className={`${css.activityBadge} ${activity.acceptances > 0 ? css.activityBadgeSuccess : ''} ${css.activityBadgeClickable}`}
+                                  onClick={() => handleViewStudent(student)}
+                                  title="View acceptance details"
+                                >
                                   {activity.acceptances || 0}
-                                </span>
+                                </button>
                               </td>
                               <td>
                                 <button
@@ -869,9 +905,15 @@ const EducationDashboardPageComponent = props => {
                         <div key={student.id} className={css.studentCard}>
                           <div className={css.studentCardHeader}>
                             <div>
-                              <div className={css.studentCardName}>
+                              <NamedLink
+                                className={css.studentCardNameLink}
+                                name="ProfilePage"
+                                params={{ id: student.id }}
+                                title="View student profile"
+                              >
                                 {student.attributes.profile.displayName}
-                              </div>
+                                <span className={css.profileArrow}>→</span>
+                              </NamedLink>
                             </div>
                             <button
                               className={css.viewButton}
@@ -881,19 +923,45 @@ const EducationDashboardPageComponent = props => {
                             </button>
                           </div>
                           <div className={css.studentCardDetails}>
-                            <div>{studentPublicData.major || 'No major'}</div>
-                            <div>Class of {studentPublicData.graduationYear || '-'}</div>
+                            {studentPublicData.major ? (
+                              <button
+                                type="button"
+                                className={css.clickableFieldSmall}
+                                onClick={() => setSearchTerm(studentPublicData.major)}
+                                title={`Filter by major: ${studentPublicData.major}`}
+                              >
+                                {studentPublicData.major}
+                              </button>
+                            ) : (
+                              <span>No major</span>
+                            )}
+                            <span>Class of {studentPublicData.graduationYear || '-'}</span>
                           </div>
                           <div className={css.studentCardActivity}>
-                            <span className={css.activityItem}>
+                            <button
+                              type="button"
+                              className={css.activityItemClickable}
+                              onClick={() => handleViewStudent(student)}
+                              title="View application details"
+                            >
                               {activity.applications || 0} apps
-                            </span>
-                            <span className={css.activityItem}>
+                            </button>
+                            <button
+                              type="button"
+                              className={css.activityItemClickable}
+                              onClick={() => handleViewStudent(student)}
+                              title="View acceptance details"
+                            >
                               {activity.acceptances || 0} accepted
-                            </span>
-                            <span className={css.activityItem}>
+                            </button>
+                            <button
+                              type="button"
+                              className={css.activityItemClickable}
+                              onClick={() => handleViewStudent(student)}
+                              title="View completion details"
+                            >
                               {activity.completions || 0} completed
-                            </span>
+                            </button>
                           </div>
                         </div>
                       );
@@ -1061,11 +1129,61 @@ const EducationDashboardPageComponent = props => {
                         const activity = student.activity || {};
                         return (
                           <tr key={student.id}>
-                            <td>{student.attributes?.profile?.displayName || 'Unknown'}</td>
-                            <td>{publicData.major || '-'}</td>
-                            <td>{activity.applications || 0}</td>
-                            <td>{activity.acceptances || 0}</td>
-                            <td>{activity.completions || 0}</td>
+                            <td>
+                              <NamedLink
+                                className={css.reportTableLink}
+                                name="ProfilePage"
+                                params={{ id: student.id }}
+                                title="View student profile"
+                              >
+                                {student.attributes?.profile?.displayName || 'Unknown'}
+                              </NamedLink>
+                            </td>
+                            <td>
+                              {publicData.major ? (
+                                <button
+                                  type="button"
+                                  className={css.clickableFieldSmall}
+                                  onClick={() => {
+                                    setSearchTerm(publicData.major);
+                                    setActiveTab('students');
+                                  }}
+                                  title={`Filter by major: ${publicData.major}`}
+                                >
+                                  {publicData.major}
+                                </button>
+                              ) : '-'}
+                            </td>
+                            <td>
+                              <button
+                                type="button"
+                                className={css.reportStatClickable}
+                                onClick={() => handleViewStudent(student)}
+                                title="View application details"
+                              >
+                                {activity.applications || 0}
+                              </button>
+                            </td>
+                            <td>
+                              <button
+                                type="button"
+                                className={css.reportStatClickable}
+                                onClick={() => handleViewStudent(student)}
+                                title="View acceptance details"
+                              >
+                                {activity.acceptances || 0}
+                              </button>
+                            </td>
+                            <td>
+                              <button
+                                type="button"
+                                className={css.reportStatClickable}
+                                onClick={() => handleViewStudent(student)}
+                                title="View completion details"
+                              >
+                                {activity.completions || 0}
+                              </button>
+                            </td>
                           </tr>
                         );
                       })}
@@ -1236,13 +1354,36 @@ const EducationDashboardPageComponent = props => {
               <div className={css.transactionsList}>
                 {studentTransactions.map(tx => (
                   <div key={tx.id} className={css.transactionItem}>
-                    <div>
-                      <div className={css.transactionProject}>
-                        {tx.listing?.title || 'Unknown Project'}
-                      </div>
-                      <div className={css.transactionCompany}>
-                        {tx.provider?.companyName || tx.provider?.displayName || 'Unknown Company'}
-                      </div>
+                    <div className={css.transactionDetails}>
+                      {tx.listing?.id ? (
+                        <NamedLink
+                          className={css.transactionProjectLink}
+                          name="ListingPage"
+                          params={{ id: tx.listing.id, slug: tx.listing.title?.toLowerCase().replace(/\s+/g, '-') || 'project' }}
+                          title="View project listing"
+                        >
+                          {tx.listing?.title || 'Unknown Project'}
+                          <span className={css.profileArrow}>→</span>
+                        </NamedLink>
+                      ) : (
+                        <div className={css.transactionProject}>
+                          {tx.listing?.title || 'Unknown Project'}
+                        </div>
+                      )}
+                      {tx.provider?.id ? (
+                        <NamedLink
+                          className={css.transactionCompanyLink}
+                          name="ProfilePage"
+                          params={{ id: tx.provider.id }}
+                          title="View company profile"
+                        >
+                          {tx.provider?.companyName || tx.provider?.displayName || 'Unknown Company'}
+                        </NamedLink>
+                      ) : (
+                        <div className={css.transactionCompany}>
+                          {tx.provider?.companyName || tx.provider?.displayName || 'Unknown Company'}
+                        </div>
+                      )}
                       <div className={css.transactionDate}>
                         {new Date(tx.attributes.createdAt).toLocaleDateString()}
                       </div>

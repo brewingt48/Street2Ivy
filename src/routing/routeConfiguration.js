@@ -47,6 +47,7 @@ const OnboardingPage = loadable(() => import(/* webpackChunkName: "OnboardingPag
 const StripePayoutPage = loadable(() => import(/* webpackChunkName: "StripePayoutPage" */ '../containers/StripePayoutPage/StripePayoutPage'));
 const TermsOfServicePage = loadable(() => import(/* webpackChunkName: "TermsOfServicePage" */ '../containers/TermsOfServicePage/TermsOfServicePage'));
 const LegalPage = loadable(() => import(/* webpackChunkName: "LegalPage" */ '../containers/LegalPage/LegalPage'));
+const BlogPage = loadable(() => import(/* webpackChunkName: "BlogPage" */ '../containers/BlogPage/BlogPage'));
 const TransactionPage = loadable(() => import(/* webpackChunkName: "TransactionPage" */ '../containers/TransactionPage/TransactionPage'));
 const NoAccessPage = loadable(() => import(/* webpackChunkName: "NoAccessPage" */ '../containers/NoAccessPage/NoAccessPage'));
 
@@ -467,6 +468,16 @@ const routeConfiguration = (layoutConfig, accessControlConfig) => {
       path: '/legal/:slug',
       name: 'LegalPage',
       component: LegalPage,
+    },
+    {
+      path: '/blog',
+      name: 'BlogPage',
+      component: BlogPage,
+    },
+    {
+      path: '/blog/:slug',
+      name: 'BlogPostPage',
+      component: BlogPage,
     },
     {
       path: '/styleguide',
