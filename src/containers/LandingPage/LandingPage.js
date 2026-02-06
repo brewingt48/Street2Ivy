@@ -63,7 +63,6 @@ const useCountUp = (end, duration = 2000, startOnView = true) => {
 const LandingPageComponent = props => {
   const { currentUser } = props;
   const intl = useIntl();
-  const [showVideo, setShowVideo] = useState(false);
   const [dynamicContent, setDynamicContent] = useState(null);
   const [activeTab, setActiveTab] = useState('companies');
   const [visibleElements, setVisibleElements] = useState({});
@@ -110,6 +109,10 @@ const LandingPageComponent = props => {
   // Get content from dynamic data or use static fallback
   const heroContent = dynamicContent?.hero || null;
   const brandingContent = dynamicContent?.branding || null;
+  const featuresContent = dynamicContent?.features || null;
+  const howItWorksContent = dynamicContent?.howItWorks || null;
+  const testimonialsContent = dynamicContent?.testimonials || null;
+  const ctaContent = dynamicContent?.cta || null;
 
   // Stats counter hooks
   const studentsCount = useCountUp(5000);
@@ -165,52 +168,52 @@ const LandingPageComponent = props => {
     }
   ];
 
-  // Sample projects for marketplace preview
-  const sampleProjects = [
+  // Benefits for Educational Institutions
+  const institutionBenefits = [
     {
-      id: 1,
-      company: 'Growth Ventures LLC',
-      type: 'Series A Startup',
-      logo: '📊',
-      title: 'Market Research Analysis for CPG Brand Expansion',
-      tags: ['Market Research', 'Data Analysis', 'Excel'],
-      compensation: '$800 - $1,200'
+      icon: '📈',
+      title: 'Boost Graduate Outcomes',
+      description: 'Improve placement rates and career readiness metrics without building new infrastructure or hiring more staff.'
     },
     {
-      id: 2,
-      company: 'FinFlow Technologies',
-      type: 'FinTech Startup',
-      logo: '💳',
-      title: 'Social Media Campaign Strategy & Content Creation',
-      tags: ['Social Media', 'Content Strategy', 'Copywriting'],
-      compensation: '$600 - $900'
+      icon: '🔗',
+      title: 'Corporate Partnership Pipeline',
+      description: 'Connect your institution directly with companies actively seeking student talent for real projects.'
     },
     {
-      id: 3,
-      company: 'Nexus Capital Partners',
-      type: 'Venture Capital',
-      logo: '🚀',
-      title: 'Financial Modeling for Series A Investment Thesis',
-      tags: ['Financial Modeling', 'Valuation', 'PowerPoint'],
-      compensation: '$1,000 - $1,500'
+      icon: '🤖',
+      title: 'AI-Powered Career Services',
+      description: 'Give every student access to 24/7 personalized career coaching — resume help, interview prep, and career pathing.'
+    },
+    {
+      icon: '📊',
+      title: 'Real-Time Analytics Dashboard',
+      description: 'Track student engagement, project completions, and placement outcomes with comprehensive reporting tools.'
     }
   ];
 
-  // Testimonials
-  const testimonials = [
+  // Testimonials - use dynamic or static
+  const staticTestimonials = [
     {
-      quote: 'We needed a competitive analysis done fast, and hiring a consultant would have cost 10x more. The student we worked with delivered insights our strategy team is still referencing six months later. We\'ve since hired her full-time.',
+      quote: 'We needed a competitive analysis done fast, and hiring a consultant would have cost 10x more. The student we worked with delivered insights our strategy team is still referencing six months later.',
       author: 'Michael Chen',
       role: 'VP of Strategy, Growth Ventures LLC',
       avatar: '👨‍💼'
     },
     {
-      quote: 'I go to a state school nobody\'s heard of. Before Street2Ivy, I couldn\'t even get interviews. Now I have three completed projects on my resume and a standing offer from a Series B startup. This platform changed my trajectory.',
+      quote: 'I go to a state school nobody\'s heard of. Before Street2Ivy, I couldn\'t even get interviews. Now I have three completed projects on my resume and a standing offer from a Series B startup.',
       author: 'Jasmine Rodriguez',
       role: 'Junior, Marketing Major',
       avatar: '👩‍🎓'
     }
   ];
+
+  const testimonials = testimonialsContent?.items?.slice(0, 2).map(t => ({
+    quote: t.quote,
+    author: t.author,
+    role: t.role,
+    avatar: t.initials?.charAt(0) === 'S' ? '👩‍🎓' : '👨‍💼'
+  })) || staticTestimonials;
 
   const layoutAreas = `
     topbar
@@ -275,21 +278,56 @@ const LandingPageComponent = props => {
                         Now Accepting Early Access Applications
                       </div>
                       <h1 className={css.heroTitle}>
-                        The Best Talent Isn't Always{' '}
-                        <span className={css.heroTitleGradient}>Where You're Looking</span>
+                        {heroContent?.title ? (
+                          <>
+                            {heroContent.title.split(' ').slice(0, -2).join(' ')}{' '}
+                            <span className={css.heroTitleGradient}>
+                              {heroContent.title.split(' ').slice(-2).join(' ')}
+                            </span>
+                          </>
+                        ) : (
+                          <>
+                            The Best Talent Isn't Always{' '}
+                            <span className={css.heroTitleGradient}>Where You're Looking</span>
+                          </>
+                        )}
                       </h1>
                       <p className={css.heroSubtitle}>
-                        Street2Ivy connects ambitious companies with high-performing college students
-                        for real project work. No legacy recruiting. No overhead. Just results.
+                        {heroContent?.subtitle ||
+                          'Street2Ivy connects ambitious companies with high-performing college students for real project work. No legacy recruiting. No overhead. Just results.'}
                       </p>
                       <div className={css.heroButtons}>
-                        <NamedLink name="SignupPage" className={css.btnPrimary}>
-                          I'm a Company →
-                        </NamedLink>
-                        <NamedLink name="SignupPage" className={css.btnSecondary}>
-                          I'm a Student →
-                        </NamedLink>
+                        {!isAuthenticated ? (
+                          <>
+                            <NamedLink name="SignupPage" className={css.btnPrimary}>
+                              {heroContent?.primaryButtonText || 'Get Started'} →
+                            </NamedLink>
+                            <NamedLink name="LoginPage" className={css.btnSecondary}>
+                              {heroContent?.secondaryButtonText || 'Sign In'} →
+                            </NamedLink>
+                          </>
+                        ) : (
+                          <NamedLink name="SearchPage" className={css.btnPrimary}>
+                            Browse Projects →
+                          </NamedLink>
+                        )}
                       </div>
+
+                      {/* User Type Quick Links */}
+                      {!isAuthenticated && (
+                        <div className={css.userTypeLinks}>
+                          <span className={css.userTypeLinkLabel}>I am a:</span>
+                          <a href="#why-section" className={css.userTypeLink} onClick={() => setActiveTab('companies')}>
+                            Company
+                          </a>
+                          <a href="#why-section" className={css.userTypeLink} onClick={() => setActiveTab('students')}>
+                            Student
+                          </a>
+                          <a href="#why-section" className={css.userTypeLink} onClick={() => setActiveTab('institutions')}>
+                            Institution
+                          </a>
+                        </div>
+                      )}
                     </div>
 
                     {/* Right side - Visual */}
@@ -300,6 +338,7 @@ const LandingPageComponent = props => {
                         <div className={`${css.node} ${css.nodeCorporate}`}>🏢</div>
                         <div className={`${css.node} ${css.nodeProject}`}>🚀</div>
                         <div className={`${css.node} ${css.nodeStudent}`}>🎓</div>
+                        <div className={`${css.node} ${css.nodeInstitution}`}>🏛️</div>
                         <div className={`${css.connectionLine} ${css.line1}`} />
                         <div className={`${css.connectionLine} ${css.line2}`} />
                       </div>
@@ -311,7 +350,9 @@ const LandingPageComponent = props => {
                 <section className={css.whySection} id="why-section" data-animate>
                   <div className={css.sectionContainer}>
                     <span className={css.sectionLabel}>The Opportunity</span>
-                    <h2 className={css.sectionTitle}>Why Street2Ivy?</h2>
+                    <h2 className={css.sectionTitle}>
+                      {featuresContent?.sectionTitle || 'Why Street2Ivy?'}
+                    </h2>
                     <p className={css.sectionSubtitle}>
                       A talent marketplace built on mutual value. Everyone wins when potential meets opportunity.
                     </p>
@@ -330,11 +371,19 @@ const LandingPageComponent = props => {
                       >
                         For Students
                       </button>
+                      <button
+                        className={`${css.toggleTab} ${activeTab === 'institutions' ? css.toggleTabActive : ''}`}
+                        onClick={() => setActiveTab('institutions')}
+                      >
+                        For Institutions
+                      </button>
                     </div>
 
                     {/* Benefits Grid */}
                     <div className={`${css.benefitsGrid} ${visibleElements['why-section'] ? css.visible : ''}`}>
-                      {(activeTab === 'companies' ? companyBenefits : studentBenefits).map((benefit, index) => (
+                      {(activeTab === 'companies' ? companyBenefits :
+                        activeTab === 'students' ? studentBenefits :
+                        institutionBenefits).map((benefit, index) => (
                         <div
                           key={index}
                           className={css.benefitCard}
@@ -353,7 +402,9 @@ const LandingPageComponent = props => {
                 <section className={css.howSection} id="how-section" data-animate>
                   <div className={css.sectionContainer}>
                     <span className={css.sectionLabel}>The Process</span>
-                    <h2 className={css.sectionTitle}>How It Works</h2>
+                    <h2 className={css.sectionTitle}>
+                      {howItWorksContent?.sectionTitle || 'How It Works'}
+                    </h2>
                     <p className={css.sectionSubtitle}>
                       Simple, streamlined, and built for results.
                     </p>
@@ -370,22 +421,22 @@ const LandingPageComponent = props => {
                           <div className={`${css.howStep} ${visibleElements['how-section'] ? css.visible : ''}`}>
                             <div className={css.stepNumber}>1</div>
                             <div className={css.stepContent}>
-                              <h4>Post Your Project</h4>
-                              <p>Define the scope, timeline, and budget. We'll match you with qualified candidates.</p>
+                              <h4>{howItWorksContent?.items?.[0]?.title || 'Post Your Project'}</h4>
+                              <p>{howItWorksContent?.items?.[0]?.description || 'Define the scope, timeline, and budget. We\'ll match you with qualified candidates.'}</p>
                             </div>
                           </div>
                           <div className={`${css.howStep} ${visibleElements['how-section'] ? css.visible : ''}`} style={{ animationDelay: '0.2s' }}>
                             <div className={css.stepNumber}>2</div>
                             <div className={css.stepContent}>
-                              <h4>Review Matched Talent</h4>
-                              <p>Browse applications, review portfolios, and interview your top picks.</p>
+                              <h4>{howItWorksContent?.items?.[1]?.title || 'Review Matched Talent'}</h4>
+                              <p>{howItWorksContent?.items?.[1]?.description || 'Browse applications, review portfolios, and interview your top picks.'}</p>
                             </div>
                           </div>
                           <div className={`${css.howStep} ${visibleElements['how-section'] ? css.visible : ''}`} style={{ animationDelay: '0.4s' }}>
                             <div className={css.stepNumber}>3</div>
                             <div className={css.stepContent}>
-                              <h4>Get Results</h4>
-                              <p>Collaborate through our platform, receive deliverables, and pay on completion.</p>
+                              <h4>{howItWorksContent?.items?.[2]?.title || 'Get Results'}</h4>
+                              <p>{howItWorksContent?.items?.[2]?.description || 'Collaborate through our platform, receive deliverables, and pay on completion.'}</p>
                             </div>
                           </div>
                         </div>
@@ -422,51 +473,6 @@ const LandingPageComponent = props => {
                           </div>
                         </div>
                       </div>
-                    </div>
-                  </div>
-                </section>
-
-                {/* ================ Marketplace Preview Section ================ */}
-                <section className={css.marketplaceSection} id="marketplace-section" data-animate>
-                  <div className={css.sectionContainer}>
-                    <span className={css.sectionLabelLight}>Live Marketplace</span>
-                    <h2 className={css.sectionTitleLight}>Real Projects from Real Companies</h2>
-                    <p className={css.sectionSubtitleLight}>
-                      Here's a glimpse of what's happening on Street2Ivy right now.
-                    </p>
-
-                    <div className={css.projectGrid}>
-                      {sampleProjects.map((project, index) => (
-                        <div
-                          key={project.id}
-                          className={`${css.projectCard} ${visibleElements['marketplace-section'] ? css.visible : ''}`}
-                          style={{ animationDelay: `${index * 0.15}s` }}
-                        >
-                          <div className={css.projectCompany}>
-                            <div className={css.companyLogo}>{project.logo}</div>
-                            <div className={css.companyInfo}>
-                              <h5>{project.company}</h5>
-                              <span>{project.type}</span>
-                            </div>
-                          </div>
-                          <h4 className={css.projectTitle}>{project.title}</h4>
-                          <div className={css.projectTags}>
-                            {project.tags.map((tag, i) => (
-                              <span key={i} className={css.projectTag}>{tag}</span>
-                            ))}
-                          </div>
-                          <div className={css.projectFooter}>
-                            <span className={css.projectCompensation}>{project.compensation}</span>
-                            <button className={css.projectBtn}>View Project</button>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-
-                    <div className={css.marketplaceCta}>
-                      <NamedLink name="SignupPage" className={css.btnPrimary}>
-                        Browse All Projects →
-                      </NamedLink>
                     </div>
                   </div>
                 </section>
@@ -593,7 +599,9 @@ const LandingPageComponent = props => {
                 <section className={css.testimonialsSection} id="testimonials-section" data-animate>
                   <div className={css.sectionContainer}>
                     <span className={css.sectionLabel}>Success Stories</span>
-                    <h2 className={css.sectionTitle}>What They're Saying</h2>
+                    <h2 className={css.sectionTitle}>
+                      {testimonialsContent?.sectionTitle || 'What They\'re Saying'}
+                    </h2>
                     <p className={css.sectionSubtitle}>
                       Real results from real people on both sides of the marketplace.
                     </p>
@@ -620,8 +628,8 @@ const LandingPageComponent = props => {
                   </div>
                 </section>
 
-                {/* ================ Dual CTA Section ================ */}
-                <section className={css.dualCtaSection}>
+                {/* ================ Triple CTA Section ================ */}
+                <section className={css.tripleCtaSection}>
                   <div className={css.ctaCompanies}>
                     <h2 className={css.ctaTitle}>Ready to Tap Into Fresh Talent?</h2>
                     <ul className={css.ctaList}>
@@ -646,6 +654,19 @@ const LandingPageComponent = props => {
                       Join the Talent Network →
                     </NamedLink>
                     <p className={css.ctaUrgency}>🚀 Early access — applications closing soon</p>
+                  </div>
+
+                  <div className={css.ctaInstitutions}>
+                    <h2 className={css.ctaTitle}>Ready to Elevate Your Career Services?</h2>
+                    <ul className={css.ctaList}>
+                      <li>Enterprise licensing for your institution</li>
+                      <li>AI career coaching for all students</li>
+                      <li>Real-time analytics and reporting</li>
+                    </ul>
+                    <NamedLink name="SignupPage" className={css.ctaBtnInstitution}>
+                      Schedule a Demo →
+                    </NamedLink>
+                    <p className={css.ctaUrgency}>🏛️ Special rates for founding partners</p>
                   </div>
                 </section>
               </Main>
