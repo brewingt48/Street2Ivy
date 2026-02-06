@@ -1318,7 +1318,10 @@
 .engagementFunnel {
   display: flex;
   flex-direction: column;
-  gap: var(--s2i-space-2);
+  gap: var(--s2i-space-3);
+  padding: var(--s2i-space-4);
+  background: var(--s2i-slate-50);
+  border-radius: var(--s2i-radius-xl);
 }
 
 .funnelItem {
@@ -1329,35 +1332,53 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 14px 20px;
+  padding: 16px 24px;
   background: var(--s2i-slate-100);
   border-radius: var(--s2i-radius-lg);
-  transition: width 0.3s ease;
-  min-width: 120px;
+  transition: all 0.3s ease;
+  min-width: 100%;
+  border: 1px solid transparent;
+}
+
+.funnelBar:hover {
+  transform: translateX(4px);
+  box-shadow: var(--s2i-shadow-sm);
+}
+
+.funnelBarRegistered {
+  background: var(--s2i-slate-100);
+  border-color: var(--s2i-slate-200);
 }
 
 .funnelBarEngaged {
   background: var(--s2i-amber-100);
+  border-color: var(--s2i-amber-200);
 }
 
 .funnelBarPlaced {
   background: var(--s2i-emerald-100);
+  border-color: var(--s2i-emerald-200);
 }
 
 .funnelBarCompleted {
   background: var(--s2i-teal-100);
+  border-color: var(--s2i-teal-200);
 }
 
 .funnelLabel {
   font-size: 14px;
-  font-weight: var(--s2i-font-medium);
+  font-weight: var(--s2i-font-semibold);
   color: var(--s2i-navy-900);
+  min-width: 120px;
 }
 
 .funnelValue {
-  font-size: 18px;
+  font-family: var(--s2i-font-display);
+  font-size: 20px;
   font-weight: var(--s2i-font-bold);
   color: var(--s2i-navy-900);
+  min-width: 60px;
+  text-align: right;
 }
 
 /* Activity Badges for Students Table */
@@ -1670,4 +1691,331 @@
 .transactionCompanyLink:hover {
   color: var(--s2i-teal-600);
   text-decoration: underline;
+}
+
+/* ================ Corporate Partner Investment Section ================ */
+
+.investmentReportCard {
+  background: white;
+  border: 1px solid var(--s2i-slate-200);
+  border-radius: var(--s2i-radius-xl);
+  padding: var(--s2i-space-6);
+  margin-bottom: var(--s2i-space-6);
+  box-shadow: var(--s2i-shadow-sm);
+}
+
+.investmentReportHeader {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s2i-space-3);
+  margin-bottom: var(--s2i-space-4);
+
+  @media (--viewportSmall) {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+}
+
+.investmentReportTitleSection {
+  display: flex;
+  align-items: center;
+  gap: var(--s2i-space-3);
+}
+
+.investmentReportIcon {
+  font-size: 28px;
+}
+
+.investmentReportTitle {
+  font-family: var(--s2i-font-display);
+  font-size: 18px;
+  font-weight: var(--s2i-font-semibold);
+  color: var(--s2i-navy-900);
+  margin: 0;
+
+  @media (--viewportSmall) {
+    font-size: 20px;
+  }
+}
+
+.investmentReportDescription {
+  font-size: 14px;
+  color: var(--s2i-slate-600);
+  margin: 0 0 var(--s2i-space-5) 0;
+  line-height: 1.5;
+}
+
+/* Investment Summary Grid - 4 columns */
+.investmentSummaryGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--s2i-space-3);
+  margin-bottom: var(--s2i-space-6);
+
+  @media (--viewportSmall) {
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--s2i-space-4);
+  }
+}
+
+.investmentSummaryCard {
+  display: flex;
+  align-items: center;
+  gap: var(--s2i-space-3);
+  padding: var(--s2i-space-4);
+  background: linear-gradient(135deg, var(--s2i-slate-50) 0%, white 100%);
+  border: 1px solid var(--s2i-slate-200);
+  border-radius: var(--s2i-radius-xl);
+  transition: var(--s2i-transition-all);
+}
+
+.investmentSummaryCard:hover {
+  border-color: var(--s2i-teal-300);
+  box-shadow: var(--s2i-shadow-md);
+  transform: translateY(-2px);
+}
+
+.investmentSummaryIconWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  background: white;
+  border-radius: var(--s2i-radius-lg);
+  box-shadow: var(--s2i-shadow-sm);
+  flex-shrink: 0;
+}
+
+.investmentSummaryCardIcon {
+  font-size: 22px;
+}
+
+.investmentSummaryContent {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.investmentSummaryValue {
+  font-family: var(--s2i-font-display);
+  font-size: 18px;
+  font-weight: var(--s2i-font-bold);
+  color: var(--s2i-navy-900);
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+
+  @media (--viewportSmall) {
+    font-size: 20px;
+  }
+}
+
+.investmentSummaryLabel {
+  font-size: 11px;
+  color: var(--s2i-slate-500);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Investment Table Section */
+.investmentTableSection {
+  margin-top: var(--s2i-space-2);
+}
+
+.investmentTableTitle {
+  font-size: 15px;
+  font-weight: var(--s2i-font-semibold);
+  color: var(--s2i-navy-700);
+  margin: 0 0 var(--s2i-space-4) 0;
+  padding-bottom: var(--s2i-space-3);
+  border-bottom: 1px solid var(--s2i-slate-200);
+}
+
+.investmentTableWrapper {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.investmentTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  min-width: 600px;
+}
+
+.investmentTable th {
+  padding: 14px 20px;
+  background: var(--s2i-slate-50);
+  font-weight: var(--s2i-font-semibold);
+  color: var(--s2i-navy-700);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 2px solid var(--s2i-slate-200);
+}
+
+.investmentTableHeaderLeft {
+  text-align: left;
+}
+
+.investmentTableHeaderRight {
+  text-align: right;
+  padding-right: 24px;
+}
+
+.investmentTableHeaderCenter {
+  text-align: center;
+  padding-left: 24px;
+  padding-right: 24px;
+}
+
+.investmentTableRow {
+  transition: var(--s2i-transition-base);
+  border-bottom: 1px solid var(--s2i-slate-100);
+}
+
+.investmentTableRow:hover {
+  background: var(--s2i-teal-50);
+}
+
+.investmentTableRow:last-child {
+  border-bottom: none;
+}
+
+.investmentTable td {
+  padding: 16px 20px;
+  vertical-align: middle;
+}
+
+.investmentTableCellRank {
+  width: 50px;
+  text-align: left;
+}
+
+.companyRank {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  background: var(--s2i-slate-100);
+  border-radius: var(--s2i-radius-full);
+  font-size: 12px;
+  font-weight: var(--s2i-font-semibold);
+  color: var(--s2i-slate-600);
+}
+
+.investmentTableCellCompany {
+  min-width: 180px;
+}
+
+.companyNameLink {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s2i-space-1);
+  font-weight: var(--s2i-font-medium);
+  color: var(--s2i-navy-900);
+  text-decoration: none;
+  transition: var(--s2i-transition-base);
+}
+
+.companyNameLink:hover {
+  color: var(--s2i-teal-600);
+}
+
+.companyLinkArrow {
+  opacity: 0;
+  transform: translateX(-4px);
+  transition: var(--s2i-transition-all);
+  font-size: 13px;
+  color: var(--s2i-teal-500);
+}
+
+.companyNameLink:hover .companyLinkArrow {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.investmentTableCellAmount {
+  text-align: right;
+  min-width: 120px;
+}
+
+.investmentAmount {
+  font-family: var(--s2i-font-display);
+  font-weight: var(--s2i-font-semibold);
+  color: var(--s2i-emerald-600);
+  font-size: 15px;
+}
+
+.investmentTableCellCenter {
+  text-align: center;
+  min-width: 100px;
+  padding-left: 24px;
+  padding-right: 24px;
+}
+
+.projectCount {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  padding: 4px 10px;
+  background: var(--s2i-slate-100);
+  border-radius: var(--s2i-radius-full);
+  font-size: 13px;
+  font-weight: var(--s2i-font-medium);
+  color: var(--s2i-slate-700);
+}
+
+.completedBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  padding: 4px 10px;
+  background: var(--s2i-emerald-50);
+  border-radius: var(--s2i-radius-full);
+  font-size: 13px;
+  font-weight: var(--s2i-font-semibold);
+  color: var(--s2i-emerald-700);
+}
+
+.viewCompanyBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 14px;
+  background: white;
+  border: 1px solid var(--s2i-slate-300);
+  border-radius: var(--s2i-radius-lg);
+  font-size: 12px;
+  font-weight: var(--s2i-font-medium);
+  color: var(--s2i-slate-700);
+  text-decoration: none;
+  cursor: pointer;
+  transition: var(--s2i-transition-all);
+  white-space: nowrap;
+}
+
+.viewCompanyBtn:hover {
+  background: var(--s2i-teal-500);
+  border-color: var(--s2i-teal-500);
+  color: white;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 200, 190, 0.3);
+}
+
+.investmentTableMore {
+  text-align: center;
+  font-size: 13px;
+  color: var(--s2i-slate-500);
+  margin: var(--s2i-space-4) 0 0 0;
+  padding-top: var(--s2i-space-3);
+  border-top: 1px dashed var(--s2i-slate-200);
 }

@@ -155,14 +155,6 @@ const TopbarMobileMenu = props => {
     return currentPage === page || isAccountSettingsPage || isInboxPage ? css.currentPage : null;
   };
 
-  const manageListingsLinkMaybe = showCreateListingsLink ? (
-    <li className={classNames(css.navigationLink, currentPageClass('ManageListingsPage'))}>
-      <NamedLink name="ManageListingsPage">
-        <FormattedMessage id="TopbarMobileMenu.yourListingsLink" />
-      </NamedLink>
-    </li>
-  ) : null;
-
   // Street2Ivy: Determine user type for conditional navigation
   const userType = user?.attributes?.profile?.publicData?.userType;
   const isCorporatePartner = userType === 'corporate-partner';
@@ -170,6 +162,15 @@ const TopbarMobileMenu = props => {
   const isSystemAdmin = userType === 'system-admin';
   const isEducationalAdmin = userType === 'educational-admin';
   const isAdmin = isSystemAdmin || isEducationalAdmin;
+
+  // Educational admins don't have listings, so hide this link for them
+  const manageListingsLinkMaybe = showCreateListingsLink && !isEducationalAdmin ? (
+    <li className={classNames(css.navigationLink, currentPageClass('ManageListingsPage'))}>
+      <NamedLink name="ManageListingsPage">
+        <FormattedMessage id="TopbarMobileMenu.yourListingsLink" />
+      </NamedLink>
+    </li>
+  ) : null;
 
   // Removed: Search Students link for corporate partners
   const findStudentsLinkMaybe = null;

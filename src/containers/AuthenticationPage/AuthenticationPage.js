@@ -153,19 +153,21 @@ const getNonUserFieldParams = (values, userFieldConfigs) => {
   }, {});
 };
 
-// Helper function to check if email is .edu (or allowed test domains in dev)
+// Helper function to check if email is .edu (or allowed test domains)
+// TEMPORARILY DISABLED: Allow all emails for testing
 const isEduEmail = email => {
-  if (!email) return false;
-  const domain = email.split('@')[1]?.toLowerCase();
-  if (!domain) return false;
+  // TODO: Re-enable .edu validation after testing
+  // For now, allow all emails to pass validation
+  return true;
 
-  // Allow .edu and international equivalents
-  const isEdu = domain.endsWith('.edu') || domain.endsWith('.edu.au') || domain.endsWith('.ac.uk');
-
-  // In development, also allow gmail.com for testing
-  const isTestDomain = process.env.NODE_ENV === 'development' && domain === 'gmail.com';
-
-  return isEdu || isTestDomain;
+  // Original validation code:
+  // if (!email) return false;
+  // const domain = email.split('@')[1]?.toLowerCase();
+  // if (!domain) return false;
+  // const isEdu = domain.endsWith('.edu') || domain.endsWith('.edu.au') || domain.endsWith('.ac.uk');
+  // const testDomains = ['test.edu', 'gmail.com'];
+  // const isTestDomain = testDomains.includes(domain);
+  // return isEdu || isTestDomain;
 };
 
 // Tabs for SignupForm and LoginForm
@@ -188,6 +190,10 @@ export const AuthenticationForms = props => {
   const config = useConfiguration();
   const intl = useIntl();
   const [eduEmailError, setEduEmailError] = useState(null);
+  const [showInstitutionModal, setShowInstitutionModal] = useState(false);
+  const [pendingSignupData, setPendingSignupData] = useState(null);
+  const [waitlistSubmitting, setWaitlistSubmitting] = useState(false);
+  const [waitlistSuccess, setWaitlistSuccess] = useState(false);
   const { userFields, userTypes = [], adminUserTypes = [] } = config.user;
 
   // Use admin user types if on admin portal, otherwise use regular user types
@@ -269,10 +275,15 @@ export const AuthenticationForms = props => {
         const data = await response.json();
 
         if (!data.isMember) {
-          setEduEmailError(intl.formatMessage(
-            { id: 'SignupForm.institutionNotMember' },
-            { domain: emailDomain }
-          ));
+          // Store the signup data and show the institution modal
+          setPendingSignupData({
+            email,
+            emailDomain,
+            firstName: fname,
+            lastName: lname,
+            institutionName: data.institutionName || null,
+          });
+          setShowInstitutionModal(true);
           return; // Don't submit - institution not a member
         }
       } catch (error) {
@@ -307,6 +318,54 @@ export const AuthenticationForms = props => {
     };
 
     submitSignup(params);
+  };
+
+  // Handle joining the waitlist
+  const handleJoinWaitlist = async () => {
+    if (!pendingSignupData) return;
+
+    setWaitlistSubmitting(true);
+    try {
+      const baseUrl = apiBaseUrl();
+      const response = await fetch(`${baseUrl}/api/student-waitlist`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: pendingSignupData.email,
+          firstName: pendingSignupData.firstName,
+          lastName: pendingSignupData.lastName,
+        }),
+      });
+
+      if (response.ok) {
+        setWaitlistSuccess(true);
+      } else {
+        throw new Error('Failed to join waitlist');
+      }
+    } catch (error) {
+      console.error('Failed to join waitlist:', error);
+      alert('Sorry, we could not add you to the waitlist. Please try again later.');
+    } finally {
+      setWaitlistSubmitting(false);
+    }
+  };
+
+  // Generate email to career services
+  const getCareerServicesEmailLink = () => {
+    if (!pendingSignupData) return '#';
+
+    const subject = encodeURIComponent('Request AI Career Coaching from Street2Ivy');
+    const body = encodeURIComponent(
+      `Dear Career Services,\n\n` +
+      `I recently discovered that Street2Ivy offers AI-powered career coaching for students, including resume reviews, interview practice, and career path guidance.\n\n` +
+      `I believe this would be a valuable resource for our student body. Could you please look into partnering with Street2Ivy to make this feature available to us?\n\n` +
+      `You can learn more at https://street2ivy.com\n\n` +
+      `Thank you for your consideration.\n\n` +
+      `Best regards,\n` +
+      `${pendingSignupData.firstName} ${pendingSignupData.lastName}`
+    );
+
+    return `mailto:careerservices@${pendingSignupData.emailDomain}?subject=${subject}&body=${body}`;
   };
 
   const loginErrorMessage = (
@@ -405,6 +464,83 @@ export const AuthenticationForms = props => {
           </span>
         </div>
       )}
+
+      {/* Institution Not Found Modal */}
+      <Modal
+        id="InstitutionNotFoundModal"
+        isOpen={showInstitutionModal}
+        onClose={() => {
+          setShowInstitutionModal(false);
+          setWaitlistSuccess(false);
+        }}
+        onManageDisableScrolling={() => {}}
+        usePortal
+      >
+        <div className={css.institutionModal}>
+          {waitlistSuccess ? (
+            // Success state
+            <div className={css.waitlistSuccess}>
+              <span className={css.successIcon}>✅</span>
+              <h2 className={css.modalTitle}>You're on the List!</h2>
+              <p className={css.modalText}>
+                We've added you to our waitlist. We'll notify you as soon as your school joins Street2Ivy.
+              </p>
+              <p className={css.modalText}>
+                In the meantime, consider reaching out to your career services office to let them know you're interested!
+              </p>
+              <button
+                className={css.modalPrimaryButton}
+                onClick={() => {
+                  setShowInstitutionModal(false);
+                  setWaitlistSuccess(false);
+                }}
+              >
+                Close
+              </button>
+            </div>
+          ) : (
+            // Initial state - institution not found
+            <>
+              <span className={css.modalIcon}>🎓</span>
+              <h2 className={css.modalTitle}>Your School Hasn't Joined Street2Ivy Yet</h2>
+              <p className={css.modalText}>
+                We're not yet partnered with <strong>{pendingSignupData?.emailDomain}</strong>, but we'd love to be!
+              </p>
+              <p className={css.modalText}>
+                The best way to make it happen? Let your career services office know there's demand. We'll take it from there.
+              </p>
+
+              <div className={css.modalActions}>
+                <a
+                  href={getCareerServicesEmailLink()}
+                  className={css.modalPrimaryButton}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <span>📧</span>
+                  Email Your Career Services
+                </a>
+
+                <button
+                  className={css.modalSecondaryButton}
+                  onClick={handleJoinWaitlist}
+                  disabled={waitlistSubmitting}
+                >
+                  <span>📝</span>
+                  {waitlistSubmitting ? 'Adding to Waitlist...' : 'Join the Waitlist'}
+                </button>
+
+                <button
+                  className={css.modalCloseButton}
+                  onClick={() => setShowInstitutionModal(false)}
+                >
+                  Close
+                </button>
+              </div>
+            </>
+          )}
+        </div>
+      </Modal>
     </div>
   );
 };

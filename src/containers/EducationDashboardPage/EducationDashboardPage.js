@@ -4,6 +4,7 @@ import { compose } from 'redux';
 import { useHistory, useLocation } from 'react-router-dom';
 import { FormattedMessage, useIntl } from '../../util/reactIntl';
 import { isScrollingDisabled, manageDisableScrolling } from '../../ducks/ui.duck';
+import { fetchAllCompaniesSpending } from '../../util/api';
 
 import { Page, LayoutSingleColumn, PaginationLinks, AvatarMedium, Modal, NamedLink } from '../../components';
 import TopbarContainer from '../../containers/TopbarContainer/TopbarContainer';
@@ -60,6 +61,209 @@ const generateStudentReportData = (students) => {
       invitations: activity.invitations || 0,
     };
   });
+};
+
+// ================ Company Spending Report ================ //
+
+const CompanySpendingReport = () => {
+  const [spendingData, setSpendingData] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    fetchAllCompaniesSpending()
+      .then(data => {
+        setSpendingData(data);
+        setIsLoading(false);
+      })
+      .catch(err => {
+        console.error('Failed to fetch company spending:', err);
+        setError(err);
+        setIsLoading(false);
+      });
+  }, []);
+
+  const formatCurrency = (amount, currency = 'USD') => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency,
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(amount / 100);
+  };
+
+  if (isLoading) {
+    return (
+      <div className={css.reportCard}>
+        <div className={css.reportCardHeader}>
+          <h3 className={css.reportCardTitle}>
+            <FormattedMessage id="EducationDashboardPage.companySpendingReport" defaultMessage="Corporate Partner Investment" />
+          </h3>
+        </div>
+        <p className={css.reportCardDescription}>Loading company spending data...</p>
+      </div>
+    );
+  }
+
+  if (error || !spendingData) {
+    return (
+      <div className={css.reportCard}>
+        <div className={css.reportCardHeader}>
+          <h3 className={css.reportCardTitle}>
+            <FormattedMessage id="EducationDashboardPage.companySpendingReport" defaultMessage="Corporate Partner Investment" />
+          </h3>
+        </div>
+        <p className={css.reportCardDescription}>Unable to load company spending data.</p>
+      </div>
+    );
+  }
+
+  const { companies, totals, currency } = spendingData;
+
+  return (
+    <div className={css.investmentReportCard}>
+      <div className={css.investmentReportHeader}>
+        <div className={css.investmentReportTitleSection}>
+          <span className={css.investmentReportIcon}>💰</span>
+          <h3 className={css.investmentReportTitle}>
+            <FormattedMessage id="EducationDashboardPage.companySpendingReport" defaultMessage="Corporate Partner Investment" />
+          </h3>
+        </div>
+        <button
+          type="button"
+          className={css.downloadButton}
+          onClick={() => {
+            const reportData = companies.map(c => ({
+              company: c.companyName,
+              totalSpent: formatCurrency(c.totalSpent, currency),
+              projects: c.totalProjects,
+              completed: c.completedProjects,
+            }));
+            generateCSV(reportData, [
+              { key: 'company', label: 'Company' },
+              { key: 'totalSpent', label: 'Total Invested' },
+              { key: 'projects', label: 'Projects Posted' },
+              { key: 'completed', label: 'Projects Completed' },
+            ], 'company_spending_report');
+          }}
+        >
+          <span className={css.downloadIcon}>⬇️</span>
+          <FormattedMessage id="EducationDashboardPage.downloadCSV" />
+        </button>
+      </div>
+      <p className={css.investmentReportDescription}>
+        <FormattedMessage
+          id="EducationDashboardPage.companySpendingDescription"
+          defaultMessage="Overview of how much corporate partners have invested in student projects."
+        />
+      </p>
+
+      {/* Totals Summary - 4 Column Grid */}
+      <div className={css.investmentSummaryGrid}>
+        <div className={css.investmentSummaryCard}>
+          <div className={css.investmentSummaryIconWrapper}>
+            <span className={css.investmentSummaryCardIcon}>💵</span>
+          </div>
+          <div className={css.investmentSummaryContent}>
+            <span className={css.investmentSummaryValue}>{formatCurrency(totals.totalSpentAllCompanies, currency)}</span>
+            <span className={css.investmentSummaryLabel}>Total Invested</span>
+          </div>
+        </div>
+        <div className={css.investmentSummaryCard}>
+          <div className={css.investmentSummaryIconWrapper}>
+            <span className={css.investmentSummaryCardIcon}>📋</span>
+          </div>
+          <div className={css.investmentSummaryContent}>
+            <span className={css.investmentSummaryValue}>{totals.totalProjectsAllCompanies}</span>
+            <span className={css.investmentSummaryLabel}>Total Projects</span>
+          </div>
+        </div>
+        <div className={css.investmentSummaryCard}>
+          <div className={css.investmentSummaryIconWrapper}>
+            <span className={css.investmentSummaryCardIcon}>🏢</span>
+          </div>
+          <div className={css.investmentSummaryContent}>
+            <span className={css.investmentSummaryValue}>{totals.totalCompanies}</span>
+            <span className={css.investmentSummaryLabel}>Active Companies</span>
+          </div>
+        </div>
+        <div className={css.investmentSummaryCard}>
+          <div className={css.investmentSummaryIconWrapper}>
+            <span className={css.investmentSummaryCardIcon}>📊</span>
+          </div>
+          <div className={css.investmentSummaryContent}>
+            <span className={css.investmentSummaryValue}>{formatCurrency(totals.avgSpendingPerCompany, currency)}</span>
+            <span className={css.investmentSummaryLabel}>Avg. per Company</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Top Companies Table */}
+      {companies.length > 0 && (
+        <div className={css.investmentTableSection}>
+          <h4 className={css.investmentTableTitle}>Top Investing Companies</h4>
+          <div className={css.investmentTableWrapper}>
+            <table className={css.investmentTable}>
+              <thead>
+                <tr>
+                  <th className={css.investmentTableHeaderLeft}>#</th>
+                  <th className={css.investmentTableHeaderLeft}>Company</th>
+                  <th className={css.investmentTableHeaderRight}>Total Invested</th>
+                  <th className={css.investmentTableHeaderCenter}>Projects</th>
+                  <th className={css.investmentTableHeaderCenter}>Completed</th>
+                  <th className={css.investmentTableHeaderCenter}>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {companies.slice(0, 10).map((company, index) => (
+                  <tr key={company.companyId} className={css.investmentTableRow}>
+                    <td className={css.investmentTableCellRank}>
+                      <span className={css.companyRank}>{index + 1}</span>
+                    </td>
+                    <td className={css.investmentTableCellCompany}>
+                      <NamedLink
+                        className={css.companyNameLink}
+                        name="ProfilePage"
+                        params={{ id: company.companyId }}
+                        title="View company profile"
+                      >
+                        {company.companyName}
+                        <span className={css.companyLinkArrow}>→</span>
+                      </NamedLink>
+                    </td>
+                    <td className={css.investmentTableCellAmount}>
+                      <span className={css.investmentAmount}>{formatCurrency(company.totalSpent, currency)}</span>
+                    </td>
+                    <td className={css.investmentTableCellCenter}>
+                      <span className={css.projectCount}>{company.totalProjects}</span>
+                    </td>
+                    <td className={css.investmentTableCellCenter}>
+                      <span className={css.completedBadge}>{company.completedProjects}</span>
+                    </td>
+                    <td className={css.investmentTableCellCenter}>
+                      <NamedLink
+                        className={css.viewCompanyBtn}
+                        name="ProfilePage"
+                        params={{ id: company.companyId }}
+                        title="View company profile"
+                      >
+                        View Profile
+                      </NamedLink>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          {companies.length > 10 && (
+            <p className={css.investmentTableMore}>
+              + {companies.length - 10} more companies in full report
+            </p>
+          )}
+        </div>
+      )}
+    </div>
+  );
 };
 
 // ================ Messages Panel ================ //
@@ -1261,34 +1465,25 @@ const EducationDashboardPageComponent = props => {
                     return (
                       <>
                         <div className={css.funnelItem}>
-                          <div className={css.funnelBar} style={{ width: '100%' }}>
+                          <div className={`${css.funnelBar} ${css.funnelBarRegistered}`}>
                             <span className={css.funnelLabel}>Registered</span>
                             <span className={css.funnelValue}>{stats?.totalStudents || 0}</span>
                           </div>
                         </div>
                         <div className={css.funnelItem}>
-                          <div
-                            className={`${css.funnelBar} ${css.funnelBarEngaged}`}
-                            style={{ width: `${Math.max((engagedStudents / total) * 100, 10)}%` }}
-                          >
+                          <div className={`${css.funnelBar} ${css.funnelBarEngaged}`}>
                             <span className={css.funnelLabel}>Applied</span>
                             <span className={css.funnelValue}>{engagedStudents}</span>
                           </div>
                         </div>
                         <div className={css.funnelItem}>
-                          <div
-                            className={`${css.funnelBar} ${css.funnelBarPlaced}`}
-                            style={{ width: `${Math.max((placedStudents / total) * 100, 10)}%` }}
-                          >
+                          <div className={`${css.funnelBar} ${css.funnelBarPlaced}`}>
                             <span className={css.funnelLabel}>Placed</span>
                             <span className={css.funnelValue}>{placedStudents}</span>
                           </div>
                         </div>
                         <div className={css.funnelItem}>
-                          <div
-                            className={`${css.funnelBar} ${css.funnelBarCompleted}`}
-                            style={{ width: `${Math.max((completedStudents / total) * 100, 10)}%` }}
-                          >
+                          <div className={`${css.funnelBar} ${css.funnelBarCompleted}`}>
                             <span className={css.funnelLabel}>Completed</span>
                             <span className={css.funnelValue}>{completedStudents}</span>
                           </div>
@@ -1298,6 +1493,9 @@ const EducationDashboardPageComponent = props => {
                   })()}
                 </div>
               </div>
+
+              {/* Company Spending Report */}
+              <CompanySpendingReport />
             </div>
           )}
 

@@ -133,7 +133,7 @@ const ProfileMenu = ({
             </NamedLink>
           </MenuItem>
         ) : null}
-        {showManageListingsLink ? (
+        {showManageListingsLink && !isEducationalAdmin ? (
           <MenuItem key="ManageListingsPage">
             <NamedLink
               className={classNames(css.menuLink, currentPageClass('ManageListingsPage'))}
@@ -277,13 +277,11 @@ const TopbarDesktop = props => {
   const giveSpaceForSearch = customLinks == null || customLinks?.length === 0;
   const classes = classNames(rootClassName || css.root, className);
 
-  // For admin users, show Admin Dashboard link instead of Inbox
   // For corporate partners, hide inbox link (they have inbox in their dashboard)
+  // For admin users, hide inbox link (they access dashboard via profile menu)
   const inboxLinkMaybe = authenticatedOnClientSide ? (
-    isAdmin ? (
-      <AdminDashboardLink notificationCount={notificationCount} />
-    ) : isCorporatePartner ? (
-      null // Corporate partners have inbox built into their dashboard
+    isAdmin || isCorporatePartner ? (
+      null // Admins and corporate partners access their dashboards via the profile menu
     ) : (
       <InboxLink notificationCount={notificationCount} inboxTab={inboxTab} />
     )
@@ -342,6 +340,7 @@ const TopbarDesktop = props => {
       />
 
       {inboxLinkMaybe}
+
       {profileMenuMaybe}
       {signupLinkMaybe}
       {loginLinkMaybe}
