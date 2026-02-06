@@ -468,7 +468,8 @@ export const userFields = [
   },
 
   // =====================================
-  // Educational Admin-specific fields
+  // Educational Institution-specific fields
+  // (for self-signup, later promoted to educational-admin)
   // =====================================
   {
     key: 'institutionName',
@@ -485,7 +486,7 @@ export const userFields = [
     },
     userTypeConfig: {
       limitToUserTypeIds: true,
-      userTypeIds: ['educational-admin'],
+      userTypeIds: ['educational-institution', 'educational-admin'],
     },
   },
   {
@@ -504,7 +505,7 @@ export const userFields = [
     },
     userTypeConfig: {
       limitToUserTypeIds: true,
-      userTypeIds: ['educational-admin'],
+      userTypeIds: ['educational-institution', 'educational-admin'],
     },
   },
   {
@@ -530,7 +531,7 @@ export const userFields = [
     },
     userTypeConfig: {
       limitToUserTypeIds: true,
-      userTypeIds: ['educational-admin'],
+      userTypeIds: ['educational-institution', 'educational-admin'],
     },
   },
   {
@@ -548,7 +549,7 @@ export const userFields = [
     },
     userTypeConfig: {
       limitToUserTypeIds: true,
-      userTypeIds: ['educational-admin'],
+      userTypeIds: ['educational-institution', 'educational-admin'],
     },
   },
 
@@ -572,7 +573,7 @@ export const userFields = [
     },
     userTypeConfig: {
       limitToUserTypeIds: true,
-      userTypeIds: ['student', 'educational-admin'],
+      userTypeIds: ['student', 'educational-institution', 'educational-admin'],
     },
   },
 
@@ -600,7 +601,7 @@ export const userFields = [
     },
     userTypeConfig: {
       limitToUserTypeIds: true,
-      userTypeIds: ['corporate-partner', 'educational-admin'],
+      userTypeIds: ['corporate-partner', 'educational-institution', 'educational-admin'],
     },
   },
 ];
@@ -641,6 +642,16 @@ export const userTypes = [
       payoutDetails: false,
     },
   },
+  {
+    userType: 'educational-institution',
+    label: 'Educational Institution',
+    // Hide payment tabs - institutions are billed offline
+    // These users can later be promoted to educational-admin by system admin
+    accountLinksVisibility: {
+      paymentMethods: false,
+      payoutDetails: false,
+    },
+  },
 ];
 
 // All user types including admin types (used for profile settings, etc.)
@@ -656,6 +667,14 @@ export const allUserTypes = [
   {
     userType: 'corporate-partner',
     label: 'Corporate Partner',
+    accountLinksVisibility: {
+      paymentMethods: false,
+      payoutDetails: false,
+    },
+  },
+  {
+    userType: 'educational-institution',
+    label: 'Educational Institution',
     accountLinksVisibility: {
       paymentMethods: false,
       payoutDetails: false,

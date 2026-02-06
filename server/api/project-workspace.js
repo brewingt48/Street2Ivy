@@ -1,3 +1,4 @@
+const crypto = require('crypto');
 const { getIntegrationSdk } = require('../api-util/integrationSdk');
 const { getSdk, handleError } = require('../api-util/sdk');
 
@@ -81,7 +82,9 @@ async function getProjectWorkspace(req, res) {
       state => lastTransition === state || lastTransition?.includes('accept')
     );
 
-    // For students, also check deposit confirmation
+    // For students, check if work hold has been cleared
+    // workHoldCleared is the primary check - it means admin has verified deposit and allowed work
+    const workHoldCleared = metadata.workHoldCleared === true;
     const depositConfirmed = metadata.depositConfirmed === true;
 
     // Determine access level
@@ -94,10 +97,11 @@ async function getProjectWorkspace(req, res) {
       accessGranted = true;
       accessLevel = 'full';
     } else if (isCustomer) {
-      // Students need to be accepted AND deposit confirmed
+      // Students need to be accepted AND work hold cleared (deposit verified)
       if (!isAccepted) {
         accessDeniedReason = 'not_accepted';
-      } else if (!depositConfirmed) {
+      } else if (!workHoldCleared) {
+        // Show deposit pending message - work is blocked until admin clears hold
         accessDeniedReason = 'deposit_pending';
       } else {
         accessGranted = true;
@@ -112,6 +116,7 @@ async function getProjectWorkspace(req, res) {
         transactionId,
         transactionState: lastTransition,
         depositConfirmed,
+        workHoldCleared,
         message: getAccessDeniedMessage(accessDeniedReason),
       });
     }
@@ -207,6 +212,20 @@ async function sendProjectMessage(req, res) {
     return res.status(400).json({ error: 'Message content is required.' });
   }
 
+  // Security: Validate message content length to prevent abuse
+  const MAX_MESSAGE_LENGTH = 5000;
+  if (content.length > MAX_MESSAGE_LENGTH) {
+    return res.status(400).json({
+      error: `Message content exceeds maximum length of ${MAX_MESSAGE_LENGTH} characters.`,
+    });
+  }
+
+  // Security: Validate UUID format for transaction ID
+  const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+  if (!UUID_REGEX.test(transactionId)) {
+    return res.status(400).json({ error: 'Invalid transaction ID format.' });
+  }
+
   try {
     const sdk = getSdk(req, res);
     const currentUserResponse = await sdk.currentUser.show();
@@ -235,16 +254,16 @@ async function sendProjectMessage(req, res) {
       return res.status(403).json({ error: 'You are not authorized to send messages.' });
     }
 
-    // For students, verify access (accepted + deposit confirmed)
+    // For students, verify access (accepted + work hold cleared)
     if (isCustomer) {
       const metadata = transaction.attributes.metadata || {};
       const lastTransition = transaction.attributes.lastTransition;
       const isAccepted = lastTransition?.includes('accept') || lastTransition?.includes('complete');
-      const depositConfirmed = metadata.depositConfirmed === true;
+      const workHoldCleared = metadata.workHoldCleared === true;
 
-      if (!isAccepted || !depositConfirmed) {
+      if (!isAccepted || !workHoldCleared) {
         return res.status(403).json({
-          error: 'You cannot send messages until you are accepted and deposit is confirmed.',
+          error: 'You cannot send messages until you are accepted and the deposit hold is cleared.',
         });
       }
     }
@@ -252,11 +271,9 @@ async function sendProjectMessage(req, res) {
     const currentMetadata = transaction.attributes.metadata || {};
     const existingMessages = currentMetadata.projectMessages || [];
 
-    // Create new message
+    // Create new message with cryptographically secure ID
     const newMessage = {
-      id: `msg_${Date.now()}_${Math.random()
-        .toString(36)
-        .substr(2, 9)}`,
+      id: `msg_${Date.now()}_${crypto.randomBytes(6).toString('hex')}`,
       senderId: currentUser.id.uuid,
       senderName: currentUser.attributes.profile.displayName,
       senderType: isProvider ? 'provider' : 'customer',

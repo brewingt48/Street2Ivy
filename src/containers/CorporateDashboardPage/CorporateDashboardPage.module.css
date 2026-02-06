@@ -935,3 +935,164 @@
   background-color: var(--marketplaceColor);
   color: var(--colorWhite);
 }
+
+/* ================ Deposit Tracker Styles ================ */
+
+.depositAlertSection {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 20px 24px;
+  background-color: #fff3cd;
+  border: 1px solid #ffc107;
+  border-radius: 8px;
+  margin-bottom: 24px;
+}
+
+.depositAlertIcon {
+  font-size: 28px;
+  flex-shrink: 0;
+}
+
+.depositAlertContent {
+  flex: 1;
+}
+
+.depositAlertTitle {
+  font-size: 16px;
+  font-weight: var(--fontWeightSemiBold);
+  color: #856404;
+  margin: 0 0 8px 0;
+}
+
+.depositAlertText {
+  font-size: 14px;
+  color: #856404;
+  margin: 0 0 4px 0;
+}
+
+.depositAlertSubtext {
+  font-size: 13px;
+  color: #997a00;
+  margin: 0;
+}
+
+.depositTrackerSection {
+  margin-bottom: 36px;
+  padding: 24px;
+  background-color: var(--colorWhite);
+  border: 1px solid var(--colorGrey100);
+  border-radius: 8px;
+}
+
+.depositTrackerSection .sectionTitle {
+  margin-bottom: 20px;
+}
+
+.depositTrackerGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 20px;
+
+  @media (max-width: 600px) {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+}
+
+.depositTrackerCard {
+  background-color: var(--colorGrey50);
+  border: 1px solid var(--colorGrey100);
+  border-radius: 8px;
+  padding: 20px;
+  text-align: center;
+}
+
+.depositTrackerCardWarning {
+  background-color: #fff8e6;
+  border-color: #ffc107;
+}
+
+.depositTrackerCardSuccess {
+  background-color: #e6f4ea;
+  border-color: #34a853;
+}
+
+.depositTrackerValue {
+  font-size: 32px;
+  font-weight: var(--fontWeightBold);
+  color: var(--colorGrey900);
+  line-height: 1;
+  margin-bottom: 8px;
+}
+
+.depositTrackerCardWarning .depositTrackerValue {
+  color: #856404;
+}
+
+.depositTrackerCardSuccess .depositTrackerValue {
+  color: #1e7e34;
+}
+
+.depositTrackerLabel {
+  font-size: 14px;
+  color: var(--colorGrey600);
+}
+
+.depositProgressContainer {
+  margin-top: 16px;
+}
+
+.depositProgressBar {
+  height: 10px;
+  background-color: var(--colorGrey100);
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+.depositProgressFill {
+  height: 100%;
+  background-color: #34a853;
+  border-radius: 5px;
+  transition: width 0.3s ease;
+}
+
+.depositProgressText {
+  font-size: 13px;
+  color: var(--colorGrey600);
+  margin-top: 8px;
+  text-align: right;
+}
+
+/* Mobile responsiveness for deposit tracker */
+@media (max-width: 600px) {
+  .depositAlertSection {
+    flex-direction: column;
+    padding: 16px;
+  }
+
+  .depositAlertIcon {
+    font-size: 24px;
+  }
+
+  .depositAlertTitle {
+    font-size: 15px;
+  }
+
+  .depositAlertText {
+    font-size: 13px;
+  }
+
+  .depositTrackerSection {
+    padding: 16px;
+  }
+
+  .depositTrackerValue {
+    font-size: 26px;
+  }
+
+  .depositTrackerLabel {
+    font-size: 12px;
+  }
+}

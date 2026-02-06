@@ -1,6 +1,10 @@
 const { getTrustedSdk, getSdk, handleError, serialize } = require('../api-util/sdk');
 const { getIntegrationSdk } = require('../api-util/integrationSdk');
 
+// Security: UUID validation regex
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const MAX_MESSAGE_LENGTH = 5000;
+
 /**
  * POST /api/invite-to-apply
  *
@@ -22,6 +26,21 @@ module.exports = (req, res) => {
   if (!studentId || !listingId) {
     return res.status(400).json({
       error: 'studentId and listingId are required.',
+    });
+  }
+
+  // Security: Validate UUID formats
+  if (!UUID_REGEX.test(studentId)) {
+    return res.status(400).json({ error: 'Invalid student ID format.' });
+  }
+  if (!UUID_REGEX.test(listingId)) {
+    return res.status(400).json({ error: 'Invalid listing ID format.' });
+  }
+
+  // Security: Validate message length if provided
+  if (message && message.length > MAX_MESSAGE_LENGTH) {
+    return res.status(400).json({
+      error: `Message exceeds maximum length of ${MAX_MESSAGE_LENGTH} characters.`,
     });
   }
 

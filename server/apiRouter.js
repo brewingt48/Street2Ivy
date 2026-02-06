@@ -35,6 +35,8 @@ const userStats = require('./api/user-stats');
 // Educational Admin endpoints
 const educationDashboard = require('./api/education-dashboard');
 const educationStudentTransactions = require('./api/education-student-transactions');
+const educationalAdminApplication = require('./api/educational-admin-application');
+const educationMessages = require('./api/education-messages');
 
 // Corporate Dashboard enhanced stats
 const corporateDashboardStats = require('./api/corporate-dashboard-stats');
@@ -46,6 +48,7 @@ const adminMessages = require('./api/admin/messages');
 const adminReports = require('./api/admin/reports');
 const adminExportReport = require('./api/admin/export-report');
 const adminDeposits = require('./api/admin/deposits');
+const adminCorporateDeposits = require('./api/admin/corporate-deposits');
 const adminInstitutions = require('./api/admin/institutions');
 const adminContent = require('./api/admin/content');
 const adminUpload = require('./api/admin/upload');
@@ -164,6 +167,21 @@ router.get('/check-deposit-status/:transactionId', checkDepositStatus);
 // Street2Ivy: Educational Admin endpoints
 router.get('/education/dashboard', educationDashboard);
 router.get('/education/students/:studentId/transactions', educationStudentTransactions);
+router.post('/education/messages', educationMessages.send);
+router.get('/education/messages', educationMessages.list);
+
+// Street2Ivy: Educational Admin Application (public endpoint)
+router.post('/educational-admin/apply', standardRateLimit, educationalAdminApplication.submit);
+
+// Street2Ivy: Educational Admin Application Management (system admin only)
+router.get('/admin/educational-admin-applications', educationalAdminApplication.list);
+router.get('/admin/educational-admin-applications/stats', educationalAdminApplication.stats);
+router.post('/admin/educational-admin-applications/:id/approve', educationalAdminApplication.approve);
+router.post('/admin/educational-admin-applications/:id/reject', educationalAdminApplication.reject);
+
+// Street2Ivy: Educational Admin Management (system admin only)
+router.get('/admin/educational-admins', educationalAdminApplication.listEducationalAdmins);
+router.put('/admin/educational-admins/:userId/subscription', educationalAdminApplication.updateSubscription);
 
 // Street2Ivy: Enhanced Corporate Dashboard
 router.get('/corporate/dashboard-stats', corporateDashboardStats);
@@ -211,6 +229,13 @@ router.get('/admin/deposits', adminDeposits.list);
 router.get('/admin/deposits/:transactionId', adminDeposits.status);
 router.post('/admin/deposits/:transactionId/confirm', adminDeposits.confirm);
 router.post('/admin/deposits/:transactionId/revoke', adminDeposits.revoke);
+
+// Street2Ivy: Corporate Partner Deposit Management (track by partner and project)
+router.get('/admin/corporate-deposits', adminCorporateDeposits.list);
+router.get('/admin/corporate-deposits/:partnerId', adminCorporateDeposits.getPartner);
+router.post('/admin/corporate-deposits/:transactionId/clear-hold', adminCorporateDeposits.clearHold);
+router.post('/admin/corporate-deposits/:transactionId/reinstate-hold', adminCorporateDeposits.reinstateHold);
+router.post('/admin/corporate-deposits/:partnerId/clear-all-holds', adminCorporateDeposits.clearAllHolds);
 
 // Street2Ivy: Institution membership management
 router.get('/admin/institutions', adminInstitutions.list);

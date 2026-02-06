@@ -134,9 +134,9 @@ const RecommendedProjects = props => {
           <p className={css.emptyText}>
             <FormattedMessage id="RecommendedProjects.noProjects" />
           </p>
-          <NamedLink name="SearchPage" className={css.browseLink}>
-            <FormattedMessage id="RecommendedProjects.browseAll" />
-          </NamedLink>
+          <p className={css.emptySubtext}>
+            Check back soon for new opportunities that match your profile.
+          </p>
         </div>
       </div>
     );
@@ -148,9 +148,6 @@ const RecommendedProjects = props => {
         <h2 className={css.title}>
           <FormattedMessage id="RecommendedProjects.title" />
         </h2>
-        <NamedLink name="SearchPage" className={css.viewAllLink}>
-          <FormattedMessage id="RecommendedProjects.viewAll" />
-        </NamedLink>
       </div>
 
       {recommendedListings.length > 0 && (

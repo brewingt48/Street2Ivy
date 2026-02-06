@@ -23,6 +23,18 @@ import {
   deleteContentItem as deleteContentItemApi,
   resetLandingContent as resetLandingContentApi,
   fetchUserStats as fetchUserStatsApi,
+  fetchEducationalAdminApplications as fetchApplicationsApi,
+  fetchEducationalAdminApplicationStats as fetchApplicationStatsApi,
+  approveEducationalAdminApplication as approveApplicationApi,
+  rejectEducationalAdminApplication as rejectApplicationApi,
+  fetchEducationalAdmins as fetchEducationalAdminsApi,
+  updateEducationalAdminSubscription as updateSubscriptionApi,
+  // Corporate partner deposit management
+  fetchCorporateDeposits as fetchCorporateDepositsApi,
+  fetchCorporatePartnerDeposits as fetchCorporatePartnerDepositsApi,
+  clearWorkHold as clearWorkHoldApi,
+  reinstateWorkHold as reinstateWorkHoldApi,
+  clearAllHoldsForPartner as clearAllHoldsForPartnerApi,
 } from '../../util/api';
 import { fetchCurrentUser } from '../../ducks/user.duck';
 
@@ -331,6 +343,163 @@ export const fetchUserStatsThunk = createAsyncThunk(
 export const fetchUserStatsAction = userId => dispatch =>
   dispatch(fetchUserStatsThunk(userId)).unwrap();
 
+// Educational Admin Applications thunks
+export const fetchApplicationsThunk = createAsyncThunk(
+  'app/AdminDashboardPage/fetchApplications',
+  async (params, { rejectWithValue }) => {
+    try {
+      return await fetchApplicationsApi(params);
+    } catch (e) {
+      return rejectWithValue(storableError(e));
+    }
+  }
+);
+
+export const fetchApplications = params => dispatch =>
+  dispatch(fetchApplicationsThunk(params)).unwrap();
+
+export const fetchApplicationStatsThunk = createAsyncThunk(
+  'app/AdminDashboardPage/fetchApplicationStats',
+  async (_, { rejectWithValue }) => {
+    try {
+      return await fetchApplicationStatsApi();
+    } catch (e) {
+      return rejectWithValue(storableError(e));
+    }
+  }
+);
+
+export const fetchApplicationStats = () => dispatch =>
+  dispatch(fetchApplicationStatsThunk()).unwrap();
+
+export const approveApplicationThunk = createAsyncThunk(
+  'app/AdminDashboardPage/approveApplication',
+  async (applicationId, { rejectWithValue }) => {
+    try {
+      return await approveApplicationApi(applicationId);
+    } catch (e) {
+      return rejectWithValue(storableError(e));
+    }
+  }
+);
+
+export const approveApplicationAction = applicationId => dispatch =>
+  dispatch(approveApplicationThunk(applicationId)).unwrap();
+
+export const rejectApplicationThunk = createAsyncThunk(
+  'app/AdminDashboardPage/rejectApplication',
+  async ({ applicationId, reason }, { rejectWithValue }) => {
+    try {
+      return await rejectApplicationApi(applicationId, reason);
+    } catch (e) {
+      return rejectWithValue(storableError(e));
+    }
+  }
+);
+
+export const rejectApplicationAction = (applicationId, reason) => dispatch =>
+  dispatch(rejectApplicationThunk({ applicationId, reason })).unwrap();
+
+// Educational Admins management thunks
+export const fetchEducationalAdminsThunk = createAsyncThunk(
+  'app/AdminDashboardPage/fetchEducationalAdmins',
+  async (params, { rejectWithValue }) => {
+    try {
+      return await fetchEducationalAdminsApi(params);
+    } catch (e) {
+      return rejectWithValue(storableError(e));
+    }
+  }
+);
+
+export const fetchEducationalAdmins = params => dispatch =>
+  dispatch(fetchEducationalAdminsThunk(params)).unwrap();
+
+export const updateSubscriptionThunk = createAsyncThunk(
+  'app/AdminDashboardPage/updateSubscription',
+  async ({ userId, data }, { rejectWithValue }) => {
+    try {
+      return await updateSubscriptionApi(userId, data);
+    } catch (e) {
+      return rejectWithValue(storableError(e));
+    }
+  }
+);
+
+export const updateSubscriptionAction = (userId, data) => dispatch =>
+  dispatch(updateSubscriptionThunk({ userId, data })).unwrap();
+
+// Corporate partner deposit management thunks
+export const fetchCorporateDepositsThunk = createAsyncThunk(
+  'app/AdminDashboardPage/fetchCorporateDeposits',
+  async (params, { rejectWithValue }) => {
+    try {
+      return await fetchCorporateDepositsApi(params);
+    } catch (e) {
+      return rejectWithValue(storableError(e));
+    }
+  }
+);
+
+export const fetchCorporateDeposits = params => dispatch =>
+  dispatch(fetchCorporateDepositsThunk(params)).unwrap();
+
+export const fetchCorporatePartnerDepositsThunk = createAsyncThunk(
+  'app/AdminDashboardPage/fetchCorporatePartnerDeposits',
+  async (partnerId, { rejectWithValue }) => {
+    try {
+      return await fetchCorporatePartnerDepositsApi(partnerId);
+    } catch (e) {
+      return rejectWithValue(storableError(e));
+    }
+  }
+);
+
+export const fetchCorporatePartnerDepositsAction = partnerId => dispatch =>
+  dispatch(fetchCorporatePartnerDepositsThunk(partnerId)).unwrap();
+
+export const clearWorkHoldThunk = createAsyncThunk(
+  'app/AdminDashboardPage/clearWorkHold',
+  async ({ transactionId, notes }, { rejectWithValue }) => {
+    try {
+      return await clearWorkHoldApi(transactionId, notes);
+    } catch (e) {
+      return rejectWithValue(storableError(e));
+    }
+  }
+);
+
+export const clearWorkHoldAction = (transactionId, notes) => dispatch =>
+  dispatch(clearWorkHoldThunk({ transactionId, notes })).unwrap();
+
+export const reinstateWorkHoldThunk = createAsyncThunk(
+  'app/AdminDashboardPage/reinstateWorkHold',
+  async ({ transactionId, reason }, { rejectWithValue }) => {
+    try {
+      return await reinstateWorkHoldApi(transactionId, reason);
+    } catch (e) {
+      return rejectWithValue(storableError(e));
+    }
+  }
+);
+
+export const reinstateWorkHoldAction = (transactionId, reason) => dispatch =>
+  dispatch(reinstateWorkHoldThunk({ transactionId, reason })).unwrap();
+
+export const clearAllHoldsForPartnerThunk = createAsyncThunk(
+  'app/AdminDashboardPage/clearAllHoldsForPartner',
+  async ({ partnerId, notes }, { rejectWithValue }) => {
+    try {
+      return await clearAllHoldsForPartnerApi(partnerId, notes);
+    } catch (e) {
+      return rejectWithValue(storableError(e));
+    }
+  }
+);
+
+export const clearAllHoldsForPartnerAction = (partnerId, notes) => dispatch =>
+  dispatch(clearAllHoldsForPartnerThunk({ partnerId, notes })).unwrap();
+
 // ================ Slice ================ //
 
 const adminDashboardPageSlice = createSlice({
@@ -389,6 +558,36 @@ const adminDashboardPageSlice = createSlice({
     updateContentInProgress: false,
     updateContentError: null,
     updateContentSuccess: false,
+
+    // Educational Admin Applications
+    eduApplications: [],
+    eduApplicationsPagination: null,
+    eduApplicationsStats: null,
+    fetchApplicationsInProgress: false,
+    fetchApplicationsError: null,
+    approveApplicationInProgress: null,
+    rejectApplicationInProgress: null,
+
+    // Educational Admins (institutions)
+    educationalAdmins: [],
+    educationalAdminsPagination: null,
+    fetchEducationalAdminsInProgress: false,
+    fetchEducationalAdminsError: null,
+    updateSubscriptionInProgress: null,
+    updateSubscriptionSuccess: false,
+
+    // Corporate Partner Deposits
+    corporatePartners: [],
+    corporatePartnersPagination: null,
+    fetchCorporateDepositsInProgress: false,
+    fetchCorporateDepositsError: null,
+    selectedPartner: null,
+    selectedPartnerDeposits: [],
+    fetchPartnerDepositsInProgress: false,
+    fetchPartnerDepositsError: null,
+    clearHoldInProgress: null,
+    reinstateHoldInProgress: null,
+    clearAllHoldsInProgress: null,
   },
   reducers: {
     clearSelectedUser: state => {
@@ -411,6 +610,15 @@ const adminDashboardPageSlice = createSlice({
     },
     clearUserStats: state => {
       state.userStats = {};
+    },
+    clearSubscriptionState: state => {
+      state.updateSubscriptionInProgress = null;
+      state.updateSubscriptionSuccess = false;
+    },
+    clearSelectedPartner: state => {
+      state.selectedPartner = null;
+      state.selectedPartnerDeposits = [];
+      state.fetchPartnerDepositsError = null;
     },
   },
   extraReducers: builder => {
@@ -679,6 +887,188 @@ const adminDashboardPageSlice = createSlice({
           isLoading: false,
           error: action.payload?.error || 'Failed to load stats',
         };
+      })
+      // Fetch educational admin applications
+      .addCase(fetchApplicationsThunk.pending, state => {
+        state.fetchApplicationsInProgress = true;
+        state.fetchApplicationsError = null;
+      })
+      .addCase(fetchApplicationsThunk.fulfilled, (state, action) => {
+        state.fetchApplicationsInProgress = false;
+        state.eduApplications = action.payload.applications || [];
+        state.eduApplicationsPagination = action.payload.pagination;
+      })
+      .addCase(fetchApplicationsThunk.rejected, (state, action) => {
+        state.fetchApplicationsInProgress = false;
+        state.fetchApplicationsError = action.payload;
+      })
+      // Fetch application stats
+      .addCase(fetchApplicationStatsThunk.fulfilled, (state, action) => {
+        state.eduApplicationsStats = action.payload.stats;
+      })
+      // Approve application
+      .addCase(approveApplicationThunk.pending, (state, action) => {
+        state.approveApplicationInProgress = action.meta.arg;
+      })
+      .addCase(approveApplicationThunk.fulfilled, (state, action) => {
+        state.approveApplicationInProgress = null;
+        // Remove approved application from list or update status
+        const appId = action.payload.application?.id;
+        state.eduApplications = state.eduApplications.filter(app => app.id !== appId);
+      })
+      .addCase(approveApplicationThunk.rejected, state => {
+        state.approveApplicationInProgress = null;
+      })
+      // Reject application
+      .addCase(rejectApplicationThunk.pending, (state, action) => {
+        state.rejectApplicationInProgress = action.meta.arg.applicationId;
+      })
+      .addCase(rejectApplicationThunk.fulfilled, (state, action) => {
+        state.rejectApplicationInProgress = null;
+        const appId = action.payload.application?.id;
+        state.eduApplications = state.eduApplications.filter(app => app.id !== appId);
+      })
+      .addCase(rejectApplicationThunk.rejected, state => {
+        state.rejectApplicationInProgress = null;
+      })
+      // Fetch educational admins
+      .addCase(fetchEducationalAdminsThunk.pending, state => {
+        state.fetchEducationalAdminsInProgress = true;
+        state.fetchEducationalAdminsError = null;
+      })
+      .addCase(fetchEducationalAdminsThunk.fulfilled, (state, action) => {
+        state.fetchEducationalAdminsInProgress = false;
+        state.educationalAdmins = action.payload.admins || [];
+        state.educationalAdminsPagination = action.payload.pagination;
+      })
+      .addCase(fetchEducationalAdminsThunk.rejected, (state, action) => {
+        state.fetchEducationalAdminsInProgress = false;
+        state.fetchEducationalAdminsError = action.payload;
+      })
+      // Update subscription
+      .addCase(updateSubscriptionThunk.pending, (state, action) => {
+        state.updateSubscriptionInProgress = action.meta.arg.userId;
+        state.updateSubscriptionSuccess = false;
+      })
+      .addCase(updateSubscriptionThunk.fulfilled, (state, action) => {
+        state.updateSubscriptionInProgress = null;
+        state.updateSubscriptionSuccess = true;
+        // Update the admin in the list
+        const updatedUser = action.payload.user;
+        const index = state.educationalAdmins.findIndex(a => a.id === updatedUser.id);
+        if (index !== -1) {
+          const currentAdmin = state.educationalAdmins[index];
+          state.educationalAdmins[index] = {
+            ...currentAdmin,
+            attributes: {
+              ...currentAdmin.attributes,
+              profile: {
+                ...currentAdmin.attributes.profile,
+                publicData: {
+                  ...currentAdmin.attributes.profile.publicData,
+                  depositPaid: updatedUser.depositPaid,
+                  depositPaidDate: updatedUser.depositPaidDate,
+                  aiCoachingApproved: updatedUser.aiCoachingApproved,
+                  aiCoachingApprovedDate: updatedUser.aiCoachingApprovedDate,
+                },
+              },
+            },
+          };
+        }
+      })
+      .addCase(updateSubscriptionThunk.rejected, state => {
+        state.updateSubscriptionInProgress = null;
+        state.updateSubscriptionSuccess = false;
+      })
+      // Fetch corporate partners deposits
+      .addCase(fetchCorporateDepositsThunk.pending, state => {
+        state.fetchCorporateDepositsInProgress = true;
+        state.fetchCorporateDepositsError = null;
+      })
+      .addCase(fetchCorporateDepositsThunk.fulfilled, (state, action) => {
+        state.fetchCorporateDepositsInProgress = false;
+        state.corporatePartners = action.payload.partners || [];
+        state.corporatePartnersPagination = action.payload.pagination;
+      })
+      .addCase(fetchCorporateDepositsThunk.rejected, (state, action) => {
+        state.fetchCorporateDepositsInProgress = false;
+        state.fetchCorporateDepositsError = action.payload;
+      })
+      // Fetch single partner deposits
+      .addCase(fetchCorporatePartnerDepositsThunk.pending, state => {
+        state.fetchPartnerDepositsInProgress = true;
+        state.fetchPartnerDepositsError = null;
+      })
+      .addCase(fetchCorporatePartnerDepositsThunk.fulfilled, (state, action) => {
+        state.fetchPartnerDepositsInProgress = false;
+        state.selectedPartner = action.payload.partner;
+        state.selectedPartnerDeposits = action.payload.transactions || [];
+      })
+      .addCase(fetchCorporatePartnerDepositsThunk.rejected, (state, action) => {
+        state.fetchPartnerDepositsInProgress = false;
+        state.fetchPartnerDepositsError = action.payload;
+      })
+      // Clear work hold
+      .addCase(clearWorkHoldThunk.pending, (state, action) => {
+        state.clearHoldInProgress = action.meta.arg.transactionId;
+      })
+      .addCase(clearWorkHoldThunk.fulfilled, (state, action) => {
+        state.clearHoldInProgress = null;
+        // Update the transaction in the list
+        const transactionId = action.payload.transactionId;
+        const txIndex = state.selectedPartnerDeposits.findIndex(t => t.id === transactionId);
+        if (txIndex !== -1) {
+          state.selectedPartnerDeposits[txIndex] = {
+            ...state.selectedPartnerDeposits[txIndex],
+            workHoldCleared: true,
+          };
+        }
+      })
+      .addCase(clearWorkHoldThunk.rejected, state => {
+        state.clearHoldInProgress = null;
+      })
+      // Reinstate work hold
+      .addCase(reinstateWorkHoldThunk.pending, (state, action) => {
+        state.reinstateHoldInProgress = action.meta.arg.transactionId;
+      })
+      .addCase(reinstateWorkHoldThunk.fulfilled, (state, action) => {
+        state.reinstateHoldInProgress = null;
+        // Update the transaction in the list
+        const transactionId = action.payload.transactionId;
+        const txIndex = state.selectedPartnerDeposits.findIndex(t => t.id === transactionId);
+        if (txIndex !== -1) {
+          state.selectedPartnerDeposits[txIndex] = {
+            ...state.selectedPartnerDeposits[txIndex],
+            workHoldCleared: false,
+          };
+        }
+      })
+      .addCase(reinstateWorkHoldThunk.rejected, state => {
+        state.reinstateHoldInProgress = null;
+      })
+      // Clear all holds for partner
+      .addCase(clearAllHoldsForPartnerThunk.pending, (state, action) => {
+        state.clearAllHoldsInProgress = action.meta.arg.partnerId;
+      })
+      .addCase(clearAllHoldsForPartnerThunk.fulfilled, (state, action) => {
+        state.clearAllHoldsInProgress = null;
+        // Update all transactions to have workHoldCleared
+        state.selectedPartnerDeposits = state.selectedPartnerDeposits.map(tx => ({
+          ...tx,
+          workHoldCleared: true,
+        }));
+        // Update partner in the list too
+        const partnerId = action.payload.partnerId;
+        const partnerIndex = state.corporatePartners.findIndex(p => p.id === partnerId);
+        if (partnerIndex !== -1) {
+          state.corporatePartners[partnerIndex] = {
+            ...state.corporatePartners[partnerIndex],
+            pendingHolds: 0,
+          };
+        }
+      })
+      .addCase(clearAllHoldsForPartnerThunk.rejected, state => {
+        state.clearAllHoldsInProgress = null;
       });
   },
 });
@@ -689,6 +1079,8 @@ export const {
   clearCreateAdminState,
   clearContentState,
   clearUserStats,
+  clearSubscriptionState,
+  clearSelectedPartner,
 } = adminDashboardPageSlice.actions;
 
 // ================ loadData ================ //
@@ -706,9 +1098,16 @@ export const loadData = (params, search) => dispatch => {
   } else if (tab === 'approvals') {
     promises.push(dispatch(fetchPendingApprovalsThunk({})));
   } else if (tab === 'deposits') {
+    // Load both corporate partner deposits and regular deposits
+    promises.push(dispatch(fetchCorporateDepositsThunk({})));
     promises.push(dispatch(fetchDepositsThunk({})));
   } else if (tab === 'content') {
     promises.push(dispatch(fetchContentThunk()));
+  } else if (tab === 'institutions') {
+    // Load both pending applications and current educational admins
+    promises.push(dispatch(fetchApplicationsThunk({ status: 'pending' })));
+    promises.push(dispatch(fetchApplicationStatsThunk()));
+    promises.push(dispatch(fetchEducationalAdminsThunk({})));
   } else {
     // Default: users tab
     promises.push(dispatch(fetchUsersThunk({})));

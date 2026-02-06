@@ -1,6 +1,22 @@
 const { getIntegrationSdk } = require('../../api-util/integrationSdk');
 const { getSdk, handleError } = require('../../api-util/sdk');
 
+// Security: UUID validation regex
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+/**
+ * Validate pagination parameters with bounds
+ */
+function validatePagination(page, perPage) {
+  const pageNum = parseInt(page, 10) || 1;
+  const perPageNum = parseInt(perPage, 10) || 20;
+
+  return {
+    page: Math.max(1, Math.min(pageNum, 100)), // Max 100 pages
+    perPage: Math.max(1, Math.min(perPageNum, 100)), // Max 100 items per page
+  };
+}
+
 /**
  * Verify the current user is a system admin
  */
@@ -131,6 +147,11 @@ async function confirmDeposit(req, res) {
     return res.status(400).json({ error: 'Transaction ID is required.' });
   }
 
+  // Security: Validate UUID format
+  if (!UUID_REGEX.test(transactionId)) {
+    return res.status(400).json({ error: 'Invalid transaction ID format.' });
+  }
+
   try {
     const admin = await verifySystemAdmin(req, res);
     if (!admin) {
@@ -187,6 +208,11 @@ async function revokeDeposit(req, res) {
     return res.status(400).json({ error: 'Transaction ID is required.' });
   }
 
+  // Security: Validate UUID format
+  if (!UUID_REGEX.test(transactionId)) {
+    return res.status(400).json({ error: 'Invalid transaction ID format.' });
+  }
+
   try {
     const admin = await verifySystemAdmin(req, res);
     if (!admin) {
@@ -238,6 +264,11 @@ async function getDepositStatus(req, res) {
 
   if (!transactionId) {
     return res.status(400).json({ error: 'Transaction ID is required.' });
+  }
+
+  // Security: Validate UUID format
+  if (!UUID_REGEX.test(transactionId)) {
+    return res.status(400).json({ error: 'Invalid transaction ID format.' });
   }
 
   try {

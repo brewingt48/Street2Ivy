@@ -1,6 +1,9 @@
 const { getIntegrationSdk } = require('../../api-util/integrationSdk');
 const { getSdk, handleError } = require('../../api-util/sdk');
 
+// Security: UUID validation regex
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
 /**
  * Verify the current user is a system admin
  */
@@ -165,6 +168,11 @@ async function blockUser(req, res) {
     return res.status(400).json({ error: 'User ID is required.' });
   }
 
+  // Security: Validate UUID format
+  if (!UUID_REGEX.test(userId)) {
+    return res.status(400).json({ error: 'Invalid user ID format.' });
+  }
+
   try {
     const admin = await verifySystemAdmin(req, res);
     if (!admin) {
@@ -214,6 +222,11 @@ async function unblockUser(req, res) {
     return res.status(400).json({ error: 'User ID is required.' });
   }
 
+  // Security: Validate UUID format
+  if (!UUID_REGEX.test(userId)) {
+    return res.status(400).json({ error: 'Invalid user ID format.' });
+  }
+
   try {
     const admin = await verifySystemAdmin(req, res);
     if (!admin) {
@@ -257,6 +270,11 @@ async function deleteUser(req, res) {
 
   if (!userId) {
     return res.status(400).json({ error: 'User ID is required.' });
+  }
+
+  // Security: Validate UUID format
+  if (!UUID_REGEX.test(userId)) {
+    return res.status(400).json({ error: 'Invalid user ID format.' });
   }
 
   try {
@@ -323,6 +341,11 @@ async function approveUser(req, res) {
     return res.status(400).json({ error: 'User ID is required.' });
   }
 
+  // Security: Validate UUID format
+  if (!UUID_REGEX.test(userId)) {
+    return res.status(400).json({ error: 'Invalid user ID format.' });
+  }
+
   try {
     const admin = await verifySystemAdmin(req, res);
     if (!admin) {
@@ -379,6 +402,11 @@ async function rejectUser(req, res) {
 
   if (!userId) {
     return res.status(400).json({ error: 'User ID is required.' });
+  }
+
+  // Security: Validate UUID format
+  if (!UUID_REGEX.test(userId)) {
+    return res.status(400).json({ error: 'Invalid user ID format.' });
   }
 
   try {
@@ -575,6 +603,11 @@ async function getUser(req, res) {
     return res.status(400).json({ error: 'User ID is required.' });
   }
 
+  // Security: Validate UUID format
+  if (!UUID_REGEX.test(userId)) {
+    return res.status(400).json({ error: 'Invalid user ID format.' });
+  }
+
   try {
     const admin = await verifySystemAdmin(req, res);
     if (!admin) {
@@ -629,16 +662,19 @@ async function getUser(req, res) {
 /**
  * POST /api/admin/users/create-admin
  *
- * Create a new admin user (educational-admin or system-admin).
- * Only system admins can create other admin accounts.
+ * Promote an existing user to admin (educational-admin or system-admin).
+ * Note: Sharetribe Integration API doesn't support creating users directly.
+ * Users must first sign up through the normal flow, then be promoted.
+ *
+ * Only system admins can promote users to admin accounts.
  */
 async function createAdmin(req, res) {
-  const { email, password, firstName, lastName, userType, institutionName, adminRole } = req.body;
+  const { email, userType, institutionName, adminRole } = req.body;
 
   // Validate required fields
-  if (!email || !password || !firstName || !lastName || !userType) {
+  if (!email || !userType) {
     return res.status(400).json({
-      error: 'Missing required fields: email, password, firstName, lastName, userType',
+      error: 'Missing required fields: email, userType',
     });
   }
 
@@ -666,14 +702,39 @@ async function createAdmin(req, res) {
 
     const integrationSdk = getIntegrationSdk();
 
+    // Find the user by email
+    const usersResponse = await integrationSdk.users.query({
+      email: email.toLowerCase(),
+    });
+
+    const users = usersResponse.data.data;
+
+    if (users.length === 0) {
+      return res.status(404).json({
+        error: `No user found with email "${email}". The user must sign up first before being promoted to admin.`,
+      });
+    }
+
+    const user = users[0];
+    const userId = user.id.uuid;
+    const currentPublicData = user.attributes.profile.publicData || {};
+
+    // Check if already the same type
+    if (currentPublicData.userType === userType) {
+      return res.status(400).json({
+        error: `This user is already a ${userType}.`,
+      });
+    }
+
     // Extract email domain for institution matching
     const emailDomain = email.split('@')[1]?.toLowerCase();
 
     // Prepare publicData based on user type
     const publicData = {
+      ...currentPublicData,
       userType,
       emailDomain,
-      approvalStatus: 'approved', // Auto-approve admin-created accounts
+      approvalStatus: 'approved',
       approvedAt: new Date().toISOString(),
       approvedBy: admin.id.uuid,
     };
@@ -686,46 +747,31 @@ async function createAdmin(req, res) {
       }
     }
 
-    // Create the user via Integration API
-    const createResponse = await integrationSdk.users.create({
-      email,
-      password,
-      firstName,
-      lastName,
-      displayName: `${firstName} ${lastName}`,
+    // Update the user's profile to promote them
+    await integrationSdk.users.updateProfile({
+      id: userId,
       publicData,
-      privateData: {},
       protectedData: {
-        createdByAdmin: admin.id.uuid,
-        createdAt: new Date().toISOString(),
+        promotedByAdmin: admin.id.uuid,
+        promotedAt: new Date().toISOString(),
       },
     });
 
-    const newUser = createResponse.data.data;
-
-    res.status(201).json({
+    res.status(200).json({
       success: true,
-      message: `${
+      message: `User promoted to ${
         userType === 'system-admin' ? 'System Administrator' : 'Educational Administrator'
-      } account created successfully.`,
+      } successfully.`,
       user: {
-        id: newUser.id.uuid,
+        id: userId,
         email,
-        displayName: `${firstName} ${lastName}`,
+        displayName: user.attributes.profile.displayName,
         userType,
         institutionName: userType === 'educational-admin' ? institutionName : undefined,
       },
     });
   } catch (error) {
-    console.error('Admin create admin user error:', error);
-
-    // Check for common errors
-    if (error.status === 409 || error.message?.includes('email-taken')) {
-      return res.status(409).json({
-        error: 'An account with this email address already exists.',
-      });
-    }
-
+    console.error('Admin promote user error:', error);
     handleError(res, error);
   }
 }

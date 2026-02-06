@@ -2,8 +2,8 @@
   "branding": {
     "id": "branding",
     "section": "branding",
-    "logoUrl": null,
-    "logoHeight": 36,
+    "logoUrl": "http://localhost:3500/static/uploads/logo-1770332123500-ol16bf.png",
+    "logoHeight": 48,
     "tagline": "Connecting Ivy League Talent with Industry Leaders",
     "faviconUrl": null,
     "socialFacebook": null,
@@ -13,7 +13,7 @@
     "socialYoutube": null,
     "socialTiktok": null,
     "isActive": true,
-    "updatedAt": "2026-02-05T20:48:29.669Z",
+    "updatedAt": "2026-02-05T22:55:34.199Z",
     "updatedBy": "system"
   },
   "hero": {

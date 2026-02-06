@@ -234,18 +234,7 @@ const CompanyCard = props => {
                 </NamedLink>
               ))}
 
-            {!listingsLoading && totalProjects > 5 && (
-              <NamedLink
-                className={css.viewAllProjects}
-                name="SearchPage"
-                to={{ search: `?pub_authorId=${user.id}` }}
-              >
-                <FormattedMessage
-                  id="CompanyCard.viewAllProjects"
-                  values={{ count: totalProjects }}
-                />
-              </NamedLink>
-            )}
+            {/* View all projects link removed - users view projects through company profile */}
           </div>
         )}
       </div>

@@ -1,0 +1,334 @@
+@import '../../styles/customMediaQueries.css';
+
+.pageContent {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 48px 24px;
+}
+
+@media (--viewportMedium) {
+  .pageContent {
+    padding: 64px 24px;
+  }
+}
+
+/* Header */
+.header {
+  text-align: center;
+  margin-bottom: 48px;
+}
+
+.pageTitle {
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--colorGrey900);
+  margin: 0 0 16px 0;
+}
+
+@media (--viewportMedium) {
+  .pageTitle {
+    font-size: 42px;
+  }
+}
+
+.pageSubtitle {
+  font-size: 18px;
+  color: var(--colorGrey600);
+  margin: 0;
+  max-width: 600px;
+  margin: 0 auto;
+  line-height: 1.6;
+}
+
+/* Benefits Section */
+.benefitsSection {
+  margin-bottom: 48px;
+  background: var(--colorGrey50);
+  padding: 32px;
+  border-radius: 12px;
+}
+
+.benefitsTitle {
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--colorGrey900);
+  margin: 0 0 24px 0;
+  text-align: center;
+}
+
+.benefitsGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+}
+
+@media (--viewportSmall) {
+  .benefitsGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.benefitCard {
+  background: white;
+  padding: 24px;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.benefitIcon {
+  font-size: 32px;
+  margin-bottom: 12px;
+}
+
+.benefitCard h3 {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--colorGrey900);
+  margin: 0 0 8px 0;
+}
+
+.benefitCard p {
+  font-size: 14px;
+  color: var(--colorGrey600);
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* Form Section */
+.formSection {
+  background: white;
+  border: 1px solid var(--colorGrey100);
+  border-radius: 12px;
+  padding: 32px;
+  margin-bottom: 32px;
+}
+
+.formTitle {
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--colorGrey900);
+  margin: 0 0 24px 0;
+}
+
+.applicationForm {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.formGroupTitle {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--colorGrey800);
+  margin: 0;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--colorGrey100);
+}
+
+.formRow {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+
+@media (--viewportSmall) {
+  .formRow {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.formField {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.formField label {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--colorGrey700);
+}
+
+.formField input,
+.formField select,
+.formField textarea {
+  padding: 12px;
+  border: 1px solid var(--colorGrey200);
+  border-radius: 6px;
+  font-size: 16px;
+  transition: border-color 0.2s ease;
+}
+
+.formField input:focus,
+.formField select:focus,
+.formField textarea:focus {
+  outline: none;
+  border-color: var(--marketplaceColor);
+  box-shadow: 0 0 0 2px rgba(0, 113, 227, 0.1);
+}
+
+.formField textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+.fieldHint {
+  font-size: 12px;
+  color: var(--colorGrey500);
+}
+
+.checkboxField {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.checkboxField input[type="checkbox"] {
+  margin-top: 4px;
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+}
+
+.checkboxField label {
+  font-size: 14px;
+  color: var(--colorGrey600);
+  line-height: 1.5;
+  cursor: pointer;
+}
+
+.checkboxField label a {
+  color: var(--marketplaceColor);
+  text-decoration: underline;
+}
+
+.formActions {
+  padding-top: 16px;
+}
+
+.submitButton {
+  width: 100%;
+  padding: 16px 32px;
+  background: var(--marketplaceColor);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.submitButton:hover:not(:disabled) {
+  background: var(--marketplaceColorDark);
+}
+
+.submitButton:disabled {
+  background: var(--colorGrey300);
+  cursor: not-allowed;
+}
+
+@media (--viewportSmall) {
+  .submitButton {
+    width: auto;
+  }
+}
+
+/* Error/Success Messages */
+.errorMessage {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #dc2626;
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-bottom: 24px;
+  font-size: 14px;
+}
+
+/* Success State */
+.successContainer {
+  text-align: center;
+  padding: 64px 24px;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.successIcon {
+  width: 80px;
+  height: 80px;
+  background: #dcfce7;
+  color: #16a34a;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 40px;
+  margin: 0 auto 24px;
+}
+
+.successTitle {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--colorGrey900);
+  margin: 0 0 16px 0;
+}
+
+.successMessage {
+  font-size: 16px;
+  color: var(--colorGrey600);
+  margin: 0 0 12px 0;
+  line-height: 1.6;
+}
+
+.successDetails {
+  font-size: 14px;
+  color: var(--colorGrey500);
+  margin: 0 0 32px 0;
+}
+
+.backButton {
+  display: inline-block;
+  padding: 14px 32px;
+  background: var(--marketplaceColor);
+  color: white;
+  border-radius: 8px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background-color 0.2s ease;
+}
+
+.backButton:hover {
+  background: var(--marketplaceColorDark);
+  color: white;
+}
+
+/* Contact Section */
+.contactSection {
+  text-align: center;
+  padding: 24px;
+  background: var(--colorGrey50);
+  border-radius: 8px;
+}
+
+.contactSection h3 {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--colorGrey800);
+  margin: 0 0 8px 0;
+}
+
+.contactSection p {
+  font-size: 14px;
+  color: var(--colorGrey600);
+  margin: 0;
+}
+
+.contactSection a {
+  color: var(--marketplaceColor);
+}

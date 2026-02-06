@@ -252,10 +252,10 @@ const QuickActions = ({ userType }) => {
           <FormattedMessage id="OnboardingPage.quickActions" />
         </h2>
         <div className={css.quickActionsGrid}>
-          <NamedLink name="SearchPage" className={css.quickActionCard}>
-            <span className={css.quickActionIcon}>🔍</span>
+          <NamedLink name="StudentDashboardPage" className={css.quickActionCard}>
+            <span className={css.quickActionIcon}>📊</span>
             <span className={css.quickActionLabel}>
-              <FormattedMessage id="OnboardingPage.action.browseProjects" />
+              <FormattedMessage id="OnboardingPage.action.viewDashboard" />
             </span>
           </NamedLink>
           <NamedLink name="SearchCompaniesPage" className={css.quickActionCard}>

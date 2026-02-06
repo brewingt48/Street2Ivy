@@ -33,6 +33,19 @@ import {
   resetContentAction,
   clearContentState,
   fetchUserStatsAction,
+  fetchApplications,
+  approveApplicationAction,
+  rejectApplicationAction,
+  fetchEducationalAdmins,
+  updateSubscriptionAction,
+  clearSubscriptionState,
+  // Corporate partner deposits
+  fetchCorporateDeposits,
+  fetchCorporatePartnerDepositsAction,
+  clearWorkHoldAction,
+  reinstateWorkHoldAction,
+  clearAllHoldsForPartnerAction,
+  clearSelectedPartner,
 } from './AdminDashboardPage.duck';
 
 import css from './AdminDashboardPage.module.css';
@@ -1465,6 +1478,802 @@ const ReportsPanel = props => {
 
 // ================ Deposits Panel ================ //
 
+// ================ Unified Deposits Panel ================ //
+
+const UnifiedDepositsPanel = props => {
+  const {
+    // Corporate partner deposits (work hold management)
+    corporatePartners,
+    fetchCorporateInProgress,
+    selectedPartner,
+    selectedPartnerDeposits,
+    fetchPartnerInProgress,
+    clearHoldInProgress,
+    reinstateHoldInProgress,
+    clearAllHoldsInProgress,
+    onFetchCorporateDeposits,
+    onFetchPartnerDeposits,
+    onClearWorkHold,
+    onReinstateWorkHold,
+    onClearAllHolds,
+    onClearSelectedPartner,
+    // Payment confirmations
+    deposits,
+    fetchDepositsInProgress,
+    confirmInProgress,
+    revokeInProgress,
+    onFetchDeposits,
+    onConfirmDeposit,
+    onRevokeDeposit,
+  } = props;
+
+  const [activeSubTab, setActiveSubTab] = useState('work-holds');
+
+  return (
+    <div className={css.panel}>
+      <div className={css.panelHeader}>
+        <h2 className={css.panelTitle}>
+          <FormattedMessage id="AdminDashboardPage.depositsTitle" />
+        </h2>
+      </div>
+
+      {/* Sub-tabs for switching between work holds and payment confirmations */}
+      <div className={css.depositSubTabs}>
+        <button
+          className={classNames(css.depositSubTab, {
+            [css.depositSubTabActive]: activeSubTab === 'work-holds',
+          })}
+          onClick={() => setActiveSubTab('work-holds')}
+        >
+          <span className={css.depositSubTabIcon}>🔒</span>
+          Work Hold Management
+        </button>
+        <button
+          className={classNames(css.depositSubTab, {
+            [css.depositSubTabActive]: activeSubTab === 'payment-confirmations',
+          })}
+          onClick={() => setActiveSubTab('payment-confirmations')}
+        >
+          <span className={css.depositSubTabIcon}>💳</span>
+          Payment Confirmations
+        </button>
+      </div>
+
+      {/* Work Hold Management Sub-panel */}
+      {activeSubTab === 'work-holds' && (
+        <WorkHoldsSubPanel
+          corporatePartners={corporatePartners}
+          fetchInProgress={fetchCorporateInProgress}
+          selectedPartner={selectedPartner}
+          selectedPartnerDeposits={selectedPartnerDeposits}
+          fetchPartnerInProgress={fetchPartnerInProgress}
+          clearHoldInProgress={clearHoldInProgress}
+          reinstateHoldInProgress={reinstateHoldInProgress}
+          clearAllHoldsInProgress={clearAllHoldsInProgress}
+          onFetchCorporateDeposits={onFetchCorporateDeposits}
+          onFetchPartnerDeposits={onFetchPartnerDeposits}
+          onClearWorkHold={onClearWorkHold}
+          onReinstateWorkHold={onReinstateWorkHold}
+          onClearAllHolds={onClearAllHolds}
+          onClearSelectedPartner={onClearSelectedPartner}
+        />
+      )}
+
+      {/* Payment Confirmations Sub-panel */}
+      {activeSubTab === 'payment-confirmations' && (
+        <PaymentConfirmationsSubPanel
+          deposits={deposits}
+          fetchInProgress={fetchDepositsInProgress}
+          confirmInProgress={confirmInProgress}
+          revokeInProgress={revokeInProgress}
+          onFetchDeposits={onFetchDeposits}
+          onConfirmDeposit={onConfirmDeposit}
+          onRevokeDeposit={onRevokeDeposit}
+        />
+      )}
+    </div>
+  );
+};
+
+// ================ Work Holds Sub-Panel ================ //
+
+const WorkHoldsSubPanel = props => {
+  const {
+    corporatePartners,
+    fetchInProgress,
+    selectedPartner,
+    selectedPartnerDeposits,
+    fetchPartnerInProgress,
+    clearHoldInProgress,
+    reinstateHoldInProgress,
+    clearAllHoldsInProgress,
+    onFetchCorporateDeposits,
+    onFetchPartnerDeposits,
+    onClearWorkHold,
+    onReinstateWorkHold,
+    onClearAllHolds,
+    onClearSelectedPartner,
+  } = props;
+
+  const [clearHoldModal, setClearHoldModal] = useState(null);
+  const [clearHoldNotes, setClearHoldNotes] = useState('');
+  const [reinstateModal, setReinstateModal] = useState(null);
+  const [reinstateReason, setReinstateReason] = useState('');
+  const [clearAllModal, setClearAllModal] = useState(null);
+  const [clearAllNotes, setClearAllNotes] = useState('');
+
+  const formatDate = dateString => {
+    if (!dateString) return 'N/A';
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+    });
+  };
+
+  const handleViewPartner = async partnerId => {
+    try {
+      await onFetchPartnerDeposits(partnerId);
+    } catch (e) {
+      console.error('Failed to fetch partner deposits:', e);
+    }
+  };
+
+  const handleClearWorkHold = async () => {
+    if (!clearHoldModal) return;
+    try {
+      await onClearWorkHold(clearHoldModal.id, clearHoldNotes);
+      setClearHoldModal(null);
+      setClearHoldNotes('');
+    } catch (e) {
+      console.error('Clear work hold failed:', e);
+    }
+  };
+
+  const handleReinstateWorkHold = async () => {
+    if (!reinstateModal) return;
+    try {
+      await onReinstateWorkHold(reinstateModal.id, reinstateReason);
+      setReinstateModal(null);
+      setReinstateReason('');
+    } catch (e) {
+      console.error('Reinstate work hold failed:', e);
+    }
+  };
+
+  const handleClearAllHolds = async () => {
+    if (!clearAllModal) return;
+    try {
+      await onClearAllHolds(clearAllModal.id, clearAllNotes);
+      setClearAllModal(null);
+      setClearAllNotes('');
+    } catch (e) {
+      console.error('Clear all holds failed:', e);
+    }
+  };
+
+  // If viewing a specific partner's deposits
+  if (selectedPartner) {
+    const pendingHolds = selectedPartnerDeposits.filter(tx => !tx.workHoldCleared);
+
+    return (
+      <div className={css.subPanelContent}>
+        <div className={css.subPanelHeader}>
+          <div className={css.panelHeaderLeft}>
+            <button className={css.backButton} onClick={onClearSelectedPartner}>
+              ← Back to Partners
+            </button>
+            <h3 className={css.subPanelTitle}>
+              {selectedPartner.displayName || selectedPartner.companyName || 'Unknown Partner'}
+            </h3>
+          </div>
+          {pendingHolds.length > 0 && (
+            <button
+              className={classNames(css.actionButton, css.confirmButton)}
+              onClick={() => setClearAllModal(selectedPartner)}
+              disabled={clearAllHoldsInProgress}
+            >
+              Clear All Holds ({pendingHolds.length})
+            </button>
+          )}
+        </div>
+
+        <div className={css.partnerStatsRow}>
+          <div className={css.miniStatCard}>
+            <span className={css.miniStatValue}>{selectedPartnerDeposits.length}</span>
+            <span className={css.miniStatLabel}>Total Hired</span>
+          </div>
+          <div className={css.miniStatCard}>
+            <span className={classNames(css.miniStatValue, css.warningValue)}>
+              {pendingHolds.length}
+            </span>
+            <span className={css.miniStatLabel}>Pending Holds</span>
+          </div>
+          <div className={css.miniStatCard}>
+            <span className={classNames(css.miniStatValue, css.successValue)}>
+              {selectedPartnerDeposits.filter(tx => tx.workHoldCleared).length}
+            </span>
+            <span className={css.miniStatLabel}>Cleared</span>
+          </div>
+        </div>
+
+        {fetchPartnerInProgress ? (
+          <div className={css.loadingState}>
+            <FormattedMessage id="AdminDashboardPage.loading" />
+          </div>
+        ) : selectedPartnerDeposits.length === 0 ? (
+          <div className={css.emptyState}>No transactions found for this partner.</div>
+        ) : (
+          <table className={css.depositsTable}>
+            <thead>
+              <tr>
+                <th>Project</th>
+                <th>Student</th>
+                <th>Hired Date</th>
+                <th>Work Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {selectedPartnerDeposits.map(tx => {
+                const isWorkHoldCleared = tx.workHoldCleared;
+
+                return (
+                  <tr key={tx.id}>
+                    <td>
+                      <div className={css.depositProject}>
+                        <span className={css.depositProjectTitle}>
+                          {tx.listingTitle || 'Unknown Project'}
+                        </span>
+                        <span className={css.depositProjectId}>ID: {tx.id.substring(0, 8)}...</span>
+                      </div>
+                    </td>
+                    <td>
+                      <div className={css.userCell}>
+                        <div className={css.userInfo}>
+                          <span className={css.userName}>{tx.studentName || 'Unknown'}</span>
+                          <span className={css.userEmail}>{tx.studentEmail || ''}</span>
+                        </div>
+                      </div>
+                    </td>
+                    <td>{formatDate(tx.hiredAt)}</td>
+                    <td>
+                      <span
+                        className={classNames(css.depositStatusBadge, {
+                          [css.depositPending]: !isWorkHoldCleared,
+                          [css.depositConfirmed]: isWorkHoldCleared,
+                        })}
+                      >
+                        {isWorkHoldCleared ? 'Can Work' : 'On Hold'}
+                      </span>
+                    </td>
+                    <td>
+                      <div className={css.actionButtons}>
+                        {!isWorkHoldCleared ? (
+                          <button
+                            className={classNames(css.actionButton, css.confirmButton)}
+                            onClick={() => setClearHoldModal(tx)}
+                            disabled={clearHoldInProgress === tx.id}
+                          >
+                            Clear Hold
+                          </button>
+                        ) : (
+                          <button
+                            className={classNames(css.actionButton, css.revokeButton)}
+                            onClick={() => setReinstateModal(tx)}
+                            disabled={reinstateHoldInProgress === tx.id}
+                          >
+                            Reinstate Hold
+                          </button>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        )}
+
+        {/* Clear Work Hold Modal */}
+        {clearHoldModal && (
+          <div className={css.modalOverlay} onClick={() => setClearHoldModal(null)}>
+            <div className={css.modal} onClick={e => e.stopPropagation()}>
+              <h3 className={css.modalTitle}>Clear Work Hold</h3>
+              <p className={css.modalMessage}>
+                Allow <strong>{clearHoldModal.studentName}</strong> to proceed with work on{' '}
+                <strong>{clearHoldModal.listingTitle}</strong>?
+              </p>
+              <p className={css.modalWarning}>
+                This will allow the student to access the project workspace and begin working.
+              </p>
+
+              <div className={css.formField}>
+                <label>Notes (Optional)</label>
+                <textarea
+                  value={clearHoldNotes}
+                  onChange={e => setClearHoldNotes(e.target.value)}
+                  placeholder="e.g., Deposit received via wire transfer..."
+                />
+              </div>
+
+              <div className={css.modalActions}>
+                <button className={css.modalCancel} onClick={() => setClearHoldModal(null)}>
+                  Cancel
+                </button>
+                <button
+                  className={classNames(css.modalConfirm, css.modalConfirmGreen)}
+                  onClick={handleClearWorkHold}
+                  disabled={clearHoldInProgress}
+                >
+                  Clear Hold
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Reinstate Work Hold Modal */}
+        {reinstateModal && (
+          <div className={css.modalOverlay} onClick={() => setReinstateModal(null)}>
+            <div className={css.modal} onClick={e => e.stopPropagation()}>
+              <h3 className={css.modalTitle}>Reinstate Work Hold</h3>
+              <p className={css.modalMessage}>
+                Block <strong>{reinstateModal.studentName}</strong> from continuing work on{' '}
+                <strong>{reinstateModal.listingTitle}</strong>?
+              </p>
+              <p className={css.modalWarning}>
+                Warning: This will prevent the student from accessing the project workspace.
+              </p>
+
+              <div className={css.formField}>
+                <label>Reason</label>
+                <textarea
+                  value={reinstateReason}
+                  onChange={e => setReinstateReason(e.target.value)}
+                  placeholder="Reason for reinstating the hold..."
+                  required
+                />
+              </div>
+
+              <div className={css.modalActions}>
+                <button className={css.modalCancel} onClick={() => setReinstateModal(null)}>
+                  Cancel
+                </button>
+                <button
+                  className={css.modalConfirm}
+                  onClick={handleReinstateWorkHold}
+                  disabled={reinstateHoldInProgress || !reinstateReason.trim()}
+                >
+                  Reinstate Hold
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Clear All Holds Modal */}
+        {clearAllModal && (
+          <div className={css.modalOverlay} onClick={() => setClearAllModal(null)}>
+            <div className={css.modal} onClick={e => e.stopPropagation()}>
+              <h3 className={css.modalTitle}>Clear All Work Holds</h3>
+              <p className={css.modalMessage}>
+                Clear all work holds for{' '}
+                <strong>{clearAllModal.displayName || clearAllModal.companyName}</strong>?
+              </p>
+              <p className={css.modalWarning}>
+                This will allow all {pendingHolds.length} hired students to proceed with their work.
+              </p>
+
+              <div className={css.formField}>
+                <label>Notes (Optional)</label>
+                <textarea
+                  value={clearAllNotes}
+                  onChange={e => setClearAllNotes(e.target.value)}
+                  placeholder="e.g., Bulk payment received..."
+                />
+              </div>
+
+              <div className={css.modalActions}>
+                <button className={css.modalCancel} onClick={() => setClearAllModal(null)}>
+                  Cancel
+                </button>
+                <button
+                  className={classNames(css.modalConfirm, css.modalConfirmGreen)}
+                  onClick={handleClearAllHolds}
+                  disabled={clearAllHoldsInProgress}
+                >
+                  Clear All Holds
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // Main view - list of corporate partners
+  return (
+    <div className={css.subPanelContent}>
+      <div className={css.subPanelHeader}>
+        <p className={css.subPanelDescription}>
+          Track deposits by corporate partner and control when students can begin working on
+          projects. Students cannot access project workspaces until the work hold is cleared.
+        </p>
+        <button
+          className={css.refreshButton}
+          onClick={() => onFetchCorporateDeposits({})}
+          disabled={fetchInProgress}
+        >
+          <FormattedMessage id="AdminDashboardPage.refreshDeposits" />
+        </button>
+      </div>
+
+      {fetchInProgress ? (
+        <div className={css.loadingState}>
+          <FormattedMessage id="AdminDashboardPage.loading" />
+        </div>
+      ) : corporatePartners.length === 0 ? (
+        <div className={css.emptyState}>No corporate partners with hired students found.</div>
+      ) : (
+        <table className={css.depositsTable}>
+          <thead>
+            <tr>
+              <th>Corporate Partner</th>
+              <th>Total Hired</th>
+              <th>Pending Holds</th>
+              <th>Cleared</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {corporatePartners.map(partner => {
+              const hasPendingHolds = partner.pendingHolds > 0;
+
+              return (
+                <tr key={partner.id}>
+                  <td>
+                    <div className={css.userCell}>
+                      <div className={css.userInfo}>
+                        <span className={css.userName}>{partner.displayName || 'Unknown'}</span>
+                        <span className={css.userEmail}>
+                          {partner.companyName || partner.email || ''}
+                        </span>
+                      </div>
+                    </div>
+                  </td>
+                  <td>{partner.totalHired || 0}</td>
+                  <td>
+                    <span
+                      className={classNames(css.depositStatusBadge, {
+                        [css.depositPending]: hasPendingHolds,
+                        [css.depositConfirmed]: !hasPendingHolds,
+                      })}
+                    >
+                      {partner.pendingHolds || 0}
+                    </span>
+                  </td>
+                  <td>{partner.depositsConfirmed || 0}</td>
+                  <td>
+                    <div className={css.actionButtons}>
+                      <button
+                        className={classNames(css.actionButton, css.viewButton)}
+                        onClick={() => handleViewPartner(partner.id)}
+                      >
+                        View Details
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      )}
+    </div>
+  );
+};
+
+// ================ Payment Confirmations Sub-Panel ================ //
+
+const PaymentConfirmationsSubPanel = props => {
+  const {
+    deposits,
+    fetchInProgress,
+    confirmInProgress,
+    revokeInProgress,
+    onFetchDeposits,
+    onConfirmDeposit,
+    onRevokeDeposit,
+  } = props;
+
+  const [confirmModal, setConfirmModal] = useState(null);
+  const [confirmData, setConfirmData] = useState({
+    amount: '',
+    paymentMethod: 'check',
+    notes: '',
+  });
+  const [revokeModal, setRevokeModal] = useState(null);
+  const [revokeReason, setRevokeReason] = useState('');
+
+  const handleConfirmDeposit = async () => {
+    if (!confirmModal) return;
+    try {
+      await onConfirmDeposit(confirmModal.id, {
+        amount: confirmData.amount,
+        paymentMethod: confirmData.paymentMethod,
+        notes: confirmData.notes,
+      });
+      setConfirmModal(null);
+      setConfirmData({ amount: '', paymentMethod: 'check', notes: '' });
+      onFetchDeposits({});
+    } catch (e) {
+      console.error('Confirm deposit failed:', e);
+    }
+  };
+
+  const handleRevokeDeposit = async () => {
+    if (!revokeModal) return;
+    try {
+      await onRevokeDeposit(revokeModal.id, revokeReason);
+      setRevokeModal(null);
+      setRevokeReason('');
+      onFetchDeposits({});
+    } catch (e) {
+      console.error('Revoke deposit failed:', e);
+    }
+  };
+
+  const formatDate = dateString => {
+    if (!dateString) return 'N/A';
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+    });
+  };
+
+  return (
+    <div className={css.subPanelContent}>
+      <div className={css.subPanelHeader}>
+        <p className={css.subPanelDescription}>
+          <FormattedMessage id="AdminDashboardPage.depositsDescription" />
+        </p>
+        <button
+          className={css.refreshButton}
+          onClick={() => onFetchDeposits({})}
+          disabled={fetchInProgress}
+        >
+          <FormattedMessage id="AdminDashboardPage.refreshDeposits" />
+        </button>
+      </div>
+
+      {fetchInProgress ? (
+        <div className={css.loadingState}>
+          <FormattedMessage id="AdminDashboardPage.loading" />
+        </div>
+      ) : deposits.length === 0 ? (
+        <div className={css.emptyState}>
+          <FormattedMessage id="AdminDashboardPage.noDeposits" />
+        </div>
+      ) : (
+        <table className={css.depositsTable}>
+          <thead>
+            <tr>
+              <th>
+                <FormattedMessage id="AdminDashboardPage.depositProject" />
+              </th>
+              <th>
+                <FormattedMessage id="AdminDashboardPage.depositCorporate" />
+              </th>
+              <th>
+                <FormattedMessage id="AdminDashboardPage.depositStudent" />
+              </th>
+              <th>
+                <FormattedMessage id="AdminDashboardPage.depositDate" />
+              </th>
+              <th>
+                <FormattedMessage id="AdminDashboardPage.depositStatus" />
+              </th>
+              <th>
+                <FormattedMessage id="AdminDashboardPage.tableActions" />
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {deposits.map(deposit => {
+              const isConfirmed = deposit.metadata?.depositConfirmed;
+              return (
+                <tr key={deposit.id}>
+                  <td>
+                    <div className={css.depositProject}>
+                      <span className={css.depositProjectTitle}>
+                        {deposit.listing?.title || 'Unknown Project'}
+                      </span>
+                      <span className={css.depositProjectId}>
+                        ID: {deposit.id.substring(0, 8)}...
+                      </span>
+                    </div>
+                  </td>
+                  <td>
+                    <div className={css.userCell}>
+                      <div className={css.userInfo}>
+                        <span className={css.userName}>
+                          {deposit.provider?.displayName || 'Unknown'}
+                        </span>
+                        <span className={css.userEmail}>
+                          {deposit.provider?.companyName || deposit.provider?.email || ''}
+                        </span>
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    <div className={css.userCell}>
+                      <div className={css.userInfo}>
+                        <span className={css.userName}>
+                          {deposit.customer?.displayName || 'Unknown'}
+                        </span>
+                        <span className={css.userEmail}>{deposit.customer?.email || ''}</span>
+                      </div>
+                    </div>
+                  </td>
+                  <td>{formatDate(deposit.createdAt)}</td>
+                  <td>
+                    <span
+                      className={classNames(css.depositStatusBadge, {
+                        [css.depositPending]: !isConfirmed,
+                        [css.depositConfirmed]: isConfirmed,
+                      })}
+                    >
+                      {isConfirmed ? 'Confirmed' : 'Pending'}
+                    </span>
+                  </td>
+                  <td>
+                    <div className={css.actionButtons}>
+                      {!isConfirmed ? (
+                        <button
+                          className={classNames(css.actionButton, css.confirmButton)}
+                          onClick={() => setConfirmModal(deposit)}
+                          disabled={confirmInProgress === deposit.id}
+                        >
+                          <FormattedMessage id="AdminDashboardPage.confirmDeposit" />
+                        </button>
+                      ) : (
+                        <button
+                          className={classNames(css.actionButton, css.revokeButton)}
+                          onClick={() => setRevokeModal(deposit)}
+                          disabled={revokeInProgress === deposit.id}
+                        >
+                          <FormattedMessage id="AdminDashboardPage.revokeDeposit" />
+                        </button>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      )}
+
+      {/* Confirm Deposit Modal */}
+      {confirmModal && (
+        <div className={css.modalOverlay} onClick={() => setConfirmModal(null)}>
+          <div className={css.modal} onClick={e => e.stopPropagation()}>
+            <h3 className={css.modalTitle}>
+              <FormattedMessage id="AdminDashboardPage.confirmDepositTitle" />
+            </h3>
+            <p className={css.modalMessage}>
+              <FormattedMessage
+                id="AdminDashboardPage.confirmDepositMessage"
+                values={{ project: confirmModal.listing?.title || 'Unknown Project' }}
+              />
+            </p>
+
+            <div className={css.formField}>
+              <label>
+                <FormattedMessage id="AdminDashboardPage.depositAmount" />
+              </label>
+              <input
+                type="text"
+                value={confirmData.amount}
+                onChange={e => setConfirmData(prev => ({ ...prev, amount: e.target.value }))}
+                placeholder="e.g. $500"
+              />
+            </div>
+
+            <div className={css.formField}>
+              <label>
+                <FormattedMessage id="AdminDashboardPage.depositPaymentMethod" />
+              </label>
+              <select
+                value={confirmData.paymentMethod}
+                onChange={e =>
+                  setConfirmData(prev => ({ ...prev, paymentMethod: e.target.value }))
+                }
+              >
+                <option value="check">Check</option>
+                <option value="wire">Wire Transfer</option>
+                <option value="ach">ACH</option>
+                <option value="credit-card">Credit Card</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+
+            <div className={css.formField}>
+              <label>
+                <FormattedMessage id="AdminDashboardPage.depositNotes" />
+              </label>
+              <textarea
+                value={confirmData.notes}
+                onChange={e => setConfirmData(prev => ({ ...prev, notes: e.target.value }))}
+                placeholder="Optional notes about this deposit..."
+              />
+            </div>
+
+            <div className={css.modalActions}>
+              <button className={css.modalCancel} onClick={() => setConfirmModal(null)}>
+                <FormattedMessage id="AdminDashboardPage.cancel" />
+              </button>
+              <button
+                className={classNames(css.modalConfirm, css.modalConfirmGreen)}
+                onClick={handleConfirmDeposit}
+                disabled={confirmInProgress}
+              >
+                <FormattedMessage id="AdminDashboardPage.confirmDeposit" />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Revoke Deposit Modal */}
+      {revokeModal && (
+        <div className={css.modalOverlay} onClick={() => setRevokeModal(null)}>
+          <div className={css.modal} onClick={e => e.stopPropagation()}>
+            <h3 className={css.modalTitle}>
+              <FormattedMessage id="AdminDashboardPage.revokeDepositTitle" />
+            </h3>
+            <p className={css.modalMessage}>
+              <FormattedMessage
+                id="AdminDashboardPage.revokeDepositMessage"
+                values={{ project: revokeModal.listing?.title || 'Unknown Project' }}
+              />
+            </p>
+
+            <div className={css.formField}>
+              <label>
+                <FormattedMessage id="AdminDashboardPage.revokeReason" />
+              </label>
+              <textarea
+                value={revokeReason}
+                onChange={e => setRevokeReason(e.target.value)}
+                placeholder="Reason for revoking deposit confirmation..."
+              />
+            </div>
+
+            <div className={css.modalActions}>
+              <button className={css.modalCancel} onClick={() => setRevokeModal(null)}>
+                <FormattedMessage id="AdminDashboardPage.cancel" />
+              </button>
+              <button
+                className={css.modalConfirm}
+                onClick={handleRevokeDeposit}
+                disabled={revokeInProgress}
+              >
+                <FormattedMessage id="AdminDashboardPage.revokeDeposit" />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+// ================ Legacy Deposits Panel (kept for backwards compatibility) ================ //
+
 const DepositsPanel = props => {
   const {
     deposits,
@@ -1762,7 +2571,435 @@ const DepositsPanel = props => {
   );
 };
 
-// ================ Create Admin Panel ================ //
+// ================ Corporate Partner Deposits Panel ================ //
+
+const CorporateDepositsPanel = props => {
+  const {
+    corporatePartners,
+    fetchInProgress,
+    selectedPartner,
+    selectedPartnerDeposits,
+    fetchPartnerInProgress,
+    clearHoldInProgress,
+    reinstateHoldInProgress,
+    clearAllHoldsInProgress,
+    onFetchCorporateDeposits,
+    onFetchPartnerDeposits,
+    onClearWorkHold,
+    onReinstateWorkHold,
+    onClearAllHolds,
+    onClearSelectedPartner,
+  } = props;
+
+  const [clearHoldModal, setClearHoldModal] = useState(null);
+  const [clearHoldNotes, setClearHoldNotes] = useState('');
+  const [reinstateModal, setReinstateModal] = useState(null);
+  const [reinstateReason, setReinstateReason] = useState('');
+  const [clearAllModal, setClearAllModal] = useState(null);
+  const [clearAllNotes, setClearAllNotes] = useState('');
+
+  const formatDate = dateString => {
+    if (!dateString) return 'N/A';
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+    });
+  };
+
+  const handleViewPartner = async (partnerId) => {
+    try {
+      await onFetchPartnerDeposits(partnerId);
+    } catch (e) {
+      console.error('Failed to fetch partner deposits:', e);
+    }
+  };
+
+  const handleClearWorkHold = async () => {
+    if (!clearHoldModal) return;
+    try {
+      await onClearWorkHold(clearHoldModal.id, clearHoldNotes);
+      setClearHoldModal(null);
+      setClearHoldNotes('');
+    } catch (e) {
+      console.error('Clear work hold failed:', e);
+    }
+  };
+
+  const handleReinstateWorkHold = async () => {
+    if (!reinstateModal) return;
+    try {
+      await onReinstateWorkHold(reinstateModal.id, reinstateReason);
+      setReinstateModal(null);
+      setReinstateReason('');
+    } catch (e) {
+      console.error('Reinstate work hold failed:', e);
+    }
+  };
+
+  const handleClearAllHolds = async () => {
+    if (!clearAllModal) return;
+    try {
+      await onClearAllHolds(clearAllModal.id, clearAllNotes);
+      setClearAllModal(null);
+      setClearAllNotes('');
+    } catch (e) {
+      console.error('Clear all holds failed:', e);
+    }
+  };
+
+  // If viewing a specific partner's deposits
+  if (selectedPartner) {
+    const pendingHolds = selectedPartnerDeposits.filter(tx => !tx.workHoldCleared);
+
+    return (
+      <div className={css.panel}>
+        <div className={css.panelHeader}>
+          <div className={css.panelHeaderLeft}>
+            <button
+              className={css.backButton}
+              onClick={onClearSelectedPartner}
+            >
+              ← Back to Partners
+            </button>
+            <h2 className={css.panelTitle}>
+              {selectedPartner.displayName || selectedPartner.companyName || 'Unknown Partner'}
+            </h2>
+          </div>
+          {pendingHolds.length > 0 && (
+            <button
+              className={classNames(css.actionButton, css.confirmButton)}
+              onClick={() => setClearAllModal(selectedPartner)}
+              disabled={clearAllHoldsInProgress}
+            >
+              Clear All Holds ({pendingHolds.length})
+            </button>
+          )}
+        </div>
+
+        <div className={css.partnerStatsRow}>
+          <div className={css.statCard}>
+            <span className={css.statValue}>{selectedPartnerDeposits.length}</span>
+            <span className={css.statLabel}>Total Hired</span>
+          </div>
+          <div className={css.statCard}>
+            <span className={classNames(css.statValue, css.warningValue)}>{pendingHolds.length}</span>
+            <span className={css.statLabel}>Pending Holds</span>
+          </div>
+          <div className={css.statCard}>
+            <span className={classNames(css.statValue, css.successValue)}>
+              {selectedPartnerDeposits.filter(tx => tx.workHoldCleared).length}
+            </span>
+            <span className={css.statLabel}>Cleared</span>
+          </div>
+        </div>
+
+        {fetchPartnerInProgress ? (
+          <div className={css.loadingState}>
+            <FormattedMessage id="AdminDashboardPage.loading" />
+          </div>
+        ) : selectedPartnerDeposits.length === 0 ? (
+          <div className={css.emptyState}>
+            No transactions found for this partner.
+          </div>
+        ) : (
+          <table className={css.depositsTable}>
+            <thead>
+              <tr>
+                <th>Project</th>
+                <th>Student</th>
+                <th>Hired Date</th>
+                <th>Deposit Status</th>
+                <th>Work Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {selectedPartnerDeposits.map(tx => {
+                const isDepositConfirmed = tx.depositConfirmed;
+                const isWorkHoldCleared = tx.workHoldCleared;
+
+                return (
+                  <tr key={tx.id}>
+                    <td>
+                      <div className={css.depositProject}>
+                        <span className={css.depositProjectTitle}>
+                          {tx.listingTitle || 'Unknown Project'}
+                        </span>
+                        <span className={css.depositProjectId}>
+                          ID: {tx.id.substring(0, 8)}...
+                        </span>
+                      </div>
+                    </td>
+                    <td>
+                      <div className={css.userCell}>
+                        <div className={css.userInfo}>
+                          <span className={css.userName}>
+                            {tx.studentName || 'Unknown'}
+                          </span>
+                          <span className={css.userEmail}>{tx.studentEmail || ''}</span>
+                        </div>
+                      </div>
+                    </td>
+                    <td>{formatDate(tx.hiredAt)}</td>
+                    <td>
+                      <span
+                        className={classNames(css.depositStatusBadge, {
+                          [css.depositPending]: !isDepositConfirmed,
+                          [css.depositConfirmed]: isDepositConfirmed,
+                        })}
+                      >
+                        {isDepositConfirmed ? 'Confirmed' : 'Pending'}
+                      </span>
+                    </td>
+                    <td>
+                      <span
+                        className={classNames(css.depositStatusBadge, {
+                          [css.depositPending]: !isWorkHoldCleared,
+                          [css.depositConfirmed]: isWorkHoldCleared,
+                        })}
+                      >
+                        {isWorkHoldCleared ? 'Can Work' : 'On Hold'}
+                      </span>
+                    </td>
+                    <td>
+                      <div className={css.actionButtons}>
+                        {!isWorkHoldCleared ? (
+                          <button
+                            className={classNames(css.actionButton, css.confirmButton)}
+                            onClick={() => setClearHoldModal(tx)}
+                            disabled={clearHoldInProgress === tx.id}
+                          >
+                            Clear Hold
+                          </button>
+                        ) : (
+                          <button
+                            className={classNames(css.actionButton, css.revokeButton)}
+                            onClick={() => setReinstateModal(tx)}
+                            disabled={reinstateHoldInProgress === tx.id}
+                          >
+                            Reinstate Hold
+                          </button>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        )}
+
+        {/* Clear Work Hold Modal */}
+        {clearHoldModal && (
+          <div className={css.modalOverlay} onClick={() => setClearHoldModal(null)}>
+            <div className={css.modal} onClick={e => e.stopPropagation()}>
+              <h3 className={css.modalTitle}>Clear Work Hold</h3>
+              <p className={css.modalMessage}>
+                Allow <strong>{clearHoldModal.studentName}</strong> to proceed with work on{' '}
+                <strong>{clearHoldModal.listingTitle}</strong>?
+              </p>
+              <p className={css.modalWarning}>
+                This will allow the student to access the project workspace and begin working.
+              </p>
+
+              <div className={css.formField}>
+                <label>Notes (Optional)</label>
+                <textarea
+                  value={clearHoldNotes}
+                  onChange={e => setClearHoldNotes(e.target.value)}
+                  placeholder="e.g., Deposit received via wire transfer..."
+                />
+              </div>
+
+              <div className={css.modalActions}>
+                <button className={css.modalCancel} onClick={() => setClearHoldModal(null)}>
+                  Cancel
+                </button>
+                <button
+                  className={classNames(css.modalConfirm, css.modalConfirmGreen)}
+                  onClick={handleClearWorkHold}
+                  disabled={clearHoldInProgress}
+                >
+                  Clear Hold
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Reinstate Work Hold Modal */}
+        {reinstateModal && (
+          <div className={css.modalOverlay} onClick={() => setReinstateModal(null)}>
+            <div className={css.modal} onClick={e => e.stopPropagation()}>
+              <h3 className={css.modalTitle}>Reinstate Work Hold</h3>
+              <p className={css.modalMessage}>
+                Block <strong>{reinstateModal.studentName}</strong> from continuing work on{' '}
+                <strong>{reinstateModal.listingTitle}</strong>?
+              </p>
+              <p className={css.modalWarning}>
+                Warning: This will prevent the student from accessing the project workspace.
+              </p>
+
+              <div className={css.formField}>
+                <label>Reason</label>
+                <textarea
+                  value={reinstateReason}
+                  onChange={e => setReinstateReason(e.target.value)}
+                  placeholder="Reason for reinstating the hold..."
+                  required
+                />
+              </div>
+
+              <div className={css.modalActions}>
+                <button className={css.modalCancel} onClick={() => setReinstateModal(null)}>
+                  Cancel
+                </button>
+                <button
+                  className={css.modalConfirm}
+                  onClick={handleReinstateWorkHold}
+                  disabled={reinstateHoldInProgress || !reinstateReason.trim()}
+                >
+                  Reinstate Hold
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Clear All Holds Modal */}
+        {clearAllModal && (
+          <div className={css.modalOverlay} onClick={() => setClearAllModal(null)}>
+            <div className={css.modal} onClick={e => e.stopPropagation()}>
+              <h3 className={css.modalTitle}>Clear All Work Holds</h3>
+              <p className={css.modalMessage}>
+                Clear all work holds for <strong>{clearAllModal.displayName || clearAllModal.companyName}</strong>?
+              </p>
+              <p className={css.modalWarning}>
+                This will allow all {pendingHolds.length} hired students to proceed with their work.
+              </p>
+
+              <div className={css.formField}>
+                <label>Notes (Optional)</label>
+                <textarea
+                  value={clearAllNotes}
+                  onChange={e => setClearAllNotes(e.target.value)}
+                  placeholder="e.g., Bulk payment received..."
+                />
+              </div>
+
+              <div className={css.modalActions}>
+                <button className={css.modalCancel} onClick={() => setClearAllModal(null)}>
+                  Cancel
+                </button>
+                <button
+                  className={classNames(css.modalConfirm, css.modalConfirmGreen)}
+                  onClick={handleClearAllHolds}
+                  disabled={clearAllHoldsInProgress}
+                >
+                  Clear All Holds
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // Main view - list of corporate partners
+  return (
+    <div className={css.panel}>
+      <div className={css.panelHeader}>
+        <h2 className={css.panelTitle}>
+          Corporate Partner Deposits
+        </h2>
+        <button
+          className={css.refreshButton}
+          onClick={() => onFetchCorporateDeposits({})}
+          disabled={fetchInProgress}
+        >
+          <FormattedMessage id="AdminDashboardPage.refreshDeposits" />
+        </button>
+      </div>
+
+      <p className={css.depositsDescription}>
+        Track deposits by corporate partner and control when students can begin working on projects.
+        Students cannot access project workspaces until the work hold is cleared.
+      </p>
+
+      {fetchInProgress ? (
+        <div className={css.loadingState}>
+          <FormattedMessage id="AdminDashboardPage.loading" />
+        </div>
+      ) : corporatePartners.length === 0 ? (
+        <div className={css.emptyState}>
+          No corporate partners with hired students found.
+        </div>
+      ) : (
+        <table className={css.depositsTable}>
+          <thead>
+            <tr>
+              <th>Corporate Partner</th>
+              <th>Total Hired</th>
+              <th>Pending Holds</th>
+              <th>Deposits Confirmed</th>
+              <th>Projects Completed</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {corporatePartners.map(partner => {
+              const hasPendingHolds = partner.pendingHolds > 0;
+
+              return (
+                <tr key={partner.id}>
+                  <td>
+                    <div className={css.userCell}>
+                      <div className={css.userInfo}>
+                        <span className={css.userName}>
+                          {partner.displayName || 'Unknown'}
+                        </span>
+                        <span className={css.userEmail}>
+                          {partner.companyName || partner.email || ''}
+                        </span>
+                      </div>
+                    </div>
+                  </td>
+                  <td>{partner.totalHired || 0}</td>
+                  <td>
+                    <span
+                      className={classNames(css.depositStatusBadge, {
+                        [css.depositPending]: hasPendingHolds,
+                        [css.depositConfirmed]: !hasPendingHolds,
+                      })}
+                    >
+                      {partner.pendingHolds || 0}
+                    </span>
+                  </td>
+                  <td>{partner.depositsConfirmed || 0}</td>
+                  <td>{partner.projectsCompleted || 0}</td>
+                  <td>
+                    <div className={css.actionButtons}>
+                      <button
+                        className={classNames(css.actionButton, css.viewButton)}
+                        onClick={() => handleViewPartner(partner.id)}
+                      >
+                        View Details
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      )}
+    </div>
+  );
+};
+
+// ================ Promote to Admin Panel ================ //
 
 const CreateAdminPanel = props => {
   const {
@@ -1776,24 +3013,16 @@ const CreateAdminPanel = props => {
 
   const [formData, setFormData] = useState({
     email: '',
-    password: '',
-    firstName: '',
-    lastName: '',
     userType: 'educational-admin',
     institutionName: '',
     adminRole: '',
   });
-
-  const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {
     if (createSuccess) {
       // Reset form on success
       setFormData({
         email: '',
-        password: '',
-        firstName: '',
-        lastName: '',
         userType: 'educational-admin',
         institutionName: '',
         adminRole: '',
@@ -1808,9 +3037,9 @@ const CreateAdminPanel = props => {
 
   const handleSubmit = async e => {
     e.preventDefault();
-    const { email, password, firstName, lastName, userType, institutionName, adminRole } = formData;
+    const { email, userType, institutionName, adminRole } = formData;
 
-    if (!email || !password || !firstName || !lastName) {
+    if (!email) {
       return;
     }
 
@@ -1821,15 +3050,12 @@ const CreateAdminPanel = props => {
     try {
       await onCreateAdmin({
         email,
-        password,
-        firstName,
-        lastName,
         userType,
         institutionName: userType === 'educational-admin' ? institutionName : undefined,
         adminRole: userType === 'educational-admin' && adminRole ? adminRole : undefined,
       });
     } catch (err) {
-      console.error('Create admin failed:', err);
+      console.error('Promote to admin failed:', err);
     }
   };
 
@@ -1845,32 +3071,30 @@ const CreateAdminPanel = props => {
     <div className={css.panel}>
       <div className={css.panelHeader}>
         <h2 className={css.panelTitle}>
-          <FormattedMessage id="AdminDashboardPage.createAdminTitle" />
+          Promote User to Admin
         </h2>
       </div>
 
       <p className={css.panelDescription}>
-        <FormattedMessage id="AdminDashboardPage.createAdminDescription" />
+        Promote an existing user to an administrator role. The user must have already signed up on the platform.
       </p>
 
       {createSuccess && (
         <div className={css.successMessage}>
-          <FormattedMessage id="AdminDashboardPage.createAdminSuccess" />
+          User has been promoted to administrator successfully!
         </div>
       )}
 
       {createError && (
         <div className={css.errorMessage}>
-          {createError.message || <FormattedMessage id="AdminDashboardPage.createAdminError" />}
+          {createError.message || 'Failed to promote user. Please try again.'}
         </div>
       )}
 
       <form className={css.createAdminForm} onSubmit={handleSubmit}>
         <div className={css.formRow}>
           <div className={css.formField}>
-            <label>
-              <FormattedMessage id="AdminDashboardPage.adminTypeLabel" />
-            </label>
+            <label>Admin Type</label>
             <select
               value={formData.userType}
               onChange={e => handleChange('userType', e.target.value)}
@@ -1884,70 +3108,16 @@ const CreateAdminPanel = props => {
 
         <div className={css.formRow}>
           <div className={css.formField}>
-            <label>
-              <FormattedMessage id="AdminDashboardPage.firstNameLabel" />
-            </label>
-            <input
-              type="text"
-              value={formData.firstName}
-              onChange={e => handleChange('firstName', e.target.value)}
-              placeholder="First name"
-              required
-            />
-          </div>
-          <div className={css.formField}>
-            <label>
-              <FormattedMessage id="AdminDashboardPage.lastNameLabel" />
-            </label>
-            <input
-              type="text"
-              value={formData.lastName}
-              onChange={e => handleChange('lastName', e.target.value)}
-              placeholder="Last name"
-              required
-            />
-          </div>
-        </div>
-
-        <div className={css.formRow}>
-          <div className={css.formField}>
-            <label>
-              <FormattedMessage id="AdminDashboardPage.emailLabel" />
-            </label>
+            <label>User Email</label>
             <input
               type="email"
               value={formData.email}
               onChange={e => handleChange('email', e.target.value)}
-              placeholder="admin@institution.edu"
+              placeholder="Enter the email of an existing user"
               required
             />
-          </div>
-        </div>
-
-        <div className={css.formRow}>
-          <div className={css.formField}>
-            <label>
-              <FormattedMessage id="AdminDashboardPage.passwordLabel" />
-            </label>
-            <div className={css.passwordField}>
-              <input
-                type={showPassword ? 'text' : 'password'}
-                value={formData.password}
-                onChange={e => handleChange('password', e.target.value)}
-                placeholder="Temporary password"
-                minLength={8}
-                required
-              />
-              <button
-                type="button"
-                className={css.showPasswordButton}
-                onClick={() => setShowPassword(!showPassword)}
-              >
-                {showPassword ? 'Hide' : 'Show'}
-              </button>
-            </div>
             <span className={css.fieldHint}>
-              <FormattedMessage id="AdminDashboardPage.passwordHint" />
+              The user must have already signed up on the platform.
             </span>
           </div>
         </div>
@@ -1956,9 +3126,7 @@ const CreateAdminPanel = props => {
           <>
             <div className={css.formRow}>
               <div className={css.formField}>
-                <label>
-                  <FormattedMessage id="AdminDashboardPage.institutionNameLabel" />
-                </label>
+                <label>Institution Name</label>
                 <input
                   type="text"
                   value={formData.institutionName}
@@ -1971,9 +3139,7 @@ const CreateAdminPanel = props => {
 
             <div className={css.formRow}>
               <div className={css.formField}>
-                <label>
-                  <FormattedMessage id="AdminDashboardPage.adminRoleLabel" />
-                </label>
+                <label>Admin Role</label>
                 <select
                   value={formData.adminRole}
                   onChange={e => handleChange('adminRole', e.target.value)}
@@ -1991,11 +3157,7 @@ const CreateAdminPanel = props => {
 
         <div className={css.formActions}>
           <button type="submit" className={css.createAdminButton} disabled={createInProgress}>
-            {createInProgress ? (
-              <FormattedMessage id="AdminDashboardPage.creating" />
-            ) : (
-              <FormattedMessage id="AdminDashboardPage.createAdminButton" />
-            )}
+            {createInProgress ? 'Promoting...' : 'Promote to Admin'}
           </button>
         </div>
       </form>
@@ -2350,6 +3512,1187 @@ const InstitutionManagementPanel = props => {
             ))}
           </tbody>
         </table>
+      )}
+    </div>
+  );
+};
+
+// ================ Educational Admin Applications Panel ================ //
+
+// ================ Unified Institution Management Panel ================ //
+
+const UnifiedInstitutionManagementPanel = props => {
+  const {
+    applications,
+    applicationStats,
+    educationalAdmins,
+    fetchApplicationsInProgress,
+    fetchEducationalAdminsInProgress,
+    approveInProgress,
+    rejectInProgress,
+    updateSubscriptionInProgress,
+    updateSubscriptionSuccess,
+    onFetchApplications,
+    onApproveApplication,
+    onRejectApplication,
+    onFetchEducationalAdmins,
+    onUpdateSubscription,
+    onClearSubscriptionState,
+  } = props;
+
+  const [activeSection, setActiveSection] = useState('applications'); // 'applications' | 'admins' | 'domains'
+
+  return (
+    <div className={css.panel}>
+      <div className={css.panelHeader}>
+        <h2 className={css.panelTitle}>
+          <FormattedMessage id="AdminDashboardPage.institutionManagementTitle" />
+        </h2>
+      </div>
+
+      {/* Section Sub-tabs */}
+      <div className={css.depositSubTabs}>
+        <button
+          className={classNames(css.depositSubTab, {
+            [css.depositSubTabActive]: activeSection === 'applications',
+          })}
+          onClick={() => setActiveSection('applications')}
+        >
+          <span className={css.depositSubTabIcon}>📋</span>
+          Applications
+          {applicationStats?.pending > 0 && (
+            <span className={css.badgeCount}>{applicationStats.pending}</span>
+          )}
+        </button>
+        <button
+          className={classNames(css.depositSubTab, {
+            [css.depositSubTabActive]: activeSection === 'admins',
+          })}
+          onClick={() => {
+            setActiveSection('admins');
+            onFetchEducationalAdmins({});
+          }}
+        >
+          <span className={css.depositSubTabIcon}>🎓</span>
+          Educational Admins
+        </button>
+        <button
+          className={classNames(css.depositSubTab, {
+            [css.depositSubTabActive]: activeSection === 'domains',
+          })}
+          onClick={() => setActiveSection('domains')}
+        >
+          <span className={css.depositSubTabIcon}>🏛️</span>
+          Institution Domains
+        </button>
+      </div>
+
+      {/* Sub-panel Content */}
+      {activeSection === 'applications' && (
+        <ApplicationsSubPanel
+          applications={applications}
+          applicationStats={applicationStats}
+          fetchApplicationsInProgress={fetchApplicationsInProgress}
+          approveInProgress={approveInProgress}
+          rejectInProgress={rejectInProgress}
+          onFetchApplications={onFetchApplications}
+          onApproveApplication={onApproveApplication}
+          onRejectApplication={onRejectApplication}
+        />
+      )}
+
+      {activeSection === 'admins' && (
+        <EducationalAdminsSubPanel
+          educationalAdmins={educationalAdmins}
+          fetchEducationalAdminsInProgress={fetchEducationalAdminsInProgress}
+          updateSubscriptionInProgress={updateSubscriptionInProgress}
+          updateSubscriptionSuccess={updateSubscriptionSuccess}
+          onUpdateSubscription={onUpdateSubscription}
+          onClearSubscriptionState={onClearSubscriptionState}
+        />
+      )}
+
+      {activeSection === 'domains' && <InstitutionDomainsSubPanel />}
+    </div>
+  );
+};
+
+// ================ Applications Sub-Panel ================ //
+
+const ApplicationsSubPanel = props => {
+  const {
+    applications,
+    applicationStats,
+    fetchApplicationsInProgress,
+    approveInProgress,
+    rejectInProgress,
+    onFetchApplications,
+    onApproveApplication,
+    onRejectApplication,
+  } = props;
+
+  const [rejectModal, setRejectModal] = useState(null);
+  const [rejectReason, setRejectReason] = useState('');
+  const [applicationFilter, setApplicationFilter] = useState('pending');
+
+  const handleApprove = async applicationId => {
+    try {
+      await onApproveApplication(applicationId);
+      onFetchApplications({ status: applicationFilter === 'all' ? '' : applicationFilter });
+    } catch (e) {
+      console.error('Approve failed:', e);
+    }
+  };
+
+  const handleReject = async () => {
+    if (!rejectModal) return;
+    try {
+      await onRejectApplication(rejectModal.id, rejectReason);
+      setRejectModal(null);
+      setRejectReason('');
+      onFetchApplications({ status: applicationFilter === 'all' ? '' : applicationFilter });
+    } catch (e) {
+      console.error('Reject failed:', e);
+    }
+  };
+
+  const formatDate = dateString => {
+    if (!dateString) return 'N/A';
+    return new Date(dateString).toLocaleDateString();
+  };
+
+  const getDepartmentLabel = department => {
+    const labels = {
+      'career-services': 'Career Services',
+      'student-affairs': 'Student Affairs',
+      'academic-affairs': 'Academic Affairs',
+      'experiential-learning': 'Experiential Learning',
+      'internship-office': 'Internship Office',
+      'alumni-relations': 'Alumni Relations',
+      other: 'Other',
+    };
+    return labels[department] || department;
+  };
+
+  return (
+    <div className={css.subPanelContent}>
+      {/* Stats Overview */}
+      {applicationStats && (
+        <div className={css.statsGrid}>
+          <div className={css.miniStatCard}>
+            <span className={css.miniStatValue}>{applicationStats.pending || 0}</span>
+            <span className={css.miniStatLabel}>Pending Review</span>
+          </div>
+          <div className={css.miniStatCard}>
+            <span className={css.miniStatValue}>{applicationStats.approved || 0}</span>
+            <span className={css.miniStatLabel}>Approved</span>
+          </div>
+          <div className={css.miniStatCard}>
+            <span className={css.miniStatValue}>{applicationStats.rejected || 0}</span>
+            <span className={css.miniStatLabel}>Rejected</span>
+          </div>
+          <div className={css.miniStatCard}>
+            <span className={css.miniStatValue}>{applicationStats.total || 0}</span>
+            <span className={css.miniStatLabel}>Total</span>
+          </div>
+        </div>
+      )}
+
+      {/* Filter */}
+      <div className={css.filterBar}>
+        <div className={css.filterItem}>
+          <label className={css.filterLabel}>Filter by Status</label>
+          <select
+            className={css.filterSelect}
+            value={applicationFilter}
+            onChange={e => {
+              setApplicationFilter(e.target.value);
+              onFetchApplications({ status: e.target.value === 'all' ? '' : e.target.value });
+            }}
+          >
+            <option value="pending">Pending</option>
+            <option value="approved">Approved</option>
+            <option value="rejected">Rejected</option>
+            <option value="all">All</option>
+          </select>
+        </div>
+      </div>
+
+      {/* Applications Table */}
+      {fetchApplicationsInProgress ? (
+        <div className={css.loadingState}>Loading applications...</div>
+      ) : applications.length === 0 ? (
+        <div className={css.emptyState}>
+          No {applicationFilter !== 'all' ? applicationFilter : ''} applications found.
+        </div>
+      ) : (
+        <table className={css.usersTable}>
+          <thead>
+            <tr>
+              <th>Applicant</th>
+              <th>Institution</th>
+              <th>Department</th>
+              <th>Submitted</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {applications.map(app => (
+              <tr key={app.id}>
+                <td>
+                  <div className={css.userCell}>
+                    <div className={css.userInfo}>
+                      <span className={css.userName}>
+                        {app.firstName} {app.lastName}
+                      </span>
+                      <span className={css.userEmail}>{app.email}</span>
+                      <span className={css.userEmail}>{app.jobTitle}</span>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <div>
+                    <span className={css.institutionName}>{app.institutionName}</span>
+                    <br />
+                    <span className={css.institutionDomain}>@{app.emailDomain}</span>
+                  </div>
+                </td>
+                <td>{getDepartmentLabel(app.department)}</td>
+                <td>{formatDate(app.submittedAt)}</td>
+                <td>
+                  <span
+                    className={classNames(css.statusBadge, {
+                      [css.statusPending]: app.status === 'pending',
+                      [css.statusActive]: app.status === 'approved',
+                      [css.statusBanned]: app.status === 'rejected',
+                    })}
+                  >
+                    {app.status}
+                  </span>
+                </td>
+                <td>
+                  {app.status === 'pending' && (
+                    <div className={css.actionButtons}>
+                      <button
+                        className={classNames(css.actionButton, css.approveButton)}
+                        onClick={() => handleApprove(app.id)}
+                        disabled={approveInProgress === app.id}
+                      >
+                        {approveInProgress === app.id ? 'Approving...' : 'Approve'}
+                      </button>
+                      <button
+                        className={classNames(css.actionButton, css.rejectButton)}
+                        onClick={() => setRejectModal(app)}
+                        disabled={rejectInProgress === app.id}
+                      >
+                        Reject
+                      </button>
+                    </div>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+
+      {/* Reject Modal */}
+      {rejectModal && (
+        <div className={css.modalOverlay} onClick={() => setRejectModal(null)}>
+          <div className={css.modal} onClick={e => e.stopPropagation()}>
+            <h3 className={css.modalTitle}>Reject Application</h3>
+            <p className={css.modalMessage}>
+              Are you sure you want to reject the application from{' '}
+              <strong>
+                {rejectModal.firstName} {rejectModal.lastName}
+              </strong>{' '}
+              ({rejectModal.institutionName})?
+            </p>
+            <div className={css.formField}>
+              <label>Reason for Rejection (optional)</label>
+              <textarea
+                value={rejectReason}
+                onChange={e => setRejectReason(e.target.value)}
+                placeholder="Provide a reason for rejecting this application..."
+                rows={3}
+              />
+            </div>
+            <div className={css.modalActions}>
+              <button className={css.modalCancel} onClick={() => setRejectModal(null)}>
+                Cancel
+              </button>
+              <button
+                className={css.modalConfirm}
+                onClick={handleReject}
+                disabled={rejectInProgress === rejectModal.id}
+              >
+                Reject Application
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+// ================ Educational Admins Sub-Panel ================ //
+
+const EducationalAdminsSubPanel = props => {
+  const {
+    educationalAdmins,
+    fetchEducationalAdminsInProgress,
+    updateSubscriptionInProgress,
+    updateSubscriptionSuccess,
+    onUpdateSubscription,
+    onClearSubscriptionState,
+  } = props;
+
+  useEffect(() => {
+    if (updateSubscriptionSuccess) {
+      const timer = setTimeout(() => onClearSubscriptionState(), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [updateSubscriptionSuccess, onClearSubscriptionState]);
+
+  const handleUpdateSubscription = async (userId, field, value) => {
+    try {
+      await onUpdateSubscription(userId, { [field]: value });
+    } catch (e) {
+      console.error('Update subscription failed:', e);
+    }
+  };
+
+  const formatDate = dateString => {
+    if (!dateString) return 'N/A';
+    return new Date(dateString).toLocaleDateString();
+  };
+
+  return (
+    <div className={css.subPanelContent}>
+      <p className={css.subPanelDescription}>
+        Manage subscription status for educational administrators. Toggle deposit and AI coaching
+        access for each institution.
+      </p>
+
+      {updateSubscriptionSuccess && (
+        <div className={css.successMessage}>Subscription status updated successfully!</div>
+      )}
+
+      {fetchEducationalAdminsInProgress ? (
+        <div className={css.loadingState}>Loading educational administrators...</div>
+      ) : educationalAdmins.length === 0 ? (
+        <div className={css.emptyState}>
+          No educational administrators found. Approve applications to create educational admins.
+        </div>
+      ) : (
+        <table className={css.usersTable}>
+          <thead>
+            <tr>
+              <th>Administrator</th>
+              <th>Institution</th>
+              <th>Deposit Paid</th>
+              <th>AI Coaching</th>
+              <th>Joined</th>
+            </tr>
+          </thead>
+          <tbody>
+            {educationalAdmins.map(admin => {
+              const publicData = admin.attributes?.profile?.publicData || {};
+              return (
+                <tr key={admin.id}>
+                  <td>
+                    <div className={css.userCell}>
+                      <div className={css.userInfo}>
+                        <span className={css.userName}>
+                          {admin.attributes?.profile?.displayName || 'Unknown'}
+                        </span>
+                        <span className={css.userEmail}>{admin.attributes?.email}</span>
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    <div>
+                      <span className={css.institutionName}>
+                        {publicData.institutionName || 'N/A'}
+                      </span>
+                      <br />
+                      <span className={css.institutionDomain}>
+                        @{publicData.institutionDomain || 'N/A'}
+                      </span>
+                    </div>
+                  </td>
+                  <td>
+                    <button
+                      className={classNames(css.toggleButton, {
+                        [css.toggleOn]: publicData.depositPaid,
+                        [css.toggleOff]: !publicData.depositPaid,
+                      })}
+                      onClick={() =>
+                        handleUpdateSubscription(admin.id, 'depositPaid', !publicData.depositPaid)
+                      }
+                      disabled={updateSubscriptionInProgress === admin.id}
+                    >
+                      {publicData.depositPaid ? '✓ Paid' : '✗ Not Paid'}
+                    </button>
+                    {publicData.depositPaidDate && (
+                      <span className={css.dateInfo}>{formatDate(publicData.depositPaidDate)}</span>
+                    )}
+                  </td>
+                  <td>
+                    <button
+                      className={classNames(css.toggleButton, {
+                        [css.toggleOn]: publicData.aiCoachingApproved,
+                        [css.toggleOff]: !publicData.aiCoachingApproved,
+                      })}
+                      onClick={() =>
+                        handleUpdateSubscription(
+                          admin.id,
+                          'aiCoachingApproved',
+                          !publicData.aiCoachingApproved
+                        )
+                      }
+                      disabled={updateSubscriptionInProgress === admin.id}
+                    >
+                      {publicData.aiCoachingApproved ? '✓ Approved' : '✗ Not Approved'}
+                    </button>
+                    {publicData.aiCoachingApprovedDate && (
+                      <span className={css.dateInfo}>
+                        {formatDate(publicData.aiCoachingApprovedDate)}
+                      </span>
+                    )}
+                  </td>
+                  <td>{formatDate(admin.attributes?.createdAt)}</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      )}
+    </div>
+  );
+};
+
+// ================ Institution Domains Sub-Panel ================ //
+
+const InstitutionDomainsSubPanel = () => {
+  const [institutions, setInstitutions] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [editingInstitution, setEditingInstitution] = useState(null);
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [formData, setFormData] = useState({
+    domain: '',
+    name: '',
+    membershipStatus: 'active',
+    membershipStartDate: '',
+    membershipEndDate: '',
+    aiCoachingEnabled: false,
+    aiCoachingUrl: '',
+  });
+  const [saveInProgress, setSaveInProgress] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
+
+  const fetchInstitutions = async () => {
+    setIsLoading(true);
+    try {
+      const response = await fetch('/api/admin/institutions', { credentials: 'include' });
+      const data = await response.json();
+      setInstitutions(data.data || []);
+    } catch (error) {
+      console.error('Failed to fetch institutions:', error);
+      setErrorMessage('Failed to load institutions');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchInstitutions();
+  }, []);
+
+  const handleInputChange = (field, value) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleSave = async () => {
+    setSaveInProgress(true);
+    setErrorMessage('');
+    try {
+      const response = await fetch('/api/admin/institutions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(formData),
+      });
+      const data = await response.json();
+      if (response.ok) {
+        setSuccessMessage(editingInstitution ? 'Institution updated!' : 'Institution added!');
+        setTimeout(() => setSuccessMessage(''), 3000);
+        setShowAddForm(false);
+        setEditingInstitution(null);
+        setFormData({
+          domain: '',
+          name: '',
+          membershipStatus: 'active',
+          membershipStartDate: '',
+          membershipEndDate: '',
+          aiCoachingEnabled: false,
+          aiCoachingUrl: '',
+        });
+        fetchInstitutions();
+      } else {
+        setErrorMessage(data.error || 'Failed to save institution');
+      }
+    } catch (error) {
+      setErrorMessage('Failed to save institution');
+    } finally {
+      setSaveInProgress(false);
+    }
+  };
+
+  const handleEdit = institution => {
+    setFormData({
+      domain: institution.domain,
+      name: institution.name,
+      membershipStatus: institution.membershipStatus || 'pending',
+      membershipStartDate: institution.membershipStartDate || '',
+      membershipEndDate: institution.membershipEndDate || '',
+      aiCoachingEnabled: institution.aiCoachingEnabled || false,
+      aiCoachingUrl: institution.aiCoachingUrl || '',
+    });
+    setEditingInstitution(institution);
+    setShowAddForm(true);
+  };
+
+  const handleDelete = async domain => {
+    if (!window.confirm('Are you sure you want to delete this institution?')) return;
+    try {
+      const response = await fetch(`/api/admin/institutions/${encodeURIComponent(domain)}`, {
+        method: 'DELETE',
+        credentials: 'include',
+      });
+      if (response.ok) {
+        setSuccessMessage('Institution deleted!');
+        setTimeout(() => setSuccessMessage(''), 3000);
+        fetchInstitutions();
+      }
+    } catch (error) {
+      setErrorMessage('Failed to delete institution');
+    }
+  };
+
+  const handleToggleCoaching = async institution => {
+    try {
+      const response = await fetch(
+        `/api/admin/institutions/${encodeURIComponent(institution.domain)}/coaching`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({
+            aiCoachingEnabled: !institution.aiCoachingEnabled,
+          }),
+        }
+      );
+      if (response.ok) {
+        fetchInstitutions();
+      }
+    } catch (error) {
+      setErrorMessage('Failed to update coaching status');
+    }
+  };
+
+  return (
+    <div className={css.subPanelContent}>
+      <div className={css.subPanelHeader}>
+        <p className={css.subPanelDescription}>
+          Manage educational institution email domains and AI coaching access. Only students from
+          member institutions can sign up.
+        </p>
+        <button
+          className={css.addButton}
+          onClick={() => {
+            setShowAddForm(true);
+            setEditingInstitution(null);
+            setFormData({
+              domain: '',
+              name: '',
+              membershipStatus: 'active',
+              membershipStartDate: '',
+              membershipEndDate: '',
+              aiCoachingEnabled: false,
+              aiCoachingUrl: '',
+            });
+          }}
+        >
+          + Add Institution
+        </button>
+      </div>
+
+      {successMessage && <div className={css.successMessage}>{successMessage}</div>}
+      {errorMessage && <div className={css.errorMessage}>{errorMessage}</div>}
+
+      {showAddForm && (
+        <div className={css.institutionForm}>
+          <h3 className={css.formTitle}>
+            {editingInstitution ? 'Edit Institution' : 'Add New Institution'}
+          </h3>
+
+          <div className={css.formRow}>
+            <div className={css.formField}>
+              <label>Email Domain</label>
+              <input
+                type="text"
+                value={formData.domain}
+                onChange={e => handleInputChange('domain', e.target.value)}
+                placeholder="e.g. harvard.edu"
+                disabled={!!editingInstitution}
+              />
+              <span className={css.fieldHint}>
+                The email domain students use (e.g., harvard.edu)
+              </span>
+            </div>
+          </div>
+
+          <div className={css.formRow}>
+            <div className={css.formField}>
+              <label>Institution Name</label>
+              <input
+                type="text"
+                value={formData.name}
+                onChange={e => handleInputChange('name', e.target.value)}
+                placeholder="e.g. Harvard University"
+              />
+            </div>
+          </div>
+
+          <div className={css.formRow}>
+            <div className={css.formField}>
+              <label>Membership Status</label>
+              <select
+                value={formData.membershipStatus}
+                onChange={e => handleInputChange('membershipStatus', e.target.value)}
+              >
+                <option value="active">Active</option>
+                <option value="pending">Pending</option>
+                <option value="inactive">Inactive</option>
+              </select>
+            </div>
+          </div>
+
+          <div className={css.formRow}>
+            <div className={css.formField}>
+              <label>Membership Start Date</label>
+              <input
+                type="date"
+                value={formData.membershipStartDate}
+                onChange={e => handleInputChange('membershipStartDate', e.target.value)}
+              />
+            </div>
+            <div className={css.formField}>
+              <label>Membership End Date</label>
+              <input
+                type="date"
+                value={formData.membershipEndDate}
+                onChange={e => handleInputChange('membershipEndDate', e.target.value)}
+              />
+            </div>
+          </div>
+
+          <div className={css.formRow}>
+            <div className={css.formField}>
+              <label className={css.checkboxLabel}>
+                <input
+                  type="checkbox"
+                  checked={formData.aiCoachingEnabled}
+                  onChange={e => handleInputChange('aiCoachingEnabled', e.target.checked)}
+                />
+                <span>Enable AI Career Coaching for this institution</span>
+              </label>
+            </div>
+          </div>
+
+          {formData.aiCoachingEnabled && (
+            <div className={css.formRow}>
+              <div className={css.formField}>
+                <label>AI Coaching Platform URL</label>
+                <input
+                  type="url"
+                  value={formData.aiCoachingUrl}
+                  onChange={e => handleInputChange('aiCoachingUrl', e.target.value)}
+                  placeholder="https://coaching.example.com/harvard"
+                />
+                <span className={css.fieldHint}>
+                  The URL students will be directed to for AI coaching
+                </span>
+              </div>
+            </div>
+          )}
+
+          <div className={css.formActions}>
+            <button
+              className={css.cancelButton}
+              onClick={() => {
+                setShowAddForm(false);
+                setEditingInstitution(null);
+              }}
+            >
+              Cancel
+            </button>
+            <button
+              className={css.saveButton}
+              onClick={handleSave}
+              disabled={saveInProgress || !formData.domain || !formData.name}
+            >
+              {saveInProgress
+                ? 'Saving...'
+                : editingInstitution
+                ? 'Update Institution'
+                : 'Add Institution'}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {isLoading ? (
+        <div className={css.loadingState}>Loading institutions...</div>
+      ) : institutions.length === 0 ? (
+        <div className={css.emptyState}>
+          No institutions added yet. Add your first institution to allow students to sign up.
+        </div>
+      ) : (
+        <table className={css.institutionsTable}>
+          <thead>
+            <tr>
+              <th>Institution</th>
+              <th>Domain</th>
+              <th>Status</th>
+              <th>AI Coaching</th>
+              <th>Valid Until</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {institutions.map(inst => (
+              <tr key={inst.domain}>
+                <td>
+                  <span className={css.institutionName}>{inst.name}</span>
+                </td>
+                <td>
+                  <span className={css.institutionDomain}>@{inst.domain}</span>
+                </td>
+                <td>
+                  <span
+                    className={classNames(css.statusBadge, {
+                      [css.statusActive]: inst.membershipStatus === 'active',
+                      [css.statusPending]: inst.membershipStatus === 'pending',
+                      [css.statusInactive]: inst.membershipStatus === 'inactive',
+                    })}
+                  >
+                    {inst.membershipStatus}
+                  </span>
+                </td>
+                <td>
+                  <button
+                    className={classNames(css.toggleButton, {
+                      [css.toggleOn]: inst.aiCoachingEnabled,
+                      [css.toggleOff]: !inst.aiCoachingEnabled,
+                    })}
+                    onClick={() => handleToggleCoaching(inst)}
+                    title={inst.aiCoachingEnabled ? 'Click to disable' : 'Click to enable'}
+                  >
+                    {inst.aiCoachingEnabled ? '✓ Enabled' : '✗ Disabled'}
+                  </button>
+                </td>
+                <td>
+                  {inst.membershipEndDate
+                    ? new Date(inst.membershipEndDate).toLocaleDateString()
+                    : 'No expiry'}
+                </td>
+                <td>
+                  <div className={css.actionButtons}>
+                    <button
+                      className={classNames(css.actionButton, css.editButton)}
+                      onClick={() => handleEdit(inst)}
+                    >
+                      Edit
+                    </button>
+                    <button
+                      className={classNames(css.actionButton, css.deleteButton)}
+                      onClick={() => handleDelete(inst.domain)}
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+    </div>
+  );
+};
+
+// ================ Legacy Educational Admin Applications Panel (kept for backwards compatibility) ================ //
+
+const EducationalAdminApplicationsPanel = props => {
+  const {
+    applications,
+    applicationStats,
+    educationalAdmins,
+    fetchApplicationsInProgress,
+    fetchEducationalAdminsInProgress,
+    approveInProgress,
+    rejectInProgress,
+    updateSubscriptionInProgress,
+    updateSubscriptionSuccess,
+    onFetchApplications,
+    onApproveApplication,
+    onRejectApplication,
+    onFetchEducationalAdmins,
+    onUpdateSubscription,
+    onClearSubscriptionState,
+  } = props;
+
+  const [activeSection, setActiveSection] = useState('applications'); // 'applications' | 'admins'
+  const [rejectModal, setRejectModal] = useState(null);
+  const [rejectReason, setRejectReason] = useState('');
+  const [applicationFilter, setApplicationFilter] = useState('pending'); // 'pending' | 'approved' | 'rejected' | 'all'
+
+  useEffect(() => {
+    if (updateSubscriptionSuccess) {
+      const timer = setTimeout(() => onClearSubscriptionState(), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [updateSubscriptionSuccess, onClearSubscriptionState]);
+
+  const handleApprove = async applicationId => {
+    try {
+      await onApproveApplication(applicationId);
+      onFetchApplications({ status: applicationFilter === 'all' ? '' : applicationFilter });
+    } catch (e) {
+      console.error('Approve failed:', e);
+    }
+  };
+
+  const handleReject = async () => {
+    if (!rejectModal) return;
+    try {
+      await onRejectApplication(rejectModal.id, rejectReason);
+      setRejectModal(null);
+      setRejectReason('');
+      onFetchApplications({ status: applicationFilter === 'all' ? '' : applicationFilter });
+    } catch (e) {
+      console.error('Reject failed:', e);
+    }
+  };
+
+  const handleUpdateSubscription = async (userId, field, value) => {
+    try {
+      await onUpdateSubscription(userId, { [field]: value });
+    } catch (e) {
+      console.error('Update subscription failed:', e);
+    }
+  };
+
+  const formatDate = dateString => {
+    if (!dateString) return 'N/A';
+    return new Date(dateString).toLocaleDateString();
+  };
+
+  const getDepartmentLabel = department => {
+    const labels = {
+      'career-services': 'Career Services',
+      'student-affairs': 'Student Affairs',
+      'academic-affairs': 'Academic Affairs',
+      'experiential-learning': 'Experiential Learning',
+      'internship-office': 'Internship Office',
+      'alumni-relations': 'Alumni Relations',
+      'other': 'Other',
+    };
+    return labels[department] || department;
+  };
+
+  const renderApplicationsSection = () => (
+    <div className={css.applicationsSection}>
+      {/* Stats Overview */}
+      {applicationStats && (
+        <div className={css.statsGrid}>
+          <div className={css.statCard}>
+            <p className={css.statValue}>{applicationStats.pending || 0}</p>
+            <p className={css.statLabel}>Pending Review</p>
+          </div>
+          <div className={css.statCard}>
+            <p className={css.statValue}>{applicationStats.approved || 0}</p>
+            <p className={css.statLabel}>Approved</p>
+          </div>
+          <div className={css.statCard}>
+            <p className={css.statValue}>{applicationStats.rejected || 0}</p>
+            <p className={css.statLabel}>Rejected</p>
+          </div>
+          <div className={css.statCard}>
+            <p className={css.statValue}>{applicationStats.total || 0}</p>
+            <p className={css.statLabel}>Total Applications</p>
+          </div>
+        </div>
+      )}
+
+      {/* Filter */}
+      <div className={css.filterBar}>
+        <div className={css.filterItem}>
+          <label className={css.filterLabel}>Filter by Status</label>
+          <select
+            className={css.filterSelect}
+            value={applicationFilter}
+            onChange={e => {
+              setApplicationFilter(e.target.value);
+              onFetchApplications({ status: e.target.value === 'all' ? '' : e.target.value });
+            }}
+          >
+            <option value="pending">Pending</option>
+            <option value="approved">Approved</option>
+            <option value="rejected">Rejected</option>
+            <option value="all">All</option>
+          </select>
+        </div>
+      </div>
+
+      {/* Applications Table */}
+      {fetchApplicationsInProgress ? (
+        <div className={css.loadingState}>Loading applications...</div>
+      ) : applications.length === 0 ? (
+        <div className={css.emptyState}>
+          No {applicationFilter !== 'all' ? applicationFilter : ''} applications found.
+        </div>
+      ) : (
+        <table className={css.usersTable}>
+          <thead>
+            <tr>
+              <th>Applicant</th>
+              <th>Institution</th>
+              <th>Department</th>
+              <th>Submitted</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {applications.map(app => (
+              <tr key={app.id}>
+                <td>
+                  <div className={css.userCell}>
+                    <div className={css.userInfo}>
+                      <span className={css.userName}>{app.firstName} {app.lastName}</span>
+                      <span className={css.userEmail}>{app.email}</span>
+                      <span className={css.userEmail}>{app.jobTitle}</span>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <div>
+                    <span className={css.institutionName}>{app.institutionName}</span>
+                    <br />
+                    <span className={css.institutionDomain}>@{app.emailDomain}</span>
+                  </div>
+                </td>
+                <td>{getDepartmentLabel(app.department)}</td>
+                <td>{formatDate(app.submittedAt)}</td>
+                <td>
+                  <span
+                    className={classNames(css.statusBadge, {
+                      [css.statusPending]: app.status === 'pending',
+                      [css.statusActive]: app.status === 'approved',
+                      [css.statusBanned]: app.status === 'rejected',
+                    })}
+                  >
+                    {app.status}
+                  </span>
+                </td>
+                <td>
+                  {app.status === 'pending' && (
+                    <div className={css.actionButtons}>
+                      <button
+                        className={classNames(css.actionButton, css.approveButton)}
+                        onClick={() => handleApprove(app.id)}
+                        disabled={approveInProgress === app.id}
+                      >
+                        {approveInProgress === app.id ? 'Approving...' : 'Approve'}
+                      </button>
+                      <button
+                        className={classNames(css.actionButton, css.rejectButton)}
+                        onClick={() => setRejectModal(app)}
+                        disabled={rejectInProgress === app.id}
+                      >
+                        Reject
+                      </button>
+                    </div>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+    </div>
+  );
+
+  const renderAdminsSection = () => (
+    <div className={css.adminsSection}>
+      <p className={css.panelDescription}>
+        Manage subscription status for educational administrators. Toggle deposit and AI coaching access for each institution.
+      </p>
+
+      {updateSubscriptionSuccess && (
+        <div className={css.successMessage}>Subscription status updated successfully!</div>
+      )}
+
+      {fetchEducationalAdminsInProgress ? (
+        <div className={css.loadingState}>Loading educational administrators...</div>
+      ) : educationalAdmins.length === 0 ? (
+        <div className={css.emptyState}>
+          No educational administrators found. Approve applications to create educational admins.
+        </div>
+      ) : (
+        <table className={css.usersTable}>
+          <thead>
+            <tr>
+              <th>Administrator</th>
+              <th>Institution</th>
+              <th>Deposit Paid</th>
+              <th>AI Coaching</th>
+              <th>Joined</th>
+            </tr>
+          </thead>
+          <tbody>
+            {educationalAdmins.map(admin => {
+              const publicData = admin.attributes?.profile?.publicData || {};
+              return (
+                <tr key={admin.id}>
+                  <td>
+                    <div className={css.userCell}>
+                      <div className={css.userInfo}>
+                        <span className={css.userName}>
+                          {admin.attributes?.profile?.displayName || 'Unknown'}
+                        </span>
+                        <span className={css.userEmail}>{admin.attributes?.email}</span>
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    <div>
+                      <span className={css.institutionName}>{publicData.institutionName || 'N/A'}</span>
+                      <br />
+                      <span className={css.institutionDomain}>
+                        @{publicData.institutionDomain || 'N/A'}
+                      </span>
+                    </div>
+                  </td>
+                  <td>
+                    <button
+                      className={classNames(css.toggleButton, {
+                        [css.toggleOn]: publicData.depositPaid,
+                        [css.toggleOff]: !publicData.depositPaid,
+                      })}
+                      onClick={() => handleUpdateSubscription(admin.id, 'depositPaid', !publicData.depositPaid)}
+                      disabled={updateSubscriptionInProgress === admin.id}
+                    >
+                      {publicData.depositPaid ? '✓ Paid' : '✗ Not Paid'}
+                    </button>
+                    {publicData.depositPaidDate && (
+                      <span className={css.dateInfo}>{formatDate(publicData.depositPaidDate)}</span>
+                    )}
+                  </td>
+                  <td>
+                    <button
+                      className={classNames(css.toggleButton, {
+                        [css.toggleOn]: publicData.aiCoachingApproved,
+                        [css.toggleOff]: !publicData.aiCoachingApproved,
+                      })}
+                      onClick={() => handleUpdateSubscription(admin.id, 'aiCoachingApproved', !publicData.aiCoachingApproved)}
+                      disabled={updateSubscriptionInProgress === admin.id}
+                    >
+                      {publicData.aiCoachingApproved ? '✓ Approved' : '✗ Not Approved'}
+                    </button>
+                    {publicData.aiCoachingApprovedDate && (
+                      <span className={css.dateInfo}>{formatDate(publicData.aiCoachingApprovedDate)}</span>
+                    )}
+                  </td>
+                  <td>{formatDate(admin.attributes?.createdAt)}</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      )}
+    </div>
+  );
+
+  return (
+    <div className={css.panel}>
+      <div className={css.panelHeader}>
+        <h2 className={css.panelTitle}>Educational Institution Management</h2>
+      </div>
+
+      {/* Section Tabs */}
+      <div className={css.sectionTabs}>
+        <button
+          className={classNames(css.sectionTab, { [css.sectionTabActive]: activeSection === 'applications' })}
+          onClick={() => setActiveSection('applications')}
+        >
+          📋 Applications
+          {applicationStats?.pending > 0 && (
+            <span className={css.badgeCount}>{applicationStats.pending}</span>
+          )}
+        </button>
+        <button
+          className={classNames(css.sectionTab, { [css.sectionTabActive]: activeSection === 'admins' })}
+          onClick={() => {
+            setActiveSection('admins');
+            onFetchEducationalAdmins({});
+          }}
+        >
+          🎓 Educational Admins
+        </button>
+      </div>
+
+      {activeSection === 'applications' && renderApplicationsSection()}
+      {activeSection === 'admins' && renderAdminsSection()}
+
+      {/* Reject Modal */}
+      {rejectModal && (
+        <div className={css.modalOverlay} onClick={() => setRejectModal(null)}>
+          <div className={css.modal} onClick={e => e.stopPropagation()}>
+            <h3 className={css.modalTitle}>Reject Application</h3>
+            <p className={css.modalMessage}>
+              Are you sure you want to reject the application from{' '}
+              <strong>{rejectModal.firstName} {rejectModal.lastName}</strong> ({rejectModal.institutionName})?
+            </p>
+            <div className={css.formField}>
+              <label>Reason for Rejection (optional)</label>
+              <textarea
+                value={rejectReason}
+                onChange={e => setRejectReason(e.target.value)}
+                placeholder="Provide a reason for rejecting this application..."
+                rows={3}
+              />
+            </div>
+            <div className={css.modalActions}>
+              <button className={css.modalCancel} onClick={() => setRejectModal(null)}>
+                Cancel
+              </button>
+              <button
+                className={css.modalConfirm}
+                onClick={handleReject}
+                disabled={rejectInProgress === rejectModal.id}
+              >
+                {rejectInProgress === rejectModal.id ? 'Rejecting...' : 'Reject Application'}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
@@ -3549,6 +5892,27 @@ const AdminDashboardPageComponent = props => {
     updateContentSuccess,
     // User Stats
     userStats,
+    // Educational Admin Applications
+    eduApplications,
+    eduApplicationsStats,
+    fetchApplicationsInProgress,
+    approveApplicationInProgress,
+    rejectApplicationInProgress,
+    // Educational Admins (institutions)
+    educationalAdminsList,
+    fetchEducationalAdminsInProgress,
+    updateSubscriptionInProgress,
+    updateSubscriptionSuccess,
+    // Corporate Partner Deposits
+    corporatePartners,
+    corporatePartnersPagination,
+    fetchCorporateDepositsInProgress,
+    selectedPartner,
+    selectedPartnerDeposits,
+    fetchPartnerDepositsInProgress,
+    clearHoldInProgress,
+    reinstateHoldInProgress,
+    clearAllHoldsInProgress,
     // Actions
     onFetchUsers,
     onBlockUser,
@@ -3571,6 +5935,19 @@ const AdminDashboardPageComponent = props => {
     onResetContent,
     onClearContentState,
     onFetchUserStats,
+    onFetchApplications,
+    onApproveApplication,
+    onRejectApplication,
+    onFetchEducationalAdmins,
+    onUpdateSubscription,
+    onClearSubscriptionState,
+    // Corporate Partner Deposit Actions
+    onFetchCorporateDeposits,
+    onFetchPartnerDeposits,
+    onClearWorkHold,
+    onReinstateWorkHold,
+    onClearAllHolds,
+    onClearSelectedPartner,
   } = props;
 
   const intl = useIntl();
@@ -3713,9 +6090,25 @@ const AdminDashboardPageComponent = props => {
           )}
 
           {activeTab === 'deposits' && (
-            <DepositsPanel
+            <UnifiedDepositsPanel
+              // Corporate partner deposits (work hold management)
+              corporatePartners={corporatePartners}
+              fetchCorporateInProgress={fetchCorporateDepositsInProgress}
+              selectedPartner={selectedPartner}
+              selectedPartnerDeposits={selectedPartnerDeposits}
+              fetchPartnerInProgress={fetchPartnerDepositsInProgress}
+              clearHoldInProgress={clearHoldInProgress}
+              reinstateHoldInProgress={reinstateHoldInProgress}
+              clearAllHoldsInProgress={clearAllHoldsInProgress}
+              onFetchCorporateDeposits={onFetchCorporateDeposits}
+              onFetchPartnerDeposits={onFetchPartnerDeposits}
+              onClearWorkHold={onClearWorkHold}
+              onReinstateWorkHold={onReinstateWorkHold}
+              onClearAllHolds={onClearAllHolds}
+              onClearSelectedPartner={onClearSelectedPartner}
+              // Payment confirmations
               deposits={deposits}
-              fetchInProgress={fetchDepositsInProgress}
+              fetchDepositsInProgress={fetchDepositsInProgress}
               confirmInProgress={confirmDepositInProgress}
               revokeInProgress={revokeDepositInProgress}
               onFetchDeposits={onFetchDeposits}
@@ -3765,8 +6158,25 @@ const AdminDashboardPageComponent = props => {
           )}
 
           {activeTab === 'institutions' && (
-            <InstitutionManagementPanel />
+            <UnifiedInstitutionManagementPanel
+              applications={eduApplications}
+              applicationStats={eduApplicationsStats}
+              educationalAdmins={educationalAdminsList}
+              fetchApplicationsInProgress={fetchApplicationsInProgress}
+              fetchEducationalAdminsInProgress={fetchEducationalAdminsInProgress}
+              approveInProgress={approveApplicationInProgress}
+              rejectInProgress={rejectApplicationInProgress}
+              updateSubscriptionInProgress={updateSubscriptionInProgress}
+              updateSubscriptionSuccess={updateSubscriptionSuccess}
+              onFetchApplications={onFetchApplications}
+              onApproveApplication={onApproveApplication}
+              onRejectApplication={onRejectApplication}
+              onFetchEducationalAdmins={onFetchEducationalAdmins}
+              onUpdateSubscription={onUpdateSubscription}
+              onClearSubscriptionState={onClearSubscriptionState}
+            />
           )}
+
         </div>
       </LayoutSingleColumn>
     </Page>
@@ -3800,6 +6210,27 @@ const mapStateToProps = state => {
     updateContentInProgress,
     updateContentSuccess,
     userStats,
+    // Educational Admin Applications
+    eduApplications,
+    eduApplicationsStats,
+    fetchApplicationsInProgress,
+    approveApplicationInProgress,
+    rejectApplicationInProgress,
+    // Educational Admins
+    educationalAdmins,
+    fetchEducationalAdminsInProgress,
+    updateSubscriptionInProgress,
+    updateSubscriptionSuccess,
+    // Corporate Partner Deposits
+    corporatePartners,
+    corporatePartnersPagination,
+    fetchCorporateDepositsInProgress,
+    selectedPartner,
+    selectedPartnerDeposits,
+    fetchPartnerDepositsInProgress,
+    clearHoldInProgress,
+    reinstateHoldInProgress,
+    clearAllHoldsInProgress,
   } = state.AdminDashboardPage;
 
   return {
@@ -3829,6 +6260,27 @@ const mapStateToProps = state => {
     updateContentInProgress,
     updateContentSuccess,
     userStats,
+    // Educational Admin Applications
+    eduApplications,
+    eduApplicationsStats,
+    fetchApplicationsInProgress,
+    approveApplicationInProgress,
+    rejectApplicationInProgress,
+    // Educational Admins (renamed to avoid conflict with component's local variable)
+    educationalAdminsList: educationalAdmins,
+    fetchEducationalAdminsInProgress,
+    updateSubscriptionInProgress,
+    updateSubscriptionSuccess,
+    // Corporate Partner Deposits
+    corporatePartners,
+    corporatePartnersPagination,
+    fetchCorporateDepositsInProgress,
+    selectedPartner,
+    selectedPartnerDeposits,
+    fetchPartnerDepositsInProgress,
+    clearHoldInProgress,
+    reinstateHoldInProgress,
+    clearAllHoldsInProgress,
   };
 };
 
@@ -3854,6 +6306,20 @@ const mapDispatchToProps = dispatch => ({
   onResetContent: () => dispatch(resetContentAction()),
   onClearContentState: () => dispatch(clearContentState()),
   onFetchUserStats: userId => dispatch(fetchUserStatsAction(userId)),
+  // Educational Admin Applications
+  onFetchApplications: params => dispatch(fetchApplications(params)),
+  onApproveApplication: applicationId => dispatch(approveApplicationAction(applicationId)),
+  onRejectApplication: (applicationId, reason) => dispatch(rejectApplicationAction(applicationId, reason)),
+  onFetchEducationalAdmins: params => dispatch(fetchEducationalAdmins(params)),
+  onUpdateSubscription: (userId, data) => dispatch(updateSubscriptionAction(userId, data)),
+  onClearSubscriptionState: () => dispatch(clearSubscriptionState()),
+  // Corporate Partner Deposits
+  onFetchCorporateDeposits: params => dispatch(fetchCorporateDeposits(params)),
+  onFetchPartnerDeposits: partnerId => dispatch(fetchCorporatePartnerDepositsAction(partnerId)),
+  onClearWorkHold: (transactionId, notes) => dispatch(clearWorkHoldAction(transactionId, notes)),
+  onReinstateWorkHold: (transactionId, reason) => dispatch(reinstateWorkHoldAction(transactionId, reason)),
+  onClearAllHolds: (partnerId, notes) => dispatch(clearAllHoldsForPartnerAction(partnerId, notes)),
+  onClearSelectedPartner: () => dispatch(clearSelectedPartner()),
 });
 
 const AdminDashboardPage = compose(

@@ -253,6 +253,23 @@ export const fetchStudentTransactions = (studentId, params = {}) => {
   );
 };
 
+// Send message from educational admin to students or system admin
+export const sendEducationalAdminMessage = data => {
+  return request('/api/education/messages', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+};
+
+// Fetch messages sent by educational admin
+export const fetchEducationalAdminMessages = () => {
+  return request('/api/education/messages', {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
+  });
+};
+
 // =====================================================
 // Street2Ivy: Enhanced Corporate Dashboard APIs
 // =====================================================
@@ -366,6 +383,80 @@ export const createAdminUser = data => {
   });
 };
 
+// Submit educational admin application
+export const submitEducationalAdminApplication = data => {
+  return request('/api/educational-admin/apply', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+};
+
+// ========== Educational Admin Applications Management (System Admin) ==========
+
+// Fetch all educational admin applications (system admin only)
+export const fetchEducationalAdminApplications = (params = {}) => {
+  const queryString = Object.entries(params)
+    .filter(([, v]) => v != null && v !== '')
+    .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`)
+    .join('&');
+
+  return request(`/api/admin/educational-admin-applications${queryString ? `?${queryString}` : ''}`, {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
+  });
+};
+
+// Fetch educational admin application statistics (system admin only)
+export const fetchEducationalAdminApplicationStats = () => {
+  return request('/api/admin/educational-admin-applications/stats', {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
+  });
+};
+
+// Approve an educational admin application (system admin only)
+export const approveEducationalAdminApplication = applicationId => {
+  return request(`/api/admin/educational-admin-applications/${applicationId}/approve`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({}),
+  });
+};
+
+// Reject an educational admin application (system admin only)
+export const rejectEducationalAdminApplication = (applicationId, reason) => {
+  return request(`/api/admin/educational-admin-applications/${applicationId}/reject`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ reason }),
+  });
+};
+
+// ========== Educational Admin Subscription Management (System Admin) ==========
+
+// Update educational admin subscription status (deposit, AI coaching)
+export const updateEducationalAdminSubscription = (userId, data) => {
+  return request(`/api/admin/educational-admins/${userId}/subscription`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+};
+
+// Fetch all educational administrators (system admin only)
+export const fetchEducationalAdmins = (params = {}) => {
+  const queryString = Object.entries(params)
+    .filter(([, v]) => v != null && v !== '')
+    .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`)
+    .join('&');
+
+  return request(`/api/admin/educational-admins${queryString ? `?${queryString}` : ''}`, {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
+  });
+};
+
 // Send admin message to educational admin
 export const sendAdminMessage = body => {
   return request('/api/admin/messages', {
@@ -475,6 +566,51 @@ export const revokeDeposit = (transactionId, reason) => {
 // Get deposit status for a transaction (admin only)
 export const getDepositStatus = transactionId => {
   return request(`/api/admin/deposits/${transactionId}`);
+};
+
+// ========== Corporate Partner Deposit Management (Admin) ==========
+
+// Get list of corporate partners with their deposit status (admin only)
+export const fetchCorporateDeposits = (params = {}) => {
+  const queryString = Object.entries(params)
+    .map(([key, value]) => `${key}=${encodeURIComponent(value)}`)
+    .join('&');
+  return request(`/api/admin/corporate-deposits${queryString ? `?${queryString}` : ''}`);
+};
+
+// Get detailed deposits for a specific corporate partner (admin only)
+export const fetchCorporatePartnerDeposits = partnerId => {
+  return request(`/api/admin/corporate-deposits/${partnerId}`);
+};
+
+// Clear work hold for a transaction (admin only)
+// Allows student to proceed with work on the project
+export const clearWorkHold = (transactionId, notes = '') => {
+  return request(`/api/admin/corporate-deposits/${transactionId}/clear-hold`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ notes }),
+  });
+};
+
+// Reinstate work hold for a transaction (admin only)
+// Blocks student from proceeding with work on the project
+export const reinstateWorkHold = (transactionId, reason = '') => {
+  return request(`/api/admin/corporate-deposits/${transactionId}/reinstate-hold`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ reason }),
+  });
+};
+
+// Clear all work holds for a corporate partner (admin only)
+// Bulk operation to allow all hired students to proceed
+export const clearAllHoldsForPartner = (partnerId, notes = '') => {
+  return request(`/api/admin/corporate-deposits/${partnerId}/clear-all-holds`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ notes }),
+  });
 };
 
 // ========== Deposit Status Check (Corporate Partners) ==========

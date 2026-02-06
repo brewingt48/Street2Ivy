@@ -288,26 +288,9 @@ const TopbarComponent = props => {
 
   const { display: searchFormDisplay = SEARCH_DISPLAY_ALWAYS } = config?.topbar?.searchBar || {};
 
-  // Search form is shown conditionally depending on configuration and
-  // the current page.
-  // Street2Ivy: Always hide search on LandingPage - users must sign up to see listings
-  const isLandingPage = resolvedCurrentPage === 'LandingPage';
-
-  // Street2Ivy: Hide search for corporate partners - they don't need to search listings
-  const userType = currentUser?.attributes?.profile?.publicData?.userType;
-  const isCorporatePartner = userType === 'corporate-partner';
-
-  const showSearchOnAllPages = searchFormDisplay === SEARCH_DISPLAY_ALWAYS && !isLandingPage;
-  const showSearchOnSearchPage =
-    searchFormDisplay === SEARCH_DISPLAY_ONLY_SEARCH_PAGE &&
-    ['SearchPage', 'SearchPageWithListingType'].includes(resolvedCurrentPage);
-  const showSearchNotOnLandingPage =
-    searchFormDisplay === SEARCH_DISPLAY_NOT_LANDING_PAGE && !isLandingPage;
-
-  // Hide search for corporate partners
-  const showSearchForm = isCorporatePartner
-    ? false
-    : showSearchOnAllPages || showSearchOnSearchPage || showSearchNotOnLandingPage;
+  // Street2Ivy: Search functionality has been removed from the site
+  // Users discover projects through their dashboard and recommendations
+  const showSearchForm = false;
 
   const mobileSearchButtonMaybe = showSearchForm ? (
     <Button

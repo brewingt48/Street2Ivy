@@ -2625,3 +2625,302 @@
   line-height: 1.5;
 }
 
+/* ============================================ */
+/* Educational Admin Applications Panel */
+/* ============================================ */
+
+.sectionTabs {
+  display: flex;
+  gap: 0;
+  margin-bottom: 24px;
+  border-bottom: 1px solid var(--colorGrey200);
+}
+
+.sectionTab {
+  padding: 12px 24px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--colorGrey600);
+  background: transparent;
+  border: none;
+  border-bottom: 3px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sectionTab:hover {
+  color: var(--colorGrey900);
+  background: var(--colorGrey50);
+}
+
+.sectionTabActive {
+  color: var(--marketplaceColor);
+  border-bottom-color: var(--marketplaceColor);
+}
+
+.badgeCount {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: white;
+  background: var(--colorFail);
+  border-radius: 10px;
+}
+
+.applicationsSection,
+.adminsSection {
+  margin-top: 16px;
+}
+
+.approveButton {
+  color: #166534;
+  border-color: #16a34a;
+  background: #dcfce7;
+}
+
+.approveButton:hover:not(:disabled) {
+  background: #16a34a;
+  color: white;
+}
+
+.rejectButton {
+  color: #dc2626;
+  border-color: #dc2626;
+  background: #fee2e2;
+}
+
+.rejectButton:hover:not(:disabled) {
+  background: #dc2626;
+  color: white;
+}
+
+.dateInfo {
+  display: block;
+  font-size: 11px;
+  color: var(--colorGrey500);
+  margin-top: 4px;
+}
+
+/* Corporate Deposits Panel */
+.panelHeaderLeft {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.backButton {
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--colorGrey700);
+  background: var(--colorGrey100);
+  border: 1px solid var(--colorGrey200);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.backButton:hover {
+  background: var(--colorGrey200);
+  color: var(--colorGrey900);
+}
+
+.partnerStatsRow {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.partnerStatsRow .statCard {
+  flex: 1;
+  min-width: 120px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.warningValue {
+  color: #d97706 !important;
+}
+
+.successValue {
+  color: #16a34a !important;
+}
+
+.viewButton {
+  background: var(--marketplaceColor);
+  color: white;
+  border-color: var(--marketplaceColor);
+}
+
+.viewButton:hover:not(:disabled) {
+  background: var(--marketplaceColorDark);
+  border-color: var(--marketplaceColorDark);
+}
+
+.modalWarning {
+  background: #fef3c7;
+  border: 1px solid #f59e0b;
+  border-radius: 6px;
+  padding: 12px;
+  font-size: 13px;
+  color: #92400e;
+  margin-bottom: 16px;
+}
+
+/* Unified Deposits Panel Sub-tabs */
+.depositSubTabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 2px solid var(--colorGrey200);
+  margin-bottom: 24px;
+}
+
+.depositSubTab {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 24px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--colorGrey600);
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.depositSubTab:hover {
+  color: var(--colorGrey900);
+  background-color: var(--colorGrey50);
+}
+
+.depositSubTabActive {
+  color: var(--marketplaceColor);
+  border-bottom-color: var(--marketplaceColor);
+  background-color: var(--colorGrey50);
+}
+
+.depositSubTabIcon {
+  font-size: 16px;
+}
+
+.subPanelContent {
+  padding-top: 0;
+}
+
+.subPanelHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.subPanelTitle {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0;
+  color: var(--colorGrey900);
+}
+
+.subPanelDescription {
+  font-size: 14px;
+  color: var(--colorGrey600);
+  margin: 0;
+  max-width: 600px;
+}
+
+/* Mini stat cards for partner detail view */
+.miniStatCard {
+  background: var(--colorGrey50);
+  border: 1px solid var(--colorGrey200);
+  border-radius: 8px;
+  padding: 16px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 120px;
+  flex: 1;
+}
+
+.miniStatValue {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--colorGrey900);
+  line-height: 1;
+}
+
+.miniStatLabel {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--colorGrey600);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-top: 6px;
+}
+
+/* Mobile responsiveness for unified panels */
+@media (max-width: 768px) {
+  .depositSubTabs {
+    flex-wrap: wrap;
+  }
+
+  .depositSubTab {
+    padding: 10px 16px;
+    font-size: 13px;
+    flex: 1;
+    justify-content: center;
+    min-width: 120px;
+  }
+
+  .depositSubTabIcon {
+    font-size: 14px;
+  }
+
+  .subPanelHeader {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .partnerStatsRow {
+    flex-direction: column;
+  }
+
+  .miniStatCard {
+    min-width: 100%;
+  }
+}
+
+@media (max-width: 500px) {
+  .depositSubTab {
+    padding: 8px 12px;
+    font-size: 12px;
+  }
+
+  .depositSubTabIcon {
+    display: none;
+  }
+
+  .miniStatValue {
+    font-size: 24px;
+  }
+
+  .miniStatLabel {
+    font-size: 11px;
+  }
+}
+

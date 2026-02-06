@@ -7,7 +7,8 @@
  * Only system admins can manage institutions.
  */
 
-const { getIntegrationSdk, handleError, serialize } = require('../../api-util/sdk');
+const { getIntegrationSdk } = require('../../api-util/integrationSdk');
+const { handleError, serialize } = require('../../api-util/sdk');
 
 // In-memory store for institutions (in production, use a database)
 // This maps email domains to institution membership data

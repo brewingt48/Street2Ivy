@@ -98,6 +98,15 @@ module.exports = async (req, res) => {
       avgDaysToCompletion: 0,
     };
 
+    // Deposit/work hold stats for corporate partner
+    let depositStats = {
+      totalHired: 0, // Accepted students
+      projectsOnHold: 0, // Where workHoldCleared is false
+      projectsCleared: 0, // Where workHoldCleared is true
+      depositsConfirmed: 0, // Where depositConfirmed is true
+      depositsPending: 0, // Where depositConfirmed is false
+    };
+
     let completionTimes = [];
 
     // Query transactions where the current user is the provider
@@ -112,17 +121,36 @@ module.exports = async (req, res) => {
 
       transactions.forEach(tx => {
         const lastTransition = tx.attributes.lastTransition;
+        const metadata = tx.attributes.metadata || {};
         applicationStats.total++;
 
         // Categorize by state
-        if (lastTransition === 'transition/apply') {
+        if (lastTransition === 'transition/apply' || lastTransition === 'transition/request-project-application') {
           applicationStats.pending++;
         } else if (lastTransition === 'transition/accept') {
           applicationStats.accepted++;
+
+          // Track deposit/hold stats for accepted (hired) students
+          depositStats.totalHired++;
+
+          // Check work hold status
+          if (metadata.workHoldCleared === true) {
+            depositStats.projectsCleared++;
+          } else {
+            depositStats.projectsOnHold++;
+          }
+
+          // Check deposit confirmation status
+          if (metadata.depositConfirmed === true) {
+            depositStats.depositsConfirmed++;
+          } else {
+            depositStats.depositsPending++;
+          }
         } else if (lastTransition === 'transition/decline') {
           applicationStats.declined++;
         } else if (
           lastTransition === 'transition/mark-completed' ||
+          lastTransition === 'transition/complete' ||
           lastTransition.includes('review')
         ) {
           completionStats.completed++;
@@ -174,6 +202,8 @@ module.exports = async (req, res) => {
         },
         totalProjects: listings.length,
       },
+      // Deposit and work hold status for hired students
+      depositStats,
     });
   } catch (error) {
     console.error('Corporate dashboard stats error:', error);

@@ -48,6 +48,14 @@ module.exports = async (req, res) => {
     const institutionDomain = publicData.institutionDomain;
     const institutionName = publicData.institutionName;
 
+    // Get subscription status
+    const subscriptionStatus = {
+      depositPaid: publicData.depositPaid || false,
+      depositPaidDate: publicData.depositPaidDate || null,
+      aiCoachingApproved: publicData.aiCoachingApproved || false,
+      aiCoachingApprovedDate: publicData.aiCoachingApprovedDate || null,
+    };
+
     if (!institutionDomain) {
       return res.status(400).json({
         error:
@@ -141,12 +149,22 @@ module.exports = async (req, res) => {
     // Note: Integration API transactions.query supports filtering by customerId
     let stats = {
       totalStudents: meta.totalItems || allStudentIds.length,
+      activeStudents: 0, // Students with at least one application
       projectsApplied: 0,
       projectsAccepted: 0,
       projectsDeclined: 0,
       projectsCompleted: 0,
+      projectsPending: 0, // Applications still pending review
       invitationsReceived: 0,
+      uniqueCompanies: 0, // Unique companies students have engaged with
+      acceptanceRate: 0,
+      completionRate: 0,
     };
+
+    // Track data for student-level breakdown
+    const studentActivityMap = {}; // studentId -> { applications, acceptances, completions, etc. }
+    const companyIds = new Set();
+    const allTransactions = [];
 
     // Query transactions for each student (batched for performance)
     // Using Integration API's transactions.query with customerId filter
@@ -158,61 +176,115 @@ module.exports = async (req, res) => {
           try {
             const txResponse = await integrationSdk.transactions.query({
               customerId: studentId,
-              include: ['listing'],
+              include: ['listing', 'provider'],
             });
-            return txResponse.data.data;
+            return { studentId, transactions: txResponse.data.data };
           } catch (e) {
             // If transaction query fails for a student, skip
-            return [];
+            return { studentId, transactions: [] };
           }
         });
 
         const transactionResults = await Promise.all(transactionPromises);
-        const allTransactions = transactionResults.flat();
 
-        // Aggregate stats from transactions
-        allTransactions.forEach(tx => {
-          const lastTransition = tx.attributes.lastTransition;
-
-          // Count based on transaction state
-          if (lastTransition === 'transition/apply') {
-            stats.projectsApplied++;
-          } else if (lastTransition === 'transition/accept') {
-            stats.projectsAccepted++;
-          } else if (lastTransition === 'transition/decline') {
-            stats.projectsDeclined++;
-          } else if (
-            lastTransition === 'transition/mark-completed' ||
-            lastTransition === 'transition/review-1-by-provider' ||
-            lastTransition === 'transition/review-1-by-customer' ||
-            lastTransition === 'transition/review-2-by-provider' ||
-            lastTransition === 'transition/review-2-by-customer'
-          ) {
-            stats.projectsCompleted++;
+        // Process transactions and build student activity map
+        transactionResults.forEach(({ studentId, transactions }) => {
+          if (transactions.length > 0) {
+            stats.activeStudents++;
+            studentActivityMap[studentId] = {
+              applications: 0,
+              acceptances: 0,
+              declines: 0,
+              completions: 0,
+              pending: 0,
+              invitations: 0,
+            };
           }
 
-          // Check if this was an invitation (provider-initiated)
-          const protectedData = tx.attributes.protectedData || {};
-          if (protectedData.isInvitation) {
-            stats.invitationsReceived++;
-          }
+          transactions.forEach(tx => {
+            allTransactions.push(tx);
+            const lastTransition = tx.attributes.lastTransition;
+            const activity = studentActivityMap[studentId];
+
+            // Track unique companies
+            const providerId = tx.relationships?.provider?.data?.id?.uuid;
+            if (providerId) {
+              companyIds.add(providerId);
+            }
+
+            // Count based on transaction state
+            if (lastTransition === 'transition/apply') {
+              stats.projectsPending++;
+              if (activity) activity.pending++;
+            } else if (lastTransition === 'transition/accept') {
+              stats.projectsAccepted++;
+              if (activity) activity.acceptances++;
+            } else if (lastTransition === 'transition/decline') {
+              stats.projectsDeclined++;
+              if (activity) activity.declines++;
+            } else if (
+              lastTransition === 'transition/mark-completed' ||
+              lastTransition === 'transition/review-1-by-provider' ||
+              lastTransition === 'transition/review-1-by-customer' ||
+              lastTransition === 'transition/review-2-by-provider' ||
+              lastTransition === 'transition/review-2-by-customer'
+            ) {
+              stats.projectsCompleted++;
+              if (activity) activity.completions++;
+            }
+
+            // Check if this was an invitation (provider-initiated)
+            const protectedData = tx.attributes.protectedData || {};
+            if (protectedData.isInvitation) {
+              stats.invitationsReceived++;
+              if (activity) activity.invitations++;
+            }
+
+            // Count all applications
+            if (activity) activity.applications++;
+          });
         });
 
-        // Adjust counts to be cumulative (accepted includes completed, etc.)
-        // Applied = all transactions that have been initiated
+        // Calculate total applications
         stats.projectsApplied = allTransactions.length;
+        stats.uniqueCompanies = companyIds.size;
+
+        // Calculate rates
+        const totalDecisions = stats.projectsAccepted + stats.projectsDeclined;
+        stats.acceptanceRate = totalDecisions > 0
+          ? Math.round((stats.projectsAccepted / totalDecisions) * 100)
+          : 0;
+
+        stats.completionRate = stats.projectsAccepted > 0
+          ? Math.round((stats.projectsCompleted / stats.projectsAccepted) * 100)
+          : 0;
+
       } catch (txError) {
         console.error('Error querying transactions for education dashboard:', txError.message);
         // Continue with zero stats if transaction query fails
       }
     }
 
+    // Add activity data to each student for reports
+    const studentsWithActivity = students.map(student => ({
+      ...student,
+      activity: studentActivityMap[student.id] || {
+        applications: 0,
+        acceptances: 0,
+        declines: 0,
+        completions: 0,
+        pending: 0,
+        invitations: 0,
+      },
+    }));
+
     // Step 6: Return response
     res.status(200).json({
       stats,
-      students,
+      students: studentsWithActivity,
       institutionName,
       institutionDomain,
+      subscriptionStatus,
       pagination: {
         totalItems: meta.totalItems,
         totalPages: meta.totalPages,

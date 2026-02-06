@@ -40,6 +40,7 @@ const SearchPageWithMap = loadable(() => import(/* webpackChunkName: "SearchPage
 const SearchPageWithGrid = loadable(() => import(/* webpackChunkName: "SearchPageWithGrid" */ /* webpackPrefetch: true */  '../containers/SearchPage/SearchPageWithGrid'));
 const SearchStudentsPage = loadable(() => import(/* webpackChunkName: "SearchStudentsPage" */ '../containers/SearchStudentsPage/SearchStudentsPage'));
 const EducationDashboardPage = loadable(() => import(/* webpackChunkName: "EducationDashboardPage" */ '../containers/EducationDashboardPage/EducationDashboardPage'));
+const EducationalAdminApplicationPage = loadable(() => import(/* webpackChunkName: "EducationalAdminApplicationPage" */ '../containers/EducationalAdminApplicationPage/EducationalAdminApplicationPage'));
 const AdminDashboardPage = loadable(() => import(/* webpackChunkName: "AdminDashboardPage" */ '../containers/AdminDashboardPage/AdminDashboardPage'));
 const StudentDashboardPage = loadable(() => import(/* webpackChunkName: "StudentDashboardPage" */ '../containers/StudentDashboardPage/StudentDashboardPage'));
 const OnboardingPage = loadable(() => import(/* webpackChunkName: "OnboardingPage" */ '../containers/OnboardingPage/OnboardingPage'));
@@ -360,6 +361,11 @@ const routeConfiguration = (layoutConfig, accessControlConfig) => {
       authPage: 'LoginPage',
       component: EducationDashboardPage,
       loadData: pageDataLoadingAPI.EducationDashboardPage.loadData,
+    },
+    {
+      path: '/for-universities',
+      name: 'EducationalAdminApplicationPage',
+      component: EducationalAdminApplicationPage,
     },
     {
       path: '/admin',

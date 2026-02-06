@@ -32,6 +32,59 @@
   color: var(--marketplaceColor);
 }
 
+/* Page Header */
+.pageHeader {
+  margin-bottom: 24px;
+}
+
+/* Tabs */
+.tabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 1px solid var(--colorGrey200);
+  margin-bottom: 24px;
+}
+
+.tab {
+  padding: 12px 24px;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  font-size: 14px;
+  font-weight: var(--fontWeightMedium);
+  color: var(--colorGrey600);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.tab:hover {
+  color: var(--colorGrey900);
+  background-color: var(--colorGrey50);
+}
+
+.activeTab {
+  color: var(--marketplaceColor);
+  border-bottom-color: var(--marketplaceColor);
+}
+
+/* Apply Button */
+.applyButton {
+  display: inline-block;
+  margin-top: 24px;
+  padding: 12px 24px;
+  background-color: var(--marketplaceColor);
+  color: white;
+  border-radius: 6px;
+  text-decoration: none;
+  font-weight: var(--fontWeightMedium);
+  transition: background-color 0.2s ease;
+}
+
+.applyButton:hover {
+  background-color: var(--marketplaceColorDark);
+  color: white;
+}
+
 /* Stats Section */
 .statsSection {
   margin-bottom: 40px;
@@ -400,4 +453,881 @@
   text-align: center;
   padding: 32px;
   color: var(--colorGrey500);
+}
+
+/* Messages Panel */
+.messagesPanel {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+
+  @media (--viewportMedium) {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.composeSection {
+  background: var(--colorWhite);
+  border: 1px solid var(--colorGrey100);
+  border-radius: 8px;
+  padding: 24px;
+}
+
+.messagesListSection {
+  background: var(--colorWhite);
+  border: 1px solid var(--colorGrey100);
+  border-radius: 8px;
+  padding: 24px;
+}
+
+.messageForm {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.formField {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.formField label {
+  font-size: 14px;
+  font-weight: var(--fontWeightMedium);
+  color: var(--colorGrey700);
+}
+
+.formField input,
+.formField select,
+.formField textarea {
+  padding: 10px 12px;
+  border: 1px solid var(--colorGrey300);
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.formField input:focus,
+.formField select:focus,
+.formField textarea:focus {
+  outline: none;
+  border-color: var(--marketplaceColor);
+}
+
+.formField textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+.sendButton {
+  padding: 12px 24px;
+  background-color: var(--marketplaceColor);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: var(--fontWeightMedium);
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.sendButton:hover:not(:disabled) {
+  background-color: var(--marketplaceColorDark);
+}
+
+.sendButton:disabled {
+  background-color: var(--colorGrey300);
+  cursor: not-allowed;
+}
+
+.successMessage {
+  background-color: #d1fae5;
+  color: #065f46;
+  padding: 12px 16px;
+  border-radius: 6px;
+  font-size: 14px;
+  margin-bottom: 16px;
+}
+
+.errorMessage {
+  background-color: #fee2e2;
+  color: #991b1b;
+  padding: 12px 16px;
+  border-radius: 6px;
+  font-size: 14px;
+  margin-bottom: 16px;
+}
+
+.messagesList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.messageItem {
+  padding: 12px;
+  border: 1px solid var(--colorGrey100);
+  border-radius: 6px;
+  background: var(--colorGrey50);
+}
+
+.messageHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.messageRecipient {
+  font-size: 12px;
+  font-weight: var(--fontWeightMedium);
+  color: var(--colorGrey600);
+}
+
+.messageDate {
+  font-size: 12px;
+  color: var(--colorGrey500);
+}
+
+.messageSubject {
+  font-size: 14px;
+  font-weight: var(--fontWeightMedium);
+  color: var(--colorGrey900);
+  margin-bottom: 4px;
+}
+
+.messagePreview {
+  font-size: 13px;
+  color: var(--colorGrey600);
+  line-height: 1.4;
+}
+
+.noMessages {
+  text-align: center;
+  padding: 32px;
+  color: var(--colorGrey500);
+  font-size: 14px;
+}
+
+/* New Messages Container Layout */
+.messagesContainer {
+  background: var(--colorWhite);
+  border: 1px solid var(--colorGrey100);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.messagesActionBar {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  border-bottom: 1px solid var(--colorGrey100);
+  background: var(--colorGrey50);
+
+  @media (--viewportSmall) {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+}
+
+.messageTabs {
+  display: flex;
+  gap: 8px;
+}
+
+.messageTabBtn {
+  padding: 8px 16px;
+  background: var(--colorWhite);
+  border: 1px solid var(--colorGrey200);
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: var(--fontWeightMedium);
+  color: var(--colorGrey600);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.messageTabBtn:hover {
+  border-color: var(--colorGrey400);
+  color: var(--colorGrey900);
+}
+
+.activeMessageTab {
+  background: var(--marketplaceColor);
+  border-color: var(--marketplaceColor);
+  color: white;
+}
+
+.activeMessageTab:hover {
+  background: var(--marketplaceColorDark);
+  border-color: var(--marketplaceColorDark);
+  color: white;
+}
+
+.composeButton {
+  padding: 10px 20px;
+  background: var(--marketplaceColor);
+  border: none;
+  border-radius: 6px;
+  color: white;
+  font-size: 14px;
+  font-weight: var(--fontWeightMedium);
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.composeButton:hover {
+  background: var(--marketplaceColorDark);
+}
+
+/* Compose Section */
+.composeSectionHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.closeComposeBtn {
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: var(--colorGrey500);
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+}
+
+.closeComposeBtn:hover {
+  color: var(--colorGrey900);
+}
+
+.composeActions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+.cancelButton {
+  padding: 10px 20px;
+  background: var(--colorWhite);
+  border: 1px solid var(--colorGrey300);
+  border-radius: 6px;
+  font-size: 14px;
+  color: var(--colorGrey700);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.cancelButton:hover {
+  background: var(--colorGrey50);
+  border-color: var(--colorGrey400);
+}
+
+/* Messages Table */
+.messagesTableContainer {
+  padding: 0;
+}
+
+.messagesTable {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.messagesTable th,
+.messagesTable td {
+  padding: 12px 16px;
+  text-align: left;
+  border-bottom: 1px solid var(--colorGrey100);
+}
+
+.messagesTable th {
+  background-color: var(--colorGrey50);
+  font-weight: var(--fontWeightSemiBold);
+  color: var(--colorGrey700);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.sortableHeader {
+  cursor: pointer;
+  user-select: none;
+}
+
+.sortableHeader:hover {
+  background-color: var(--colorGrey100);
+}
+
+.messageRow {
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.messageRow:hover {
+  background-color: var(--colorGrey50);
+}
+
+.unreadMessage {
+  font-weight: var(--fontWeightMedium);
+  background-color: #fef3c7;
+}
+
+.unreadMessage:hover {
+  background-color: #fde68a;
+}
+
+.messageDateCell {
+  font-size: 13px;
+  color: var(--colorGrey600);
+  white-space: nowrap;
+  width: 120px;
+}
+
+.messageSenderCell {
+  font-size: 14px;
+  color: var(--colorGrey800);
+  width: 180px;
+}
+
+.messageSubjectCell {
+  font-size: 14px;
+}
+
+.subjectText {
+  color: var(--colorGrey900);
+  font-weight: var(--fontWeightMedium);
+}
+
+.messagePreviewInline {
+  color: var(--colorGrey500);
+  font-weight: normal;
+}
+
+.viewMessageBtn {
+  padding: 6px 12px;
+  background: var(--colorWhite);
+  border: 1px solid var(--colorGrey300);
+  border-radius: 4px;
+  font-size: 12px;
+  color: var(--colorGrey700);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.viewMessageBtn:hover {
+  background: var(--colorGrey50);
+  border-color: var(--marketplaceColor);
+  color: var(--marketplaceColor);
+}
+
+/* Message Detail View */
+.messageDetailView {
+  padding: 24px;
+}
+
+.backToListBtn {
+  background: none;
+  border: none;
+  color: var(--marketplaceColor);
+  font-size: 14px;
+  cursor: pointer;
+  padding: 0;
+  margin-bottom: 16px;
+}
+
+.backToListBtn:hover {
+  text-decoration: underline;
+}
+
+.messageDetailCard {
+  background: var(--colorGrey50);
+  border: 1px solid var(--colorGrey100);
+  border-radius: 8px;
+  padding: 24px;
+}
+
+.messageDetailHeader {
+  margin-bottom: 16px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--colorGrey200);
+}
+
+.messageDetailSubject {
+  font-size: 20px;
+  font-weight: var(--fontWeightSemiBold);
+  color: var(--colorGrey900);
+  margin: 0 0 8px 0;
+}
+
+.messageDetailDate {
+  font-size: 13px;
+  color: var(--colorGrey500);
+}
+
+.messageDetailMeta {
+  margin-bottom: 16px;
+  font-size: 14px;
+  color: var(--colorGrey600);
+}
+
+.messageDetailMeta p {
+  margin: 4px 0;
+}
+
+.messageDetailBody {
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--colorGrey800);
+  white-space: pre-wrap;
+}
+
+/* ================ Enhanced Stats Section ================ */
+
+.statCardClickable {
+  background-color: var(--colorWhite);
+  border: 1px solid var(--colorGrey100);
+  border-radius: 8px;
+  padding: 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  width: 100%;
+}
+
+.statCardClickable:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  border-color: var(--marketplaceColor);
+  transform: translateY(-2px);
+}
+
+.statCardSuccess {
+  border-left: 4px solid #10b981;
+}
+
+.statCardSuccess:hover {
+  border-color: #10b981;
+}
+
+.statCardWarning {
+  border-left: 4px solid #f59e0b;
+}
+
+.statCardWarning:hover {
+  border-color: #f59e0b;
+}
+
+.statCardComplete {
+  border-left: 4px solid #3b82f6;
+}
+
+.statCardComplete:hover {
+  border-color: #3b82f6;
+}
+
+.statSubtext {
+  font-size: 12px;
+  color: var(--colorGrey500);
+  margin-top: 4px;
+}
+
+/* Secondary Stats */
+.secondaryStatsTitle {
+  font-size: 16px;
+  font-weight: var(--fontWeightSemiBold);
+  color: var(--colorGrey700);
+  margin: 32px 0 16px 0;
+}
+
+.secondaryStatsGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+
+  @media (--viewportMedium) {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.secondaryStatCard {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  background: var(--colorGrey50);
+  border-radius: 8px;
+  border: 1px solid var(--colorGrey100);
+}
+
+.secondaryStatIcon {
+  font-size: 24px;
+}
+
+.secondaryStatContent {
+  flex: 1;
+}
+
+.secondaryStatValue {
+  font-size: 20px;
+  font-weight: var(--fontWeightBold);
+  color: var(--colorGrey900);
+}
+
+.secondaryStatLabel {
+  font-size: 12px;
+  color: var(--colorGrey600);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+/* Quick Actions */
+.quickActionsSection {
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid var(--colorGrey100);
+}
+
+.quickActionsTitle {
+  font-size: 16px;
+  font-weight: var(--fontWeightSemiBold);
+  color: var(--colorGrey700);
+  margin: 0 0 16px 0;
+}
+
+.quickActionsGrid {
+  display: grid;
+  grid-template-columns: repeat(1, 1fr);
+  gap: 12px;
+
+  @media (--viewportSmall) {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.quickActionButton {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  background: var(--colorWhite);
+  border: 1px solid var(--colorGrey200);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.quickActionButton:hover {
+  border-color: var(--marketplaceColor);
+  background: var(--colorGrey50);
+}
+
+.quickActionIcon {
+  font-size: 24px;
+}
+
+.quickActionText {
+  font-size: 14px;
+  font-weight: var(--fontWeightMedium);
+  color: var(--colorGrey800);
+}
+
+/* ================ Reports Section ================ */
+
+.reportsSection {
+  margin-bottom: 40px;
+}
+
+.reportsSectionHeader {
+  margin-bottom: 24px;
+}
+
+.reportsDescription {
+  font-size: 14px;
+  color: var(--colorGrey600);
+  margin-top: 8px;
+}
+
+.reportCard {
+  background: var(--colorWhite);
+  border: 1px solid var(--colorGrey100);
+  border-radius: 8px;
+  padding: 24px;
+  margin-bottom: 24px;
+}
+
+.reportCardHeader {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 16px;
+
+  @media (--viewportSmall) {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+}
+
+.reportCardTitle {
+  font-size: 18px;
+  font-weight: var(--fontWeightSemiBold);
+  color: var(--colorGrey900);
+  margin: 0;
+}
+
+.reportCardDescription {
+  font-size: 14px;
+  color: var(--colorGrey600);
+  margin: 0 0 16px 0;
+}
+
+.downloadButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: var(--marketplaceColor);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: var(--fontWeightMedium);
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.downloadButton:hover {
+  background: var(--marketplaceColorDark);
+}
+
+.downloadIcon {
+  font-size: 16px;
+}
+
+/* Report Summary Grid */
+.reportSummaryGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+
+  @media (--viewportSmall) {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  @media (--viewportMedium) {
+    grid-template-columns: repeat(6, 1fr);
+  }
+}
+
+.reportSummaryItem {
+  text-align: center;
+  padding: 12px;
+  background: var(--colorGrey50);
+  border-radius: 6px;
+}
+
+.reportSummaryLabel {
+  display: block;
+  font-size: 11px;
+  color: var(--colorGrey600);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  margin-bottom: 4px;
+}
+
+.reportSummaryValue {
+  display: block;
+  font-size: 20px;
+  font-weight: var(--fontWeightBold);
+  color: var(--marketplaceColor);
+}
+
+/* Report Preview Table */
+.reportPreviewTable {
+  overflow-x: auto;
+}
+
+.reportTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.reportTable th,
+.reportTable td {
+  padding: 10px 12px;
+  text-align: left;
+  border-bottom: 1px solid var(--colorGrey100);
+}
+
+.reportTable th {
+  background: var(--colorGrey50);
+  font-weight: var(--fontWeightSemiBold);
+  color: var(--colorGrey700);
+  font-size: 12px;
+  text-transform: uppercase;
+}
+
+.reportTable tr:last-child td {
+  border-bottom: none;
+}
+
+.reportPreviewMore {
+  text-align: center;
+  font-size: 13px;
+  color: var(--colorGrey500);
+  margin: 12px 0 0 0;
+  padding-top: 12px;
+  border-top: 1px dashed var(--colorGrey200);
+}
+
+/* Engagement Funnel */
+.engagementFunnel {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.funnelItem {
+  width: 100%;
+}
+
+.funnelBar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background: var(--colorGrey100);
+  border-radius: 6px;
+  transition: width 0.3s ease;
+  min-width: 120px;
+}
+
+.funnelBarEngaged {
+  background: #fef3c7;
+}
+
+.funnelBarPlaced {
+  background: #d1fae5;
+}
+
+.funnelBarCompleted {
+  background: #dbeafe;
+}
+
+.funnelLabel {
+  font-size: 14px;
+  font-weight: var(--fontWeightMedium);
+  color: var(--colorGrey800);
+}
+
+.funnelValue {
+  font-size: 16px;
+  font-weight: var(--fontWeightBold);
+  color: var(--colorGrey900);
+}
+
+/* Activity Badges for Students Table */
+.activityBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 28px;
+  padding: 4px 8px;
+  background: var(--colorGrey100);
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: var(--fontWeightMedium);
+  color: var(--colorGrey700);
+}
+
+.activityBadgeSuccess {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+/* Mobile Student Card Activity */
+.studentCardActivity {
+  display: flex;
+  gap: 12px;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--colorGrey100);
+}
+
+.activityItem {
+  font-size: 12px;
+  color: var(--colorGrey600);
+}
+
+/* ================ Subscription Status Banner ================ */
+
+.subscriptionStatusBanner {
+  background: var(--colorGrey50);
+  border: 1px solid var(--colorGrey200);
+  border-radius: 8px;
+  padding: 16px;
+  margin-top: 16px;
+}
+
+.subscriptionStatusItems {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+
+  @media (--viewportSmall) {
+    flex-direction: row;
+    gap: 24px;
+  }
+}
+
+.subscriptionStatusItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: var(--colorWhite);
+  border-radius: 6px;
+  border: 1px solid var(--colorGrey200);
+}
+
+.statusActive {
+  border-color: #10b981;
+  background: #ecfdf5;
+}
+
+.statusInactive {
+  border-color: #f59e0b;
+  background: #fffbeb;
+}
+
+.statusIcon {
+  font-size: 18px;
+}
+
+.statusLabel {
+  font-size: 12px;
+  font-weight: var(--fontWeightMedium);
+  color: var(--colorGrey600);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.statusValue {
+  font-size: 14px;
+  font-weight: var(--fontWeightSemiBold);
+  color: var(--colorGrey900);
+  margin-left: auto;
+}
+
+.subscriptionNote {
+  font-size: 13px;
+  color: var(--colorGrey600);
+  margin: 12px 0 0 0;
+  padding-top: 12px;
+  border-top: 1px dashed var(--colorGrey200);
 }
