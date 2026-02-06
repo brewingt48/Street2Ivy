@@ -163,7 +163,27 @@ const LandingPageComponent = props => {
               </Topbar>
               <Main as="main" id="main-content">
                 {/* Hero Section */}
-                <section className={css.heroSection}>
+                <section
+                  className={css.heroSection}
+                  style={heroContent?.backgroundImage ? {
+                    backgroundImage: `linear-gradient(rgba(10, 37, 64, 0.75), rgba(26, 77, 124, 0.85)), url(${heroContent.backgroundImage})`,
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
+                    backgroundRepeat: 'no-repeat',
+                  } : undefined}
+                >
+                  {/* Background Video (if set) */}
+                  {heroContent?.backgroundType === 'video' && heroContent?.backgroundVideo && (
+                    <video
+                      className={css.heroBackgroundVideo}
+                      autoPlay
+                      muted
+                      loop
+                      playsInline
+                    >
+                      <source src={heroContent.backgroundVideo} type="video/mp4" />
+                    </video>
+                  )}
                   <div className={css.heroContent}>
                     {/* Site Tagline - from branding section */}
                     {brandingContent?.tagline && (
