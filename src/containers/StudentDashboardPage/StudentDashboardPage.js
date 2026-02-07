@@ -326,16 +326,22 @@ const BrowseProjectsPanel = ({ projects, isLoading }) => {
   );
 };
 
-// ================ Messages Panel Component (Corporate Style) ================ //
+// ================ Message Center Component ================ //
 
-const MessagesPanel = ({ transactions, isLoading, onSelectMessage }) => {
+const MessageCenter = ({ transactions, isLoading, onSelectMessage, currentUserId }) => {
+  const [activeMessageTab, setActiveMessageTab] = useState('received');
+
   const formatDate = dateString => {
     const date = new Date(dateString);
     const now = new Date();
     const isToday = date.toDateString() === now.toDateString();
+    const isYesterday = new Date(now - 86400000).toDateString() === date.toDateString();
 
     if (isToday) {
-      return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      return `Today, ${date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+    }
+    if (isYesterday) {
+      return `Yesterday, ${date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
     }
     return date.toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' });
   };
@@ -356,56 +362,171 @@ const MessagesPanel = ({ transactions, isLoading, onSelectMessage }) => {
     return statusMap[lastTransition] || lastTransition?.replace('transition/', '').replace(/-/g, ' ') || 'Pending';
   };
 
+  // Categorize messages as sent (initiated by student) or received (initiated by company)
+  const categorizeMessages = () => {
+    if (!transactions || transactions.length === 0) {
+      return { received: [], sent: [] };
+    }
+
+    const received = [];
+    const sent = [];
+
+    transactions.forEach(tx => {
+      const lastTransition = tx.attributes?.lastTransition || '';
+      const providerName = tx.provider?.attributes?.profile?.displayName || 'Unknown Company';
+      const listingTitle = tx.listing?.attributes?.title || 'Unknown Project';
+      const status = getTransactionStatus(tx);
+      const lastUpdated = tx.attributes?.lastTransitionedAt;
+      const createdAt = tx.attributes?.createdAt;
+
+      const messageData = {
+        ...tx,
+        providerName,
+        listingTitle,
+        status,
+        lastUpdated,
+        createdAt,
+      };
+
+      // If the student applied or inquired, it's a sent message
+      // If it was an invite from corporate partner, it's received
+      if (lastTransition.includes('inquire') || lastTransition.includes('request-project-application')) {
+        sent.push(messageData);
+      } else if (lastTransition.includes('invite')) {
+        received.push(messageData);
+      } else {
+        // For accept/decline/complete, check who initiated the transaction
+        // Default to received since most actions come from corporate partners
+        received.push(messageData);
+      }
+    });
+
+    // Sort by date (most recent first)
+    received.sort((a, b) => new Date(b.lastUpdated) - new Date(a.lastUpdated));
+    sent.sort((a, b) => new Date(b.lastUpdated) - new Date(a.lastUpdated));
+
+    return { received, sent };
+  };
+
+  const { received, sent } = categorizeMessages();
+  const activeMessages = activeMessageTab === 'received' ? received : sent;
+
   if (isLoading) {
-    return <div className={css.noMessages}>Loading messages...</div>;
+    return (
+      <div className={css.messageCenterLoading}>
+        <span className={css.spinner}></span>
+        Loading messages...
+      </div>
+    );
   }
 
-  if (!transactions || transactions.length === 0) {
-    return null;
-  }
+  const renderMessageTable = (messages, type) => {
+    if (messages.length === 0) {
+      return (
+        <div className={css.noMessagesState}>
+          <span className={css.noMessagesStateIcon}>{type === 'received' ? '📥' : '📤'}</span>
+          <p className={css.noMessagesStateText}>
+            {type === 'received'
+              ? 'No messages received yet. Companies will contact you when they\'re interested in your profile.'
+              : 'No messages sent yet. Apply to projects or send inquiries to get started.'}
+          </p>
+        </div>
+      );
+    }
 
-  return (
-    <div className={css.emailList}>
-      <table className={css.emailTable}>
-        <thead>
-          <tr>
-            <th className={css.emailTableHeader}>From</th>
-            <th className={css.emailTableHeader}>Project</th>
-            <th className={css.emailTableHeader}>Status</th>
-            <th className={css.emailTableHeader}>Date</th>
-          </tr>
-        </thead>
-        <tbody>
-          {transactions.map(tx => {
-            const providerName = tx.provider?.attributes?.profile?.displayName || 'Unknown Company';
-            const listingTitle = tx.listing?.attributes?.title || 'Unknown Project';
-            const status = getTransactionStatus(tx);
-            const lastUpdated = tx.attributes?.lastTransitionedAt;
-
-            return (
+    return (
+      <div className={css.messageTableContainer}>
+        <table className={css.messageTable}>
+          <thead>
+            <tr>
+              <th className={css.messageTableHeader}>
+                {type === 'received' ? 'From' : 'To'}
+              </th>
+              <th className={css.messageTableHeader}>Subject / Project</th>
+              <th className={css.messageTableHeader}>Status</th>
+              <th className={css.messageTableHeader}>Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            {messages.map(msg => (
               <tr
-                key={tx.id?.uuid || tx.id}
-                className={css.emailRow}
-                onClick={() => onSelectMessage({ ...tx, providerName, listingTitle, status })}
+                key={msg.id?.uuid || msg.id}
+                className={css.messageTableRow}
+                onClick={() => onSelectMessage(msg)}
               >
-                <td className={css.emailFrom}>{providerName}</td>
-                <td className={css.emailSubject}>{listingTitle}</td>
-                <td className={css.emailStatus}>
-                  <span className={classNames(css.statusBadgeSmall, {
-                    [css.statusBadgeAccepted]: status === 'Accepted',
-                    [css.statusBadgeDeclined]: status === 'Declined',
-                    [css.statusBadgePending]: status === 'Applied' || status === 'Inquiry' || status === 'Pending',
-                    [css.statusBadgeCompleted]: status === 'Completed',
+                <td className={css.messageTableCell}>
+                  <div className={css.messageRecipient}>
+                    <span className={css.messageRecipientAvatar}>
+                      {msg.providerName.charAt(0).toUpperCase()}
+                    </span>
+                    <span className={css.messageRecipientName}>{msg.providerName}</span>
+                  </div>
+                </td>
+                <td className={css.messageTableCell}>
+                  <span className={css.messageSubject}>{msg.listingTitle}</span>
+                </td>
+                <td className={css.messageTableCell}>
+                  <span className={classNames(css.messageStatusBadge, {
+                    [css.messageStatusAccepted]: msg.status === 'Accepted',
+                    [css.messageStatusDeclined]: msg.status === 'Declined',
+                    [css.messageStatusPending]: msg.status === 'Applied' || msg.status === 'Inquiry' || msg.status === 'Pending',
+                    [css.messageStatusCompleted]: msg.status === 'Completed' || msg.status === 'Reviewed',
                   })}>
-                    {status}
+                    {msg.status}
                   </span>
                 </td>
-                <td className={css.emailDate}>{formatDate(lastUpdated)}</td>
+                <td className={css.messageTableCell}>
+                  <span className={css.messageDate}>{formatDate(msg.lastUpdated)}</span>
+                </td>
               </tr>
-            );
-          })}
-        </tbody>
-      </table>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    );
+  };
+
+  return (
+    <div className={css.messageCenter}>
+      {/* Message Center Header */}
+      <div className={css.messageCenterHeader}>
+        <h3 className={css.messageCenterTitle}>
+          <span className={css.messageCenterIcon}>💬</span>
+          Message Center
+        </h3>
+        <NamedLink name="InboxPage" params={{ tab: 'orders' }} className={css.viewFullInboxLink}>
+          Open Full Inbox →
+        </NamedLink>
+      </div>
+
+      {/* Message Tabs */}
+      <div className={css.messageTabs}>
+        <button
+          className={classNames(css.messageTab, { [css.messageTabActive]: activeMessageTab === 'received' })}
+          onClick={() => setActiveMessageTab('received')}
+        >
+          <span className={css.messageTabIcon}>📥</span>
+          Received
+          {received.length > 0 && (
+            <span className={css.messageTabCount}>{received.length}</span>
+          )}
+        </button>
+        <button
+          className={classNames(css.messageTab, { [css.messageTabActive]: activeMessageTab === 'sent' })}
+          onClick={() => setActiveMessageTab('sent')}
+        >
+          <span className={css.messageTabIcon}>📤</span>
+          Sent
+          {sent.length > 0 && (
+            <span className={css.messageTabCount}>{sent.length}</span>
+          )}
+        </button>
+      </div>
+
+      {/* Message List */}
+      <div className={css.messageListContainer}>
+        {renderMessageTable(activeMessages, activeMessageTab)}
+      </div>
     </div>
   );
 };
@@ -1106,63 +1227,12 @@ const StudentDashboardPageComponent = props => {
             {/* Messages Tab */}
             {activeTab === 'messages' && (
               <div className={css.messagesSection}>
-                <div className={css.messagesSectionHeader}>
-                  <h3 className={css.messagesSectionTitle}>Your Messages & Applications</h3>
-                  <NamedLink name="InboxPage" params={{ tab: 'orders' }} className={css.viewAllMessagesLink}>
-                    View All in Inbox →
-                  </NamedLink>
-                </div>
-
-                {/* Messages CTA Card */}
-                <div className={css.messagesCTACard}>
-                  <div className={css.messagesCTAContent}>
-                    <div className={css.messagesCTAIcon}>💬</div>
-                    <div className={css.messagesCTAInfo}>
-                      <h4 className={css.messagesCTATitle}>Message Center</h4>
-                      <p className={css.messagesCTADescription}>
-                        View and manage all your conversations with corporate partners.
-                        Track application status, respond to inquiries, and stay connected.
-                      </p>
-                    </div>
-                  </div>
-                  <div className={css.messagesCTAActions}>
-                    <NamedLink name="InboxPage" params={{ tab: 'orders' }} className={css.viewInboxButton}>
-                      <span>📥</span>
-                      Open Inbox
-                    </NamedLink>
-                  </div>
-                </div>
-
-                {/* Transaction Summary */}
-                {transactions.length > 0 ? (
-                  <div className={css.transactionSummary}>
-                    <h4 className={css.transactionSummaryTitle}>Recent Activity</h4>
-                    <MessagesPanel
-                      transactions={transactions.slice(0, 5)}
-                      isLoading={isLoading}
-                      onSelectMessage={setSelectedMessage}
-                    />
-                    {transactions.length > 5 && (
-                      <div className={css.viewMoreLink}>
-                        <NamedLink name="InboxPage" params={{ tab: 'orders' }}>
-                          View all {transactions.length} conversations →
-                        </NamedLink>
-                      </div>
-                    )}
-                  </div>
-                ) : (
-                  <div className={css.noMessagesCard}>
-                    <span className={css.noMessagesIcon}>📭</span>
-                    <h4 className={css.noMessagesTitle}>No Messages Yet</h4>
-                    <p className={css.noMessagesText}>
-                      When you apply to projects or receive invitations,
-                      your conversations will appear here.
-                    </p>
-                    <NamedLink name="SearchPage" className={css.browseProjectsLink}>
-                      Browse Projects to Get Started
-                    </NamedLink>
-                  </div>
-                )}
+                <MessageCenter
+                  transactions={transactions}
+                  isLoading={isLoading}
+                  onSelectMessage={setSelectedMessage}
+                  currentUserId={currentUser?.id?.uuid}
+                />
 
                 {/* Message Detail Modal */}
                 {selectedMessage && (
