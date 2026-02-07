@@ -327,11 +327,6 @@ const BrowseProjectsPanel = ({ projects, isLoading }) => {
 
       {/* Quick Links */}
       <div className={css.quickLinksGrid}>
-        <NamedLink name="SearchPage" className={css.quickLinkCard}>
-          <span className={css.quickLinkIcon}>🔍</span>
-          <span className={css.quickLinkText}>Browse Projects</span>
-          <span className={css.quickLinkArrow}>→</span>
-        </NamedLink>
         <NamedLink name="ProfileSettingsPage" className={css.quickLinkCard}>
           <span className={css.quickLinkIcon}>👤</span>
           <span className={css.quickLinkText}>Update Profile</span>
@@ -340,6 +335,11 @@ const BrowseProjectsPanel = ({ projects, isLoading }) => {
         <NamedLink name="SearchCompaniesPage" className={css.quickLinkCard}>
           <span className={css.quickLinkIcon}>🏢</span>
           <span className={css.quickLinkText}>View Companies</span>
+          <span className={css.quickLinkArrow}>→</span>
+        </NamedLink>
+        <NamedLink name="InboxPage" params={{ tab: 'orders' }} className={css.quickLinkCard}>
+          <span className={css.quickLinkIcon}>📬</span>
+          <span className={css.quickLinkText}>My Messages</span>
           <span className={css.quickLinkArrow}>→</span>
         </NamedLink>
       </div>
