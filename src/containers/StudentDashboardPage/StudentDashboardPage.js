@@ -5,13 +5,16 @@ import { useHistory } from 'react-router-dom';
 import { FormattedMessage, useIntl } from '../../util/reactIntl';
 import { isScrollingDisabled } from '../../ducks/ui.duck';
 import { apiBaseUrl } from '../../util/api';
+import { types as sdkTypes } from '../../util/sdkLoader';
 import classNames from 'classnames';
 
-import { Page, LayoutSingleColumn, NamedLink, Modal } from '../../components';
+import { Page, LayoutSingleColumn, NamedLink, Modal, OnboardingChecklist, EmptyState as EmptyStateComponent } from '../../components';
 import TopbarContainer from '../../containers/TopbarContainer/TopbarContainer';
 import FooterContainer from '../../containers/FooterContainer/FooterContainer';
 
 import css from './StudentDashboardPage.module.css';
+
+const { UUID } = sdkTypes;
 
 // ================ AI Coaching Warning Modal ================ //
 
@@ -202,6 +205,91 @@ const ProjectCard = ({ project, type }) => {
             View Details
           </button>
         )}
+      </div>
+    </div>
+  );
+};
+
+// ================ Browse Projects Panel Component ================ //
+
+const BrowseProjectsPanel = ({ projects, isLoading }) => {
+  if (isLoading) {
+    return <div className={css.loadingState}><span className={css.spinner}></span> Loading projects...</div>;
+  }
+
+  return (
+    <div className={css.browseProjectsPanel}>
+      {/* Browse Projects CTA Card */}
+      <div className={css.browseProjectsCTA}>
+        <div className={css.browseProjectsCTAContent}>
+          <div className={css.browseProjectsCTAIcon}>🔍</div>
+          <div className={css.browseProjectsCTAInfo}>
+            <h3 className={css.browseProjectsCTATitle}>Find Your Next Opportunity</h3>
+            <p className={css.browseProjectsCTADescription}>
+              Explore available projects from top corporate partners. Search by industry,
+              filter by skills, and find the perfect match for your interests and experience.
+            </p>
+            <div className={css.browseProjectsCTAFeatures}>
+              <span className={css.featureItem}>🏢 Top Companies</span>
+              <span className={css.featureItem}>💼 Real Projects</span>
+              <span className={css.featureItem}>🎯 Skill Matching</span>
+              <span className={css.featureItem}>💰 Paid Opportunities</span>
+            </div>
+          </div>
+        </div>
+        <div className={css.browseProjectsCTAActions}>
+          <NamedLink name="SearchPage" className={css.browseAllButton}>
+            <span>🔍</span>
+            Browse All Projects
+          </NamedLink>
+        </div>
+      </div>
+
+      {/* Quick Tips Card */}
+      <div className={css.quickTipsCard}>
+        <h4 className={css.quickTipsTitle}>💡 Tips for Finding Projects</h4>
+        <div className={css.quickTipsList}>
+          <div className={css.quickTip}>
+            <span className={css.tipIcon}>✅</span>
+            <div className={css.tipContent}>
+              <strong>Complete Your Profile</strong>
+              <p>Make sure your skills and experience are up to date to get matched with relevant projects.</p>
+            </div>
+          </div>
+          <div className={css.quickTip}>
+            <span className={css.tipIcon}>🎯</span>
+            <div className={css.tipContent}>
+              <strong>Use Filters</strong>
+              <p>Filter by industry, project type, and compensation to find opportunities that fit your goals.</p>
+            </div>
+          </div>
+          <div className={css.quickTip}>
+            <span className={css.tipIcon}>📝</span>
+            <div className={css.tipContent}>
+              <strong>Personalize Applications</strong>
+              <p>Tailor each application to highlight relevant experience and show genuine interest.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Quick Links */}
+      <div className={css.quickLinksGrid}>
+        <NamedLink name="SearchPage" className={css.quickLinkCard}>
+          <span className={css.quickLinkIcon}>🔍</span>
+          <span className={css.quickLinkText}>Browse Projects</span>
+          <span className={css.quickLinkArrow}>→</span>
+        </NamedLink>
+        <NamedLink name="ProfileSettingsPage" className={css.quickLinkCard}>
+          <span className={css.quickLinkIcon}>👤</span>
+          <span className={css.quickLinkText}>Update Profile</span>
+          <span className={css.quickLinkArrow}>→</span>
+        </NamedLink>
+        <NamedLink name="SearchCompaniesPage" className={css.quickLinkCard}>
+          <span className={css.quickLinkIcon}>🏢</span>
+          <span className={css.quickLinkText}>View Companies</span>
+          <span className={css.quickLinkArrow}>→</span>
+        </NamedLink>
       </div>
     </div>
   );
@@ -416,21 +504,26 @@ const StudentDashboardPageComponent = props => {
 
   const intl = useIntl();
   const history = useHistory();
-  const [activeTab, setActiveTab] = useState('projects');
+  const [activeTab, setActiveTab] = useState('browse');
   const [showCoachingModal, setShowCoachingModal] = useState(false);
   const [institutionInfo, setInstitutionInfo] = useState(null);
   const [isLoadingInstitution, setIsLoadingInstitution] = useState(true);
   const [selectedMessage, setSelectedMessage] = useState(null);
   const [statDetailModal, setStatDetailModal] = useState(null);
+  const [onboardingDismissed, setOnboardingDismissed] = useState(false);
 
-  // Mock data - in production, this would come from API
+  // State for projects and messages
   const [projects, setProjects] = useState({
     active: [],
     invites: [],
     history: [],
   });
+  const [availableProjects, setAvailableProjects] = useState([]);
+  const [transactions, setTransactions] = useState([]);
   const [messages, setMessages] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingProjects, setIsLoadingProjects] = useState(true);
+  const [hasAppliedToProject, setHasAppliedToProject] = useState(false);
 
   // Fetch institution info to check AI coaching access
   useEffect(() => {
@@ -456,90 +549,76 @@ const StudentDashboardPageComponent = props => {
     }
   }, [currentUser]);
 
-  // Fetch student's projects and messages
+  // Note: Available projects are fetched from the SearchPage via SDK
+  // For the dashboard, we'll show a simplified browse experience with a link to full search
   useEffect(() => {
-    const fetchStudentData = async () => {
+    // For now, set loading to false since we'll link to the full search page
+    // In a future iteration, we could fetch featured/recent listings via an API endpoint
+    setIsLoadingProjects(false);
+    setAvailableProjects([]);
+  }, []);
+
+  // Fetch student's transactions (applications/orders)
+  useEffect(() => {
+    const fetchStudentTransactions = async () => {
       setIsLoading(true);
       try {
-        // In production, these would be real API calls
-        // For now, using mock data structure
-
-        // Simulate API delay
-        await new Promise(resolve => setTimeout(resolve, 500));
-
-        // Mock data - replace with actual API calls
-        setProjects({
-          active: [
-            // {
-            //   id: '1',
-            //   transactionId: 'tx-123',
-            //   title: 'Market Research Project',
-            //   companyName: 'Acme Corp',
-            //   description: 'Conduct comprehensive market analysis...',
-            //   status: 'active',
-            //   startDate: '2024-01-15',
-            //   compensation: '$2,500',
-            // },
-          ],
-          invites: [
-            // {
-            //   id: '2',
-            //   transactionId: 'tx-456',
-            //   title: 'Data Analysis Internship',
-            //   companyName: 'TechStart Inc',
-            //   description: 'Join our team for a summer data analysis project...',
-            //   status: 'invited',
-            //   compensation: '$3,000',
-            // },
-          ],
-          history: [
-            // {
-            //   id: '3',
-            //   transactionId: 'tx-789',
-            //   title: 'Brand Strategy Consultation',
-            //   companyName: 'Global Brands LLC',
-            //   description: 'Completed brand positioning project...',
-            //   status: 'completed',
-            //   startDate: '2023-09-01',
-            //   compensation: '$1,800',
-            // },
-          ],
+        const baseUrl = apiBaseUrl();
+        // Fetch student's transactions (as customer)
+        const response = await fetch(`${baseUrl}/api/transactions/query?only=order&perPage=50`, {
+          credentials: 'include',
         });
+        if (response.ok) {
+          const data = await response.json();
+          const txList = data.data || [];
+          setTransactions(txList);
 
-        setMessages([
-          // Example messages - uncomment to test the UI
-          // {
-          //   id: 'm1',
-          //   transactionId: 'tx-123',
-          //   senderName: 'John Smith',
-          //   senderInitials: 'JS',
-          //   companyName: 'Acme Corp',
-          //   subject: 'Project Application Update',
-          //   preview: 'Hi! I wanted to follow up on your project submission...',
-          //   createdAt: '2024-01-20T10:30:00Z',
-          //   read: false,
-          // },
-          // {
-          //   id: 'm2',
-          //   transactionId: 'tx-124',
-          //   senderName: 'Sarah Johnson',
-          //   senderInitials: 'SJ',
-          //   companyName: 'Tech Solutions Inc',
-          //   subject: 'Interview Invitation',
-          //   preview: 'Congratulations! We would like to schedule an interview...',
-          //   createdAt: '2024-01-19T14:00:00Z',
-          //   read: true,
-          // },
-        ]);
+          // Process transactions into active, invites, and history
+          const active = [];
+          const invites = [];
+          const completed = [];
+
+          txList.forEach(tx => {
+            const lastTransition = tx.attributes?.lastTransition || '';
+            const projectData = {
+              id: tx.id?.uuid || tx.id,
+              transactionId: tx.id?.uuid || tx.id,
+              title: tx.listing?.attributes?.title || 'Unknown Project',
+              companyName: tx.provider?.attributes?.profile?.displayName || 'Unknown Company',
+              description: tx.listing?.attributes?.description || '',
+              status: lastTransition.includes('accept') ? 'active' :
+                      lastTransition.includes('complete') ? 'completed' :
+                      lastTransition.includes('invite') ? 'invited' : 'pending',
+              startDate: tx.attributes?.createdAt,
+              compensation: tx.listing?.attributes?.publicData?.compensation || '',
+            };
+
+            if (lastTransition.includes('complete') || lastTransition.includes('review')) {
+              completed.push({ ...projectData, status: 'completed' });
+            } else if (lastTransition.includes('accept')) {
+              active.push({ ...projectData, status: 'active' });
+            } else if (lastTransition.includes('invite')) {
+              invites.push({ ...projectData, status: 'invited' });
+            } else if (lastTransition.includes('request-project-application') || lastTransition.includes('inquire')) {
+              active.push({ ...projectData, status: 'pending' });
+              setHasAppliedToProject(true);
+            }
+          });
+
+          setProjects({ active, invites, history: completed });
+          setMessages(txList); // Use transactions as messages for the messages tab
+        }
       } catch (error) {
-        console.error('Failed to fetch student data:', error);
+        console.error('Failed to fetch student transactions:', error);
+        setProjects({ active: [], invites: [], history: [] });
+        setMessages([]);
       } finally {
         setIsLoading(false);
       }
     };
 
     if (currentUser) {
-      fetchStudentData();
+      fetchStudentTransactions();
     }
   }, [currentUser]);
 
@@ -657,6 +736,54 @@ const StudentDashboardPageComponent = props => {
   const totalInvites = projects.invites.length;
   const unreadMessages = messages.filter(m => !m.read).length;
 
+  // Compute onboarding checklist items
+  const profilePicture = currentUser?.profileImage?.id;
+  const hasSkills = publicData?.skills && publicData.skills.length > 0;
+  const hasUniversity = publicData?.university;
+  const hasMajor = publicData?.major;
+  const hasProfileComplete = profilePicture && hasSkills && hasUniversity && hasMajor;
+  const hasCompletedProject = projects.history.length > 0;
+
+  const onboardingItems = [
+    {
+      id: 'profile',
+      label: 'Complete your profile',
+      description: 'Add your university, major, skills, and bio',
+      completed: hasProfileComplete,
+      link: { name: 'ProfileSettingsPage' },
+    },
+    {
+      id: 'photo',
+      label: 'Upload a profile photo',
+      description: 'Help corporate partners put a face to your name',
+      completed: !!profilePicture,
+      link: { name: 'ProfileSettingsPage' },
+    },
+    {
+      id: 'skills',
+      label: 'Add your skills',
+      description: 'Highlight what makes you unique',
+      completed: hasSkills,
+      link: { name: 'ProfileSettingsPage' },
+    },
+    {
+      id: 'browse',
+      label: 'Browse available projects',
+      description: 'Discover opportunities that match your interests',
+      completed: hasAppliedToProject || totalActiveProjects > 0 || totalInvites > 0,
+      link: { name: 'SearchPage' },
+    },
+    {
+      id: 'apply',
+      label: 'Apply to your first project',
+      description: 'Take the first step towards real-world experience',
+      completed: hasAppliedToProject || totalActiveProjects > 0 || hasCompletedProject,
+      link: { name: 'SearchPage' },
+    },
+  ];
+
+  const showOnboarding = !onboardingDismissed && !isLoading;
+
   return (
     <Page title={title} scrollingDisabled={scrollingDisabled}>
       <LayoutSingleColumn topbar={<TopbarContainer />} footer={<FooterContainer />}>
@@ -683,6 +810,17 @@ const StudentDashboardPageComponent = props => {
               </button>
             )}
           </div>
+
+          {/* Onboarding Checklist */}
+          {showOnboarding && (
+            <OnboardingChecklist
+              title="Get Started with Street2Ivy"
+              subtitle="Complete these steps to make the most of your experience"
+              items={onboardingItems}
+              variant="student"
+              onDismiss={() => setOnboardingDismissed(true)}
+            />
+          )}
 
           {/* Stats Cards - Clickable to show detail modal */}
           <div className={css.statsGrid}>
@@ -747,11 +885,21 @@ const StudentDashboardPageComponent = props => {
           {/* Tab Navigation */}
           <div className={css.tabNavigation}>
             <button
+              className={classNames(css.tab, { [css.tabActive]: activeTab === 'browse' })}
+              onClick={() => setActiveTab('browse')}
+            >
+              <span className={css.tabIcon}>🔍</span>
+              Browse Projects
+              {availableProjects.length > 0 && (
+                <span className={css.tabBadge}>{availableProjects.length}</span>
+              )}
+            </button>
+            <button
               className={classNames(css.tab, { [css.tabActive]: activeTab === 'projects' })}
               onClick={() => setActiveTab('projects')}
             >
               <span className={css.tabIcon}>📋</span>
-              Current Projects
+              My Applications
               {totalActiveProjects > 0 && (
                 <span className={css.tabBadge}>{totalActiveProjects}</span>
               )}
@@ -771,7 +919,7 @@ const StudentDashboardPageComponent = props => {
               onClick={() => setActiveTab('history')}
             >
               <span className={css.tabIcon}>📚</span>
-              Project History
+              Completed
             </button>
             <button
               className={classNames(css.tab, { [css.tabActive]: activeTab === 'messages' })}
@@ -787,33 +935,39 @@ const StudentDashboardPageComponent = props => {
 
           {/* Tab Content */}
           <div className={css.tabContent}>
-            {isLoading ? (
-              <div className={css.loadingState}>
-                <span className={css.spinner}></span>
-                Loading your dashboard...
-              </div>
-            ) : (
-              <>
-                {/* Current Projects Tab */}
-                {activeTab === 'projects' && (
-                  <div className={css.projectsSection}>
-                    {projects.active.length > 0 ? (
-                      <div className={css.projectsGrid}>
-                        {projects.active.map(project => (
-                          <ProjectCard key={project.id} project={project} type="active" />
-                        ))}
-                      </div>
-                    ) : (
-                      <EmptyState
-                        icon="📋"
-                        title="No Active Projects"
-                        description="You don't have any active projects yet. Browse opportunities or wait for invitations from corporate partners."
-                        actionLink="SearchPage"
-                        actionText="Browse Opportunities"
-                      />
-                    )}
+            {/* Browse Projects Tab */}
+            {activeTab === 'browse' && (
+              <BrowseProjectsPanel
+                projects={availableProjects}
+                isLoading={isLoadingProjects}
+              />
+            )}
+
+            {/* My Applications Tab */}
+            {activeTab === 'projects' && (
+              <div className={css.projectsSection}>
+                {isLoading ? (
+                  <div className={css.loadingState}>
+                    <span className={css.spinner}></span>
+                    Loading your applications...
                   </div>
+                ) : projects.active.length > 0 ? (
+                  <div className={css.projectsGrid}>
+                    {projects.active.map(project => (
+                      <ProjectCard key={project.id} project={project} type="active" />
+                    ))}
+                  </div>
+                ) : (
+                  <EmptyState
+                    icon="📋"
+                    title="No Applications Yet"
+                    description="You haven't applied to any projects yet. Browse available opportunities and apply to get started!"
+                    actionLink="SearchPage"
+                    actionText="Browse Opportunities"
+                  />
                 )}
+              </div>
+            )}
 
                 {/* Invites Tab */}
                 {activeTab === 'invites' && (
@@ -859,21 +1013,63 @@ const StudentDashboardPageComponent = props => {
                 {activeTab === 'messages' && (
                   <div className={css.messagesSection}>
                     <div className={css.messagesSectionHeader}>
-                      <h3 className={css.messagesSectionTitle}>Your Messages</h3>
+                      <h3 className={css.messagesSectionTitle}>Your Messages & Applications</h3>
+                      <NamedLink name="InboxPage" params={{ tab: 'orders' }} className={css.viewAllMessagesLink}>
+                        View All in Inbox →
+                      </NamedLink>
                     </div>
-                    {messages.length > 0 ? (
-                      <MessagesPanel
-                        transactions={messages}
-                        isLoading={false}
-                        onSelectMessage={setSelectedMessage}
-                      />
+
+                    {/* Messages CTA Card */}
+                    <div className={css.messagesCTACard}>
+                      <div className={css.messagesCTAContent}>
+                        <div className={css.messagesCTAIcon}>💬</div>
+                        <div className={css.messagesCTAInfo}>
+                          <h4 className={css.messagesCTATitle}>Message Center</h4>
+                          <p className={css.messagesCTADescription}>
+                            View and manage all your conversations with corporate partners.
+                            Track application status, respond to inquiries, and stay connected.
+                          </p>
+                        </div>
+                      </div>
+                      <div className={css.messagesCTAActions}>
+                        <NamedLink name="InboxPage" params={{ tab: 'orders' }} className={css.viewInboxButton}>
+                          <span>📥</span>
+                          Open Inbox
+                        </NamedLink>
+                      </div>
+                    </div>
+
+                    {/* Transaction Summary */}
+                    {transactions.length > 0 ? (
+                      <div className={css.transactionSummary}>
+                        <h4 className={css.transactionSummaryTitle}>Recent Activity</h4>
+                        <MessagesPanel
+                          transactions={transactions.slice(0, 5)}
+                          isLoading={isLoading}
+                          onSelectMessage={setSelectedMessage}
+                        />
+                        {transactions.length > 5 && (
+                          <div className={css.viewMoreLink}>
+                            <NamedLink name="InboxPage" params={{ tab: 'orders' }}>
+                              View all {transactions.length} conversations →
+                            </NamedLink>
+                          </div>
+                        )}
+                      </div>
                     ) : (
-                      <EmptyState
-                        icon="💬"
-                        title="No Messages"
-                        description="You don't have any messages yet. Messages from corporate partners will appear here."
-                      />
+                      <div className={css.noMessagesCard}>
+                        <span className={css.noMessagesIcon}>📭</span>
+                        <h4 className={css.noMessagesTitle}>No Messages Yet</h4>
+                        <p className={css.noMessagesText}>
+                          When you apply to projects or receive invitations,
+                          your conversations will appear here.
+                        </p>
+                        <NamedLink name="SearchPage" className={css.browseProjectsLink}>
+                          Browse Projects to Get Started
+                        </NamedLink>
+                      </div>
                     )}
+
                     {/* Message Detail Modal */}
                     {selectedMessage && (
                       <MessageDetailModal
@@ -887,19 +1083,77 @@ const StudentDashboardPageComponent = props => {
             )}
           </div>
 
-          {/* AI Coaching Banner (if available but not yet used) */}
-          {!isLoadingInstitution && institutionInfo?.aiCoachingEnabled && (
-            <div className={css.coachingBanner}>
-              <div className={css.bannerContent}>
-                <span className={css.bannerIcon}>🤖</span>
-                <div className={css.bannerText}>
-                  <h3>AI Career Coaching Available</h3>
-                  <p>Your institution provides access to our AI-powered career coaching platform. Get personalized guidance on interviews, resumes, and career strategies.</p>
+          {/* AI Coaching Premium Section */}
+          {!isLoadingInstitution && (
+            <div className={css.aiCoachingSection}>
+              {institutionInfo?.aiCoachingEnabled ? (
+                // Active AI Coaching Card
+                <div className={css.aiCoachingCard}>
+                  <div className={css.aiCoachingContent}>
+                    <div className={css.aiCoachingInfo}>
+                      <div className={css.aiCoachingHeader}>
+                        <span className={css.aiCoachingIcon}>🤖</span>
+                        <h2 className={css.aiCoachingTitle}>Your AI Career Coach</h2>
+                      </div>
+                      <p className={css.aiCoachingDescription}>
+                        Get personalized career guidance powered by AI. Practice interviews, refine your resume, explore career paths, and develop professional skills.
+                      </p>
+                      <div className={css.aiCoachingFeatures}>
+                        <span className={css.aiCoachingFeature}><span>📝</span> Resume Review</span>
+                        <span className={css.aiCoachingFeature}><span>🎯</span> Interview Prep</span>
+                        <span className={css.aiCoachingFeature}><span>🚀</span> Career Pathing</span>
+                        <span className={css.aiCoachingFeature}><span>💡</span> Skill Development</span>
+                      </div>
+
+                      {/* Confidentiality Warning Banner */}
+                      <div className={css.confidentialityBanner}>
+                        <span className={css.bannerIcon}>⚠️</span>
+                        <div className={css.bannerContent}>
+                          <p className={css.bannerTitle}>Confidentiality Notice</p>
+                          <p className={css.bannerText}>
+                            Do not share proprietary, confidential, or trade secret information from any project or company engagement in AI coaching sessions. Violations may result in removal from the platform.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className={css.aiCoachingActions}>
+                      <button className={css.launchCoachingButton} onClick={handleAICoachingClick}>
+                        <span>✨</span>
+                        Start Coaching Session
+                      </button>
+                    </div>
+                  </div>
                 </div>
-              </div>
-              <button className={css.bannerButton} onClick={handleAICoachingClick}>
-                Start Coaching Session
-              </button>
+              ) : (
+                // Locked AI Coaching Card
+                <div className={classNames(css.aiCoachingCard, css.aiCoachingCardLocked)}>
+                  <div className={css.aiCoachingContent}>
+                    <div className={css.aiCoachingInfo}>
+                      <div className={css.aiCoachingHeader}>
+                        <span className={css.aiCoachingIcon}>🔒</span>
+                        <h2 className={css.aiCoachingTitle}>AI Career Coaching</h2>
+                      </div>
+                      <p className={css.aiCoachingDescription}>
+                        AI Career Coaching is available when your institution activates this feature. Encourage your school to partner with Street2Ivy to unlock personalized coaching.
+                      </p>
+                      <p className={css.lockedMessage}>
+                        When activated, you'll get access to resume reviews, interview practice, career path exploration, and skill development — all powered by AI.
+                      </p>
+                    </div>
+
+                    <div className={css.aiCoachingActions}>
+                      <a
+                        href="mailto:careerservices@university.edu?subject=Request%20AI%20Career%20Coaching%20from%20Street2Ivy&body=Dear%20Career%20Services%2C%0A%0AI%20recently%20discovered%20that%20Street2Ivy%20offers%20AI-powered%20career%20coaching%20for%20students%2C%20including%20resume%20reviews%2C%20interview%20practice%2C%20and%20career%20path%20guidance.%0A%0AI%20believe%20this%20would%20be%20a%20valuable%20resource%20for%20our%20student%20body.%20Could%20you%20please%20look%20into%20partnering%20with%20Street2Ivy%20to%20make%20this%20feature%20available%20to%20us%3F%0A%0AThank%20you%20for%20your%20consideration.%0A%0ABest%20regards"
+                        className={css.requestAccessButton}
+                      >
+                        <span>📧</span>
+                        Let Your School Know
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
