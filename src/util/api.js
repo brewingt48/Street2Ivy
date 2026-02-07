@@ -139,6 +139,16 @@ export const transitionPrivileged = body => {
   return post('/api/transition-privileged', body);
 };
 
+// Simple transaction transition.
+//
+// For non-privileged transitions (like accept/decline in project applications),
+// this endpoint performs a simple SDK transition without line item calculation.
+//
+// See `server/api/transaction-transition.js` for implementation details.
+export const transitionTransaction = body => {
+  return post('/api/transaction-transition', body);
+};
+
 // Create user with identity provider (e.g. Facebook or Google)
 //
 // If loginWithIdp api call fails and user can't authenticate to Marketplace API with idp
@@ -220,6 +230,33 @@ export const fetchUserStats = userId => {
   });
 };
 
+// Street2Ivy: Fetch company spending statistics
+//
+// Fetch spending statistics for a specific corporate partner.
+// Accessible by students, educational admins, and system admins.
+// Shows how much a company has spent on projects.
+//
+// See `server/api/company-spending.js` for implementation details.
+export const fetchCompanySpending = companyId => {
+  return request(`/api/company/${companyId}/spending`, {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
+  });
+};
+
+// Street2Ivy: Fetch all companies spending report
+//
+// Fetch spending statistics for all corporate partners.
+// Accessible by educational admins and system admins only.
+//
+// See `server/api/company-spending.js` for implementation details.
+export const fetchAllCompaniesSpending = () => {
+  return request(`/api/companies/spending-report`, {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
+  });
+};
+
 // =====================================================
 // Street2Ivy: Educational Admin Dashboard APIs
 // =====================================================
@@ -277,6 +314,24 @@ export const fetchEducationalAdminMessages = () => {
 // Fetch enhanced corporate dashboard statistics
 export const fetchCorporateDashboardStats = () => {
   return request('/api/corporate/dashboard-stats', {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
+  });
+};
+
+// Fetch sent invitations for corporate partner
+export const fetchCorporateInvites = (params = {}) => {
+  const queryString = new URLSearchParams(params).toString();
+  const url = queryString ? `/api/corporate/invites?${queryString}` : '/api/corporate/invites';
+  return request(url, {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
+  });
+};
+
+// Fetch details of a specific invite
+export const fetchCorporateInviteDetails = (inviteId) => {
+  return request(`/api/corporate/invites/${inviteId}`, {
     method: 'GET',
     headers: { 'Content-Type': 'application/json' },
   });
@@ -631,11 +686,37 @@ export const fetchProjectWorkspace = transactionId => {
 };
 
 // Send a secure message in the project workspace
-export const sendProjectMessage = (transactionId, { content, attachments }) => {
+// If attachments contain local files, upload them first
+export const sendProjectMessage = async (transactionId, { content, attachments = [] }) => {
+  // Upload any local attachments first
+  const uploadedAttachments = [];
+
+  for (const attachment of attachments) {
+    if (attachment.isLocal && attachment.file) {
+      // Upload the file
+      const uploadResult = await uploadAttachment(attachment.file, 'workspace', transactionId);
+      if (uploadResult.success && uploadResult.attachment) {
+        uploadedAttachments.push({
+          id: uploadResult.attachment.id,
+          name: uploadResult.attachment.name,
+          size: uploadResult.attachment.size,
+          sizeFormatted: uploadResult.attachment.sizeFormatted,
+          fileType: uploadResult.attachment.fileType,
+          url: uploadResult.attachment.url,
+          previewUrl: uploadResult.attachment.previewUrl,
+        });
+      }
+    } else {
+      // Already uploaded attachment
+      uploadedAttachments.push(attachment);
+    }
+  }
+
+  // Now send the message with uploaded attachment references
   return request(`/api/project-workspace/${transactionId}/messages`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ content, attachments }),
+    body: JSON.stringify({ content, attachments: uploadedAttachments }),
   });
 };
 
@@ -1054,4 +1135,155 @@ export const fetchPublicBlogPost = (slug) => {
     method: 'GET',
     headers: { 'Content-Type': 'application/json' },
   });
+};
+
+// ================ AI Coaching Configuration API Functions ================ //
+
+// Fetch AI coaching configuration (admin)
+export const fetchCoachingConfig = () => {
+  return request('/api/admin/coaching-config', {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
+  });
+};
+
+// Update AI coaching configuration (admin)
+export const updateCoachingConfig = (config) => {
+  return request('/api/admin/coaching-config', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(config),
+  });
+};
+
+// Fetch public coaching configuration
+export const fetchPublicCoachingConfig = () => {
+  return request('/api/coaching-config/public', {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
+  });
+};
+
+// ================ Student Waitlist API Functions ================ //
+
+// Add student to waitlist (public)
+export const addToStudentWaitlist = (data) => {
+  return request('/api/student-waitlist', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+};
+
+// Fetch student waitlist (admin)
+export const fetchStudentWaitlist = (params = {}) => {
+  const queryString = new URLSearchParams(params).toString();
+  return request(`/api/admin/student-waitlist${queryString ? `?${queryString}` : ''}`, {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
+  });
+};
+
+// Update waitlist entry (admin)
+export const updateWaitlistEntry = (entryId, data) => {
+  return request(`/api/admin/student-waitlist/${entryId}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+};
+
+// Delete waitlist entry (admin)
+export const deleteWaitlistEntry = (entryId) => {
+  return request(`/api/admin/student-waitlist/${entryId}`, {
+    method: 'DELETE',
+    headers: { 'Content-Type': 'application/json' },
+  });
+};
+
+// ─── Message Attachment Functions ───────────────────────────────────────────
+
+/**
+ * Upload a file attachment
+ * @param {File} file - The file to upload
+ * @param {string} contextType - The context type (e.g., 'transaction', 'workspace')
+ * @param {string} contextId - The context ID (e.g., transaction ID)
+ * @returns {Promise} - The upload response with attachment info
+ */
+export const uploadAttachment = (file, contextType, contextId) => {
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('contextType', contextType);
+  formData.append('contextId', contextId);
+
+  return window.fetch(`${apiBaseUrl()}/api/attachments/upload`, {
+    method: 'POST',
+    credentials: 'include',
+    body: formData,
+    // Don't set Content-Type - let browser set it with boundary for multipart/form-data
+  }).then(res => {
+    if (res.status >= 400) {
+      return res.json().then(data => {
+        const e = new Error(data.error || 'Upload failed');
+        e.data = data;
+        throw e;
+      });
+    }
+    return res.json();
+  });
+};
+
+/**
+ * Get attachments for a context
+ * @param {string} contextType - The context type
+ * @param {string} contextId - The context ID
+ * @returns {Promise} - List of attachments
+ */
+export const getAttachments = (contextType, contextId) => {
+  return request(`/api/attachments?contextType=${contextType}&contextId=${contextId}`, {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
+  });
+};
+
+/**
+ * Get single attachment info
+ * @param {string} attachmentId - The attachment ID
+ * @returns {Promise} - Attachment info
+ */
+export const getAttachmentInfo = (attachmentId) => {
+  return request(`/api/attachments/${attachmentId}`, {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
+  });
+};
+
+/**
+ * Delete an attachment
+ * @param {string} attachmentId - The attachment ID
+ * @returns {Promise} - Deletion result
+ */
+export const deleteAttachment = (attachmentId) => {
+  return request(`/api/attachments/${attachmentId}`, {
+    method: 'DELETE',
+    headers: { 'Content-Type': 'application/json' },
+  });
+};
+
+/**
+ * Get the download URL for an attachment
+ * @param {string} attachmentId - The attachment ID
+ * @returns {string} - The download URL
+ */
+export const getAttachmentDownloadUrl = (attachmentId) => {
+  return `${apiBaseUrl()}/api/attachments/${attachmentId}/download`;
+};
+
+/**
+ * Get the preview URL for an image attachment
+ * @param {string} attachmentId - The attachment ID
+ * @returns {string} - The preview URL
+ */
+export const getAttachmentPreviewUrl = (attachmentId) => {
+  return `${apiBaseUrl()}/api/attachments/${attachmentId}/preview`;
 };

@@ -25,11 +25,13 @@ const loginAs = require('./api/login-as');
 const transactionLineItems = require('./api/transaction-line-items');
 const initiatePrivileged = require('./api/initiate-privileged');
 const transitionPrivileged = require('./api/transition-privileged');
+const transactionTransition = require('./api/transaction-transition');
 const deleteAccount = require('./api/delete-account');
 const searchUsers = require('./api/search-users');
 const inviteToApply = require('./api/invite-to-apply');
 const checkDepositStatus = require('./api/check-deposit-status');
 const companyListings = require('./api/company-listings');
+const companySpending = require('./api/company-spending');
 const userStats = require('./api/user-stats');
 
 // Educational Admin endpoints
@@ -40,7 +42,9 @@ const educationMessages = require('./api/education-messages');
 
 // Corporate Dashboard enhanced stats
 const corporateDashboardStats = require('./api/corporate-dashboard-stats');
+const corporateApplications = require('./api/corporate-applications');
 const corporateExport = require('./api/corporate-export');
+const corporateInvites = require('./api/corporate-invites');
 
 // System Admin endpoints
 const adminUsers = require('./api/admin/users');
@@ -53,6 +57,8 @@ const adminInstitutions = require('./api/admin/institutions');
 const adminContent = require('./api/admin/content');
 const adminUpload = require('./api/admin/upload');
 const adminBlog = require('./api/admin/blog');
+const adminCoachingConfig = require('./api/admin/coaching-config');
+const studentWaitlist = require('./api/admin/student-waitlist');
 
 // File upload middleware
 const fileUpload = require('express-fileupload');
@@ -68,6 +74,9 @@ const assessments = require('./api/assessments');
 
 // Notification Center
 const notifications = require('./api/notifications');
+
+// Message Attachments
+const messageAttachments = require('./api/message-attachments');
 
 const createUserWithIdp = require('./api/auth/createUserWithIdp');
 
@@ -153,6 +162,7 @@ router.get('/login-as', loginAs);
 router.post('/transaction-line-items', transactionLineItems);
 router.post('/initiate-privileged', initiatePrivileged);
 router.post('/transition-privileged', transitionPrivileged);
+router.post('/transaction-transition', transactionTransition);
 router.post('/delete-account', strictRateLimit, deleteAccount); // SECURITY: strict rate limit
 
 // Street2Ivy: User search and invitation endpoints
@@ -161,6 +171,10 @@ router.post('/invite-to-apply', inviteToApply);
 
 // Street2Ivy: Company/Corporate partner listings (for student search)
 router.get('/company/:authorId/listings', companyListings);
+
+// Street2Ivy: Company spending stats (for students, education admins, system admins)
+router.get('/company/:companyId/spending', companySpending);
+router.get('/companies/spending-report', companySpending.allCompanies);
 
 // Street2Ivy: User statistics (projects completed, pending, etc.)
 router.get('/user-stats/:userId', userStats);
@@ -189,7 +203,10 @@ router.put('/admin/educational-admins/:userId/subscription', educationalAdminApp
 
 // Street2Ivy: Enhanced Corporate Dashboard
 router.get('/corporate/dashboard-stats', corporateDashboardStats);
+router.get('/corporate/applications', corporateApplications);
 router.get('/corporate/export/:type', corporateExport);
+router.get('/corporate/invites', corporateInvites.listInvites);
+router.get('/corporate/invites/:inviteId', corporateInvites.getInviteDetails);
 
 // Street2Ivy: System Admin endpoints
 router.get('/admin/users', adminUsers.list);
@@ -284,6 +301,17 @@ router.put('/admin/blog/settings', adminBlog.updateSettings);
 router.get('/blog/posts', adminBlog.listPublicPosts);
 router.get('/blog/posts/:slug', adminBlog.getPublicPost);
 
+// Street2Ivy: AI Coaching Configuration
+router.get('/admin/coaching-config', adminCoachingConfig.getConfig);
+router.put('/admin/coaching-config', adminCoachingConfig.updateConfig);
+router.get('/coaching-config/public', adminCoachingConfig.getPublicConfig);
+
+// Street2Ivy: Student Waitlist Management
+router.post('/student-waitlist', studentWaitlist.addToWaitlist);
+router.get('/admin/student-waitlist', studentWaitlist.listWaitlist);
+router.put('/admin/student-waitlist/:entryId', studentWaitlist.updateWaitlistEntry);
+router.delete('/admin/student-waitlist/:entryId', studentWaitlist.deleteWaitlistEntry);
+
 // Street2Ivy: File upload endpoints for admin
 router.post('/admin/upload/logo', adminUpload.uploadLogo);
 router.post('/admin/upload/favicon', adminUpload.uploadFavicon);
@@ -318,6 +346,14 @@ router.get('/notifications', notifications.list);
 router.get('/notifications/unread-count', notifications.unreadCount);
 router.post('/notifications/:notificationId/read', notifications.markRead);
 router.post('/notifications/read-all', notifications.markAllRead);
+
+// Street2Ivy: Message Attachments
+router.post('/attachments/upload', messageAttachments.uploadAttachment);
+router.get('/attachments', messageAttachments.getAttachments);
+router.get('/attachments/:id', messageAttachments.getAttachmentInfo);
+router.get('/attachments/:id/download', messageAttachments.downloadAttachment);
+router.get('/attachments/:id/preview', messageAttachments.previewAttachment);
+router.delete('/attachments/:id', messageAttachments.deleteAttachment);
 
 // Create user with identity provider (e.g. Facebook or Google)
 // This endpoint is called to create a new user after user has confirmed

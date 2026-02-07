@@ -4,7 +4,7 @@ import { compose } from 'redux';
 import { useHistory } from 'react-router-dom';
 import { FormattedMessage, useIntl } from '../../util/reactIntl';
 import { isScrollingDisabled } from '../../ducks/ui.duck';
-import { apiBaseUrl } from '../../util/api';
+import { apiBaseUrl, transitionTransaction } from '../../util/api';
 import { types as sdkTypes } from '../../util/sdkLoader';
 import classNames from 'classnames';
 
@@ -137,8 +137,11 @@ const StatDetailModal = ({ title, items, onClose, renderItem, emptyMessage }) =>
 
 // ================ Project Card Component ================ //
 
-const ProjectCard = ({ project, type }) => {
+const ProjectCard = ({ project, type, onAccept, onDecline }) => {
   const history = useHistory();
+  const [isAccepting, setIsAccepting] = useState(false);
+  const [isDeclining, setIsDeclining] = useState(false);
+  const [actionError, setActionError] = useState(null);
 
   const getStatusBadge = () => {
     switch (project.status) {
@@ -158,6 +161,40 @@ const ProjectCard = ({ project, type }) => {
   const handleViewProject = () => {
     if (project.transactionId) {
       history.push(`/project-workspace/${project.transactionId}`);
+    }
+  };
+
+  const handleAccept = async () => {
+    if (isAccepting || isDeclining) return;
+    setIsAccepting(true);
+    setActionError(null);
+
+    try {
+      if (onAccept) {
+        await onAccept(project);
+      }
+    } catch (error) {
+      console.error('Failed to accept invite:', error);
+      setActionError('Failed to accept invite. Please try again.');
+    } finally {
+      setIsAccepting(false);
+    }
+  };
+
+  const handleDecline = async () => {
+    if (isAccepting || isDeclining) return;
+    setIsDeclining(true);
+    setActionError(null);
+
+    try {
+      if (onDecline) {
+        await onDecline(project);
+      }
+    } catch (error) {
+      console.error('Failed to decline invite:', error);
+      setActionError('Failed to decline invite. Please try again.');
+    } finally {
+      setIsDeclining(false);
     }
   };
 
@@ -188,11 +225,26 @@ const ProjectCard = ({ project, type }) => {
           </span>
         )}
       </div>
+      {actionError && (
+        <div className={css.actionError}>{actionError}</div>
+      )}
       <div className={css.projectActions}>
         {type === 'invite' && (
           <>
-            <button className={css.acceptButton}>Accept Invite</button>
-            <button className={css.declineButton}>Decline</button>
+            <button
+              className={classNames(css.acceptButton, { [css.buttonLoading]: isAccepting })}
+              onClick={handleAccept}
+              disabled={isAccepting || isDeclining}
+            >
+              {isAccepting ? 'Accepting...' : 'Accept Invite'}
+            </button>
+            <button
+              className={classNames(css.declineButton, { [css.buttonLoading]: isDeclining })}
+              onClick={handleDecline}
+              disabled={isAccepting || isDeclining}
+            >
+              {isDeclining ? 'Declining...' : 'Decline'}
+            </button>
           </>
         )}
         {type === 'active' && (
@@ -634,6 +686,53 @@ const StudentDashboardPageComponent = props => {
     window.open(url, '_blank', 'noopener,noreferrer');
   };
 
+  // Handle accepting an invite
+  const handleAcceptInvite = async (project) => {
+    try {
+      // Use the transitionTransaction API to accept the invite
+      const response = await transitionTransaction({
+        transactionId: project.transactionId,
+        transition: 'transition/accept',
+      });
+
+      if (response) {
+        // Move the project from invites to active
+        setProjects(prev => ({
+          ...prev,
+          invites: prev.invites.filter(p => p.id !== project.id),
+          active: [...prev.active, { ...project, status: 'active' }],
+        }));
+        // Redirect to project workspace
+        history.push(`/project-workspace/${project.transactionId}`);
+      }
+    } catch (error) {
+      console.error('Failed to accept invite:', error);
+      throw error;
+    }
+  };
+
+  // Handle declining an invite
+  const handleDeclineInvite = async (project) => {
+    try {
+      // Use the transitionTransaction API to decline the invite
+      const response = await transitionTransaction({
+        transactionId: project.transactionId,
+        transition: 'transition/decline',
+      });
+
+      if (response) {
+        // Remove the project from invites
+        setProjects(prev => ({
+          ...prev,
+          invites: prev.invites.filter(p => p.id !== project.id),
+        }));
+      }
+    } catch (error) {
+      console.error('Failed to decline invite:', error);
+      throw error;
+    }
+  };
+
   // Render project item in modal
   const renderProjectItem = (project) => {
     const handleClick = () => {
@@ -980,7 +1079,13 @@ const StudentDashboardPageComponent = props => {
                 ) : projects.invites.length > 0 ? (
                   <div className={css.projectsGrid}>
                     {projects.invites.map(project => (
-                      <ProjectCard key={project.id} project={project} type="invite" />
+                      <ProjectCard
+                        key={project.id}
+                        project={project}
+                        type="invite"
+                        onAccept={handleAcceptInvite}
+                        onDecline={handleDeclineInvite}
+                      />
                     ))}
                   </div>
                 ) : (
