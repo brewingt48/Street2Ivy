@@ -5834,6 +5834,7 @@ const ContentManagementPanel = props => {
   const sections = [
     { key: 'branding', label: 'Logo & Branding', icon: '🎨' },
     { key: 'hero', label: 'Hero Section', icon: '🏠' },
+    { key: 'statistics', label: 'Statistics', icon: '📊' },
     { key: 'features', label: 'Features', icon: '✨' },
     { key: 'howItWorks', label: 'How It Works', icon: '📋' },
     { key: 'videoTestimonial', label: 'Video Testimonial', icon: '🎬' },
@@ -6647,6 +6648,90 @@ const ContentManagementPanel = props => {
               disabled={updateInProgress || uploadInProgress}
             >
               {updateInProgress ? 'Saving...' : 'Save Hero Section'}
+            </button>
+          </div>
+        );
+
+      case 'statistics':
+        const statsItems = sectionData?.items || [];
+        return (
+          <div className={css.contentForm}>
+            <h4 className={css.subSectionTitle}>Homepage Statistics</h4>
+            <p className={css.formHint}>
+              Edit the statistics displayed on the homepage. These numbers will animate when visitors scroll to the section.
+            </p>
+
+            {statsItems.map((stat, index) => (
+              <div key={stat.id} className={css.statisticItem}>
+                <h5 className={css.statisticItemTitle}>Statistic {index + 1}</h5>
+                <div className={css.formRow}>
+                  <div className={css.formGroup}>
+                    <label className={css.formLabel}>Value</label>
+                    <input
+                      type="number"
+                      step="0.1"
+                      className={css.formInput}
+                      placeholder="e.g., 5000"
+                      value={formData[`stat_${stat.id}_value`] !== undefined
+                        ? formData[`stat_${stat.id}_value`]
+                        : stat.value}
+                      onChange={e => handleInputChange(`stat_${stat.id}_value`, parseFloat(e.target.value) || 0)}
+                    />
+                  </div>
+                  <div className={css.formGroup}>
+                    <label className={css.formLabel}>Suffix</label>
+                    <input
+                      type="text"
+                      className={css.formInput}
+                      placeholder="e.g., + or ★"
+                      value={formData[`stat_${stat.id}_suffix`] !== undefined
+                        ? formData[`stat_${stat.id}_suffix`]
+                        : stat.suffix}
+                      onChange={e => handleInputChange(`stat_${stat.id}_suffix`, e.target.value)}
+                    />
+                  </div>
+                </div>
+                <div className={css.formGroup}>
+                  <label className={css.formLabel}>Label</label>
+                  <input
+                    type="text"
+                    className={css.formInput}
+                    placeholder="e.g., Students in Network"
+                    value={formData[`stat_${stat.id}_label`] !== undefined
+                      ? formData[`stat_${stat.id}_label`]
+                      : stat.label}
+                    onChange={e => handleInputChange(`stat_${stat.id}_label`, e.target.value)}
+                  />
+                </div>
+              </div>
+            ))}
+
+            <button
+              className={css.saveButton}
+              onClick={() => {
+                // Build the updated items array from form data
+                const updatedItems = statsItems.map(stat => ({
+                  id: stat.id,
+                  value: formData[`stat_${stat.id}_value`] !== undefined
+                    ? formData[`stat_${stat.id}_value`]
+                    : stat.value,
+                  label: formData[`stat_${stat.id}_label`] !== undefined
+                    ? formData[`stat_${stat.id}_label`]
+                    : stat.label,
+                  suffix: formData[`stat_${stat.id}_suffix`] !== undefined
+                    ? formData[`stat_${stat.id}_suffix`]
+                    : stat.suffix,
+                }));
+
+                // Save with the items array
+                onUpdateContent('statistics', {
+                  ...sectionData,
+                  items: updatedItems
+                });
+              }}
+              disabled={updateInProgress}
+            >
+              {updateInProgress ? 'Saving...' : 'Save Statistics'}
             </button>
           </div>
         );

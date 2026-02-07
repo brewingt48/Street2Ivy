@@ -166,12 +166,20 @@ const LandingPageComponent = props => {
   const howItWorksContent = dynamicContent?.howItWorks || null;
   const testimonialsContent = dynamicContent?.testimonials || null;
   const ctaContent = dynamicContent?.cta || null;
+  const statisticsContent = dynamicContent?.statistics || null;
 
-  // Stats counter hooks
-  const studentsCount = useCountUp(5000);
-  const projectsCount = useCountUp(850);
-  const companiesCount = useCountUp(200);
-  const ratingCount = useCountUp(4.9);
+  // Get dynamic stats values or use defaults
+  const statsItems = statisticsContent?.items || [];
+  const stat1 = statsItems.find(s => s.id === 'stat-1') || { value: 5000, label: 'Students', suffix: '+' };
+  const stat2 = statsItems.find(s => s.id === 'stat-2') || { value: 850, label: 'Projects Completed', suffix: '+' };
+  const stat3 = statsItems.find(s => s.id === 'stat-3') || { value: 200, label: 'Partner Companies', suffix: '+' };
+  const stat4 = statsItems.find(s => s.id === 'stat-4') || { value: 4.9, label: 'Average Rating', suffix: '★' };
+
+  // Stats counter hooks - use dynamic values
+  const studentsCount = useCountUp(stat1.value);
+  const projectsCount = useCountUp(stat2.value);
+  const companiesCount = useCountUp(stat3.value);
+  const ratingCount = useCountUp(stat4.value);
 
   // Benefits for Companies
   const companyBenefits = [
@@ -655,27 +663,27 @@ const LandingPageComponent = props => {
                     <div className={css.statsGrid}>
                       <div className={css.statItem} ref={studentsCount.ref}>
                         <div className={css.statNumber}>
-                          <span className={css.statNumberGradient}>{studentsCount.count.toLocaleString()}</span>+
+                          <span className={css.statNumberGradient}>{studentsCount.count.toLocaleString()}</span>{stat1.suffix}
                         </div>
-                        <div className={css.statLabel}>Students in Network</div>
+                        <div className={css.statLabel}>{stat1.label}</div>
                       </div>
                       <div className={css.statItem} ref={projectsCount.ref}>
                         <div className={css.statNumber}>
-                          <span className={css.statNumberGradient}>{projectsCount.count.toLocaleString()}</span>+
+                          <span className={css.statNumberGradient}>{projectsCount.count.toLocaleString()}</span>{stat2.suffix}
                         </div>
-                        <div className={css.statLabel}>Projects Completed</div>
+                        <div className={css.statLabel}>{stat2.label}</div>
                       </div>
                       <div className={css.statItem} ref={companiesCount.ref}>
                         <div className={css.statNumber}>
-                          <span className={css.statNumberGradient}>{companiesCount.count.toLocaleString()}</span>+
+                          <span className={css.statNumberGradient}>{companiesCount.count.toLocaleString()}</span>{stat3.suffix}
                         </div>
-                        <div className={css.statLabel}>Partner Companies</div>
+                        <div className={css.statLabel}>{stat3.label}</div>
                       </div>
                       <div className={css.statItem} ref={ratingCount.ref}>
                         <div className={css.statNumber}>
-                          <span className={css.statNumberGradient}>{ratingCount.count}</span>★
+                          <span className={css.statNumberGradient}>{ratingCount.count}</span>{stat4.suffix}
                         </div>
-                        <div className={css.statLabel}>Average Project Rating</div>
+                        <div className={css.statLabel}>{stat4.label}</div>
                       </div>
                     </div>
                   </div>
