@@ -969,117 +969,125 @@ const StudentDashboardPageComponent = props => {
               </div>
             )}
 
-                {/* Invites Tab */}
-                {activeTab === 'invites' && (
-                  <div className={css.invitesSection}>
-                    {projects.invites.length > 0 ? (
-                      <div className={css.projectsGrid}>
-                        {projects.invites.map(project => (
-                          <ProjectCard key={project.id} project={project} type="invite" />
-                        ))}
-                      </div>
-                    ) : (
-                      <EmptyState
-                        icon="🎯"
-                        title="No Pending Invites"
-                        description="You don't have any pending invitations. Make sure your profile is complete to attract corporate partners!"
-                        actionLink="ProfileSettingsPage"
-                        actionText="Update Your Profile"
-                      />
-                    )}
+            {/* Invites Tab */}
+            {activeTab === 'invites' && (
+              <div className={css.invitesSection}>
+                {isLoading ? (
+                  <div className={css.loadingState}>
+                    <span className={css.spinner}></span>
+                    Loading invites...
                   </div>
-                )}
-
-                {/* Project History Tab */}
-                {activeTab === 'history' && (
-                  <div className={css.historySection}>
-                    {projects.history.length > 0 ? (
-                      <div className={css.projectsGrid}>
-                        {projects.history.map(project => (
-                          <ProjectCard key={project.id} project={project} type="history" />
-                        ))}
-                      </div>
-                    ) : (
-                      <EmptyState
-                        icon="📚"
-                        title="No Project History"
-                        description="You haven't completed any projects yet. Once you finish your first project, it will appear here."
-                      />
-                    )}
+                ) : projects.invites.length > 0 ? (
+                  <div className={css.projectsGrid}>
+                    {projects.invites.map(project => (
+                      <ProjectCard key={project.id} project={project} type="invite" />
+                    ))}
                   </div>
+                ) : (
+                  <EmptyState
+                    icon="🎯"
+                    title="No Pending Invites"
+                    description="You don't have any pending invitations. Make sure your profile is complete to attract corporate partners!"
+                    actionLink="ProfileSettingsPage"
+                    actionText="Update Your Profile"
+                  />
                 )}
+              </div>
+            )}
 
-                {/* Messages Tab */}
-                {activeTab === 'messages' && (
-                  <div className={css.messagesSection}>
-                    <div className={css.messagesSectionHeader}>
-                      <h3 className={css.messagesSectionTitle}>Your Messages & Applications</h3>
-                      <NamedLink name="InboxPage" params={{ tab: 'orders' }} className={css.viewAllMessagesLink}>
-                        View All in Inbox →
-                      </NamedLink>
+            {/* Completed Projects Tab */}
+            {activeTab === 'history' && (
+              <div className={css.historySection}>
+                {isLoading ? (
+                  <div className={css.loadingState}>
+                    <span className={css.spinner}></span>
+                    Loading completed projects...
+                  </div>
+                ) : projects.history.length > 0 ? (
+                  <div className={css.projectsGrid}>
+                    {projects.history.map(project => (
+                      <ProjectCard key={project.id} project={project} type="history" />
+                    ))}
+                  </div>
+                ) : (
+                  <EmptyState
+                    icon="📚"
+                    title="No Project History"
+                    description="You haven't completed any projects yet. Once you finish your first project, it will appear here."
+                  />
+                )}
+              </div>
+            )}
+
+            {/* Messages Tab */}
+            {activeTab === 'messages' && (
+              <div className={css.messagesSection}>
+                <div className={css.messagesSectionHeader}>
+                  <h3 className={css.messagesSectionTitle}>Your Messages & Applications</h3>
+                  <NamedLink name="InboxPage" params={{ tab: 'orders' }} className={css.viewAllMessagesLink}>
+                    View All in Inbox →
+                  </NamedLink>
+                </div>
+
+                {/* Messages CTA Card */}
+                <div className={css.messagesCTACard}>
+                  <div className={css.messagesCTAContent}>
+                    <div className={css.messagesCTAIcon}>💬</div>
+                    <div className={css.messagesCTAInfo}>
+                      <h4 className={css.messagesCTATitle}>Message Center</h4>
+                      <p className={css.messagesCTADescription}>
+                        View and manage all your conversations with corporate partners.
+                        Track application status, respond to inquiries, and stay connected.
+                      </p>
                     </div>
+                  </div>
+                  <div className={css.messagesCTAActions}>
+                    <NamedLink name="InboxPage" params={{ tab: 'orders' }} className={css.viewInboxButton}>
+                      <span>📥</span>
+                      Open Inbox
+                    </NamedLink>
+                  </div>
+                </div>
 
-                    {/* Messages CTA Card */}
-                    <div className={css.messagesCTACard}>
-                      <div className={css.messagesCTAContent}>
-                        <div className={css.messagesCTAIcon}>💬</div>
-                        <div className={css.messagesCTAInfo}>
-                          <h4 className={css.messagesCTATitle}>Message Center</h4>
-                          <p className={css.messagesCTADescription}>
-                            View and manage all your conversations with corporate partners.
-                            Track application status, respond to inquiries, and stay connected.
-                          </p>
-                        </div>
-                      </div>
-                      <div className={css.messagesCTAActions}>
-                        <NamedLink name="InboxPage" params={{ tab: 'orders' }} className={css.viewInboxButton}>
-                          <span>📥</span>
-                          Open Inbox
-                        </NamedLink>
-                      </div>
-                    </div>
-
-                    {/* Transaction Summary */}
-                    {transactions.length > 0 ? (
-                      <div className={css.transactionSummary}>
-                        <h4 className={css.transactionSummaryTitle}>Recent Activity</h4>
-                        <MessagesPanel
-                          transactions={transactions.slice(0, 5)}
-                          isLoading={isLoading}
-                          onSelectMessage={setSelectedMessage}
-                        />
-                        {transactions.length > 5 && (
-                          <div className={css.viewMoreLink}>
-                            <NamedLink name="InboxPage" params={{ tab: 'orders' }}>
-                              View all {transactions.length} conversations →
-                            </NamedLink>
-                          </div>
-                        )}
-                      </div>
-                    ) : (
-                      <div className={css.noMessagesCard}>
-                        <span className={css.noMessagesIcon}>📭</span>
-                        <h4 className={css.noMessagesTitle}>No Messages Yet</h4>
-                        <p className={css.noMessagesText}>
-                          When you apply to projects or receive invitations,
-                          your conversations will appear here.
-                        </p>
-                        <NamedLink name="SearchPage" className={css.browseProjectsLink}>
-                          Browse Projects to Get Started
+                {/* Transaction Summary */}
+                {transactions.length > 0 ? (
+                  <div className={css.transactionSummary}>
+                    <h4 className={css.transactionSummaryTitle}>Recent Activity</h4>
+                    <MessagesPanel
+                      transactions={transactions.slice(0, 5)}
+                      isLoading={isLoading}
+                      onSelectMessage={setSelectedMessage}
+                    />
+                    {transactions.length > 5 && (
+                      <div className={css.viewMoreLink}>
+                        <NamedLink name="InboxPage" params={{ tab: 'orders' }}>
+                          View all {transactions.length} conversations →
                         </NamedLink>
                       </div>
                     )}
-
-                    {/* Message Detail Modal */}
-                    {selectedMessage && (
-                      <MessageDetailModal
-                        message={selectedMessage}
-                        onClose={() => setSelectedMessage(null)}
-                      />
-                    )}
+                  </div>
+                ) : (
+                  <div className={css.noMessagesCard}>
+                    <span className={css.noMessagesIcon}>📭</span>
+                    <h4 className={css.noMessagesTitle}>No Messages Yet</h4>
+                    <p className={css.noMessagesText}>
+                      When you apply to projects or receive invitations,
+                      your conversations will appear here.
+                    </p>
+                    <NamedLink name="SearchPage" className={css.browseProjectsLink}>
+                      Browse Projects to Get Started
+                    </NamedLink>
                   </div>
                 )}
-              </>
+
+                {/* Message Detail Modal */}
+                {selectedMessage && (
+                  <MessageDetailModal
+                    message={selectedMessage}
+                    onClose={() => setSelectedMessage(null)}
+                  />
+                )}
+              </div>
             )}
           </div>
 
