@@ -2,7 +2,7 @@
   "branding": {
     "id": "branding",
     "section": "branding",
-    "logoUrl": "/api/uploads/logo-1770373421088-a7p59j.png",
+    "logoUrl": "/api/uploads/logo-1770446864491-yap10u.png",
     "logoHeight": 60,
     "tagline": "",
     "faviconUrl": null,
@@ -13,8 +13,8 @@
     "socialYoutube": null,
     "socialTiktok": null,
     "isActive": true,
-    "updatedAt": "2026-02-06T10:27:22.692Z",
-    "updatedBy": "system",
+    "updatedAt": "2026-02-07T06:47:52.937Z",
+    "updatedBy": "69848574-e1aa-42a7-94f6-29bd2c7410af",
     "siteDescription": "",
     "socialIconSize": 32
   },
@@ -167,40 +167,6 @@
     "updatedAt": "2026-02-05T20:48:29.669Z",
     "updatedBy": "system"
   },
-  "statistics": {
-    "id": "statistics",
-    "section": "statistics",
-    "sectionTitle": "Our Impact",
-    "items": [
-      {
-        "id": "stat-1",
-        "value": 5000,
-        "label": "Students",
-        "suffix": "+"
-      },
-      {
-        "id": "stat-2",
-        "value": 850,
-        "label": "Projects Completed",
-        "suffix": "+"
-      },
-      {
-        "id": "stat-3",
-        "value": 200,
-        "label": "Partner Companies",
-        "suffix": "+"
-      },
-      {
-        "id": "stat-4",
-        "value": 4.9,
-        "label": "Average Rating",
-        "suffix": "★"
-      }
-    ],
-    "isActive": true,
-    "updatedAt": "2026-02-07T00:00:00.000Z",
-    "updatedBy": "system"
-  },
   "legalPages": {
     "id": "legalPages",
     "section": "legalPages",
@@ -242,6 +208,40 @@
     },
     "isActive": true,
     "updatedAt": "2026-02-05T20:48:29.669Z",
+    "updatedBy": "system"
+  },
+  "statistics": {
+    "id": "statistics",
+    "section": "statistics",
+    "sectionTitle": "Our Impact",
+    "items": [
+      {
+        "id": "stat-1",
+        "value": 5000,
+        "label": "Students",
+        "suffix": "+"
+      },
+      {
+        "id": "stat-2",
+        "value": 850,
+        "label": "Projects Completed",
+        "suffix": "+"
+      },
+      {
+        "id": "stat-3",
+        "value": 200,
+        "label": "Partner Companies",
+        "suffix": "+"
+      },
+      {
+        "id": "stat-4",
+        "value": 4.9,
+        "label": "Average Rating",
+        "suffix": "★"
+      }
+    ],
+    "isActive": true,
+    "updatedAt": "2026-02-07T00:00:00.000Z",
     "updatedBy": "system"
   }
 }

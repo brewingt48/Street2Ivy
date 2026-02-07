@@ -297,7 +297,7 @@ const LandingPageComponent = props => {
                 <section
                   className={css.heroSection}
                   style={heroContent?.backgroundImage ? {
-                    backgroundImage: `linear-gradient(135deg, rgba(12, 20, 48, 0.92) 0%, rgba(26, 39, 68, 0.88) 50%, rgba(30, 58, 95, 0.85) 100%), url(${heroContent.backgroundImage})`,
+                    backgroundImage: `linear-gradient(135deg, rgba(12, 20, 48, 0.92) 0%, rgba(26, 39, 68, 0.88) 50%, rgba(30, 58, 95, 0.85) 100%), url(${heroContent.backgroundImage.startsWith('/api/') ? apiBaseUrl() + heroContent.backgroundImage : heroContent.backgroundImage})`,
                     backgroundSize: 'cover',
                     backgroundPosition: 'center',
                   } : undefined}

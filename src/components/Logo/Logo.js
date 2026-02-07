@@ -3,7 +3,7 @@ import classNames from 'classnames';
 
 import { useConfiguration } from '../../context/configurationContext';
 import { ResponsiveImage } from '../../components/';
-import { fetchPublicContent } from '../../util/api';
+import { fetchPublicContent, apiBaseUrl } from '../../util/api';
 
 import css from './Logo.module.css';
 
@@ -179,12 +179,19 @@ const Logo = props => {
   const cmsLogoUrl = cmsBranding && cmsBranding !== false ? cmsBranding.logoUrl : null;
   const cmsLogoHeight = cmsBranding && cmsBranding !== false ? cmsBranding.logoHeight : null;
 
-  const effectiveLogoDesktop = cmsLogoUrl || logoImageDesktop;
-  const effectiveLogoMobile = cmsLogoUrl || logoImageMobile;
+  // For CMS logo URLs that start with /api/, prepend the API base URL in development
+  // This ensures the logo loads from the correct server
+  const resolvedLogoUrl = cmsLogoUrl && cmsLogoUrl.startsWith('/api/')
+    ? `${apiBaseUrl()}${cmsLogoUrl}`
+    : cmsLogoUrl;
+
+  const effectiveLogoDesktop = resolvedLogoUrl || logoImageDesktop;
+  const effectiveLogoMobile = resolvedLogoUrl || logoImageMobile;
 
   // Use CMS logo height if set, otherwise use default logoSettings
+  // Ensure format is set to 'image' for valid settings
   const effectiveLogoSettings = cmsLogoHeight
-    ? { ...logoSettings, height: cmsLogoHeight }
+    ? { ...logoSettings, height: cmsLogoHeight, format: 'image' }
     : logoSettings;
 
   return (
