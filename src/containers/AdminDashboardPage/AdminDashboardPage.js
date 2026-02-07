@@ -46,16 +46,6 @@ import {
   reinstateWorkHoldAction,
   clearAllHoldsForPartnerAction,
   clearSelectedPartner,
-  // Blog management
-  fetchBlogPosts,
-  createBlogPostAction,
-  updateBlogPostAction,
-  deleteBlogPostAction,
-  setSelectedBlogPost,
-  clearSelectedBlogPost,
-  clearBlogPostState,
-  addBlogCategoryThunk,
-  deleteBlogCategoryThunk,
 } from './AdminDashboardPage.duck';
 
 import css from './AdminDashboardPage.module.css';
@@ -4930,441 +4920,10 @@ const EducationalAdminApplicationsPanel = props => {
   );
 };
 
-// ================ Blog Management Panel ================ //
-
-const BlogManagementPanel = props => {
-  const {
-    posts = [],
-    pagination,
-    categories = [],
-    selectedPost,
-    fetchInProgress,
-    saveInProgress,
-    saveSuccess,
-    saveError,
-    deleteInProgress,
-    onFetchPosts,
-    onCreatePost,
-    onUpdatePost,
-    onDeletePost,
-    onSelectPost,
-    onClearSelectedPost,
-    onClearBlogPostState,
-    onAddCategory,
-    onDeleteCategory,
-  } = props;
-
-  const [isEditing, setIsEditing] = useState(false);
-  const [editForm, setEditForm] = useState({
-    title: '',
-    content: '',
-    excerpt: '',
-    category: 'News',
-    tags: '',
-    status: 'draft',
-    featuredImage: '',
-  });
-  const [filter, setFilter] = useState({ status: '', category: '', search: '' });
-  const [newCategory, setNewCategory] = useState('');
-  const [confirmDelete, setConfirmDelete] = useState(null);
-
-  useEffect(() => {
-    onFetchPosts({});
-  }, []);
-
-  useEffect(() => {
-    if (saveSuccess) {
-      setIsEditing(false);
-      setEditForm({ title: '', content: '', excerpt: '', category: 'News', tags: '', status: 'draft', featuredImage: '' });
-      onClearBlogPostState();
-      onClearSelectedPost();
-    }
-  }, [saveSuccess]);
-
-  const handleFilterChange = (key, value) => {
-    const newFilter = { ...filter, [key]: value };
-    setFilter(newFilter);
-    onFetchPosts(newFilter);
-  };
-
-  const handleEditPost = (post) => {
-    setEditForm({
-      title: post.title || '',
-      content: post.content || '',
-      excerpt: post.excerpt || '',
-      category: post.category || 'News',
-      tags: post.tags?.join(', ') || '',
-      status: post.status || 'draft',
-      featuredImage: post.featuredImage || '',
-    });
-    onSelectPost(post);
-    setIsEditing(true);
-  };
-
-  const handleNewPost = () => {
-    setEditForm({ title: '', content: '', excerpt: '', category: 'News', tags: '', status: 'draft', featuredImage: '' });
-    onClearSelectedPost();
-    setIsEditing(true);
-  };
-
-  const handleSavePost = () => {
-    const postData = {
-      ...editForm,
-      tags: editForm.tags.split(',').map(t => t.trim()).filter(t => t),
-    };
-
-    if (selectedPost) {
-      onUpdatePost(selectedPost.id, postData);
-    } else {
-      onCreatePost(postData);
-    }
-  };
-
-  const handleDeletePost = (postId) => {
-    onDeletePost(postId);
-    setConfirmDelete(null);
-  };
-
-  const handleAddCategory = () => {
-    if (newCategory.trim()) {
-      onAddCategory(newCategory.trim());
-      setNewCategory('');
-    }
-  };
-
-  const formatDate = (dateStr) => {
-    if (!dateStr) return '-';
-    return new Date(dateStr).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    });
-  };
-
-  const getStatusBadgeClass = (status) => {
-    switch (status) {
-      case 'published': return css.statusPublished;
-      case 'draft': return css.statusDraft;
-      case 'archived': return css.statusArchived;
-      default: return '';
-    }
-  };
-
-  if (isEditing) {
-    return (
-      <div className={css.panel}>
-        <div className={css.panelHeader}>
-          <h2 className={css.panelTitle}>
-            {selectedPost ? 'Edit Blog Post' : 'New Blog Post'}
-          </h2>
-          <button
-            type="button"
-            className={css.secondaryButton}
-            onClick={() => {
-              setIsEditing(false);
-              onClearSelectedPost();
-            }}
-          >
-            ← Back to List
-          </button>
-        </div>
-
-        <div className={css.blogEditorForm}>
-          <div className={css.formGroup}>
-            <label className={css.formLabel}>Title *</label>
-            <input
-              type="text"
-              className={css.formInput}
-              value={editForm.title}
-              onChange={e => setEditForm({ ...editForm, title: e.target.value })}
-              placeholder="Enter post title..."
-              maxLength={200}
-            />
-          </div>
-
-          <div className={css.formRow}>
-            <div className={css.formGroup}>
-              <label className={css.formLabel}>Category</label>
-              <select
-                className={css.formSelect}
-                value={editForm.category}
-                onChange={e => setEditForm({ ...editForm, category: e.target.value })}
-              >
-                {categories.map(cat => (
-                  <option key={cat} value={cat}>{cat}</option>
-                ))}
-              </select>
-            </div>
-
-            <div className={css.formGroup}>
-              <label className={css.formLabel}>Status</label>
-              <select
-                className={css.formSelect}
-                value={editForm.status}
-                onChange={e => setEditForm({ ...editForm, status: e.target.value })}
-              >
-                <option value="draft">Draft</option>
-                <option value="published">Published</option>
-                <option value="archived">Archived</option>
-              </select>
-            </div>
-          </div>
-
-          <div className={css.formGroup}>
-            <label className={css.formLabel}>Excerpt (short description)</label>
-            <textarea
-              className={css.formTextarea}
-              value={editForm.excerpt}
-              onChange={e => setEditForm({ ...editForm, excerpt: e.target.value })}
-              placeholder="Brief summary of the post..."
-              rows={3}
-            />
-          </div>
-
-          <div className={css.formGroup}>
-            <label className={css.formLabel}>Content</label>
-            <textarea
-              className={css.formTextareaLarge}
-              value={editForm.content}
-              onChange={e => setEditForm({ ...editForm, content: e.target.value })}
-              placeholder="Write your blog post content here... (HTML supported)"
-              rows={15}
-            />
-          </div>
-
-          <div className={css.formGroup}>
-            <label className={css.formLabel}>Tags (comma separated)</label>
-            <input
-              type="text"
-              className={css.formInput}
-              value={editForm.tags}
-              onChange={e => setEditForm({ ...editForm, tags: e.target.value })}
-              placeholder="e.g., career, tips, internships"
-            />
-          </div>
-
-          <div className={css.formGroup}>
-            <label className={css.formLabel}>Featured Image URL</label>
-            <input
-              type="text"
-              className={css.formInput}
-              value={editForm.featuredImage}
-              onChange={e => setEditForm({ ...editForm, featuredImage: e.target.value })}
-              placeholder="https://example.com/image.jpg"
-            />
-          </div>
-
-          {saveError && (
-            <div className={css.errorMessage}>
-              Error: {saveError.message || 'Failed to save post'}
-            </div>
-          )}
-
-          <div className={css.formActions}>
-            <button
-              type="button"
-              className={css.secondaryButton}
-              onClick={() => {
-                setIsEditing(false);
-                onClearSelectedPost();
-              }}
-            >
-              Cancel
-            </button>
-            <button
-              type="button"
-              className={css.primaryButton}
-              onClick={handleSavePost}
-              disabled={saveInProgress || !editForm.title.trim()}
-            >
-              {saveInProgress ? 'Saving...' : (selectedPost ? 'Update Post' : 'Create Post')}
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className={css.panel}>
-      <div className={css.panelHeader}>
-        <h2 className={css.panelTitle}>
-          <FormattedMessage id="AdminDashboardPage.blogManagement" defaultMessage="Blog Management" />
-        </h2>
-        <button type="button" className={css.primaryButton} onClick={handleNewPost}>
-          + New Post
-        </button>
-      </div>
-
-      {/* Filters */}
-      <div className={css.filterBar}>
-        <input
-          type="text"
-          className={css.filterInput}
-          placeholder="Search posts..."
-          value={filter.search}
-          onChange={e => handleFilterChange('search', e.target.value)}
-        />
-        <select
-          className={css.filterSelect}
-          value={filter.status}
-          onChange={e => handleFilterChange('status', e.target.value)}
-        >
-          <option value="">All Statuses</option>
-          <option value="draft">Drafts</option>
-          <option value="published">Published</option>
-          <option value="archived">Archived</option>
-        </select>
-        <select
-          className={css.filterSelect}
-          value={filter.category}
-          onChange={e => handleFilterChange('category', e.target.value)}
-        >
-          <option value="">All Categories</option>
-          {categories.map(cat => (
-            <option key={cat} value={cat}>{cat}</option>
-          ))}
-        </select>
-      </div>
-
-      {/* Category Management */}
-      <div className={css.categorySection}>
-        <h4 className={css.categoryTitle}>Categories</h4>
-        <div className={css.categoryList}>
-          {categories.map(cat => (
-            <span key={cat} className={css.categoryTag}>
-              {cat}
-              <button
-                type="button"
-                className={css.categoryRemove}
-                onClick={() => onDeleteCategory(cat)}
-                title="Remove category"
-              >
-                ×
-              </button>
-            </span>
-          ))}
-        </div>
-        <div className={css.addCategoryForm}>
-          <input
-            type="text"
-            className={css.addCategoryInput}
-            value={newCategory}
-            onChange={e => setNewCategory(e.target.value)}
-            placeholder="New category..."
-          />
-          <button
-            type="button"
-            className={css.addCategoryButton}
-            onClick={handleAddCategory}
-            disabled={!newCategory.trim()}
-          >
-            Add
-          </button>
-        </div>
-      </div>
-
-      {/* Posts Table */}
-      {fetchInProgress ? (
-        <div className={css.loading}>Loading blog posts...</div>
-      ) : posts.length === 0 ? (
-        <div className={css.emptyState}>
-          <p>No blog posts yet.</p>
-          <button type="button" className={css.primaryButton} onClick={handleNewPost}>
-            Create your first post
-          </button>
-        </div>
-      ) : (
-        <>
-          <table className={css.dataTable}>
-            <thead>
-              <tr>
-                <th>Title</th>
-                <th>Category</th>
-                <th>Status</th>
-                <th>Created</th>
-                <th>Published</th>
-                <th>Views</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {posts.map(post => (
-                <tr key={post.id}>
-                  <td>
-                    <div className={css.postTitleCell}>
-                      <strong>{post.title}</strong>
-                      {post.excerpt && (
-                        <span className={css.postExcerpt}>{post.excerpt.substring(0, 60)}...</span>
-                      )}
-                    </div>
-                  </td>
-                  <td>{post.category}</td>
-                  <td>
-                    <span className={classNames(css.statusBadge, getStatusBadgeClass(post.status))}>
-                      {post.status}
-                    </span>
-                  </td>
-                  <td>{formatDate(post.createdAt)}</td>
-                  <td>{formatDate(post.publishedAt)}</td>
-                  <td>{post.viewCount || 0}</td>
-                  <td>
-                    <div className={css.actionButtons}>
-                      <button
-                        type="button"
-                        className={css.editButton}
-                        onClick={() => handleEditPost(post)}
-                      >
-                        Edit
-                      </button>
-                      {confirmDelete === post.id ? (
-                        <>
-                          <button
-                            type="button"
-                            className={css.deleteConfirmButton}
-                            onClick={() => handleDeletePost(post.id)}
-                            disabled={deleteInProgress === post.id}
-                          >
-                            Confirm
-                          </button>
-                          <button
-                            type="button"
-                            className={css.cancelButton}
-                            onClick={() => setConfirmDelete(null)}
-                          >
-                            Cancel
-                          </button>
-                        </>
-                      ) : (
-                        <button
-                          type="button"
-                          className={css.deleteButton}
-                          onClick={() => setConfirmDelete(post.id)}
-                        >
-                          Delete
-                        </button>
-                      )}
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-
-          {pagination && pagination.totalPages > 1 && (
-            <div className={css.pagination}>
-              Page {pagination.page} of {pagination.totalPages} ({pagination.totalItems} posts)
-            </div>
-          )}
-        </>
-      )}
-    </div>
-  );
-};
-
 // ================ AI Coaching Configuration Panel ================ //
 
 const AICoachingConfigPanel = () => {
+  // Global config state
   const [config, setConfig] = useState({
     platformUrl: '',
     platformName: 'AI Career Coach',
@@ -5378,6 +4937,45 @@ const AICoachingConfigPanel = () => {
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [error, setError] = useState(null);
 
+  // Institutions state
+  const [institutions, setInstitutions] = useState([]);
+  const [loadingInstitutions, setLoadingInstitutions] = useState(true);
+  const [updatingInstitution, setUpdatingInstitution] = useState(null);
+
+  // Blocked students state
+  const [blockedStudents, setBlockedStudents] = useState([]);
+  const [loadingBlocked, setLoadingBlocked] = useState(true);
+
+  // Student search/block state
+  const [selectedInstitution, setSelectedInstitution] = useState(null);
+  const [institutionStudents, setInstitutionStudents] = useState([]);
+  const [loadingStudents, setLoadingStudents] = useState(false);
+  const [blockingStudent, setBlockingStudent] = useState(null);
+  const [unblockingStudent, setUnblockingStudent] = useState(null);
+  const [blockReason, setBlockReason] = useState('');
+  const [showBlockModal, setShowBlockModal] = useState(false);
+  const [studentToBlock, setStudentToBlock] = useState(null);
+
+  // Active tab within the panel
+  const [activeSubTab, setActiveSubTab] = useState('config');
+
+  // Add/Edit institution state
+  const [showAddInstitutionModal, setShowAddInstitutionModal] = useState(false);
+  const [editingInstitution, setEditingInstitution] = useState(null);
+  const [institutionForm, setInstitutionForm] = useState({
+    domain: '',
+    name: '',
+    membershipStatus: 'active',
+    membershipStartDate: '',
+    membershipEndDate: '',
+    aiCoachingEnabled: true,
+    aiCoachingUrl: '',
+  });
+  const [savingInstitution, setSavingInstitution] = useState(false);
+  const [deletingInstitution, setDeletingInstitution] = useState(null);
+  const [institutionError, setInstitutionError] = useState(null);
+
+  // Fetch global config
   useEffect(() => {
     const fetchConfig = async () => {
       try {
@@ -5398,6 +4996,64 @@ const AICoachingConfigPanel = () => {
     };
     fetchConfig();
   }, []);
+
+  // Fetch institutions with coaching summary
+  useEffect(() => {
+    const fetchInstitutions = async () => {
+      try {
+        const response = await fetch(`${apiBaseUrl()}/api/admin/institutions-coaching-summary`, {
+          credentials: 'include',
+        });
+        if (response.ok) {
+          const data = await response.json();
+          setInstitutions(data.data || []);
+        }
+      } catch (err) {
+        console.error('Error fetching institutions:', err);
+      } finally {
+        setLoadingInstitutions(false);
+      }
+    };
+    fetchInstitutions();
+  }, []);
+
+  // Fetch blocked students
+  useEffect(() => {
+    const fetchBlocked = async () => {
+      try {
+        const response = await fetch(`${apiBaseUrl()}/api/admin/student-coaching-access`, {
+          credentials: 'include',
+        });
+        if (response.ok) {
+          const data = await response.json();
+          setBlockedStudents(data.data || []);
+        }
+      } catch (err) {
+        console.error('Error fetching blocked students:', err);
+      } finally {
+        setLoadingBlocked(false);
+      }
+    };
+    fetchBlocked();
+  }, []);
+
+  // Fetch students for a specific institution
+  const fetchInstitutionStudents = async (domain) => {
+    setLoadingStudents(true);
+    try {
+      const response = await fetch(`${apiBaseUrl()}/api/admin/institution/${domain}/students`, {
+        credentials: 'include',
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setInstitutionStudents(data.data || []);
+      }
+    } catch (err) {
+      console.error('Error fetching students:', err);
+    } finally {
+      setLoadingStudents(false);
+    }
+  };
 
   const handleSave = async () => {
     setSaving(true);
@@ -5425,6 +5081,233 @@ const AICoachingConfigPanel = () => {
     }
   };
 
+  // Toggle institution AI coaching
+  const handleToggleInstitutionCoaching = async (domain, currentStatus) => {
+    setUpdatingInstitution(domain);
+    try {
+      const response = await fetch(`${apiBaseUrl()}/api/admin/institutions/${domain}/coaching`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ aiCoachingEnabled: !currentStatus }),
+      });
+      if (response.ok) {
+        // Update local state
+        setInstitutions(prev =>
+          prev.map(inst =>
+            inst.domain === domain ? { ...inst, aiCoachingEnabled: !currentStatus } : inst
+          )
+        );
+      }
+    } catch (err) {
+      console.error('Error updating institution:', err);
+    } finally {
+      setUpdatingInstitution(null);
+    }
+  };
+
+  // Block a student
+  const handleBlockStudent = async () => {
+    if (!studentToBlock) return;
+    setBlockingStudent(studentToBlock.id);
+    try {
+      const response = await fetch(`${apiBaseUrl()}/api/admin/student-coaching-access/block`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: studentToBlock.id, reason: blockReason }),
+      });
+      if (response.ok) {
+        // Refresh blocked students list
+        const blockedRes = await fetch(`${apiBaseUrl()}/api/admin/student-coaching-access`, {
+          credentials: 'include',
+        });
+        if (blockedRes.ok) {
+          const data = await blockedRes.json();
+          setBlockedStudents(data.data || []);
+        }
+        // Update institution students list
+        if (selectedInstitution) {
+          fetchInstitutionStudents(selectedInstitution.domain);
+        }
+        setShowBlockModal(false);
+        setStudentToBlock(null);
+        setBlockReason('');
+      }
+    } catch (err) {
+      console.error('Error blocking student:', err);
+    } finally {
+      setBlockingStudent(null);
+    }
+  };
+
+  // Unblock a student
+  const handleUnblockStudent = async (userId) => {
+    setUnblockingStudent(userId);
+    try {
+      const response = await fetch(`${apiBaseUrl()}/api/admin/student-coaching-access/unblock`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId }),
+      });
+      if (response.ok) {
+        // Update blocked students list
+        setBlockedStudents(prev => prev.filter(s => s.userId !== userId));
+        // Update institution students list if viewing
+        if (selectedInstitution) {
+          fetchInstitutionStudents(selectedInstitution.domain);
+        }
+      }
+    } catch (err) {
+      console.error('Error unblocking student:', err);
+    } finally {
+      setUnblockingStudent(null);
+    }
+  };
+
+  const formatDate = (dateStr) => {
+    if (!dateStr) return '-';
+    return new Date(dateStr).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+    });
+  };
+
+  // Refresh institutions list
+  const refreshInstitutions = async () => {
+    try {
+      const response = await fetch(`${apiBaseUrl()}/api/admin/institutions-coaching-summary`, {
+        credentials: 'include',
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setInstitutions(data.data || []);
+      }
+    } catch (err) {
+      console.error('Error fetching institutions:', err);
+    }
+  };
+
+  // Open add institution modal
+  const handleOpenAddInstitution = () => {
+    setInstitutionForm({
+      domain: '',
+      name: '',
+      membershipStatus: 'active',
+      membershipStartDate: new Date().toISOString().split('T')[0],
+      membershipEndDate: '',
+      aiCoachingEnabled: true,
+      aiCoachingUrl: '',
+    });
+    setEditingInstitution(null);
+    setInstitutionError(null);
+    setShowAddInstitutionModal(true);
+  };
+
+  // Open edit institution modal
+  const handleOpenEditInstitution = (inst) => {
+    setInstitutionForm({
+      domain: inst.domain,
+      name: inst.name,
+      membershipStatus: inst.membershipStatus || 'active',
+      membershipStartDate: inst.membershipStartDate || '',
+      membershipEndDate: inst.membershipEndDate || '',
+      aiCoachingEnabled: inst.aiCoachingEnabled || false,
+      aiCoachingUrl: inst.aiCoachingUrl || '',
+    });
+    setEditingInstitution(inst);
+    setInstitutionError(null);
+    setShowAddInstitutionModal(true);
+  };
+
+  // Save institution (create or update)
+  const handleSaveInstitution = async () => {
+    if (!institutionForm.domain || !institutionForm.name) {
+      setInstitutionError('Domain and name are required');
+      return;
+    }
+
+    setSavingInstitution(true);
+    setInstitutionError(null);
+
+    try {
+      const response = await fetch(`${apiBaseUrl()}/api/admin/institutions`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(institutionForm),
+      });
+
+      if (response.ok) {
+        await refreshInstitutions();
+        setShowAddInstitutionModal(false);
+        setEditingInstitution(null);
+      } else {
+        const errorData = await response.json();
+        setInstitutionError(errorData.error || 'Failed to save institution');
+      }
+    } catch (err) {
+      setInstitutionError('Failed to save institution');
+      console.error('Error saving institution:', err);
+    } finally {
+      setSavingInstitution(false);
+    }
+  };
+
+  // Delete institution
+  const handleDeleteInstitution = async (domain) => {
+    if (!window.confirm(`Are you sure you want to delete the institution "${domain}"? This will remove all membership data for this institution.`)) {
+      return;
+    }
+
+    setDeletingInstitution(domain);
+    try {
+      const response = await fetch(`${apiBaseUrl()}/api/admin/institutions/${domain}`, {
+        method: 'DELETE',
+        credentials: 'include',
+      });
+
+      if (response.ok) {
+        await refreshInstitutions();
+      } else {
+        const errorData = await response.json();
+        alert(errorData.error || 'Failed to delete institution');
+      }
+    } catch (err) {
+      console.error('Error deleting institution:', err);
+      alert('Failed to delete institution');
+    } finally {
+      setDeletingInstitution(null);
+    }
+  };
+
+  // Toggle institution membership status
+  const handleToggleInstitutionStatus = async (domain, currentStatus) => {
+    setUpdatingInstitution(domain);
+    const newStatus = currentStatus === 'active' ? 'inactive' : 'active';
+    try {
+      const response = await fetch(`${apiBaseUrl()}/api/admin/institutions/${domain}/status`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ membershipStatus: newStatus }),
+      });
+      if (response.ok) {
+        setInstitutions(prev =>
+          prev.map(inst =>
+            inst.domain === domain ? { ...inst, membershipStatus: newStatus } : inst
+          )
+        );
+      }
+    } catch (err) {
+      console.error('Error updating institution status:', err);
+    } finally {
+      setUpdatingInstitution(null);
+    }
+  };
+
   if (loading) {
     return <div className={css.loading}>Loading configuration...</div>;
   }
@@ -5432,105 +5315,564 @@ const AICoachingConfigPanel = () => {
   return (
     <div className={css.panel}>
       <div className={css.panelHeader}>
-        <h2 className={css.panelTitle}>AI Coaching Configuration</h2>
+        <h2 className={css.panelTitle}>AI Coaching Management</h2>
         <p className={css.panelDescription}>
-          Configure the external AI coaching platform connection (e.g., Amiko). These settings apply platform-wide.
+          Configure the AI coaching platform, manage institution access, and control individual student access.
         </p>
+      </div>
+
+      {/* Sub-tabs */}
+      <div className={css.subTabsContainer}>
+        <button
+          type="button"
+          className={classNames(css.subTab, { [css.subTabActive]: activeSubTab === 'config' })}
+          onClick={() => setActiveSubTab('config')}
+        >
+          Platform Settings
+        </button>
+        <button
+          type="button"
+          className={classNames(css.subTab, { [css.subTabActive]: activeSubTab === 'institutions' })}
+          onClick={() => setActiveSubTab('institutions')}
+        >
+          Institutions ({institutions.length})
+        </button>
+        <button
+          type="button"
+          className={classNames(css.subTab, { [css.subTabActive]: activeSubTab === 'blocked' })}
+          onClick={() => setActiveSubTab('blocked')}
+        >
+          Blocked Students ({blockedStudents.length})
+        </button>
       </div>
 
       {error && <div className={css.errorMessage}>{error}</div>}
       {saveSuccess && <div className={css.successMessage}>Configuration saved successfully!</div>}
 
-      <div className={css.formSection}>
-        <div className={css.formGroup}>
-          <label className={css.formLabel}>Platform Status</label>
-          <div className={css.toggleWrapper}>
-            <label className={css.toggleSwitch}>
-              <input
-                type="checkbox"
-                checked={config.platformStatus}
-                onChange={e => setConfig({ ...config, platformStatus: e.target.checked })}
-              />
-              <span className={css.toggleSlider}></span>
-            </label>
-            <span className={css.toggleLabel}>
-              {config.platformStatus ? 'Enabled' : 'Disabled'}
-            </span>
+      {/* Platform Settings Tab */}
+      {activeSubTab === 'config' && (
+        <div className={css.formSection}>
+          <div className={css.formGroup}>
+            <label className={css.formLabel}>Platform Status</label>
+            <div className={css.toggleWrapper}>
+              <label className={css.toggleSwitch}>
+                <input
+                  type="checkbox"
+                  checked={config.platformStatus}
+                  onChange={e => setConfig({ ...config, platformStatus: e.target.checked })}
+                />
+                <span className={css.toggleSlider}></span>
+              </label>
+              <span className={css.toggleLabel}>
+                {config.platformStatus ? 'Enabled' : 'Disabled'}
+              </span>
+            </div>
+            <p className={css.formHint}>Enable or disable AI coaching platform-wide</p>
           </div>
-          <p className={css.formHint}>Enable or disable AI coaching platform-wide</p>
-        </div>
 
-        <div className={css.formGroup}>
-          <label className={css.formLabel}>Platform Name</label>
-          <input
-            type="text"
-            className={css.formInput}
-            value={config.platformName}
-            onChange={e => setConfig({ ...config, platformName: e.target.value })}
-            placeholder="AI Career Coach"
-          />
-          <p className={css.formHint}>Display name shown to students (default: "AI Career Coach")</p>
-        </div>
+          <div className={css.formGroup}>
+            <label className={css.formLabel}>Platform Name</label>
+            <input
+              type="text"
+              className={css.formInput}
+              value={config.platformName}
+              onChange={e => setConfig({ ...config, platformName: e.target.value })}
+              placeholder="AI Career Coach"
+            />
+            <p className={css.formHint}>Display name shown to students (default: "AI Career Coach")</p>
+          </div>
 
-        <div className={css.formGroup}>
-          <label className={css.formLabel}>Platform URL *</label>
-          <input
-            type="url"
-            className={css.formInput}
-            value={config.platformUrl}
-            onChange={e => setConfig({ ...config, platformUrl: e.target.value })}
-            placeholder="https://coaching-platform.example.com"
-          />
-          <p className={css.formHint}>The external URL where students access the AI coaching platform</p>
-        </div>
+          <div className={css.formGroup}>
+            <label className={css.formLabel}>Platform URL *</label>
+            <input
+              type="url"
+              className={css.formInput}
+              value={config.platformUrl}
+              onChange={e => setConfig({ ...config, platformUrl: e.target.value })}
+              placeholder="https://coaching-platform.example.com"
+            />
+            <p className={css.formHint}>The external URL where students access the AI coaching platform</p>
+          </div>
 
-        <div className={css.formGroup}>
-          <label className={css.formLabel}>Welcome Message</label>
-          <textarea
-            className={css.formTextarea}
-            value={config.welcomeMessage}
-            onChange={e => setConfig({ ...config, welcomeMessage: e.target.value })}
-            placeholder="Welcome message students see when first accessing coaching..."
-            rows={4}
-          />
-          <p className={css.formHint}>Custom message students see when they first access the coaching tool</p>
-        </div>
+          <div className={css.formGroup}>
+            <label className={css.formLabel}>Welcome Message</label>
+            <textarea
+              className={css.formTextarea}
+              value={config.welcomeMessage}
+              onChange={e => setConfig({ ...config, welcomeMessage: e.target.value })}
+              placeholder="Welcome message students see when first accessing coaching..."
+              rows={4}
+            />
+            <p className={css.formHint}>Custom message students see when they first access the coaching tool</p>
+          </div>
 
-        <div className={css.formGroup}>
-          <label className={css.formLabel}>Terms of Use URL</label>
-          <input
-            type="url"
-            className={css.formInput}
-            value={config.termsOfUseUrl}
-            onChange={e => setConfig({ ...config, termsOfUseUrl: e.target.value })}
-            placeholder="https://example.com/coaching-terms"
-          />
-          <p className={css.formHint}>Optional link to coaching-specific terms of use</p>
-        </div>
+          <div className={css.formGroup}>
+            <label className={css.formLabel}>Terms of Use URL</label>
+            <input
+              type="url"
+              className={css.formInput}
+              value={config.termsOfUseUrl}
+              onChange={e => setConfig({ ...config, termsOfUseUrl: e.target.value })}
+              placeholder="https://example.com/coaching-terms"
+            />
+            <p className={css.formHint}>Optional link to coaching-specific terms of use</p>
+          </div>
 
-        <div className={css.formGroup}>
-          <label className={css.formLabel}>Confidentiality Warning</label>
-          <textarea
-            className={css.formTextarea}
-            value={config.confidentialityWarning}
-            onChange={e => setConfig({ ...config, confidentialityWarning: e.target.value })}
-            placeholder="Do not share proprietary, confidential, or trade secret information..."
-            rows={4}
-          />
-          <p className={css.formHint}>Warning message displayed to students before accessing AI coaching</p>
-        </div>
+          <div className={css.formGroup}>
+            <label className={css.formLabel}>Confidentiality Warning</label>
+            <textarea
+              className={css.formTextarea}
+              value={config.confidentialityWarning}
+              onChange={e => setConfig({ ...config, confidentialityWarning: e.target.value })}
+              placeholder="Do not share proprietary, confidential, or trade secret information..."
+              rows={4}
+            />
+            <p className={css.formHint}>Warning message displayed to students before accessing AI coaching</p>
+          </div>
 
-        <div className={css.formActions}>
-          <button
-            type="button"
-            className={css.primaryButton}
-            onClick={handleSave}
-            disabled={saving}
-          >
-            {saving ? 'Saving...' : 'Save Configuration'}
-          </button>
+          <div className={css.formActions}>
+            <button
+              type="button"
+              className={css.primaryButton}
+              onClick={handleSave}
+              disabled={saving}
+            >
+              {saving ? 'Saving...' : 'Save Configuration'}
+            </button>
+          </div>
         </div>
-      </div>
+      )}
+
+      {/* Institutions Tab */}
+      {activeSubTab === 'institutions' && (
+        <div className={css.formSection}>
+          {selectedInstitution ? (
+            // Institution detail view with students
+            <div>
+              <button
+                type="button"
+                className={css.secondaryButton}
+                onClick={() => {
+                  setSelectedInstitution(null);
+                  setInstitutionStudents([]);
+                }}
+              >
+                ← Back to Institutions
+              </button>
+
+              <div className={css.institutionDetailHeader}>
+                <h3>{selectedInstitution.name}</h3>
+                <span className={css.domainLabel}>{selectedInstitution.domain}</span>
+                <span className={classNames(css.statusBadge, selectedInstitution.aiCoachingEnabled ? css.statusActive : css.statusInactive)}>
+                  AI Coaching: {selectedInstitution.aiCoachingEnabled ? 'Enabled' : 'Disabled'}
+                </span>
+              </div>
+
+              <h4 style={{ marginTop: '24px', marginBottom: '16px' }}>Students at this Institution</h4>
+              {loadingStudents ? (
+                <div className={css.loading}>Loading students...</div>
+              ) : institutionStudents.length === 0 ? (
+                <p>No students found for this institution.</p>
+              ) : (
+                <table className={css.dataTable}>
+                  <thead>
+                    <tr>
+                      <th>Name</th>
+                      <th>Email</th>
+                      <th>AI Coaching Status</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {institutionStudents.map(student => (
+                      <tr key={student.id}>
+                        <td>{student.displayName}</td>
+                        <td>{student.email}</td>
+                        <td>
+                          {student.aiCoachingBlocked ? (
+                            <span className={classNames(css.statusBadge, css.statusBlocked)}>
+                              Blocked
+                            </span>
+                          ) : (
+                            <span className={classNames(css.statusBadge, css.statusActive)}>
+                              Allowed
+                            </span>
+                          )}
+                        </td>
+                        <td>
+                          {student.aiCoachingBlocked ? (
+                            <button
+                              type="button"
+                              className={css.successButton}
+                              onClick={() => handleUnblockStudent(student.id)}
+                              disabled={unblockingStudent === student.id}
+                            >
+                              {unblockingStudent === student.id ? 'Unblocking...' : 'Unblock'}
+                            </button>
+                          ) : (
+                            <button
+                              type="button"
+                              className={css.dangerButton}
+                              onClick={() => {
+                                setStudentToBlock(student);
+                                setShowBlockModal(true);
+                              }}
+                            >
+                              Block
+                            </button>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </div>
+          ) : (
+            // Institutions list view
+            <div>
+              <div className={css.institutionHeaderRow}>
+                <p style={{ margin: 0 }}>
+                  Manage institutions and their AI coaching access. Enable/disable membership and AI coaching per institution.
+                </p>
+                <button
+                  type="button"
+                  className={css.primaryButton}
+                  onClick={handleOpenAddInstitution}
+                >
+                  + Add Institution
+                </button>
+              </div>
+              {loadingInstitutions ? (
+                <div className={css.loading}>Loading institutions...</div>
+              ) : institutions.length === 0 ? (
+                <div className={css.emptyState}>
+                  <p>No institutions found.</p>
+                  <button
+                    type="button"
+                    className={css.primaryButton}
+                    onClick={handleOpenAddInstitution}
+                  >
+                    Add Your First Institution
+                  </button>
+                </div>
+              ) : (
+                <table className={css.dataTable}>
+                  <thead>
+                    <tr>
+                      <th>Institution</th>
+                      <th>Domain</th>
+                      <th>Membership Status</th>
+                      <th>AI Coaching</th>
+                      <th>Blocked Students</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {institutions.map(inst => (
+                      <tr key={inst.domain}>
+                        <td>{inst.name}</td>
+                        <td><code className={css.domainCode}>{inst.domain}</code></td>
+                        <td>
+                          <div className={css.toggleWrapper}>
+                            <label className={css.toggleSwitch}>
+                              <input
+                                type="checkbox"
+                                checked={inst.membershipStatus === 'active'}
+                                onChange={() => handleToggleInstitutionStatus(inst.domain, inst.membershipStatus)}
+                                disabled={updatingInstitution === inst.domain}
+                              />
+                              <span className={css.toggleSlider}></span>
+                            </label>
+                            <span className={css.toggleLabel}>
+                              {inst.membershipStatus === 'active' ? 'Active' : 'Inactive'}
+                            </span>
+                          </div>
+                        </td>
+                        <td>
+                          <div className={css.toggleWrapper}>
+                            <label className={css.toggleSwitch}>
+                              <input
+                                type="checkbox"
+                                checked={inst.aiCoachingEnabled}
+                                onChange={() => handleToggleInstitutionCoaching(inst.domain, inst.aiCoachingEnabled)}
+                                disabled={updatingInstitution === inst.domain}
+                              />
+                              <span className={css.toggleSlider}></span>
+                            </label>
+                            <span className={css.toggleLabel}>
+                              {inst.aiCoachingEnabled ? 'Enabled' : 'Disabled'}
+                            </span>
+                          </div>
+                        </td>
+                        <td>
+                          {inst.blockedStudentsCount > 0 ? (
+                            <span className={css.blockedCount}>{inst.blockedStudentsCount}</span>
+                          ) : (
+                            <span className={css.noneBlocked}>None</span>
+                          )}
+                        </td>
+                        <td>
+                          <div className={css.actionButtons}>
+                            <button
+                              type="button"
+                              className={css.secondaryButton}
+                              onClick={() => {
+                                setSelectedInstitution(inst);
+                                fetchInstitutionStudents(inst.domain);
+                              }}
+                            >
+                              Students
+                            </button>
+                            <button
+                              type="button"
+                              className={css.editButton}
+                              onClick={() => handleOpenEditInstitution(inst)}
+                            >
+                              Edit
+                            </button>
+                            <button
+                              type="button"
+                              className={css.deleteButton}
+                              onClick={() => handleDeleteInstitution(inst.domain)}
+                              disabled={deletingInstitution === inst.domain}
+                            >
+                              {deletingInstitution === inst.domain ? '...' : 'Delete'}
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Blocked Students Tab */}
+      {activeSubTab === 'blocked' && (
+        <div className={css.formSection}>
+          <p style={{ marginBottom: '16px' }}>
+            Students blocked from AI coaching access. These students cannot access AI coaching even if their institution has it enabled.
+          </p>
+          {loadingBlocked ? (
+            <div className={css.loading}>Loading blocked students...</div>
+          ) : blockedStudents.length === 0 ? (
+            <div className={css.emptyState}>
+              <p>No students are currently blocked from AI coaching.</p>
+            </div>
+          ) : (
+            <table className={css.dataTable}>
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Email</th>
+                  <th>Institution</th>
+                  <th>Reason</th>
+                  <th>Blocked Date</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {blockedStudents.map(student => (
+                  <tr key={student.userId}>
+                    <td>{student.displayName}</td>
+                    <td>{student.email || 'N/A'}</td>
+                    <td>{student.institution}</td>
+                    <td>{student.reason}</td>
+                    <td>{formatDate(student.blockedAt)}</td>
+                    <td>
+                      <button
+                        type="button"
+                        className={css.successButton}
+                        onClick={() => handleUnblockStudent(student.userId)}
+                        disabled={unblockingStudent === student.userId}
+                      >
+                        {unblockingStudent === student.userId ? 'Unblocking...' : 'Unblock'}
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </div>
+      )}
+
+      {/* Block Student Modal */}
+      {showBlockModal && studentToBlock && (
+        <div className={css.modalOverlay}>
+          <div className={css.modalContent}>
+            <h3>Block Student from AI Coaching</h3>
+            <p>
+              You are about to block <strong>{studentToBlock.displayName}</strong> ({studentToBlock.email}) from AI coaching access.
+            </p>
+            <div className={css.formGroup}>
+              <label className={css.formLabel}>Reason for blocking</label>
+              <textarea
+                className={css.formTextarea}
+                value={blockReason}
+                onChange={e => setBlockReason(e.target.value)}
+                placeholder="Enter the reason for blocking this student..."
+                rows={3}
+              />
+            </div>
+            <div className={css.modalActions}>
+              <button
+                type="button"
+                className={css.secondaryButton}
+                onClick={() => {
+                  setShowBlockModal(false);
+                  setStudentToBlock(null);
+                  setBlockReason('');
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className={css.dangerButton}
+                onClick={handleBlockStudent}
+                disabled={blockingStudent}
+              >
+                {blockingStudent ? 'Blocking...' : 'Block Student'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Add/Edit Institution Modal */}
+      {showAddInstitutionModal && (
+        <div className={css.modalOverlay}>
+          <div className={css.modalContentLarge}>
+            <h3>{editingInstitution ? 'Edit Institution' : 'Add New Institution'}</h3>
+            <p className={css.modalDescription}>
+              {editingInstitution
+                ? 'Update the institution details below.'
+                : 'Add a new institution to enable their students to access Street2Ivy.'}
+            </p>
+
+            {institutionError && (
+              <div className={css.errorMessage}>{institutionError}</div>
+            )}
+
+            <div className={css.formGroup}>
+              <label className={css.formLabel}>Email Domain *</label>
+              <input
+                type="text"
+                className={css.formInput}
+                value={institutionForm.domain}
+                onChange={e => setInstitutionForm({ ...institutionForm, domain: e.target.value.toLowerCase() })}
+                placeholder="e.g., harvard.edu"
+                disabled={!!editingInstitution}
+              />
+              <p className={css.formHint}>The email domain used by students (e.g., harvard.edu)</p>
+            </div>
+
+            <div className={css.formGroup}>
+              <label className={css.formLabel}>Institution Name *</label>
+              <input
+                type="text"
+                className={css.formInput}
+                value={institutionForm.name}
+                onChange={e => setInstitutionForm({ ...institutionForm, name: e.target.value })}
+                placeholder="e.g., Harvard University"
+              />
+            </div>
+
+            <div className={css.formRow}>
+              <div className={css.formGroup}>
+                <label className={css.formLabel}>Membership Status</label>
+                <select
+                  className={css.formSelect}
+                  value={institutionForm.membershipStatus}
+                  onChange={e => setInstitutionForm({ ...institutionForm, membershipStatus: e.target.value })}
+                >
+                  <option value="active">Active</option>
+                  <option value="inactive">Inactive</option>
+                  <option value="pending">Pending</option>
+                </select>
+              </div>
+
+              <div className={css.formGroup}>
+                <label className={css.formLabel}>AI Coaching</label>
+                <div className={css.toggleWrapper}>
+                  <label className={css.toggleSwitch}>
+                    <input
+                      type="checkbox"
+                      checked={institutionForm.aiCoachingEnabled}
+                      onChange={e => setInstitutionForm({ ...institutionForm, aiCoachingEnabled: e.target.checked })}
+                    />
+                    <span className={css.toggleSlider}></span>
+                  </label>
+                  <span className={css.toggleLabel}>
+                    {institutionForm.aiCoachingEnabled ? 'Enabled' : 'Disabled'}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div className={css.formRow}>
+              <div className={css.formGroup}>
+                <label className={css.formLabel}>Membership Start Date</label>
+                <input
+                  type="date"
+                  className={css.formInput}
+                  value={institutionForm.membershipStartDate}
+                  onChange={e => setInstitutionForm({ ...institutionForm, membershipStartDate: e.target.value })}
+                />
+              </div>
+
+              <div className={css.formGroup}>
+                <label className={css.formLabel}>Membership End Date</label>
+                <input
+                  type="date"
+                  className={css.formInput}
+                  value={institutionForm.membershipEndDate}
+                  onChange={e => setInstitutionForm({ ...institutionForm, membershipEndDate: e.target.value })}
+                />
+              </div>
+            </div>
+
+            <div className={css.formGroup}>
+              <label className={css.formLabel}>AI Coaching URL (Optional)</label>
+              <input
+                type="url"
+                className={css.formInput}
+                value={institutionForm.aiCoachingUrl}
+                onChange={e => setInstitutionForm({ ...institutionForm, aiCoachingUrl: e.target.value })}
+                placeholder="https://coaching.platform.com/institution"
+              />
+              <p className={css.formHint}>Custom AI coaching URL for this institution (leave empty to use global URL)</p>
+            </div>
+
+            <div className={css.modalActions}>
+              <button
+                type="button"
+                className={css.secondaryButton}
+                onClick={() => {
+                  setShowAddInstitutionModal(false);
+                  setEditingInstitution(null);
+                  setInstitutionError(null);
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className={css.primaryButton}
+                onClick={handleSaveInstitution}
+                disabled={savingInstitution}
+              >
+                {savingInstitution ? 'Saving...' : (editingInstitution ? 'Update Institution' : 'Add Institution')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
@@ -7505,12 +7847,6 @@ const AdminDashboardPageComponent = props => {
               <FormattedMessage id="AdminDashboardPage.tabInstitutions" />
             </button>
             <button
-              className={classNames(css.tab, { [css.tabActive]: activeTab === 'blog' })}
-              onClick={() => handleTabChange('blog')}
-            >
-              <FormattedMessage id="AdminDashboardPage.tabBlog" />
-            </button>
-            <button
               className={classNames(css.tab, { [css.tabActive]: activeTab === 'coaching' })}
               onClick={() => handleTabChange('coaching')}
             >
@@ -7652,28 +7988,6 @@ const AdminDashboardPageComponent = props => {
             />
           )}
 
-          {activeTab === 'blog' && (
-            <BlogManagementPanel
-              posts={blogPosts}
-              pagination={blogPostsPagination}
-              categories={blogCategories}
-              selectedPost={selectedBlogPost}
-              fetchInProgress={fetchBlogPostsInProgress}
-              saveInProgress={saveBlogPostInProgress}
-              saveSuccess={saveBlogPostSuccess}
-              saveError={saveBlogPostError}
-              deleteInProgress={deleteBlogPostInProgress}
-              onFetchPosts={onFetchBlogPosts}
-              onCreatePost={onCreateBlogPost}
-              onUpdatePost={onUpdateBlogPost}
-              onDeletePost={onDeleteBlogPost}
-              onSelectPost={onSelectBlogPost}
-              onClearSelectedPost={onClearSelectedBlogPost}
-              onClearBlogPostState={onClearBlogPostState}
-              onAddCategory={onAddBlogCategory}
-              onDeleteCategory={onDeleteBlogCategory}
-            />
-          )}
 
           {activeTab === 'coaching' && (
             <AICoachingConfigPanel />
@@ -7737,16 +8051,6 @@ const mapStateToProps = state => {
     clearHoldInProgress,
     reinstateHoldInProgress,
     clearAllHoldsInProgress,
-    // Blog Management
-    blogPosts,
-    blogPostsPagination,
-    blogCategories,
-    selectedBlogPost,
-    fetchBlogPostsInProgress,
-    saveBlogPostInProgress,
-    saveBlogPostError,
-    saveBlogPostSuccess,
-    deleteBlogPostInProgress,
   } = state.AdminDashboardPage;
 
   return {
@@ -7797,16 +8101,6 @@ const mapStateToProps = state => {
     clearHoldInProgress,
     reinstateHoldInProgress,
     clearAllHoldsInProgress,
-    // Blog Management
-    blogPosts,
-    blogPostsPagination,
-    blogCategories,
-    selectedBlogPost,
-    fetchBlogPostsInProgress,
-    saveBlogPostInProgress,
-    saveBlogPostError,
-    saveBlogPostSuccess,
-    deleteBlogPostInProgress,
   };
 };
 
@@ -7846,16 +8140,6 @@ const mapDispatchToProps = dispatch => ({
   onReinstateWorkHold: (transactionId, reason) => dispatch(reinstateWorkHoldAction(transactionId, reason)),
   onClearAllHolds: (partnerId, notes) => dispatch(clearAllHoldsForPartnerAction(partnerId, notes)),
   onClearSelectedPartner: () => dispatch(clearSelectedPartner()),
-  // Blog Management
-  onFetchBlogPosts: params => dispatch(fetchBlogPosts(params)),
-  onCreateBlogPost: postData => dispatch(createBlogPostAction(postData)),
-  onUpdateBlogPost: (postId, postData) => dispatch(updateBlogPostAction(postId, postData)),
-  onDeleteBlogPost: postId => dispatch(deleteBlogPostAction(postId)),
-  onSelectBlogPost: post => dispatch(setSelectedBlogPost(post)),
-  onClearSelectedBlogPost: () => dispatch(clearSelectedBlogPost()),
-  onClearBlogPostState: () => dispatch(clearBlogPostState()),
-  onAddBlogCategory: category => dispatch(addBlogCategoryThunk(category)),
-  onDeleteBlogCategory: category => dispatch(deleteBlogCategoryThunk(category)),
 });
 
 const AdminDashboardPage = compose(

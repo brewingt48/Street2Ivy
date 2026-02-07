@@ -58,6 +58,7 @@ const adminContent = require('./api/admin/content');
 const adminUpload = require('./api/admin/upload');
 const adminBlog = require('./api/admin/blog');
 const adminCoachingConfig = require('./api/admin/coaching-config');
+const adminStudentCoachingAccess = require('./api/admin/student-coaching-access');
 const studentWaitlist = require('./api/admin/student-waitlist');
 
 // File upload middleware
@@ -314,6 +315,14 @@ router.get('/blog/posts/:slug', adminBlog.getPublicPost);
 router.get('/admin/coaching-config', adminCoachingConfig.getConfig);
 router.put('/admin/coaching-config', adminCoachingConfig.updateConfig);
 router.get('/coaching-config/public', adminCoachingConfig.getPublicConfig);
+
+// Street2Ivy: Student AI Coaching Access Management
+router.get('/admin/student-coaching-access', adminStudentCoachingAccess.listBlocked);
+router.post('/admin/student-coaching-access/block', adminStudentCoachingAccess.block);
+router.post('/admin/student-coaching-access/unblock', adminStudentCoachingAccess.unblock);
+router.get('/admin/student-coaching-access/check/:userId', adminStudentCoachingAccess.checkAccess);
+router.get('/admin/institutions-coaching-summary', adminStudentCoachingAccess.getInstitutionsSummary);
+router.get('/admin/institution/:domain/students', adminStudentCoachingAccess.getInstitutionStudents);
 
 // Street2Ivy: Student Waitlist Management
 router.post('/student-waitlist', studentWaitlist.addToWaitlist);

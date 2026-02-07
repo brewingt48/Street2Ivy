@@ -153,21 +153,21 @@ const getNonUserFieldParams = (values, userFieldConfigs) => {
   }, {});
 };
 
-// Helper function to check if email is .edu (or allowed test domains)
-// TEMPORARILY DISABLED: Allow all emails for testing
+// Helper function to check if email is .edu (or allowed educational domains)
 const isEduEmail = email => {
-  // TODO: Re-enable .edu validation after testing
-  // For now, allow all emails to pass validation
-  return true;
+  if (!email) return false;
+  const domain = email.split('@')[1]?.toLowerCase();
+  if (!domain) return false;
 
-  // Original validation code:
-  // if (!email) return false;
-  // const domain = email.split('@')[1]?.toLowerCase();
-  // if (!domain) return false;
-  // const isEdu = domain.endsWith('.edu') || domain.endsWith('.edu.au') || domain.endsWith('.ac.uk');
-  // const testDomains = ['test.edu', 'gmail.com'];
-  // const isTestDomain = testDomains.includes(domain);
-  // return isEdu || isTestDomain;
+  // Check for educational domains (US .edu, UK .ac.uk, Australia .edu.au)
+  const isEdu = domain.endsWith('.edu') || domain.endsWith('.edu.au') || domain.endsWith('.ac.uk');
+
+  // Allow gmail.com for testing in development only
+  const isDev = process.env.NODE_ENV === 'development';
+  const testDomains = isDev ? ['gmail.com'] : [];
+  const isTestDomain = testDomains.includes(domain);
+
+  return isEdu || isTestDomain;
 };
 
 // Tabs for SignupForm and LoginForm
@@ -272,6 +272,14 @@ export const AuthenticationForms = props => {
       try {
         const baseUrl = apiBaseUrl();
         const response = await fetch(`${baseUrl}/api/institutions/check/${encodeURIComponent(emailDomain)}`);
+
+        // Check for HTTP errors before parsing
+        if (!response.ok) {
+          console.error('Institution check failed with status:', response.status);
+          setEduEmailError(intl.formatMessage({ id: 'AuthenticationPage.institutionCheckFailed' }));
+          return; // Don't proceed on API error - security requirement
+        }
+
         const data = await response.json();
 
         if (!data.isMember) {
@@ -288,7 +296,9 @@ export const AuthenticationForms = props => {
         }
       } catch (error) {
         console.error('Failed to check institution membership:', error);
-        // On network error, allow signup to proceed (server will validate)
+        // On network error, show error and block signup for security
+        setEduEmailError(intl.formatMessage({ id: 'AuthenticationPage.institutionCheckFailed' }));
+        return; // Don't proceed - security requirement
       }
     }
 
@@ -320,11 +330,14 @@ export const AuthenticationForms = props => {
     submitSignup(params);
   };
 
+  const [waitlistError, setWaitlistError] = useState(null);
+
   // Handle joining the waitlist
   const handleJoinWaitlist = async () => {
     if (!pendingSignupData) return;
 
     setWaitlistSubmitting(true);
+    setWaitlistError(null);
     try {
       const baseUrl = apiBaseUrl();
       const response = await fetch(`${baseUrl}/api/student-waitlist`, {
@@ -344,7 +357,7 @@ export const AuthenticationForms = props => {
       }
     } catch (error) {
       console.error('Failed to join waitlist:', error);
-      alert('Sorry, we could not add you to the waitlist. Please try again later.');
+      setWaitlistError(intl.formatMessage({ id: 'AuthenticationPage.waitlistFailed' }));
     } finally {
       setWaitlistSubmitting(false);
     }
@@ -509,6 +522,12 @@ export const AuthenticationForms = props => {
               <p className={css.modalText}>
                 The best way to make it happen? Let your career services office know there's demand. We'll take it from there.
               </p>
+
+              {waitlistError && (
+                <div className={css.error} style={{ marginBottom: '16px' }}>
+                  {waitlistError}
+                </div>
+              )}
 
               <div className={css.modalActions}>
                 <a

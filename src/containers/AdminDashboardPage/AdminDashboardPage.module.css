@@ -3761,3 +3761,227 @@
   padding-bottom: 8px;
   border-bottom: 1px solid var(--colorGrey200);
 }
+
+/* Sub-tabs for nested navigation within panels */
+.subTabsContainer {
+  display: flex;
+  gap: 0;
+  border-bottom: 1px solid var(--colorGrey200);
+  margin-bottom: 24px;
+}
+
+.subTab {
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--colorGrey600);
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-bottom: -1px;
+}
+
+.subTab:hover {
+  color: var(--colorGrey900);
+  background-color: var(--colorGrey50);
+}
+
+.subTabActive {
+  color: var(--marketplaceColor);
+  border-bottom-color: var(--marketplaceColor);
+}
+
+/* Institution detail header */
+.institutionDetailHeader {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 16px;
+  margin-bottom: 8px;
+  padding: 16px;
+  background: var(--colorGrey50);
+  border-radius: 8px;
+  flex-wrap: wrap;
+}
+
+.institutionDetailHeader h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.domainLabel {
+  font-size: 14px;
+  color: var(--colorGrey600);
+  font-family: monospace;
+  background: var(--colorGrey100);
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+/* Status badges for coaching */
+.statusActive {
+  background: rgba(76, 175, 80, 0.1);
+  color: #2e7d32;
+}
+
+.statusInactive {
+  background: rgba(158, 158, 158, 0.1);
+  color: #616161;
+}
+
+.statusBlocked {
+  background: rgba(244, 67, 54, 0.1);
+  color: #c62828;
+}
+
+/* Blocked count indicator */
+.blockedCount {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+  height: 24px;
+  padding: 0 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #c62828;
+  background: rgba(244, 67, 54, 0.1);
+  border-radius: 12px;
+}
+
+.noneBlocked {
+  color: var(--colorGrey500);
+  font-size: 14px;
+}
+
+/* Action buttons */
+.dangerButton {
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  color: white;
+  background-color: #dc2626;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.dangerButton:hover {
+  background-color: #b91c1c;
+}
+
+.dangerButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.successButton {
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  color: white;
+  background-color: #16a34a;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.successButton:hover {
+  background-color: #15803d;
+}
+
+.successButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Modal content for block dialog */
+.modalContent {
+  background: white;
+  border-radius: 8px;
+  padding: 24px;
+  max-width: 500px;
+  width: 90%;
+}
+
+.modalContent h3 {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0 0 16px 0;
+  color: var(--colorGrey900);
+}
+
+.modalContent p {
+  font-size: 14px;
+  color: var(--colorGrey600);
+  margin: 0 0 20px 0;
+  line-height: 1.5;
+}
+
+/* Larger modal for institution form */
+.modalContentLarge {
+  background: white;
+  border-radius: 8px;
+  padding: 24px;
+  max-width: 600px;
+  width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.modalContentLarge h3 {
+  font-size: 20px;
+  font-weight: 600;
+  margin: 0 0 8px 0;
+  color: var(--colorGrey900);
+}
+
+.modalDescription {
+  font-size: 14px;
+  color: var(--colorGrey600);
+  margin: 0 0 20px 0;
+  line-height: 1.5;
+}
+
+/* Institution list header row */
+.institutionHeaderRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.institutionHeaderRow p {
+  flex: 1;
+  min-width: 200px;
+  color: var(--colorGrey600);
+  font-size: 14px;
+}
+
+/* Domain code styling */
+.domainCode {
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+  font-size: 13px;
+  background: var(--colorGrey100);
+  padding: 2px 6px;
+  border-radius: 4px;
+  color: var(--colorGrey700);
+}
+
+/* Form row for side-by-side fields */
+.formRow {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 0;
+}
+
+.formRow .formGroup {
+  flex: 1;
+}

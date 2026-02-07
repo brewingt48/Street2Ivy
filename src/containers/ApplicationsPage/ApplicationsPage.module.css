@@ -419,6 +419,27 @@
   background-color: #eff6ff;
 }
 
+/* Disabled button states */
+.acceptButton:disabled,
+.declineButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Error row for action errors */
+.errorRow td {
+  padding: 0 !important;
+  border-bottom: 1px solid #fecaca;
+}
+
+.actionErrorMessage {
+  padding: 12px 16px;
+  background-color: #fef2f2;
+  color: #991b1b;
+  font-size: 13px;
+  font-weight: 500;
+}
+
 /* Loading State */
 .loadingState {
   display: flex;

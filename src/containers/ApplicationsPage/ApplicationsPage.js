@@ -59,82 +59,99 @@ const formatDate = (dateString) => {
 
 // ================ Application Row Component ================ //
 
-const ApplicationRow = ({ application, onAccept, onDecline, onViewDetails }) => {
+const ApplicationRow = ({ application, onAccept, onDecline, onViewDetails, isProcessing, actionError }) => {
   const student = application.customer;
   const status = getTransactionStatus(application);
   const appliedDate = application.attributes?.createdAt;
+  const applicationId = application.id?.uuid;
 
   const studentName = student?.attributes?.profile?.displayName || 'Unknown Student';
   const studentInitials = student?.attributes?.profile?.abbreviatedName || '??';
   const university = student?.attributes?.profile?.publicData?.university || 'Not specified';
   const major = student?.attributes?.profile?.publicData?.major || 'Not specified';
 
+  // Check if this row has an error
+  const hasError = actionError?.id === applicationId;
+
   return (
-    <tr className={css.applicationRow} onClick={() => onViewDetails(application)}>
-      <td className={css.studentCell}>
-        <div className={css.studentInfo}>
-          <div className={css.avatarWrapper}>
-            {student?.profileImage ? (
-              <Avatar user={student} className={css.avatar} />
-            ) : (
-              <div className={css.avatarPlaceholder}>{studentInitials}</div>
-            )}
+    <>
+      <tr className={css.applicationRow} onClick={() => onViewDetails(application)}>
+        <td className={css.studentCell}>
+          <div className={css.studentInfo}>
+            <div className={css.avatarWrapper}>
+              {student?.profileImage ? (
+                <Avatar user={student} className={css.avatar} />
+              ) : (
+                <div className={css.avatarPlaceholder}>{studentInitials}</div>
+              )}
+            </div>
+            <div className={css.studentDetails}>
+              <span className={css.studentName}>{studentName}</span>
+              <span className={css.studentMeta}>{university}</span>
+            </div>
           </div>
-          <div className={css.studentDetails}>
-            <span className={css.studentName}>{studentName}</span>
-            <span className={css.studentMeta}>{university}</span>
-          </div>
-        </div>
-      </td>
-      <td className={css.majorCell}>{major}</td>
-      <td className={css.dateCell}>{formatDate(appliedDate)}</td>
-      <td className={css.statusCell}>
-        <span className={classNames(css.statusBadge, css[`status${status.charAt(0).toUpperCase() + status.slice(1)}`])}>
-          {getStatusLabel(status)}
-        </span>
-      </td>
-      <td className={css.actionsCell}>
-        {status === 'pending' && (
-          <div className={css.actionButtons} onClick={(e) => e.stopPropagation()}>
+        </td>
+        <td className={css.majorCell}>{major}</td>
+        <td className={css.dateCell}>{formatDate(appliedDate)}</td>
+        <td className={css.statusCell}>
+          <span className={classNames(css.statusBadge, css[`status${status.charAt(0).toUpperCase() + status.slice(1)}`])}>
+            {getStatusLabel(status)}
+          </span>
+        </td>
+        <td className={css.actionsCell}>
+          {status === 'pending' && (
+            <div className={css.actionButtons} onClick={(e) => e.stopPropagation()}>
+              <button
+                className={css.acceptButton}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onAccept(application);
+                }}
+                disabled={isProcessing}
+              >
+                {isProcessing ? 'Processing...' : 'Accept'}
+              </button>
+              <button
+                className={css.declineButton}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onDecline(application);
+                }}
+                disabled={isProcessing}
+              >
+                {isProcessing ? 'Processing...' : 'Decline'}
+              </button>
+            </div>
+          )}
+          {status !== 'pending' && (
             <button
-              className={css.acceptButton}
+              className={css.viewButton}
               onClick={(e) => {
                 e.stopPropagation();
-                onAccept(application);
+                onViewDetails(application);
               }}
             >
-              Accept
+              View Details
             </button>
-            <button
-              className={css.declineButton}
-              onClick={(e) => {
-                e.stopPropagation();
-                onDecline(application);
-              }}
-            >
-              Decline
-            </button>
-          </div>
-        )}
-        {status !== 'pending' && (
-          <button
-            className={css.viewButton}
-            onClick={(e) => {
-              e.stopPropagation();
-              onViewDetails(application);
-            }}
-          >
-            View Details
-          </button>
-        )}
-      </td>
-    </tr>
+          )}
+        </td>
+      </tr>
+      {hasError && (
+        <tr className={css.errorRow}>
+          <td colSpan="5">
+            <div className={css.actionErrorMessage}>
+              ⚠️ {actionError.message}
+            </div>
+          </td>
+        </tr>
+      )}
+    </>
   );
 };
 
 // ================ Project Section Component ================ //
 
-const ProjectSection = ({ project, applications, onAccept, onDecline, onViewDetails, sortConfig, onSort }) => {
+const ProjectSection = ({ project, applications, onAccept, onDecline, onViewDetails, sortConfig, onSort, processingId, actionError }) => {
   const [isExpanded, setIsExpanded] = useState(true);
 
   const sortedApplications = useMemo(() => {
@@ -241,6 +258,8 @@ const ProjectSection = ({ project, applications, onAccept, onDecline, onViewDeta
                   onAccept={onAccept}
                   onDecline={onDecline}
                   onViewDetails={onViewDetails}
+                  isProcessing={processingId === application.id?.uuid}
+                  actionError={actionError}
                 />
               ))}
             </tbody>
@@ -263,6 +282,8 @@ const ApplicationsPageComponent = (props) => {
   const [listings, setListings] = useState({});
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [actionError, setActionError] = useState(null);
+  const [processingId, setProcessingId] = useState(null); // Track which application is being processed
   const [sortConfig, setSortConfig] = useState({ key: 'date', direction: 'desc' });
   const [filterStatus, setFilterStatus] = useState('all');
 
@@ -310,45 +331,77 @@ const ApplicationsPageComponent = (props) => {
 
   // Handle accept application
   const handleAccept = async (application) => {
+    const applicationId = application.id?.uuid;
+    setProcessingId(applicationId);
+    setActionError(null);
+
     try {
       const baseUrl = apiBaseUrl();
-      const response = await fetch(`${baseUrl}/api/transactions/${application.id?.uuid}/accept`, {
+      const response = await fetch(`${baseUrl}/api/transactions/${applicationId}/accept`, {
         method: 'POST',
         credentials: 'include',
       });
 
       if (response.ok) {
-        // Update local state
+        // Update local state only after confirmed success
         setApplications(prev => prev.map(app =>
-          app.id?.uuid === application.id?.uuid
+          app.id?.uuid === applicationId
             ? { ...app, attributes: { ...app.attributes, lastTransition: 'transition/accept' } }
             : app
         ));
+      } else {
+        // Parse error message from response
+        const errorData = await response.json().catch(() => ({}));
+        const errorMessage = errorData.message || 'Failed to accept application. Please try again.';
+        setActionError({ id: applicationId, message: errorMessage, type: 'accept' });
       }
     } catch (err) {
       console.error('Failed to accept application:', err);
+      setActionError({
+        id: applicationId,
+        message: 'Network error. Please check your connection and try again.',
+        type: 'accept'
+      });
+    } finally {
+      setProcessingId(null);
     }
   };
 
   // Handle decline application
   const handleDecline = async (application) => {
+    const applicationId = application.id?.uuid;
+    setProcessingId(applicationId);
+    setActionError(null);
+
     try {
       const baseUrl = apiBaseUrl();
-      const response = await fetch(`${baseUrl}/api/transactions/${application.id?.uuid}/decline`, {
+      const response = await fetch(`${baseUrl}/api/transactions/${applicationId}/decline`, {
         method: 'POST',
         credentials: 'include',
       });
 
       if (response.ok) {
-        // Update local state
+        // Update local state only after confirmed success
         setApplications(prev => prev.map(app =>
-          app.id?.uuid === application.id?.uuid
+          app.id?.uuid === applicationId
             ? { ...app, attributes: { ...app.attributes, lastTransition: 'transition/decline' } }
             : app
         ));
+      } else {
+        // Parse error message from response
+        const errorData = await response.json().catch(() => ({}));
+        const errorMessage = errorData.message || 'Failed to decline application. Please try again.';
+        setActionError({ id: applicationId, message: errorMessage, type: 'decline' });
       }
     } catch (err) {
       console.error('Failed to decline application:', err);
+      setActionError({
+        id: applicationId,
+        message: 'Network error. Please check your connection and try again.',
+        type: 'decline'
+      });
+    } finally {
+      setProcessingId(null);
     }
   };
 
@@ -513,6 +566,8 @@ const ApplicationsPageComponent = (props) => {
                     onViewDetails={handleViewDetails}
                     sortConfig={sortConfig}
                     onSort={handleSort}
+                    processingId={processingId}
+                    actionError={actionError}
                   />
                 ))}
               </div>

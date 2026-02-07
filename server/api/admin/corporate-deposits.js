@@ -38,6 +38,9 @@ async function verifySystemAdmin(req, res) {
  *
  * Get all corporate partners with their deposit status and pending transactions.
  * Groups deposits by corporate partner for easier management.
+ *
+ * OPTIMIZED: Fetches all transactions in a single query then groups by provider,
+ * avoiding N+1 query problem.
  */
 async function listCorporateDeposits(req, res) {
   const { status, page = '1', perPage = '20' } = req.query;
@@ -52,83 +55,85 @@ async function listCorporateDeposits(req, res) {
 
     const integrationSdk = getIntegrationSdk();
 
-    // Get all corporate partners
-    const usersResponse = await integrationSdk.users.query({
-      pub_userType: 'corporate-partner',
-      include: ['profileImage'],
+    // Transitions that indicate deposit tracking is relevant
+    const acceptedTransitions = [
+      'transition/accept',
+      'transition/mark-completed',
+      'transition/review-1-by-provider',
+      'transition/review-1-by-customer',
+      'transition/review-2-by-provider',
+      'transition/review-2-by-customer',
+    ];
+
+    // OPTIMIZATION: Fetch all relevant transactions in a single query
+    // This replaces the N+1 pattern of querying per corporate partner
+    const txResponse = await integrationSdk.transactions.query({
+      // Only get transactions in relevant states
+      lastTransitions: acceptedTransitions,
+      include: ['provider', 'listing', 'customer', 'provider.profileImage'],
       'fields.image': ['variants.square-small', 'variants.square-small2x'],
-      perPage: 100,
+      perPage: 100, // Get up to 100 transactions in one call
     });
 
-    const corporatePartners = usersResponse.data.data;
-    const included = usersResponse.data.included || [];
+    const transactions = txResponse.data.data || [];
+    const txIncluded = txResponse.data.included || [];
 
-    // Build image map
-    const imageMap = {};
-    included.forEach(item => {
-      if (item.type === 'image') {
-        imageMap[item.id.uuid] = item;
+    // Build lookup maps for included data
+    const usersMap = {};
+    const listingsMap = {};
+    const imagesMap = {};
+
+    txIncluded.forEach(item => {
+      if (item.type === 'user') {
+        usersMap[item.id.uuid] = item;
+      } else if (item.type === 'listing') {
+        listingsMap[item.id.uuid] = item;
+      } else if (item.type === 'image') {
+        imagesMap[item.id.uuid] = item;
       }
     });
 
-    // For each corporate partner, get their accepted transactions that need deposit tracking
+    // Group transactions by provider (corporate partner)
+    const transactionsByProvider = {};
+
+    transactions.forEach(tx => {
+      const providerId = tx.relationships?.provider?.data?.id?.uuid;
+      if (!providerId) return;
+
+      if (!transactionsByProvider[providerId]) {
+        transactionsByProvider[providerId] = [];
+      }
+      transactionsByProvider[providerId].push(tx);
+    });
+
+    // Process each corporate partner with their transactions
     const corporateDeposits = [];
 
-    for (const partner of corporatePartners) {
-      const partnerId = partner.id.uuid;
-      const publicData = partner.attributes.profile.publicData || {};
-      const profileImageRef = partner.relationships?.profileImage?.data;
-      const profileImage = profileImageRef ? imageMap[profileImageRef.id.uuid] : null;
+    Object.entries(transactionsByProvider).forEach(([providerId, providerTransactions]) => {
+      const provider = usersMap[providerId];
+      if (!provider) return;
 
-      // Query transactions where this corporate partner is the provider
-      // and transaction is in accepted state (student hired but may need deposit)
-      const txResponse = await integrationSdk.transactions.query({
-        providerId: partnerId,
-        include: ['listing', 'customer'],
-        perPage: 100,
-      });
+      const publicData = provider.attributes.profile.publicData || {};
 
-      const transactions = txResponse.data.data || [];
-      const txIncluded = txResponse.data.included || [];
+      // Skip if not a corporate partner
+      if (publicData.userType !== 'corporate-partner') return;
 
-      // Build lookup maps
-      const listingsMap = {};
-      const customersMap = {};
-      txIncluded.forEach(item => {
-        if (item.type === 'listing') {
-          listingsMap[item.id.uuid] = item;
-        } else if (item.type === 'user') {
-          customersMap[item.id.uuid] = item;
-        }
-      });
-
-      // Filter to accepted transactions that need deposit tracking
-      const acceptedTransitions = [
-        'transition/accept',
-        'transition/mark-completed',
-        'transition/review-1-by-provider',
-        'transition/review-1-by-customer',
-        'transition/review-2-by-provider',
-        'transition/review-2-by-customer',
-      ];
-
-      const relevantTransactions = transactions.filter(tx => {
-        const lastTransition = tx.attributes.lastTransition;
-        return acceptedTransitions.some(t => lastTransition === t || lastTransition?.includes('accept'));
-      });
+      // Get profile image
+      const profileImageRef = provider.relationships?.profileImage?.data;
+      const profileImage = profileImageRef ? imagesMap[profileImageRef.id.uuid] : null;
 
       // Categorize transactions
       const pendingDeposit = [];
       const depositConfirmed = [];
       const completed = [];
 
-      relevantTransactions.forEach(tx => {
+      providerTransactions.forEach(tx => {
         const metadata = tx.attributes.metadata || {};
         const lastTransition = tx.attributes.lastTransition;
         const listingId = tx.relationships?.listing?.data?.id?.uuid;
         const customerId = tx.relationships?.customer?.data?.id?.uuid;
         const listing = listingsMap[listingId];
-        const customer = customersMap[customerId];
+        const customer = usersMap[customerId];
 
         const txData = {
           id: tx.id.uuid,
@@ -170,16 +175,16 @@ async function listCorporateDeposits(req, res) {
       const totalConfirmed = depositConfirmed.length;
       const totalCompleted = completed.length;
 
-      if (status === 'pending' && totalPending === 0) continue;
-      if (status === 'confirmed' && totalConfirmed === 0) continue;
-      if (status === 'completed' && totalCompleted === 0) continue;
+      if (status === 'pending' && totalPending === 0) return;
+      if (status === 'confirmed' && totalConfirmed === 0) return;
+      if (status === 'completed' && totalCompleted === 0) return;
 
-      if (relevantTransactions.length > 0 || !status) {
+      if (providerTransactions.length > 0 || !status) {
         corporateDeposits.push({
-          id: partnerId,
-          displayName: partner.attributes.profile.displayName,
+          id: providerId,
+          displayName: provider.attributes.profile.displayName,
           companyName: publicData.companyName || 'Unknown Company',
-          email: partner.attributes.email,
+          email: provider.attributes.email,
           profileImage: profileImage ? {
             id: profileImage.id.uuid,
             attributes: profileImage.attributes,
@@ -188,7 +193,7 @@ async function listCorporateDeposits(req, res) {
             pendingDeposits: totalPending,
             depositsConfirmed: totalConfirmed,
             projectsCompleted: totalCompleted,
-            totalHired: relevantTransactions.length,
+            totalHired: providerTransactions.length,
           },
           transactions: {
             pendingDeposit,
@@ -197,7 +202,7 @@ async function listCorporateDeposits(req, res) {
           },
         });
       }
-    }
+    });
 
     // Sort by pending deposits (most first)
     corporateDeposits.sort((a, b) => b.stats.pendingDeposits - a.stats.pendingDeposits);

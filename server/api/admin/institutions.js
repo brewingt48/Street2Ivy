@@ -7,6 +7,8 @@
  * Only system admins can manage institutions.
  */
 
+const fs = require('fs');
+const path = require('path');
 const { getIntegrationSdk } = require('../../api-util/integrationSdk');
 const { handleError, serialize } = require('../../api-util/sdk');
 
@@ -14,43 +16,79 @@ const { handleError, serialize } = require('../../api-util/sdk');
 // This maps email domains to institution membership data
 let institutionMemberships = new Map();
 
-// Initialize with test institutions for development
-institutionMemberships.set('test.edu', {
-  domain: 'test.edu',
-  name: 'Test University',
-  membershipStatus: 'active',
-  membershipStartDate: '2024-01-01',
-  membershipEndDate: '2026-12-31',
-  aiCoachingEnabled: true,
-  aiCoachingUrl: 'https://coaching.street2ivy.com/test',
-  createdAt: new Date().toISOString(),
-  updatedAt: new Date().toISOString(),
-});
+// Institutions data file for persistence
+const INSTITUTIONS_FILE = path.join(__dirname, '../../data/institutions.json');
 
-institutionMemberships.set('holycross.edu', {
-  domain: 'holycross.edu',
-  name: 'College of the Holy Cross',
-  membershipStatus: 'active',
-  membershipStartDate: '2024-01-01',
-  membershipEndDate: '2026-12-31',
-  aiCoachingEnabled: true,
-  aiCoachingUrl: 'https://coaching.street2ivy.com/holycross',
-  createdAt: new Date().toISOString(),
-  updatedAt: new Date().toISOString(),
-});
+// Load institutions from file
+function loadInstitutions() {
+  try {
+    if (fs.existsSync(INSTITUTIONS_FILE)) {
+      const data = fs.readFileSync(INSTITUTIONS_FILE, 'utf8');
+      const institutions = JSON.parse(data);
+      institutionMemberships.clear();
+      institutions.forEach(inst => {
+        institutionMemberships.set(inst.domain, inst);
+      });
+      console.log(`Loaded ${institutions.length} institutions from file`);
+      return;
+    }
+  } catch (error) {
+    console.error('Error loading institutions:', error);
+  }
 
-// Gmail for testing (remove in production)
-institutionMemberships.set('gmail.com', {
-  domain: 'gmail.com',
-  name: 'Gmail Test Institution',
-  membershipStatus: 'active',
-  membershipStartDate: '2024-01-01',
-  membershipEndDate: '2026-12-31',
-  aiCoachingEnabled: true,
-  aiCoachingUrl: 'https://coaching.street2ivy.com/test',
-  createdAt: new Date().toISOString(),
-  updatedAt: new Date().toISOString(),
-});
+  // Only initialize with test data in development
+  if (process.env.NODE_ENV === 'development') {
+    console.log('Development mode: Initializing with test institutions');
+
+    institutionMemberships.set('test.edu', {
+      domain: 'test.edu',
+      name: 'Test University',
+      membershipStatus: 'active',
+      membershipStartDate: '2024-01-01',
+      membershipEndDate: '2026-12-31',
+      aiCoachingEnabled: true,
+      aiCoachingUrl: 'https://coaching.street2ivy.com/test',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    });
+
+    institutionMemberships.set('gmail.com', {
+      domain: 'gmail.com',
+      name: 'Gmail Test Institution (DEV ONLY)',
+      membershipStatus: 'active',
+      membershipStartDate: '2024-01-01',
+      membershipEndDate: '2026-12-31',
+      aiCoachingEnabled: true,
+      aiCoachingUrl: 'https://coaching.street2ivy.com/test',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    });
+
+    // Save initial dev data to file
+    saveInstitutions();
+  } else {
+    console.log('Production mode: No test institutions loaded. Add institutions via Admin Dashboard.');
+  }
+}
+
+// Save institutions to file
+function saveInstitutions() {
+  try {
+    const dataDir = path.dirname(INSTITUTIONS_FILE);
+    if (!fs.existsSync(dataDir)) {
+      fs.mkdirSync(dataDir, { recursive: true });
+    }
+    const institutions = Array.from(institutionMemberships.values());
+    fs.writeFileSync(INSTITUTIONS_FILE, JSON.stringify(institutions, null, 2), 'utf8');
+    return true;
+  } catch (error) {
+    console.error('Error saving institutions:', error);
+    return false;
+  }
+}
+
+// Load institutions on startup
+loadInstitutions();
 
 /**
  * Helper to verify user is a system admin
@@ -171,6 +209,7 @@ async function createOrUpdateInstitution(req, res) {
     };
 
     institutionMemberships.set(normalizedDomain, institution);
+    saveInstitutions(); // Persist to file
 
     res.status(200).json({
       data: institution,
@@ -210,6 +249,7 @@ async function updateInstitutionStatus(req, res) {
     institution.updatedAt = new Date().toISOString();
 
     institutionMemberships.set(normalizedDomain, institution);
+    saveInstitutions(); // Persist to file
 
     res.status(200).json({
       data: institution,
@@ -250,6 +290,7 @@ async function updateCoachingSettings(req, res) {
     institution.updatedAt = new Date().toISOString();
 
     institutionMemberships.set(normalizedDomain, institution);
+    saveInstitutions(); // Persist to file
 
     res.status(200).json({
       data: institution,
@@ -277,6 +318,7 @@ async function deleteInstitution(req, res) {
     }
 
     institutionMemberships.delete(normalizedDomain);
+    saveInstitutions(); // Persist to file
 
     res.status(200).json({ message: 'Institution deleted' });
   } catch (e) {
