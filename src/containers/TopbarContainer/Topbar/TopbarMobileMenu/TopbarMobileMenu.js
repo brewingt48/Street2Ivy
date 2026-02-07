@@ -163,8 +163,8 @@ const TopbarMobileMenu = props => {
   const isEducationalAdmin = userType === 'educational-admin';
   const isAdmin = isSystemAdmin || isEducationalAdmin;
 
-  // Educational admins don't have listings, so hide this link for them
-  const manageListingsLinkMaybe = showCreateListingsLink && !isEducationalAdmin ? (
+  // System and educational admins don't have listings, so hide this link for them
+  const manageListingsLinkMaybe = showCreateListingsLink && !isAdmin ? (
     <li className={classNames(css.navigationLink, currentPageClass('ManageListingsPage'))}>
       <NamedLink name="ManageListingsPage">
         <FormattedMessage id="TopbarMobileMenu.yourListingsLink" />

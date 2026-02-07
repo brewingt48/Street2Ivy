@@ -133,7 +133,7 @@ const ProfileMenu = ({
             </NamedLink>
           </MenuItem>
         ) : null}
-        {showManageListingsLink && !isEducationalAdmin ? (
+        {showManageListingsLink && !isAdmin ? (
           <MenuItem key="ManageListingsPage">
             <NamedLink
               className={classNames(css.menuLink, currentPageClass('ManageListingsPage'))}
