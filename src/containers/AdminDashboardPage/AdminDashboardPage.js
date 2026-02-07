@@ -282,6 +282,25 @@ const UserManagementPanel = props => {
       .toUpperCase();
   };
 
+  // Calculate user stats by type
+  const userCounts = users.reduce(
+    (acc, user) => {
+      const userType = user.attributes?.profile?.publicData?.userType || 'unknown';
+      acc.total++;
+      if (userType === 'student') acc.students++;
+      else if (userType === 'corporate-partner') acc.corporate++;
+      else if (userType === 'educational-admin') acc.eduAdmin++;
+      else if (userType === 'system-admin') acc.sysAdmin++;
+      return acc;
+    },
+    { total: 0, students: 0, corporate: 0, eduAdmin: 0, sysAdmin: 0 }
+  );
+
+  const handleClearFilters = () => {
+    setFilters({ userType: '', status: '', search: '' });
+    onFetchUsers({});
+  };
+
   return (
     <div className={css.panel}>
       <div className={css.panelHeader}>
@@ -290,65 +309,91 @@ const UserManagementPanel = props => {
         </h2>
       </div>
 
+      {/* User Stats Bar */}
+      <div className={css.userStatsBar}>
+        <div className={css.userStatItem}>
+          <span className={css.userStatValue}>{pagination?.totalItems || userCounts.total}</span>
+          <span className={css.userStatLabel}>Total Users</span>
+        </div>
+        <div className={css.userStatItem}>
+          <span className={classNames(css.userStatValue, css.studentValue)}>{userCounts.students}</span>
+          <span className={css.userStatLabel}>Students</span>
+        </div>
+        <div className={css.userStatItem}>
+          <span className={classNames(css.userStatValue, css.corporateValue)}>{userCounts.corporate}</span>
+          <span className={css.userStatLabel}>Corporate</span>
+        </div>
+        <div className={css.userStatItem}>
+          <span className={classNames(css.userStatValue, css.eduAdminValue)}>{userCounts.eduAdmin}</span>
+          <span className={css.userStatLabel}>Edu Admins</span>
+        </div>
+      </div>
+
       {/* Filters */}
       <div className={css.filterBar}>
-        <div className={css.filterItem}>
-          <label className={css.filterLabel}>
-            <FormattedMessage id="AdminDashboardPage.filterUserType" />
-          </label>
-          <select
-            className={css.filterSelect}
-            value={filters.userType}
-            onChange={e => handleFilterChange('userType', e.target.value)}
-          >
-            <option value="">All Types</option>
-            <option value="student">Students</option>
-            <option value="corporate-partner">Corporate Partners</option>
-            <option value="educational-admin">Educational Admins</option>
-            <option value="system-admin">System Admins</option>
-          </select>
+        <div className={css.filterGroup}>
+          <div className={css.filterItem}>
+            <label className={css.filterLabel}>User Type</label>
+            <select
+              className={css.filterSelect}
+              value={filters.userType}
+              onChange={e => handleFilterChange('userType', e.target.value)}
+            >
+              <option value="">All Types</option>
+              <option value="student">Students</option>
+              <option value="corporate-partner">Corporate Partners</option>
+              <option value="educational-admin">Educational Admins</option>
+              <option value="system-admin">System Admins</option>
+            </select>
+          </div>
+
+          <div className={css.filterItem}>
+            <label className={css.filterLabel}>Status</label>
+            <select
+              className={css.filterSelect}
+              value={filters.status}
+              onChange={e => handleFilterChange('status', e.target.value)}
+            >
+              <option value="">All Status</option>
+              <option value="active">Active</option>
+              <option value="banned">Banned</option>
+            </select>
+          </div>
+
+          <div className={css.filterItem}>
+            <label className={css.filterLabel}>Search</label>
+            <input
+              type="text"
+              className={css.filterInput}
+              placeholder="Search by name or email..."
+              value={filters.search}
+              onChange={e => handleFilterChange('search', e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && handleSearch()}
+            />
+          </div>
         </div>
 
-        <div className={css.filterItem}>
-          <label className={css.filterLabel}>
-            <FormattedMessage id="AdminDashboardPage.filterStatus" />
-          </label>
-          <select
-            className={css.filterSelect}
-            value={filters.status}
-            onChange={e => handleFilterChange('status', e.target.value)}
-          >
-            <option value="">All Status</option>
-            <option value="active">Active</option>
-            <option value="banned">Banned</option>
-          </select>
+        <div className={css.filterGroup}>
+          <button className={css.searchButton} onClick={handleSearch} disabled={fetchInProgress}>
+            🔍 Search
+          </button>
+          {(filters.userType || filters.status || filters.search) && (
+            <button className={css.clearFiltersButton} onClick={handleClearFilters}>
+              Clear Filters
+            </button>
+          )}
         </div>
-
-        <div className={css.filterItem}>
-          <label className={css.filterLabel}>
-            <FormattedMessage id="AdminDashboardPage.filterSearch" />
-          </label>
-          <input
-            type="text"
-            className={css.filterInput}
-            placeholder="Search by name or email..."
-            value={filters.search}
-            onChange={e => handleFilterChange('search', e.target.value)}
-          />
-        </div>
-
-        <button className={css.searchButton} onClick={handleSearch} disabled={fetchInProgress}>
-          <FormattedMessage id="AdminDashboardPage.searchButton" />
-        </button>
       </div>
 
       {/* Users Table */}
       {fetchInProgress ? (
         <div className={css.loadingState}>
-          <FormattedMessage id="AdminDashboardPage.loading" />
+          <div className={css.spinner}></div>
+          <p>Loading users...</p>
         </div>
       ) : (
         <>
+          <div className={css.usersTableWrapper}>
           <table className={css.usersTable}>
             <thead>
               <tr>
@@ -399,6 +444,17 @@ const UserManagementPanel = props => {
               </tr>
             </thead>
             <tbody>
+              {sortedUsers.length === 0 && (
+                <tr>
+                  <td colSpan="8">
+                    <div className={css.emptyState}>
+                      <span className={css.emptyIcon}>👥</span>
+                      <h3>No users found</h3>
+                      <p>Try adjusting your filters or search criteria to find users.</p>
+                    </div>
+                  </td>
+                </tr>
+              )}
               {sortedUsers.map(user => {
                 const publicData = user.attributes?.profile?.publicData || {};
                 const userType = publicData.userType || 'unknown';
@@ -547,6 +603,7 @@ const UserManagementPanel = props => {
               })}
             </tbody>
           </table>
+          </div>
 
           {pagination && pagination.totalPages > 1 && (
             <div className={css.paginationWrapper}>
@@ -6379,16 +6436,31 @@ const ContentManagementPanel = props => {
                 />
               </div>
               {(formData.logoUrl || sectionData?.logoUrl) && (
-                <div className={css.imagePreview}>
-                  <img
-                    src={formData.logoUrl || sectionData.logoUrl}
-                    alt="Logo preview"
-                    className={css.previewImage}
-                    style={{
-                      height: `${formData.logoHeight || sectionData?.logoHeight || 36}px`,
-                      width: 'auto'
+                <div className={css.imagePreviewWithActions}>
+                  <div className={css.imagePreview}>
+                    <img
+                      src={formData.logoUrl || sectionData.logoUrl}
+                      alt="Logo preview"
+                      className={css.previewImage}
+                      style={{
+                        height: `${formData.logoHeight || sectionData?.logoHeight || 36}px`,
+                        width: 'auto'
+                      }}
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    className={css.deleteImageButton}
+                    onClick={() => {
+                      handleInputChange('logoUrl', '');
+                      // Reset the file input so the same file can be re-uploaded
+                      const fileInput = document.getElementById('logo-upload');
+                      if (fileInput) fileInput.value = '';
                     }}
-                  />
+                    title="Remove logo"
+                  >
+                    🗑️ Remove Logo
+                  </button>
                 </div>
               )}
             </div>
@@ -6938,12 +7010,26 @@ const ContentManagementPanel = props => {
                 />
               </div>
               {(formData.backgroundImage || sectionData.backgroundImage) && (
-                <div className={css.imagePreview}>
-                  <img
-                    src={formData.backgroundImage || sectionData.backgroundImage}
-                    alt="Background preview"
-                    className={css.previewImage}
-                  />
+                <div className={css.imagePreviewWithActions}>
+                  <div className={css.imagePreview}>
+                    <img
+                      src={formData.backgroundImage || sectionData.backgroundImage}
+                      alt="Background preview"
+                      className={css.previewImage}
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    className={css.deleteImageButton}
+                    onClick={() => {
+                      handleInputChange('backgroundImage', '');
+                      const fileInput = document.getElementById('hero-image-upload');
+                      if (fileInput) fileInput.value = '';
+                    }}
+                    title="Remove background image"
+                  >
+                    🗑️ Remove Image
+                  </button>
                 </div>
               )}
             </div>
@@ -6979,6 +7065,32 @@ const ContentManagementPanel = props => {
                   onChange={e => handleInputChange('backgroundVideo', e.target.value)}
                 />
               </div>
+              {(formData.backgroundVideo || sectionData?.backgroundVideo) && (
+                <div className={css.videoPreviewWithActions}>
+                  <div className={css.videoPreview}>
+                    <video
+                      src={formData.backgroundVideo || sectionData.backgroundVideo}
+                      className={css.previewVideo}
+                      muted
+                      loop
+                      autoPlay
+                      playsInline
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    className={css.deleteImageButton}
+                    onClick={() => {
+                      handleInputChange('backgroundVideo', '');
+                      const fileInput = document.getElementById('hero-video-upload');
+                      if (fileInput) fileInput.value = '';
+                    }}
+                    title="Remove background video"
+                  >
+                    🗑️ Remove Video
+                  </button>
+                </div>
+              )}
               <span className={css.formHint}>
                 The video will autoplay muted in the background when selected as background type.
               </span>
