@@ -494,9 +494,15 @@ const MessageCenter = ({ transactions, isLoading, onSelectMessage, currentUserId
           <span className={css.messageCenterIcon}>💬</span>
           Message Center
         </h3>
-        <NamedLink name="InboxPage" params={{ tab: 'orders' }} className={css.viewFullInboxLink}>
-          Open Full Inbox →
-        </NamedLink>
+        <div className={css.messageCenterActions}>
+          <NamedLink name="SearchPage" className={css.composeMessageButton}>
+            <span>✍️</span>
+            New Message
+          </NamedLink>
+          <NamedLink name="InboxPage" params={{ tab: 'orders' }} className={css.viewFullInboxLink}>
+            Open Full Inbox →
+          </NamedLink>
+        </div>
       </div>
 
       {/* Message Tabs */}
@@ -526,6 +532,24 @@ const MessageCenter = ({ transactions, isLoading, onSelectMessage, currentUserId
       {/* Message List */}
       <div className={css.messageListContainer}>
         {renderMessageTable(activeMessages, activeMessageTab)}
+      </div>
+
+      {/* Quick Compose Section */}
+      <div className={css.quickComposeSection}>
+        <div className={css.quickComposeInfo}>
+          <span className={css.quickComposeIcon}>💡</span>
+          <p className={css.quickComposeText}>
+            To send a new message, browse projects and click "Contact" on any listing, or reply to existing conversations in your inbox.
+          </p>
+        </div>
+        <div className={css.quickComposeActions}>
+          <NamedLink name="SearchPage" className={css.browseToMessageButton}>
+            Browse Projects
+          </NamedLink>
+          <NamedLink name="SearchCompaniesPage" className={css.browseCompaniesButton}>
+            View Companies
+          </NamedLink>
+        </div>
       </div>
     </div>
   );
@@ -1247,75 +1271,130 @@ const StudentDashboardPageComponent = props => {
 
           {/* AI Coaching Premium Section */}
           {!isLoadingInstitution && (
-            <div className={css.aiCoachingSection}>
-              {institutionInfo?.aiCoachingEnabled ? (
-                // Active AI Coaching Card
-                <div className={css.aiCoachingCard}>
-                  <div className={css.aiCoachingContent}>
-                    <div className={css.aiCoachingInfo}>
-                      <div className={css.aiCoachingHeader}>
-                        <span className={css.aiCoachingIcon}>🤖</span>
-                        <h2 className={css.aiCoachingTitle}>Your AI Career Coach</h2>
-                      </div>
-                      <p className={css.aiCoachingDescription}>
-                        Get personalized career guidance powered by AI. Practice interviews, refine your resume, explore career paths, and develop professional skills.
-                      </p>
-                      <div className={css.aiCoachingFeatures}>
-                        <span className={css.aiCoachingFeature}><span>📝</span> Resume Review</span>
-                        <span className={css.aiCoachingFeature}><span>🎯</span> Interview Prep</span>
-                        <span className={css.aiCoachingFeature}><span>🚀</span> Career Pathing</span>
-                        <span className={css.aiCoachingFeature}><span>💡</span> Skill Development</span>
-                      </div>
+            <div className={css.aiCoachingSectionWrapper}>
+              <div className={css.aiCoachingSection}>
+                {institutionInfo?.aiCoachingEnabled ? (
+                  // Active AI Coaching Card
+                  <div className={css.aiCoachingCard}>
+                    {/* Decorative Elements */}
+                    <div className={css.aiCoachingDecor}>
+                      <div className={css.decorCircle1}></div>
+                      <div className={css.decorCircle2}></div>
+                      <div className={css.decorGrid}></div>
+                    </div>
 
-                      {/* Confidentiality Warning Banner */}
-                      <div className={css.confidentialityBanner}>
-                        <span className={css.bannerIcon}>⚠️</span>
-                        <div className={css.bannerContent}>
-                          <p className={css.bannerTitle}>Confidentiality Notice</p>
-                          <p className={css.bannerText}>
-                            Do not share proprietary, confidential, or trade secret information from any project or company engagement in AI coaching sessions. Violations may result in removal from the platform.
-                          </p>
+                    <div className={css.aiCoachingContent}>
+                      {/* Left Side - Main Content */}
+                      <div className={css.aiCoachingMain}>
+                        <div className={css.aiCoachingBadge}>
+                          <span className={css.badgeIcon}>✨</span>
+                          <span className={css.badgeText}>Premium Feature</span>
+                        </div>
+
+                        <div className={css.aiCoachingHeader}>
+                          <div className={css.aiCoachingIconWrapper}>
+                            <span className={css.aiCoachingIcon}>🤖</span>
+                          </div>
+                          <div className={css.aiCoachingTitleGroup}>
+                            <h2 className={css.aiCoachingTitle}>AI Career Coach</h2>
+                            <p className={css.aiCoachingSubtitle}>Powered by Advanced AI</p>
+                          </div>
+                        </div>
+
+                        <p className={css.aiCoachingDescription}>
+                          Get personalized career guidance powered by AI. Practice interviews, refine your resume, explore career paths, and develop professional skills.
+                        </p>
+
+                        <div className={css.aiCoachingFeatures}>
+                          <div className={css.aiCoachingFeature}>
+                            <span className={css.featureIcon}>📝</span>
+                            <div className={css.featureContent}>
+                              <span className={css.featureTitle}>Resume Review</span>
+                              <span className={css.featureDesc}>Get actionable feedback</span>
+                            </div>
+                          </div>
+                          <div className={css.aiCoachingFeature}>
+                            <span className={css.featureIcon}>🎯</span>
+                            <div className={css.featureContent}>
+                              <span className={css.featureTitle}>Interview Prep</span>
+                              <span className={css.featureDesc}>Practice with AI</span>
+                            </div>
+                          </div>
+                          <div className={css.aiCoachingFeature}>
+                            <span className={css.featureIcon}>🚀</span>
+                            <div className={css.featureContent}>
+                              <span className={css.featureTitle}>Career Pathing</span>
+                              <span className={css.featureDesc}>Explore opportunities</span>
+                            </div>
+                          </div>
+                          <div className={css.aiCoachingFeature}>
+                            <span className={css.featureIcon}>💡</span>
+                            <div className={css.featureContent}>
+                              <span className={css.featureTitle}>Skill Development</span>
+                              <span className={css.featureDesc}>Grow your abilities</span>
+                            </div>
+                          </div>
                         </div>
                       </div>
-                    </div>
 
-                    <div className={css.aiCoachingActions}>
-                      <button className={css.launchCoachingButton} onClick={handleAICoachingClick}>
-                        <span>✨</span>
-                        Start Coaching Session
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                // Locked AI Coaching Card
-                <div className={classNames(css.aiCoachingCard, css.aiCoachingCardLocked)}>
-                  <div className={css.aiCoachingContent}>
-                    <div className={css.aiCoachingInfo}>
-                      <div className={css.aiCoachingHeader}>
-                        <span className={css.aiCoachingIcon}>🔒</span>
-                        <h2 className={css.aiCoachingTitle}>AI Career Coaching</h2>
+                      {/* Right Side - CTA */}
+                      <div className={css.aiCoachingCTA}>
+                        <button className={css.launchCoachingButton} onClick={handleAICoachingClick}>
+                          <span className={css.buttonIcon}>✨</span>
+                          <span className={css.buttonText}>Start Coaching Session</span>
+                        </button>
+                        <p className={css.ctaHint}>Unlimited sessions available</p>
                       </div>
-                      <p className={css.aiCoachingDescription}>
-                        AI Career Coaching is available when your institution activates this feature. Encourage your school to partner with Street2Ivy to unlock personalized coaching.
-                      </p>
-                      <p className={css.lockedMessage}>
-                        When activated, you'll get access to resume reviews, interview practice, career path exploration, and skill development — all powered by AI.
-                      </p>
                     </div>
 
-                    <div className={css.aiCoachingActions}>
-                      <a
-                        href="mailto:careerservices@university.edu?subject=Request%20AI%20Career%20Coaching%20from%20Street2Ivy&body=Dear%20Career%20Services%2C%0A%0AI%20recently%20discovered%20that%20Street2Ivy%20offers%20AI-powered%20career%20coaching%20for%20students%2C%20including%20resume%20reviews%2C%20interview%20practice%2C%20and%20career%20path%20guidance.%0A%0AI%20believe%20this%20would%20be%20a%20valuable%20resource%20for%20our%20student%20body.%20Could%20you%20please%20look%20into%20partnering%20with%20Street2Ivy%20to%20make%20this%20feature%20available%20to%20us%3F%0A%0AThank%20you%20for%20your%20consideration.%0A%0ABest%20regards"
-                        className={css.requestAccessButton}
-                      >
-                        <span>📧</span>
-                        Let Your School Know
-                      </a>
+                    {/* Confidentiality Notice - Bottom */}
+                    <div className={css.confidentialityBanner}>
+                      <span className={css.bannerIcon}>⚠️</span>
+                      <p className={css.bannerText}>
+                        <strong>Confidentiality Notice:</strong> Do not share proprietary, confidential, or trade secret information from any project or company engagement in AI coaching sessions.
+                      </p>
                     </div>
                   </div>
-                </div>
-              )}
+                ) : (
+                  // Locked AI Coaching Card
+                  <div className={classNames(css.aiCoachingCard, css.aiCoachingCardLocked)}>
+                    <div className={css.aiCoachingContent}>
+                      <div className={css.aiCoachingMain}>
+                        <div className={css.aiCoachingHeader}>
+                          <div className={css.aiCoachingIconWrapper}>
+                            <span className={css.aiCoachingIcon}>🔒</span>
+                          </div>
+                          <div className={css.aiCoachingTitleGroup}>
+                            <h2 className={css.aiCoachingTitle}>AI Career Coaching</h2>
+                            <p className={css.aiCoachingSubtitle}>Coming Soon to Your Institution</p>
+                          </div>
+                        </div>
+
+                        <p className={css.aiCoachingDescription}>
+                          AI Career Coaching is available when your institution activates this feature. Encourage your school to partner with Street2Ivy to unlock personalized coaching.
+                        </p>
+
+                        <div className={css.lockedFeaturesList}>
+                          <span className={css.lockedFeature}>📝 Resume Review</span>
+                          <span className={css.lockedFeature}>🎯 Interview Prep</span>
+                          <span className={css.lockedFeature}>🚀 Career Pathing</span>
+                          <span className={css.lockedFeature}>💡 Skill Development</span>
+                        </div>
+                      </div>
+
+                      <div className={css.aiCoachingCTA}>
+                        <a
+                          href="mailto:careerservices@university.edu?subject=Request%20AI%20Career%20Coaching%20from%20Street2Ivy"
+                          className={css.requestAccessButton}
+                        >
+                          <span>📧</span>
+                          Let Your School Know
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           )}
 
