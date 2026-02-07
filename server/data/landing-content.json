@@ -2,7 +2,7 @@
   "branding": {
     "id": "branding",
     "section": "branding",
-    "logoUrl": "http://localhost:3500/static/uploads/logo-1770373421088-a7p59j.png",
+    "logoUrl": "/api/uploads/logo-1770373421088-a7p59j.png",
     "logoHeight": 60,
     "tagline": "",
     "faviconUrl": null,
@@ -25,7 +25,7 @@
     "subtitle": "AI is automating the work that once trained the next generation. Street2Ivy connects ambitious students with corporate project teams — giving talent real experience and giving companies a low-risk pipeline to the best minds on any campus.",
     "primaryButtonText": "Get Started",
     "secondaryButtonText": "Sign In",
-    "backgroundImage": "http://localhost:3500/static/uploads/hero-1770371112741-0qmgxw.png",
+    "backgroundImage": "/api/uploads/hero-1770371112741-0qmgxw.png",
     "backgroundVideo": null,
     "backgroundType": "image",
     "isActive": true,

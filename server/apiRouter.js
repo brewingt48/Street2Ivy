@@ -109,6 +109,15 @@ router.use(
   })
 );
 
+// Serve uploaded files through the API router for proper CORS handling
+const path = require('path');
+const fs = require('fs');
+const uploadsDir = path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+}
+router.use('/uploads', express.static(uploadsDir));
+
 // Parse Transit body first to a string
 router.use(
   bodyParser.text({

@@ -204,15 +204,13 @@ if (!fs.existsSync(UPLOAD_DIR)) {
 
 /**
  * Get the public URL for an uploaded file
- * In development, we need to include the full API server URL
+ * Always return a relative path that goes through the API
+ * This ensures CORS is handled properly in development
  */
 function getPublicUrl(filename) {
-  const relativePath = `/static/uploads/${filename}`;
-  if (isDev) {
-    const port = process.env.REACT_APP_DEV_API_SERVER_PORT || 3500;
-    return `http://localhost:${port}${relativePath}`;
-  }
-  return relativePath;
+  // Use /api/uploads/ path which will be handled by the API server
+  // This ensures proper CORS headers in development
+  return `/api/uploads/${filename}`;
 }
 
 // Allowed file types
