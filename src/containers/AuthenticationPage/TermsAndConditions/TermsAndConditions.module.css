@@ -1,28 +1,35 @@
 @import '../../../styles/customMediaQueries.css';
 
+/* ================ Enterprise Design System - Terms & Conditions ================ */
+
 .root {
-  composes: marketplaceModalBottomWrapperText from global;
-  padding-bottom: 6px;
+  padding-bottom: 8px;
+  text-align: left;
 
   @media (--viewportMedium) {
-    padding-bottom: 8px;
+    padding-bottom: 10px;
   }
 }
 
 .finePrint {
-  composes: marketplaceModalHelperLink from global;
-  padding: 3px 0 5px 0;
+  font-size: 13px;
+  color: var(--s2i-slate-500);
+  line-height: 1.6;
+  padding: 4px 0 6px 0;
   text-align: left;
 }
 
 .privacyLink,
 .termsLink {
-  composes: marketplaceModalHelperLink from global;
-  color: var(--marketplaceColor);
+  font-size: 13px;
+  color: var(--s2i-teal-600);
+  font-weight: var(--s2i-font-medium);
+  text-decoration: none;
+  transition: var(--s2i-transition-colors);
+  cursor: pointer;
 
   &:hover {
-    color: var(--marketplaceColorDark);
+    color: var(--s2i-teal-700);
     text-decoration: underline;
-    cursor: pointer;
   }
 }

@@ -1,5 +1,7 @@
 @import '../../styles/customMediaQueries.css';
 
+/* ================ Enterprise Design System - Modal ================ */
+
 /* Content is visible as modal layer */
 .isOpen {
   width: 100%;
@@ -9,12 +11,7 @@
   & .scrollLayer {
     flex-grow: 1;
     display: flex;
-
-    /* Add default background color to avoid bouncing scroll showing the
-   page contents from behind the modal. */
-    background-color: var(--colorWhite);
-
-    /* Additional styles for the modal window, dimming the background and positioning the modal */
+    background-color: white;
     min-height: 100vh;
     overflow: auto;
     -webkit-overflow-scrolling: touch;
@@ -23,26 +20,21 @@
       justify-content: center;
       align-items: flex-start;
       padding: 0;
-      background-color: rgba(0, 0, 0, 0.4);
+      background-color: rgba(12, 20, 48, 0.6);
+      backdrop-filter: blur(4px);
       background-image: none;
     }
   }
 
   & .container {
     flex-grow: 1;
-
-    /* Create context so the close button can be positioned within it */
     position: relative;
-
-    /* Display and dimensions */
     display: flex;
     flex-direction: column;
     padding: var(--modalPadding);
-
-    background-color: var(--colorWhite);
+    background-color: white;
     border-radius: var(--borderRadius);
     border-bottom: none;
-
     min-height: 100vh;
     height: 100%;
 
@@ -51,11 +43,26 @@
       flex-grow: 0;
       min-height: auto;
       height: auto;
-
       padding: var(--modalPaddingMedium);
       margin-top: 12.5vh;
       margin-bottom: 12.5vh;
-      border-bottom: 8px solid var(--marketplaceColor);
+      border-radius: var(--s2i-radius-2xl);
+      box-shadow: 0 25px 80px rgba(0, 0, 0, 0.25);
+      border-bottom: none;
+      position: relative;
+
+      /* Teal accent bar at top */
+      &::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 80px;
+        height: 4px;
+        background: linear-gradient(90deg, var(--s2i-teal-500), var(--s2i-emerald-500));
+        border-radius: 0 0 4px 4px;
+      }
     }
   }
 }
@@ -91,15 +98,22 @@
 .content {
 }
 
-/* Content is explicitly hidden (this default can be overridden with passed-in class) */
-/* The use case for having both .isOpen and .isClosed is ModalInMobile use case       */
-/* where desktop layout should not get any styling from Modal component.              */
+/* Content is explicitly hidden */
 .isClosed {
   display: none;
 }
 
 .close {
   composes: marketplaceModalCloseStyles from global;
+  color: var(--s2i-slate-500);
+  transition: var(--s2i-transition-all);
+
+  &:enabled:hover,
+  &:enabled:active {
+    color: var(--s2i-navy-900);
+    background: var(--s2i-slate-100);
+    border-radius: var(--s2i-radius-full);
+  }
 }
 
 .closeText {
@@ -111,12 +125,12 @@
 }
 
 .closeLight {
-  color: var(--colorGrey300);
-  transition: var(--transitionStyleButton);
+  color: var(--s2i-slate-400);
+  transition: var(--s2i-transition-colors);
 
   &:enabled:hover,
   &:enabled:active {
-    color: var(--colorWhite);
+    color: white;
   }
 }
 

@@ -14,9 +14,11 @@ let cmsFetchPromise = null;
 const HEIGHT_24 = 24;
 const HEIGHT_36 = 36;
 const HEIGHT_48 = 48;
-const HEIGHT_OPTIONS = [HEIGHT_24, HEIGHT_36, HEIGHT_48];
+const HEIGHT_60 = 60;
+const HEIGHT_72 = 72;
+const HEIGHT_OPTIONS = [HEIGHT_24, HEIGHT_36, HEIGHT_48, HEIGHT_60, HEIGHT_72];
 
-// logoSettings property supports only 3 types at this point
+// logoSettings property supports 5 height options
 const isValidLogoSettings = settings =>
   settings?.format === 'image' && HEIGHT_OPTIONS.includes(settings?.height);
 const isImageAsset = logo => logo?.type === 'imageAsset';
@@ -36,7 +38,18 @@ const getVariantData = variants => {
 
 // We have maximum heights for each logo type. It's enforced through classes
 const getHeightClassName = height => {
-  return height === HEIGHT_48 ? css.logo48 : height === HEIGHT_36 ? css.logo36 : css.logo24;
+  switch (height) {
+    case HEIGHT_72:
+      return css.logo72;
+    case HEIGHT_60:
+      return css.logo60;
+    case HEIGHT_48:
+      return css.logo48;
+    case HEIGHT_36:
+      return css.logo36;
+    default:
+      return css.logo24;
+  }
 };
 
 export const LogoComponent = props => {
@@ -136,35 +149,30 @@ const Logo = props => {
 
   // Fetch CMS content to check for custom logo and settings
   useEffect(() => {
-    // If we already have a cached value, use it
+    // Always fetch fresh data to ensure we get the latest logo settings
+    const fetchBranding = () => {
+      fetchPublicContent()
+        .then(response => {
+          const branding = response?.data?.branding;
+          const brandingData = branding ? {
+            logoUrl: branding.logoUrl || null,
+            logoHeight: branding.logoHeight || null,
+          } : false;
+          cmsLogoCache = brandingData;
+          setCmsBranding(brandingData);
+        })
+        .catch(() => {
+          cmsLogoCache = false;
+          setCmsBranding(false);
+        });
+    };
+
+    // If we already have a cached value, use it initially but still fetch fresh data
     if (cmsLogoCache !== null) {
       setCmsBranding(cmsLogoCache);
-      return;
     }
 
-    // If a fetch is already in progress, wait for it
-    if (cmsFetchPromise) {
-      cmsFetchPromise.then(data => setCmsBranding(data));
-      return;
-    }
-
-    // Start fetching CMS content
-    cmsFetchPromise = fetchPublicContent()
-      .then(response => {
-        const branding = response?.data?.branding;
-        const brandingData = branding ? {
-          logoUrl: branding.logoUrl || null,
-          logoHeight: branding.logoHeight || null,
-        } : false;
-        cmsLogoCache = brandingData; // false means we checked but no branding was set
-        return cmsLogoCache;
-      })
-      .catch(() => {
-        cmsLogoCache = false;
-        return false;
-      });
-
-    cmsFetchPromise.then(data => setCmsBranding(data));
+    fetchBranding();
   }, []);
 
   // Use CMS logo if available, otherwise use default

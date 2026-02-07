@@ -1,7 +1,8 @@
 @import '../../styles/customMediaQueries.css';
 
 .root {
-  display: block;
+  display: flex;
+  align-items: center;
 
   flex-shrink: 0;
   padding: 0;

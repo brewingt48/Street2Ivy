@@ -1,8 +1,10 @@
 @import '../../../styles/customMediaQueries.css';
 
-.root {
-  composes: marketplaceModalFormRootStyles from global;
+/* ================ Enterprise Design System - Login Form ================ */
 
+.root {
+  display: flex;
+  flex-direction: column;
   justify-content: flex-start;
 
   @media (--viewportMedium) {
@@ -10,23 +12,107 @@
   }
 }
 
+/* Input field styling */
+.root :global(.FieldTextInput_input) {
+  width: 100%;
+  padding: 14px 16px;
+  font-size: 15px;
+  color: var(--s2i-navy-900);
+  background: var(--s2i-slate-50);
+  border: 1.5px solid var(--s2i-slate-200);
+  border-radius: var(--s2i-radius-lg);
+  transition: var(--s2i-transition-all);
+  outline: none;
+
+  &::placeholder {
+    color: var(--s2i-slate-400);
+  }
+
+  &:hover {
+    border-color: var(--s2i-slate-300);
+  }
+
+  &:focus {
+    background: white;
+    border-color: var(--s2i-teal-500);
+    box-shadow: 0 0 0 3px rgba(0, 200, 190, 0.15);
+  }
+}
+
+/* Label styling */
+.root :global(.FieldTextInput_label) {
+  font-size: 13px;
+  font-weight: var(--s2i-font-semibold);
+  color: var(--s2i-slate-700);
+  margin-bottom: 6px;
+  display: block;
+}
+
 .password {
-  composes: marketplaceModalPasswordMargins from global;
+  margin-top: 20px;
+
+  @media (--viewportMedium) {
+    margin-top: 24px;
+  }
 }
 
 .bottomWrapper {
-  composes: marketplaceModalBottomWrapper from global;
+  margin-top: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 
-/* Adjust the bottomWrapper's margin to match modals without the helper text */
+/* Submit button styling */
+.bottomWrapper :global(.Button_primaryButton) {
+  width: 100%;
+  padding: 16px 24px;
+  font-size: 15px;
+  font-weight: var(--s2i-font-semibold);
+  color: white;
+  background: linear-gradient(135deg, var(--s2i-teal-500) 0%, var(--s2i-emerald-500) 100%);
+  border: none;
+  border-radius: var(--s2i-radius-lg);
+  cursor: pointer;
+  transition: var(--s2i-transition-all);
+  box-shadow: 0 4px 14px rgba(0, 200, 190, 0.35);
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 200, 190, 0.45);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+  }
+}
+
 .bottomWrapperText {
-  composes: marketplaceModalBottomWrapperText from global;
+  text-align: center;
 }
 
 .recoveryLink {
-  composes: marketplaceModalHelperLink from global;
+  font-size: 14px;
+  color: var(--s2i-teal-600);
+  text-decoration: none;
+  font-weight: var(--s2i-font-medium);
+  transition: var(--s2i-transition-colors);
+
+  &:hover {
+    color: var(--s2i-teal-700);
+    text-decoration: underline;
+  }
 }
 
 .recoveryLinkInfo {
-  composes: marketplaceModalHelperText from global;
+  font-size: 14px;
+  color: var(--s2i-slate-500);
+  margin: 0;
 }

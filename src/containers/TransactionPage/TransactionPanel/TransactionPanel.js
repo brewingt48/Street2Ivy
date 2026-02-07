@@ -303,6 +303,28 @@ export class TransactionPanelComponent extends Component {
               transactionId={transactionId?.uuid}
             />
 
+            {/* Company Profile Link - Show for students (customers) viewing applications/invites */}
+            {isCustomer && provider && !isProviderBanned && !isProviderDeleted && (
+              <div className={css.companyInfoContainer}>
+                <h4 className={css.companyInfoTitle}>
+                  <FormattedMessage id="TransactionPanel.aboutTheCompany" />
+                </h4>
+                <p className={css.companyInfoDescription}>
+                  <FormattedMessage id="TransactionPanel.learnMoreAboutCompany" />
+                </p>
+                <NamedLink
+                  name="ProfilePage"
+                  params={{ id: provider.id?.uuid }}
+                  className={css.companyProfileLink}
+                >
+                  <FormattedMessage
+                    id="TransactionPanel.viewCompanyProfile"
+                    values={{ companyName: userDisplayNameAsString(provider, 'Company') }}
+                  />
+                </NamedLink>
+              </div>
+            )}
+
             {requestQuote}
             {offer}
 

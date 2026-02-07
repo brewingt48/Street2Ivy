@@ -5,6 +5,7 @@ import classNames from 'classnames';
 
 import { useConfiguration } from '../../context/configurationContext';
 import { FormattedMessage, useIntl } from '../../util/reactIntl';
+import { fetchCompanySpending } from '../../util/api';
 import {
   REVIEW_TYPE_OF_PROVIDER,
   REVIEW_TYPE_OF_CUSTOMER,
@@ -259,6 +260,92 @@ export const CustomUserFields = props => {
   );
 };
 
+// ================ Company Spending Section (for students/edu admins viewing corporate profiles) ================ //
+
+const CompanySpendingSection = ({ companyId, intl }) => {
+  const [spending, setSpending] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    if (companyId) {
+      setIsLoading(true);
+      fetchCompanySpending(companyId)
+        .then(data => {
+          setSpending(data.spending);
+          setIsLoading(false);
+        })
+        .catch(err => {
+          console.error('Failed to fetch company spending:', err);
+          setError(err);
+          setIsLoading(false);
+        });
+    }
+  }, [companyId]);
+
+  if (isLoading) {
+    return (
+      <div className={css.companySpendingSection}>
+        <H4 as="h2" className={css.companySpendingTitle}>
+          <FormattedMessage id="ProfilePage.companySpendingTitle" defaultMessage="Project Investment" />
+        </H4>
+        <p className={css.companySpendingLoading}>Loading...</p>
+      </div>
+    );
+  }
+
+  if (error || !spending) {
+    return null; // Don't show anything if there's an error or no data
+  }
+
+  const formatCurrency = (amount, currency = 'USD') => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency,
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(amount / 100);
+  };
+
+  return (
+    <div className={css.companySpendingSection}>
+      <H4 as="h2" className={css.companySpendingTitle}>
+        <FormattedMessage id="ProfilePage.companySpendingTitle" defaultMessage="Project Investment" />
+      </H4>
+      <div className={css.companySpendingGrid}>
+        <div className={css.companySpendingStat}>
+          <span className={css.companySpendingValue}>
+            {formatCurrency(spending.totalSpent?.amount || 0, spending.totalSpent?.currency)}
+          </span>
+          <span className={css.companySpendingLabel}>
+            <FormattedMessage id="ProfilePage.totalInvested" defaultMessage="Total Invested" />
+          </span>
+        </div>
+        <div className={css.companySpendingStat}>
+          <span className={css.companySpendingValue}>{spending.totalProjects || 0}</span>
+          <span className={css.companySpendingLabel}>
+            <FormattedMessage id="ProfilePage.totalProjects" defaultMessage="Projects Posted" />
+          </span>
+        </div>
+        <div className={css.companySpendingStat}>
+          <span className={css.companySpendingValue}>{spending.completedProjects || 0}</span>
+          <span className={css.companySpendingLabel}>
+            <FormattedMessage id="ProfilePage.completedProjects" defaultMessage="Projects Completed" />
+          </span>
+        </div>
+        <div className={css.companySpendingStat}>
+          <span className={css.companySpendingValue}>
+            {formatCurrency(spending.avgProjectValue?.amount || 0, spending.avgProjectValue?.currency)}
+          </span>
+          <span className={css.companySpendingLabel}>
+            <FormattedMessage id="ProfilePage.avgProjectValue" defaultMessage="Avg. Project Value" />
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 export const MainContent = props => {
   const [mounted, setMounted] = useState(false);
   useEffect(() => {
@@ -279,13 +366,23 @@ export const MainContent = props => {
     intl,
     hideReviews,
     userTypeRoles,
+    profileUserId,
+    currentUserType,
   } = props;
 
   // Street2Ivy: detect corporate partner
-  const isCorporatePartner = publicData?.userType === 'corporate-partner';
+  const isCorporatePartner = publicData?.userType === 'corporate-partner' || publicData?.userType === 'corporate';
   const companyName = publicData?.companyName;
   const companyWebsite = publicData?.companyWebsite;
   const companyDescription = publicData?.companyDescription;
+
+  // Determine if current user can view company spending (students, edu admins, system admins)
+  const canViewSpending =
+    currentUserType === 'student' ||
+    currentUserType === 'educational-admin' ||
+    currentUserType === 'education' ||
+    currentUserType === 'admin' ||
+    currentUserType === 'system-admin';
 
   const hasListings = listings.length > 0;
   const hasMatchMedia = typeof window !== 'undefined' && window?.matchMedia;
@@ -349,6 +446,11 @@ export const MainContent = props => {
         </div>
       ) : null}
       {hasBio ? <p className={css.bio}>{bioWithLinks}</p> : null}
+
+      {/* Company Spending Section - Show for students/edu admins viewing corporate profiles */}
+      {isCorporatePartner && profileUserId && canViewSpending && (
+        <CompanySpendingSection companyId={profileUserId} intl={intl} />
+      )}
 
       {displayName ? (
         <CustomUserFields
@@ -541,6 +643,8 @@ export const ProfilePageComponent = props => {
           hideReviews={hasNoViewingRightsOnPrivateMarketplace}
           intl={intl}
           userTypeRoles={userTypeRoles}
+          profileUserId={profileUser?.id?.uuid}
+          currentUserType={currentUser?.attributes?.profile?.publicData?.userType}
           {...rest}
         />
       </LayoutSideNavigation>

@@ -40,6 +40,7 @@ import {
   Heading,
   Modal,
   NamedRedirect,
+  ProgressBar,
   Tabs,
   StripeConnectAccountStatusBox,
   StripeConnectAccountForm,
@@ -86,7 +87,12 @@ const tabsForListingType = (processName, listingTypeConfig) => {
     displayDeliveryPickup(listingTypeConfig) || displayDeliveryShipping(listingTypeConfig)
       ? [DELIVERY]
       : [];
-  const styleOrPhotosTab = requireListingImage(listingTypeConfig) ? [PHOTOS] : [STYLE];
+
+  // For project listings (Street2Ivy use case), we don't need photos or style panels
+  // Photos panel only appears if images are required
+  // Style panel (card color scheme) is removed as it provides minimal value for project listings
+  const requiresPhotos = requireListingImage(listingTypeConfig);
+  const photosTabMaybe = requiresPhotos ? [PHOTOS] : [];
 
   // You can reorder these panels.
   // Note 1: You need to change save button translations for new listing flow
@@ -95,10 +101,12 @@ const tabsForListingType = (processName, listingTypeConfig) => {
   // Note 3: The first tab creates a draft listing and title is mandatory attribute for it.
   //         Details tab asks for "title" and is therefore the first tab in the wizard flow.
   const tabs = {
-    ['default-booking']: [DETAILS, ...locationMaybe, PRICING, AVAILABILITY, ...styleOrPhotosTab],
-    ['default-purchase']: [DETAILS, PRICING_AND_STOCK, ...deliveryMaybe, ...styleOrPhotosTab],
-    ['default-negotiation']: [DETAILS, ...locationMaybe, ...pricingMaybe, ...styleOrPhotosTab],
-    ['default-inquiry']: [DETAILS, ...locationMaybe, ...pricingMaybe, ...styleOrPhotosTab],
+    ['default-booking']: [DETAILS, ...locationMaybe, PRICING, AVAILABILITY, ...photosTabMaybe],
+    ['default-purchase']: [DETAILS, PRICING_AND_STOCK, ...deliveryMaybe, ...photosTabMaybe],
+    ['default-negotiation']: [DETAILS, ...locationMaybe, ...pricingMaybe, ...photosTabMaybe],
+    ['default-inquiry']: [DETAILS, ...locationMaybe, ...pricingMaybe, ...photosTabMaybe],
+    // Project application process - for Street2Ivy corporate project postings
+    ['default-project-application']: [DETAILS],
   };
 
   return tabs[processName] || tabs['default-inquiry'];
@@ -645,8 +653,37 @@ class EditListingWizard extends Component {
       return <NamedRedirect name="EditListingPage" params={pathParams} />;
     }
 
+    // Build progress steps for the ProgressBar
+    const progressSteps = tabs.map(tab => {
+      const tabTranslation = tabLabelAndSubmit(
+        intl,
+        tab,
+        isNewListingFlow,
+        isPriceDisabled,
+        resolveLatestProcessName(processName)
+      );
+      return {
+        id: tab,
+        label: tabTranslation.label,
+      };
+    });
+    const currentStepIndex = tabs.indexOf(selectedTab);
+    const completedSteps = tabs.map((tab, index) => {
+      if (index < currentStepIndex) return true;
+      return tabCompleted(tab, currentListing, config);
+    });
+
     return (
       <div className={classes}>
+        {/* Progress bar for new listing flow */}
+        {isNewListingFlow && tabs.length > 1 && (
+          <ProgressBar
+            steps={progressSteps}
+            currentStep={currentStepIndex >= 0 ? currentStepIndex : 0}
+            completedSteps={completedSteps}
+          />
+        )}
+
         <Tabs
           rootClassName={css.tabsContainer}
           navRootClassName={css.nav}

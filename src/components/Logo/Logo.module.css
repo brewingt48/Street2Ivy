@@ -3,7 +3,7 @@
 .root {
   display: flex;
   align-items: center;
-  height: 60px;
+  height: auto;
   max-width: 370px;
   margin: 0;
 
@@ -15,7 +15,6 @@
 .logo {
   /* If height is increased, change link margins accordingly */
   /* NOTE: extremely wide logos may look bad. This will scale them to container of 24 x 200. */
-  height: auto;
   width: auto;
   /* Mobile topbar has maximum of 100vw - 132px space for logo */
   max-width: min(calc(100vw - 132px), 100%, 370px);
@@ -27,12 +26,19 @@
   }
 }
 
+/* Height classes - these set the specific height for the logo */
 .logo24 {
-  max-height: 24px;
+  height: 24px !important;
 }
 .logo36 {
-  max-height: 36px;
+  height: 36px !important;
 }
 .logo48 {
-  max-height: 48px;
+  height: 48px !important;
+}
+.logo60 {
+  height: 60px !important;
+}
+.logo72 {
+  height: 72px !important;
 }

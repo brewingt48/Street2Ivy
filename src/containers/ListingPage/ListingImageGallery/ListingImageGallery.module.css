@@ -1,18 +1,14 @@
 @import '../../../styles/customMediaQueries.css';
 
+/* ================ Enterprise Design System - Listing Image Gallery ================ */
+
 :global(.image-gallery-thumbnails-container) {
   text-align: left !important;
 }
+
 :global(.image-gallery-thumbnails) {
   padding-top: 24px;
   padding-bottom: 0;
-
-  /*
-   By default, the gallery controls the scroll position of the thumbnails when
-   browsing the images. We change this logic to a freely scrollable container
-   that the user controls. This overflow works together with the
-   `disableThumbnailScroll` option in the component JS.
-   */
   width: 100vw;
   overflow: auto;
 
@@ -23,11 +19,13 @@
     width: unset;
   }
 }
+
 :global(.image-gallery-thumbnail) {
   width: auto;
-  border-radius: 8px;
-
+  border-radius: var(--s2i-radius-lg);
   text-align: left !important;
+  border: 2px solid transparent;
+  transition: var(--s2i-transition-all);
 
   &:first-child {
     margin-left: 24px;
@@ -46,23 +44,23 @@
 
   &:hover,
   &:global(.active) {
-    border-color: var(--marketplaceColor);
+    border-color: var(--s2i-teal-500);
   }
 }
 
 :global(.image-gallery-slide-wrapper) {
-  background-color: var(--colorWhite);
-  border-bottom: 1px solid var(--colorGrey100);
+  background-color: white;
+  border-bottom: 1px solid var(--s2i-slate-200);
 
   @media (--viewportMedium) {
-    border-radius: var(--borderRadiusMedium);
-    border: 1px solid var(--colorGrey100);
+    border-radius: var(--s2i-radius-xl);
+    border: 1px solid var(--s2i-slate-200);
     overflow: hidden;
   }
 }
 
 :global(.fullscreen) {
-  background-color: var(--colorWhite) !important;
+  background-color: white !important;
 
   & :global(.image-gallery-slide-wrapper) {
     background-color: transparent;
@@ -89,8 +87,9 @@
 }
 
 .noImage {
-  border: 1px solid var(--colorGrey100);
-  border-radius: var(--borderRadiusMedium);
+  border: 1px solid var(--s2i-slate-200);
+  border-radius: var(--s2i-radius-xl);
+  background: linear-gradient(135deg, var(--s2i-slate-100) 0%, var(--s2i-slate-50) 100%);
 }
 
 .itemWrapperFullscreen {
@@ -111,11 +110,9 @@
 }
 
 .thumb {
-  /* With the active thumbnail border (default 4px), make the result
-   height a multiple of the baseline. */
   max-width: 88px;
   max-height: 88px;
-  border-radius: var(--borderRadiusMedium);
+  border-radius: var(--s2i-radius-lg);
 }
 
 .navLeft,
@@ -126,17 +123,16 @@
   border: 0;
   padding: 0;
   z-index: 1;
-
-  /* center content */
   display: flex;
   align-items: center;
   justify-content: center;
+  background: transparent;
+  cursor: pointer;
 
   &:hover {
-    cursor: pointer;
-
     & .navArrowWrapper {
-      background-color: rgba(255, 255, 255, 1);
+      background-color: white;
+      box-shadow: var(--s2i-shadow-md);
     }
   }
 }
@@ -159,15 +155,13 @@
 
 .navArrowWrapper {
   display: none;
-
   width: 40px;
   height: 40px;
-  border-radius: 50%;
-
-  background-color: rgba(255, 255, 255, 0.5);
+  border-radius: var(--s2i-radius-full);
+  background-color: rgba(255, 255, 255, 0.9);
+  transition: var(--s2i-transition-all);
 
   @media (--viewportLarge) {
-    /* center content */
     display: flex;
     align-items: center;
     justify-content: center;
@@ -175,19 +169,25 @@
 }
 
 .openFullscreen {
-  /* Hide on mobile. Currently react-image-gallery fullscreen mode is broken on
-     mobile, and mobile doesn't really benefit from fullscreen anyways. */
   display: none;
-
   composes: buttonSmall from global;
-
-  /* Position and dimensions */
   position: absolute;
   bottom: 19px;
   right: 24px;
-
-  /* Ensure the button is on top of the navRight area */
   z-index: 1;
+  background: white;
+  color: var(--s2i-navy-900);
+  border: none;
+  font-weight: var(--s2i-font-semibold);
+  border-radius: var(--s2i-radius-lg);
+  box-shadow: var(--s2i-shadow-md);
+  transition: var(--s2i-transition-all);
+
+  &:hover {
+    background: var(--s2i-slate-50);
+    transform: translateY(-2px);
+    box-shadow: var(--s2i-shadow-lg);
+  }
 
   @media (--viewportLarge) {
     display: block;
@@ -196,13 +196,12 @@
 
 .close {
   composes: marketplaceModalCloseStyles from global;
-
-  color: var(--colorGrey600);
-  transition: var(--transitionStyleButton);
+  color: var(--s2i-slate-600);
+  transition: var(--s2i-transition-colors);
 
   &:enabled:hover,
   &:enabled:active {
-    color: var(--colorBlack);
+    color: var(--s2i-navy-900);
   }
 }
 

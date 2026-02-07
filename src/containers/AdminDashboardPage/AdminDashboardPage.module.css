@@ -3509,3 +3509,236 @@
   font-size: 14px;
 }
 
+/* ================ AI Coaching Configuration Panel ================ */
+
+.panelDescription {
+  color: var(--colorGrey600);
+  font-size: 14px;
+  margin-top: 8px;
+}
+
+.formSection {
+  max-width: 700px;
+}
+
+.formHint {
+  font-size: 12px;
+  color: var(--colorGrey500);
+  margin-top: 4px;
+}
+
+.toggleWrapper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.toggleSwitch {
+  position: relative;
+  display: inline-block;
+  width: 50px;
+  height: 26px;
+}
+
+.toggleSwitch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.toggleSlider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--colorGrey300);
+  transition: 0.3s;
+  border-radius: 26px;
+}
+
+.toggleSlider:before {
+  position: absolute;
+  content: "";
+  height: 20px;
+  width: 20px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: 0.3s;
+  border-radius: 50%;
+}
+
+.toggleSwitch input:checked + .toggleSlider {
+  background-color: var(--marketplaceColor);
+}
+
+.toggleSwitch input:checked + .toggleSlider:before {
+  transform: translateX(24px);
+}
+
+.toggleLabel {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--colorGrey700);
+}
+
+.successMessage {
+  background: rgba(76, 175, 80, 0.1);
+  color: #2e7d32;
+  padding: 12px 16px;
+  border-radius: 6px;
+  margin-bottom: 16px;
+  font-size: 14px;
+}
+
+/* ================ Student Waitlist Panel ================ */
+
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.statCard {
+  background: linear-gradient(135deg, var(--colorGrey50) 0%, var(--colorGrey100) 100%);
+  border-radius: 12px;
+  padding: 20px;
+  text-align: center;
+  border: 1px solid var(--colorGrey200);
+}
+
+.statValue {
+  display: block;
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--marketplaceColor);
+  line-height: 1.2;
+}
+
+.statLabel {
+  display: block;
+  font-size: 13px;
+  color: var(--colorGrey600);
+  margin-top: 4px;
+}
+
+.topDomainsSection {
+  background: var(--colorGrey50);
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 24px;
+}
+
+.topDomainsSection h4 {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--colorGrey700);
+  margin: 0 0 12px 0;
+}
+
+.topDomainsList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.topDomainItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background: white;
+  border-radius: 6px;
+  border: 1px solid var(--colorGrey200);
+}
+
+.domainName {
+  font-weight: 500;
+  color: var(--colorGrey800);
+}
+
+.domainCount {
+  font-size: 13px;
+  color: var(--colorGrey500);
+}
+
+.filterButton {
+  padding: 8px 16px;
+  background: var(--marketplaceColor);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.filterButton:hover {
+  background: var(--marketplaceColorDark);
+}
+
+.smallButton {
+  padding: 4px 10px;
+  font-size: 12px;
+  color: var(--colorGrey700);
+  background: var(--colorGrey100);
+  border: 1px solid var(--colorGrey300);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.smallButton:hover {
+  background: var(--colorGrey200);
+}
+
+.deleteSmallButton {
+  padding: 4px 10px;
+  font-size: 12px;
+  color: var(--colorFail);
+  background: rgba(244, 67, 54, 0.08);
+  border: 1px solid rgba(244, 67, 54, 0.3);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.deleteSmallButton:hover {
+  background: rgba(244, 67, 54, 0.15);
+}
+
+.statusContacted {
+  background: rgba(76, 175, 80, 0.1);
+  color: #2e7d32;
+}
+
+.statusPending {
+  background: rgba(255, 152, 0, 0.1);
+  color: #f57c00;
+}
+
+.paginationButton {
+  padding: 8px 16px;
+  margin: 0 8px;
+  font-size: 13px;
+  color: var(--colorGrey700);
+  background: var(--colorGrey100);
+  border: 1px solid var(--colorGrey300);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.paginationButton:hover:not(:disabled) {
+  background: var(--colorGrey200);
+}
+
+.paginationButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+

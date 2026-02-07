@@ -1,10 +1,19 @@
 @import '../../styles/customMediaQueries.css';
 
+/* ================ Enterprise Design System - Payment Methods Page ================ */
+
 .content {
+  background: white;
+  border-radius: var(--s2i-radius-xl);
+  padding: 24px;
+  box-shadow: var(--s2i-shadow-sm);
+  border: 1px solid var(--s2i-slate-100);
+
   @media (--viewportMedium) {
     margin: 32px auto 0 auto;
     width: 100%;
     max-width: 564px;
+    padding: 32px;
   }
 
   @media (--viewportLarge) {

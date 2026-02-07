@@ -76,6 +76,7 @@ const SectionFooter = props => {
     rootClassName,
     numberOfColumns = 1,
     socialMediaLinks = [],
+    socialIconSize = 24,
     slogan,
     appearance,
     copyright,
@@ -101,6 +102,9 @@ const SectionFooter = props => {
     ? window.matchMedia(`(max-width: ${MAX_MOBILE_SCREEN_WIDTH}px)`)?.matches
     : true;
   const logoLayout = isMobileLayout ? 'mobile' : 'desktop';
+
+  // CSS variable for social icon size
+  const iconSizeStyle = { '--social-icon-size': `${socialIconSize}px` };
 
   // use block builder instead of mapping blocks manually
 
@@ -132,7 +136,7 @@ const SectionFooter = props => {
               <Field data={slogan} className={css.slogan} />
             </div>
             {showSocialMediaLinks ? (
-              <div className={css.icons}>
+              <div className={css.icons} style={iconSizeStyle}>
                 <BlockBuilder blocks={linksWithBlockId} sectionId={sectionId} options={options} />
               </div>
             ) : null}

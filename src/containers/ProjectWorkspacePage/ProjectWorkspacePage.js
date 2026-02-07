@@ -265,9 +265,44 @@ const NdaSection = ({ ndaRequired, ndaAccepted, onAcceptNda, acceptInProgress })
 
 // ================ Messages Section ================ //
 
-const MessagesSection = ({ messages, currentUserId, onSendMessage, sendInProgress }) => {
+// File type icons for attachments
+const FILE_TYPE_ICONS = {
+  pdf: '📄',
+  document: '📝',
+  spreadsheet: '📊',
+  presentation: '📽️',
+  image: '🖼️',
+  file: '📎',
+};
+
+// Allowed file types
+const ALLOWED_FILE_TYPES = ['.pdf', '.docx', '.xlsx', '.pptx', '.png', '.jpg', '.jpeg', '.gif', '.doc', '.xls', '.ppt'];
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+
+const getFileExtension = filename => filename.slice(filename.lastIndexOf('.')).toLowerCase();
+
+const getFileTypeCategory = filename => {
+  const ext = getFileExtension(filename);
+  if (['.pdf'].includes(ext)) return 'pdf';
+  if (['.doc', '.docx'].includes(ext)) return 'document';
+  if (['.xls', '.xlsx'].includes(ext)) return 'spreadsheet';
+  if (['.ppt', '.pptx'].includes(ext)) return 'presentation';
+  if (['.png', '.jpg', '.jpeg', '.gif'].includes(ext)) return 'image';
+  return 'file';
+};
+
+const formatFileSize = bytes => {
+  if (bytes < 1024) return bytes + ' B';
+  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+  return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+};
+
+const MessagesSection = ({ messages, currentUserId, transactionId, onSendMessage, sendInProgress }) => {
   const [newMessage, setNewMessage] = useState('');
+  const [pendingAttachments, setPendingAttachments] = useState([]);
+  const [attachmentError, setAttachmentError] = useState(null);
   const messagesEndRef = useRef(null);
+  const fileInputRef = useRef(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -279,10 +314,57 @@ const MessagesSection = ({ messages, currentUserId, onSendMessage, sendInProgres
 
   const handleSubmit = async e => {
     e.preventDefault();
-    if (!newMessage.trim() || sendInProgress) return;
+    if ((!newMessage.trim() && pendingAttachments.length === 0) || sendInProgress) return;
 
-    await onSendMessage(newMessage.trim());
+    // Send message with attachments
+    await onSendMessage(newMessage.trim(), pendingAttachments);
     setNewMessage('');
+    setPendingAttachments([]);
+  };
+
+  const handleAttachClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileSelect = event => {
+    const files = Array.from(event.target.files);
+    if (!files.length) return;
+
+    setAttachmentError(null);
+    const newAttachments = [];
+
+    for (const file of files) {
+      const ext = getFileExtension(file.name);
+
+      // Validate file type
+      if (!ALLOWED_FILE_TYPES.includes(ext)) {
+        setAttachmentError(`File type ${ext} is not supported`);
+        continue;
+      }
+
+      // Validate file size
+      if (file.size > MAX_FILE_SIZE) {
+        setAttachmentError('File size exceeds 10MB limit');
+        continue;
+      }
+
+      newAttachments.push({
+        id: `local-${Date.now()}-${file.name}`,
+        file,
+        name: file.name,
+        size: file.size,
+        sizeFormatted: formatFileSize(file.size),
+        fileType: getFileTypeCategory(file.name),
+        isLocal: true,
+      });
+    }
+
+    setPendingAttachments([...pendingAttachments, ...newAttachments]);
+    event.target.value = '';
+  };
+
+  const handleRemoveAttachment = attachmentToRemove => {
+    setPendingAttachments(pendingAttachments.filter(a => a.id !== attachmentToRemove.id));
   };
 
   const formatTime = dateString => {
@@ -315,7 +397,30 @@ const MessagesSection = ({ messages, currentUserId, onSendMessage, sendInProgres
                 key={msg.id}
                 className={`${css.messageItem} ${isSent ? css.sent : css.received}`}
               >
-                <div className={css.messageBubble}>{msg.content}</div>
+                <div className={css.messageBubble}>
+                  {msg.content}
+                  {/* Display attachments if present */}
+                  {msg.attachments && msg.attachments.length > 0 && (
+                    <div className={css.messageAttachments}>
+                      {msg.attachments.map((att, idx) => (
+                        <a
+                          key={idx}
+                          href={att.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className={css.attachmentLink}
+                          download
+                        >
+                          <span className={css.attachmentIcon}>
+                            {FILE_TYPE_ICONS[att.fileType] || '📎'}
+                          </span>
+                          <span className={css.attachmentName}>{att.name}</span>
+                          <span className={css.attachmentSize}>{att.sizeFormatted}</span>
+                        </a>
+                      ))}
+                    </div>
+                  )}
+                </div>
                 <div className={css.messageMeta}>
                   {!isSent && <span className={css.messageSender}>{msg.senderName}</span>}
                   <span>{formatTime(msg.createdAt)}</span>
@@ -328,7 +433,53 @@ const MessagesSection = ({ messages, currentUserId, onSendMessage, sendInProgres
       </div>
 
       <div className={css.messageInput}>
+        {/* Pending attachments preview */}
+        {pendingAttachments.length > 0 && (
+          <div className={css.pendingAttachments}>
+            {pendingAttachments.map(att => (
+              <div key={att.id} className={css.pendingAttachment}>
+                <span className={css.pendingAttachmentIcon}>
+                  {FILE_TYPE_ICONS[att.fileType] || '📎'}
+                </span>
+                <span className={css.pendingAttachmentName}>{att.name}</span>
+                <button
+                  type="button"
+                  className={css.removeAttachmentBtn}
+                  onClick={() => handleRemoveAttachment(att)}
+                >
+                  ×
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Error message */}
+        {attachmentError && (
+          <div className={css.attachmentError}>
+            ⚠️ {attachmentError}
+          </div>
+        )}
+
         <form className={css.messageForm} onSubmit={handleSubmit}>
+          {/* Attachment button */}
+          <button
+            type="button"
+            className={css.attachButton}
+            onClick={handleAttachClick}
+            title="Attach files (PDF, Word, Excel, PowerPoint, images)"
+          >
+            📎
+          </button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            className={css.hiddenFileInput}
+            onChange={handleFileSelect}
+            accept={ALLOWED_FILE_TYPES.join(',')}
+            multiple
+          />
+
           <textarea
             className={css.messageTextarea}
             value={newMessage}
@@ -345,11 +496,14 @@ const MessagesSection = ({ messages, currentUserId, onSendMessage, sendInProgres
           <button
             type="submit"
             className={css.sendButton}
-            disabled={!newMessage.trim() || sendInProgress}
+            disabled={(!newMessage.trim() && pendingAttachments.length === 0) || sendInProgress}
           >
             {sendInProgress ? '...' : 'Send'}
           </button>
         </form>
+        <div className={css.attachmentHint}>
+          PDF, Word, Excel, PowerPoint, images (max 10MB)
+        </div>
       </div>
     </div>
   );
@@ -404,8 +558,8 @@ const ProjectWorkspacePageComponent = props => {
     }
   }, [workspace?.messages, currentUser, transactionId, onMarkMessagesRead]);
 
-  const handleSendMessage = async content => {
-    await onSendMessage(transactionId, content);
+  const handleSendMessage = async (content, attachments = []) => {
+    await onSendMessage(transactionId, content, attachments);
   };
 
   const handleAcceptNda = async () => {
@@ -626,6 +780,7 @@ const ProjectWorkspacePageComponent = props => {
             <MessagesSection
               messages={messages}
               currentUserId={currentUser?.id?.uuid}
+              transactionId={transactionId}
               onSendMessage={handleSendMessage}
               sendInProgress={sendMessageInProgress}
             />

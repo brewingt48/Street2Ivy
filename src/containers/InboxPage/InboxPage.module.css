@@ -1,20 +1,15 @@
 @import '../../styles/customMediaQueries.css';
 
+/* ================ Enterprise Design System - Inbox Page ================ */
+
 .mobileTopbar {
-  /* Size */
   width: 100%;
   height: var(--topbarHeight);
-
-  /* Layout for child components */
   display: flex;
   flex-direction: row;
   justify-content: space-between;
   align-items: center;
-
-  /* fill */
-  background-color: var(--colorWhite);
-
-  /* shadows */
+  background-color: white;
   box-shadow: none;
 
   @media (--viewportMedium) {
@@ -31,23 +26,21 @@
   box-shadow: none;
 
   @media (--viewportLarge) {
-    box-shadow: var(--boxShadowLight);
+    box-shadow: var(--s2i-shadow-sm);
   }
 }
 
 .navigation {
-  /* Layout */
   display: flex;
   flex-direction: row;
   flex-wrap: wrap;
   justify-content: space-between;
   padding: 29px 24px 0 24px;
-
   border-top-width: 1px;
-  border-top-color: var(--colorGrey100);
+  border-top-color: var(--s2i-slate-200);
   border-top-style: solid;
-  background-color: var(--colorWhite);
-  box-shadow: var(--boxShadow);
+  background-color: white;
+  box-shadow: var(--s2i-shadow-sm);
 
   @media (--viewportMedium) {
     padding: 24px 24px 0 24px;
@@ -62,6 +55,7 @@
     box-shadow: none;
     background-color: transparent;
   }
+
   @media (--viewportLargeWithPaddings) {
     padding: 40px 0 82px calc((100% - 1056px) / 2);
   }
@@ -73,13 +67,14 @@
   padding: 12px 0;
   margin-bottom: 16px;
   font-size: 14px;
-  font-weight: var(--fontWeightMedium);
-  color: var(--marketplaceColor);
+  font-weight: var(--s2i-font-medium);
+  color: var(--s2i-teal-600);
   text-decoration: none;
-  border-bottom: 1px solid var(--colorGrey100);
+  border-bottom: 1px solid var(--s2i-slate-200);
+  transition: var(--s2i-transition-colors);
 
   &:hover {
-    color: var(--marketplaceColorDark);
+    color: var(--s2i-teal-700);
     text-decoration: underline;
   }
 
@@ -91,10 +86,11 @@
 .title {
   align-self: center;
   padding: 0px 0 8px 0;
-
-  /* Layout */
   margin-top: 0;
   margin-bottom: 0;
+  font-family: 'Playfair Display', Georgia, serif;
+  font-weight: 700;
+  color: var(--s2i-navy-900);
 
   @media (--viewportMedium) {
     padding: 0;
@@ -110,7 +106,6 @@
 
 .tabs {
   padding-top: 2px;
-
   display: flex;
   flex-direction: row;
   overflow-x: auto;
@@ -139,7 +134,8 @@
 }
 
 .error {
-  color: var(--colorFail);
+  color: var(--s2i-coral-600);
+  font-weight: var(--s2i-font-medium);
   margin: 23px 24px 24px 24px;
 
   @media (--viewportLarge) {
@@ -151,6 +147,8 @@
   margin-left: 24px;
   margin-right: 24px;
   margin-top: 1px;
+  color: var(--s2i-slate-500);
+  font-size: 15px;
 
   @media (--viewportLarge) {
     margin-top: 25px;
@@ -181,24 +179,30 @@
   height: 60px;
   width: 100%;
   opacity: 0;
-
-  /* animation shorthand property doesn't work with local scope of CSS Modules */
   animation-duration: 1s;
   animation-name: loadingSpinnerFadeIn;
   animation-fill-mode: forwards;
 }
 
 .listItem {
-  /* Layout */
   margin-bottom: 10px;
   padding-bottom: 12px;
-
   border-bottom-style: solid;
   border-bottom-width: 1px;
-  border-bottom-color: var(--colorGrey100);
+  border-bottom-color: var(--s2i-slate-100);
+  transition: var(--s2i-transition-colors);
 
   &:last-child {
     border-bottom: none;
+  }
+
+  &:hover {
+    background: var(--s2i-slate-50);
+    border-radius: var(--s2i-radius-lg);
+    margin-left: -8px;
+    margin-right: -8px;
+    padding-left: 8px;
+    padding-right: 8px;
   }
 
   @media (--viewportLarge) {
@@ -229,8 +233,6 @@
 
 .itemLink {
   flex: 1;
-
-  /* Layout */
   display: inline-grid;
   grid-template-columns: 22px auto;
   grid-template-areas:
@@ -240,16 +242,14 @@
     '... seats   state';
   padding: 2px 0 6px;
   gap: 4px 0;
-
-  /* Remove text underline from this link */
   text-decoration: none;
+
   &:hover {
     text-decoration: none;
   }
 
   &:hover .itemUsername {
-    /* Hightlight the username when the whole item is hovered */
-    color: var(--marketplaceColor);
+    color: var(--s2i-teal-600);
   }
 }
 
@@ -258,16 +258,12 @@
   justify-self: center;
   align-self: flex-start;
   margin-top: 8px;
-
   width: 6px;
   height: 6px;
 
   @media (--viewportLarge) {
     margin-top: 5px;
     margin-left: 5px;
-  }
-
-  @media (--viewportLarge) {
     justify-self: flex-start;
     width: 8px;
     height: 8px;
@@ -275,24 +271,21 @@
 }
 
 .notificationDot {
-  color: var(--colorWhite);
-
+  color: white;
   width: 100%;
   height: 100%;
   border-radius: 50%;
-  background-color: var(--colorFail);
+  background: linear-gradient(135deg, var(--s2i-coral-500) 0%, var(--s2i-coral-600) 100%);
 }
 
 .itemUsername {
   grid-area: name;
-
-  /* Font */
   composes: textSmall from global;
-  font-weight: var(--fontWeightBold);
-  color: var(--colorGrey700);
-
+  font-weight: var(--s2i-font-semibold);
+  color: var(--s2i-navy-900);
   margin-top: 0;
   margin-bottom: 0;
+  transition: var(--s2i-transition-colors);
 
   @media (--viewportMedium) {
     line-height: 16px;
@@ -301,11 +294,11 @@
     margin-bottom: 0;
   }
 }
+
 .itemTitle {
   composes: marketplaceTinyFontStyles from global;
   grid-area: item;
-  color: var(--colorGrey700);
-
+  color: var(--s2i-slate-600);
   margin-top: 0;
   margin-bottom: 0;
 }
@@ -313,8 +306,7 @@
 .itemDetails {
   composes: marketplaceTinyFontStyles from global;
   grid-area: details;
-  color: var(--colorGrey700);
-
+  color: var(--s2i-slate-500);
   margin-top: 0;
   margin-bottom: 0;
 }
@@ -322,24 +314,19 @@
 .itemSeats {
   composes: marketplaceTinyFontStyles from global;
   grid-area: seats;
-  color: var(--colorGrey700);
-
+  color: var(--s2i-slate-500);
   margin-top: 0;
   margin-bottom: 0;
 }
 
 .itemState {
   grid-area: state;
-
-  /* Font */
   composes: marketplaceTinyFontStyles from global;
   line-height: 18px;
-  font-weight: var(--fontWeightMedium);
+  font-weight: var(--s2i-font-medium);
   letter-spacing: normal;
-
   justify-self: flex-end;
   text-align: end;
-
   margin-top: 6px;
   margin-bottom: 0px;
 
@@ -353,27 +340,27 @@
   margin: auto 24px 0 24px;
 }
 
-/* Transaction status affects to certain font colors and weights */
+/* Transaction status affects certain font colors */
 
 .stateName {
   /* This class is empty on purpose, it is used below for banned users */
 }
 
 .stateActionNeeded {
-  font-weight: var(--fontWeightMedium);
-  color: var(--colorStatusActionNeeded);
+  font-weight: var(--s2i-font-semibold);
+  color: var(--s2i-gold-600);
 }
 
 .stateNoActionNeeded {
-  color: var(--colorStatusNormal);
+  color: var(--s2i-teal-600);
 }
 
 .stateConcluded {
-  color: var(--colorStatusFinalState);
+  color: var(--s2i-slate-500);
 }
 
 .bookingActionNeeded {
-  color: var(--colorGrey700);
+  color: var(--s2i-navy-900);
   margin-top: 4px;
 
   @media (--viewportMedium) {
@@ -382,22 +369,22 @@
 }
 
 .bookingNoActionNeeded {
-  color: var(--colorGrey300);
+  color: var(--s2i-slate-400);
 }
 
 .lastTransitionedAtEmphasized {
-  color: var(--colorGrey700);
-  font-weight: var(--fontWeightMedium);
+  color: var(--s2i-navy-900);
+  font-weight: var(--s2i-font-medium);
 }
 
 .lastTransitionedAtNotEmphasized {
-  color: var(--colorGrey300);
+  color: var(--s2i-slate-400);
 }
 
 .bannedUserLink {
   & .itemUsername,
   &:hover .itemUsername,
   & .stateName {
-    color: var(--colorGrey300);
+    color: var(--s2i-slate-400);
   }
 }

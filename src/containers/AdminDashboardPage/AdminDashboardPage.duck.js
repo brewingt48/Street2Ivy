@@ -160,6 +160,10 @@ export const fetchReportsThunk = createAsyncThunk(
   'app/AdminDashboardPage/fetchReports',
   async (type, { rejectWithValue }) => {
     try {
+      // Corporate spending is handled client-side, just return the type
+      if (type === 'corporate-spending') {
+        return { type: 'corporate-spending', data: null };
+      }
       return await fetchAdminReportsApi(type);
     } catch (e) {
       return rejectWithValue(storableError(e));

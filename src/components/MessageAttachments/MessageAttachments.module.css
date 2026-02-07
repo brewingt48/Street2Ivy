@@ -1,0 +1,310 @@
+/* ─── Message Attachments Component ─────────────────────────────────────── */
+
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* ─── Attach Button ─────────────────────────────────────────────────────── */
+
+.attachButton {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 12px;
+  background: var(--colorGrey50, #f7f7f7);
+  border: 1px solid var(--colorGrey200, #e0e0e0);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 14px;
+  color: var(--colorGrey700, #4a4a4a);
+}
+
+.attachButton:hover:not(.disabled) {
+  background: var(--colorGrey100, #eeeeee);
+  border-color: var(--colorGrey300, #cccccc);
+}
+
+.attachButton.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.attachIcon {
+  font-size: 18px;
+}
+
+.uploadingText {
+  font-size: 12px;
+  color: var(--colorGrey500, #7a7a7a);
+}
+
+/* ─── Hidden File Input ─────────────────────────────────────────────────── */
+
+.hiddenInput {
+  display: none;
+}
+
+/* ─── Pending Attachments ───────────────────────────────────────────────── */
+
+.pendingAttachments {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.attachmentPreview {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: var(--colorGrey50, #f7f7f7);
+  border: 1px solid var(--colorGrey200, #e0e0e0);
+  border-radius: 8px;
+  max-width: 250px;
+}
+
+.imagePreview {
+  width: 40px;
+  height: 40px;
+  object-fit: cover;
+  border-radius: 4px;
+}
+
+.fileIcon {
+  font-size: 24px;
+}
+
+.fileInfo {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+
+.fileName {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--colorGrey700, #4a4a4a);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.fileSize {
+  font-size: 11px;
+  color: var(--colorGrey500, #7a7a7a);
+}
+
+.removeButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  background: var(--colorGrey200, #e0e0e0);
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 14px;
+  color: var(--colorGrey600, #5a5a5a);
+  transition: all 0.2s ease;
+}
+
+.removeButton:hover {
+  background: var(--colorFail, #ff6b6b);
+  color: white;
+}
+
+/* ─── Attachment Display (for received attachments) ─────────────────────── */
+
+.attachmentDisplay {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  background: var(--colorGrey50, #f7f7f7);
+  border: 1px solid var(--colorGrey200, #e0e0e0);
+  border-radius: 8px;
+  text-decoration: none;
+  color: inherit;
+  transition: all 0.2s ease;
+  max-width: 300px;
+}
+
+.attachmentDisplay:hover {
+  background: var(--colorGrey100, #eeeeee);
+  border-color: var(--marketplaceColor, #3b82f6);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.thumbnailPreview {
+  width: 48px;
+  height: 48px;
+  object-fit: cover;
+  border-radius: 4px;
+}
+
+.displayIcon {
+  font-size: 28px;
+}
+
+.displayInfo {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+
+.displayName {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--colorGrey800, #3a3a3a);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.displaySize {
+  font-size: 12px;
+  color: var(--colorGrey500, #7a7a7a);
+}
+
+.downloadIcon {
+  font-size: 16px;
+  opacity: 0.6;
+  transition: opacity 0.2s ease;
+}
+
+.attachmentDisplay:hover .downloadIcon {
+  opacity: 1;
+}
+
+/* ─── Error Message ─────────────────────────────────────────────────────── */
+
+.errorMessage {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  background: #fff5f5;
+  border: 1px solid #fecaca;
+  border-radius: 6px;
+  font-size: 13px;
+  color: #dc2626;
+}
+
+.errorIcon {
+  font-size: 14px;
+}
+
+/* ─── Allowed Types Hint ────────────────────────────────────────────────── */
+
+.allowedTypesHint {
+  font-size: 11px;
+  color: var(--colorGrey500, #7a7a7a);
+  padding-left: 4px;
+}
+
+/* ─── Inline Attachment Button (for message input areas) ───────────────── */
+
+.inlineAttachButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background: transparent;
+  border: 1px solid var(--colorGrey200, #e0e0e0);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.inlineAttachButton:hover:not(.disabled) {
+  background: var(--colorGrey100, #eeeeee);
+  border-color: var(--marketplaceColor, #3b82f6);
+}
+
+.inlineAttachButton .attachIcon {
+  font-size: 16px;
+}
+
+/* ─── Compact Preview (for inline in message form) ──────────────────────── */
+
+.compactPreview {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 8px;
+  background: var(--colorGrey50, #f7f7f7);
+  border-radius: 8px;
+  margin-bottom: 8px;
+}
+
+.compactPreviewItem {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  background: white;
+  border: 1px solid var(--colorGrey200, #e0e0e0);
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+.compactRemove {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  background: var(--colorGrey200, #e0e0e0);
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 10px;
+  margin-left: 4px;
+}
+
+.compactRemove:hover {
+  background: var(--colorFail, #ff6b6b);
+  color: white;
+}
+
+/* ─── Attachments List (for displaying in messages) ─────────────────────── */
+
+.attachmentsList {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+/* ─── Loading State ─────────────────────────────────────────────────────── */
+
+.uploading {
+  position: relative;
+}
+
+.uploading::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.spinner {
+  animation: spin 1s linear infinite;
+}

@@ -64,6 +64,9 @@ const FooterComponent = () => {
   const existingSocialLinks = footer.socialMediaLinks || [];
   const mergedSocialLinks = cmsSocialLinks.length > 0 ? cmsSocialLinks : existingSocialLinks;
 
+  // Get social icon size from CMS branding (default 24px)
+  const socialIconSize = cmsBranding?.socialIconSize || 24;
+
   // The footer asset does not specify sectionId or sectionType. However, the SectionBuilder
   // expects sectionId and sectionType in order to identify the section. We add those
   // attributes here before passing the asset to SectionBuilder.
@@ -73,6 +76,7 @@ const FooterComponent = () => {
     sectionType: 'footer',
     linkLogoToExternalSite: topbar?.logoLink,
     socialMediaLinks: mergedSocialLinks,
+    socialIconSize: socialIconSize,
   };
 
   return <SectionBuilder sections={[footerSection]} />;

@@ -1,5 +1,7 @@
 const { getTrustedSdk, getSdk, handleError, serialize } = require('../api-util/sdk');
 const { getIntegrationSdk } = require('../api-util/integrationSdk');
+const { notifyInviteToApply } = require('../api-util/notifications');
+const { storeInvite } = require('./corporate-invites');
 
 // Security: UUID validation regex
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -89,7 +91,53 @@ module.exports = (req, res) => {
                 transactionId: transactionId,
                 content: messageContent,
               })
-              .then(() => {
+              .then(async () => {
+                // Get student info for notification and invite tracking
+                const integrationSdk = getIntegrationSdk();
+                let studentName = 'Student';
+                let studentEmail = '';
+                let studentUniversity = '';
+
+                try {
+                  const studentResponse = await integrationSdk.users.show({ id: studentId });
+                  const student = studentResponse.data.data;
+                  studentName = student?.attributes?.profile?.displayName || 'Student';
+                  studentEmail = student?.attributes?.email || '';
+                  studentUniversity = student?.attributes?.profile?.publicData?.university || '';
+
+                  // Send notification to student
+                  await notifyInviteToApply({
+                    studentId,
+                    studentEmail,
+                    studentName,
+                    companyName: currentUser?.attributes?.profile?.displayName || 'Company',
+                    projectTitle: listing?.attributes?.title || 'Project',
+                    projectDescription: listing?.attributes?.description || '',
+                    listingId,
+                  });
+                } catch (notifErr) {
+                  console.error('Failed to send invite notification:', notifErr);
+                  // Don't fail the request if notification fails
+                }
+
+                // Store the invite for tracking
+                try {
+                  storeInvite({
+                    corporatePartnerId: currentUserId,
+                    studentId,
+                    studentName,
+                    studentEmail,
+                    studentUniversity,
+                    listingId,
+                    projectTitle: listing?.attributes?.title || 'Project',
+                    message: messageContent,
+                    transactionId: transactionId.uuid,
+                  });
+                } catch (storeErr) {
+                  console.error('Failed to store invite record:', storeErr);
+                  // Don't fail the request if storing fails
+                }
+
                 res
                   .status(200)
                   .set('Content-Type', 'application/transit+json')
@@ -99,6 +147,8 @@ module.exports = (req, res) => {
                       statusText: 'OK',
                       data: {
                         transactionId: transactionId.uuid,
+                        message: 'Invitation sent successfully',
+                        inviteSent: true,
                       },
                     })
                   )

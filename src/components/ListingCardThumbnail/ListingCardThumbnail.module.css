@@ -1,3 +1,5 @@
+/* ================ Enterprise Design System - Listing Card Thumbnail ================ */
+
 .preview {
   position: absolute;
   top: 0;
@@ -11,39 +13,41 @@
   justify-content: center;
   align-items: center;
 
-  border: 1px solid var(--colorGrey100);
-  border-radius: 4px;
+  border: none;
+  border-radius: 0;
 
   padding: 32px;
   text-align: center;
-  font-weight: var(--fontWeightSemiBold);
+  font-weight: var(--s2i-font-semibold);
+  font-size: 14px;
+  letter-spacing: 0.02em;
 }
 
 /* Hard coded styles */
 /*  Modify or extend the available fallback styles here. */
 .white {
-  color: var(--colorGrey800);
-  background-color: var(--colorWhite);
+  color: var(--s2i-navy-900);
+  background-color: white;
 }
 
 .grey {
-  color: var(--colorGrey800);
-  background-color: var(--colorGrey50);
+  color: var(--s2i-navy-900);
+  background: linear-gradient(135deg, var(--s2i-slate-100) 0%, var(--s2i-slate-50) 100%);
 }
 
 .black {
-  color: var(--colorWhite);
-  background-color: var(--colorBlack);
+  color: white;
+  background: linear-gradient(135deg, var(--s2i-navy-900) 0%, var(--s2i-navy-800) 100%);
 }
 
 .main-brand {
-  color: var(--colorWhite);
-  background-color: var(--marketplaceColor);
+  color: white;
+  background: linear-gradient(135deg, var(--s2i-teal-500) 0%, var(--s2i-emerald-500) 100%);
 }
 
 .primary-button {
-  color: var(--colorWhite);
-  background-color: var(--colorPrimaryButton);
+  color: white;
+  background: linear-gradient(135deg, var(--s2i-teal-500) 0%, var(--s2i-emerald-500) 100%);
 }
 
 .longWord {

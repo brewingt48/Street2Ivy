@@ -1,4 +1,18 @@
 .link {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   color: var(--marketplaceColor);
+  transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.link:hover {
+  transform: scale(1.1);
+}
+
+/* Social media icon sizes - controlled via CSS custom property */
+/* Using !important to override inline SVG width/height attributes */
+.link svg {
+  width: var(--social-icon-size, 24px) !important;
+  height: var(--social-icon-size, 24px) !important;
 }

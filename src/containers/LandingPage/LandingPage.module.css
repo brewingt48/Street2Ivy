@@ -1021,6 +1021,31 @@
   line-height: 1.5;
 }
 
+/* AI Coaching Blocked State (for students without institution approval) */
+.coachingBlocked {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 20px 24px;
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  border: 1px solid #f59e0b;
+  border-radius: 16px;
+  margin-top: 8px;
+}
+
+.blockedIcon {
+  font-size: 24px;
+  flex-shrink: 0;
+}
+
+.coachingBlocked p {
+  font-size: 14px;
+  color: #92400e;
+  margin: 0;
+  line-height: 1.6;
+  font-weight: 500;
+}
+
 /* AI Chat Mockup */
 .aiVisual {
   position: relative;

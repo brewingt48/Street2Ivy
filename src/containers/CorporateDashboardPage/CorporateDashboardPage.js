@@ -8,7 +8,7 @@ import { isScrollingDisabled } from '../../ducks/ui.duck';
 import { getOwnListingsById } from './CorporateDashboardPage.duck';
 import { fetchPendingAssessments, exportCorporateReport } from '../../util/api';
 
-import { Page, LayoutSingleColumn, NamedLink, H3, StudentAssessmentForm } from '../../components';
+import { Page, LayoutSingleColumn, NamedLink, H3, StudentAssessmentForm, OnboardingChecklist } from '../../components';
 
 import TopbarContainer from '../../containers/TopbarContainer/TopbarContainer';
 import FooterContainer from '../../containers/FooterContainer/FooterContainer';
@@ -194,194 +194,171 @@ const PendingAssessmentsPanel = props => {
   );
 };
 
-// ================ Messages Panel ================ //
+// ================ Sent Invites Panel ================ //
 
-const MessagesPanel = props => {
-  const { inboxSales, inboxOrders, inboxInProgress, intl } = props;
-  const [activeTab, setActiveTab] = useState('applications'); // 'applications' or 'orders'
-  const [selectedMessage, setSelectedMessage] = useState(null);
+const SentInvitesPanel = ({ invites, stats, isLoading, onRefresh }) => {
+  const [statusFilter, setStatusFilter] = useState('all');
 
   const formatDate = dateString => {
     const date = new Date(dateString);
-    const now = new Date();
-    const isToday = date.toDateString() === now.toDateString();
-
-    if (isToday) {
-      return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    }
     return date.toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' });
   };
 
-  const formatFullDate = dateString => {
-    return new Date(dateString).toLocaleString();
-  };
-
-  const getTransactionStatus = tx => {
-    const lastTransition = tx.attributes.lastTransition;
-    const statusMap = {
-      'transition/inquire': 'Inquiry',
-      'transition/request-project-application': 'Applied',
-      'transition/accept': 'Accepted',
-      'transition/decline': 'Declined',
-      'transition/complete': 'Completed',
-      'transition/review-1-by-provider': 'Reviewed',
-      'transition/review-1-by-customer': 'Reviewed',
-      'transition/review-2-by-provider': 'Reviewed',
-      'transition/review-2-by-customer': 'Reviewed',
-    };
-    return statusMap[lastTransition] || lastTransition?.replace('transition/', '').replace(/-/g, ' ') || 'Unknown';
-  };
-
-  const renderTransactionList = (transactions, isApplications = true) => {
-    if (inboxInProgress) {
-      return <div className={css.noMessages}>Loading messages...</div>;
+  const getStatusBadgeClass = status => {
+    switch (status) {
+      case 'pending':
+        return css.inviteStatusPending;
+      case 'accepted':
+        return css.inviteStatusAccepted;
+      case 'declined':
+        return css.inviteStatusDeclined;
+      case 'expired':
+        return css.inviteStatusExpired;
+      default:
+        return '';
     }
-
-    if (!transactions || transactions.length === 0) {
-      return (
-        <div className={css.noMessages}>
-          {isApplications ? 'No applications yet.' : 'No orders yet.'}
-        </div>
-      );
-    }
-
-    return (
-      <div className={css.emailList}>
-        <table className={css.emailTable}>
-          <thead>
-            <tr>
-              <th className={css.emailTableHeader}>{isApplications ? 'Applicant' : 'Provider'}</th>
-              <th className={css.emailTableHeader}>Project</th>
-              <th className={css.emailTableHeader}>Status</th>
-              <th className={css.emailTableHeader}>Date</th>
-            </tr>
-          </thead>
-          <tbody>
-            {transactions.map(tx => {
-              const otherUser = isApplications ? tx.customer : tx.provider;
-              const otherUserName = otherUser?.attributes?.profile?.displayName || 'Unknown User';
-              const listingTitle = tx.listing?.attributes?.title || 'Unknown Project';
-              const status = getTransactionStatus(tx);
-              const lastUpdated = tx.attributes.lastTransitionedAt;
-
-              return (
-                <tr
-                  key={tx.id.uuid}
-                  className={css.emailRow}
-                  onClick={() => setSelectedMessage({ ...tx, otherUserName, listingTitle, status, isApplications })}
-                >
-                  <td className={css.emailFrom}>{otherUserName}</td>
-                  <td className={css.emailSubject}>{listingTitle}</td>
-                  <td className={css.emailStatus}>
-                    <span className={classNames(css.statusBadge, {
-                      [css.statusBadgeAccepted]: status === 'Accepted',
-                      [css.statusBadgeDeclined]: status === 'Declined',
-                      [css.statusBadgePending]: status === 'Applied' || status === 'Inquiry',
-                      [css.statusBadgeCompleted]: status === 'Completed',
-                    })}>
-                      {status}
-                    </span>
-                  </td>
-                  <td className={css.emailDate}>{formatDate(lastUpdated)}</td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
-    );
   };
 
-  const renderMessageDetail = () => {
-    if (!selectedMessage) return null;
+  const filteredInvites = statusFilter === 'all'
+    ? invites
+    : invites.filter(i => i.status === statusFilter);
 
-    return (
-      <div className={css.messageDetailOverlay} onClick={() => setSelectedMessage(null)}>
-        <div className={css.messageDetailPanel} onClick={e => e.stopPropagation()}>
-          <div className={css.messageDetailHeader}>
-            <button className={css.messageDetailClose} onClick={() => setSelectedMessage(null)}>
-              ← Back
-            </button>
-          </div>
-          <div className={css.messageDetailContent}>
-            <h3 className={css.messageDetailSubject}>{selectedMessage.listingTitle}</h3>
-            <div className={css.messageDetailMeta}>
-              <div className={css.messageDetailMetaRow}>
-                <span className={css.messageDetailLabel}>
-                  {selectedMessage.isApplications ? 'Applicant:' : 'Provider:'}
-                </span>
-                <span>{selectedMessage.otherUserName}</span>
-              </div>
-              <div className={css.messageDetailMetaRow}>
-                <span className={css.messageDetailLabel}>Status:</span>
-                <span className={classNames(css.statusBadge, {
-                  [css.statusBadgeAccepted]: selectedMessage.status === 'Accepted',
-                  [css.statusBadgeDeclined]: selectedMessage.status === 'Declined',
-                  [css.statusBadgePending]: selectedMessage.status === 'Applied' || selectedMessage.status === 'Inquiry',
-                  [css.statusBadgeCompleted]: selectedMessage.status === 'Completed',
-                })}>
-                  {selectedMessage.status}
-                </span>
-              </div>
-              <div className={css.messageDetailMetaRow}>
-                <span className={css.messageDetailLabel}>Last Updated:</span>
-                <span>{formatFullDate(selectedMessage.attributes.lastTransitionedAt)}</span>
-              </div>
-            </div>
-            <div className={css.messageDetailActions}>
-              <NamedLink
-                name={selectedMessage.isApplications ? 'SaleDetailsPage' : 'OrderDetailsPage'}
-                params={{ id: selectedMessage.id.uuid }}
-                className={css.viewDetailsLink}
-              >
-                View Full Details →
-              </NamedLink>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  };
+  if (isLoading) {
+    return <div className={css.loading}>Loading sent invites...</div>;
+  }
 
   return (
-    <div className={css.messagesPanel}>
-      {/* Message Tabs */}
-      <div className={css.messageTabsContainer}>
-        <div className={css.messageTabs}>
-          <button
-            className={classNames(css.messageTab, { [css.messageTabActive]: activeTab === 'applications' })}
-            onClick={() => setActiveTab('applications')}
-          >
-            📥 Applications ({inboxSales?.length || 0})
-          </button>
-          <button
-            className={classNames(css.messageTab, { [css.messageTabActive]: activeTab === 'orders' })}
-            onClick={() => setActiveTab('orders')}
-          >
-            📤 Orders ({inboxOrders?.length || 0})
-          </button>
+    <div className={css.sentInvitesPanel}>
+      {/* Stats Summary */}
+      {stats && (
+        <div className={css.inviteStatsSummary}>
+          <div className={css.inviteStatItem}>
+            <span className={css.inviteStatValue}>{stats.total || 0}</span>
+            <span className={css.inviteStatLabel}>Total Sent</span>
+          </div>
+          <div className={css.inviteStatItem}>
+            <span className={classNames(css.inviteStatValue, css.inviteStatPending)}>
+              {stats.pending || 0}
+            </span>
+            <span className={css.inviteStatLabel}>Pending</span>
+          </div>
+          <div className={css.inviteStatItem}>
+            <span className={classNames(css.inviteStatValue, css.inviteStatAccepted)}>
+              {stats.accepted || 0}
+            </span>
+            <span className={css.inviteStatLabel}>Accepted</span>
+          </div>
+          <div className={css.inviteStatItem}>
+            <span className={classNames(css.inviteStatValue, css.inviteStatDeclined)}>
+              {stats.declined || 0}
+            </span>
+            <span className={css.inviteStatLabel}>Declined</span>
+          </div>
         </div>
+      )}
+
+      {/* Filter Controls */}
+      <div className={css.inviteFilterControls}>
+        <select
+          className={css.inviteFilterSelect}
+          value={statusFilter}
+          onChange={e => setStatusFilter(e.target.value)}
+        >
+          <option value="all">All Invites</option>
+          <option value="pending">Pending</option>
+          <option value="accepted">Accepted</option>
+          <option value="declined">Declined</option>
+          <option value="expired">Expired</option>
+        </select>
+        <NamedLink name="SearchStudentsPage" className={css.inviteStudentsButton}>
+          + Invite Students
+        </NamedLink>
       </div>
 
-      {/* Tab Content */}
-      {activeTab === 'applications' && (
-        <div className={css.messagesListSection}>
-          <h4 className={css.messagesListTitle}>Student Applications</h4>
-          <p className={css.messagesListSubtitle}>Students who have applied to your projects</p>
-          {renderTransactionList(inboxSales, true)}
+      {/* Invites List */}
+      {filteredInvites.length === 0 ? (
+        <div className={css.noInvites}>
+          <div className={css.noInvitesIcon}>📨</div>
+          <h4 className={css.noInvitesTitle}>
+            {statusFilter === 'all'
+              ? 'No invitations sent yet'
+              : `No ${statusFilter} invitations`}
+          </h4>
+          <p className={css.noInvitesText}>
+            Search for students and invite them to apply to your projects.
+          </p>
+          <NamedLink name="SearchStudentsPage" className={css.inviteStudentsButtonLarge}>
+            Search Students
+          </NamedLink>
+        </div>
+      ) : (
+        <div className={css.invitesList}>
+          <table className={css.invitesTable}>
+            <thead>
+              <tr>
+                <th>Student</th>
+                <th>Project</th>
+                <th>Sent</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredInvites.map(invite => (
+                <tr key={invite.id} className={css.inviteRow}>
+                  <td>
+                    <div className={css.inviteStudentInfo}>
+                      <NamedLink
+                        name="ProfilePage"
+                        params={{ id: invite.studentId }}
+                        className={css.inviteStudentName}
+                      >
+                        {invite.studentName}
+                      </NamedLink>
+                      {invite.studentUniversity && (
+                        <span className={css.inviteStudentUniversity}>
+                          {invite.studentUniversity}
+                        </span>
+                      )}
+                    </div>
+                  </td>
+                  <td>
+                    <NamedLink
+                      name="ListingPage"
+                      params={{
+                        id: invite.listingId,
+                        slug: invite.projectTitle?.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, '') || 'project',
+                      }}
+                      className={css.inviteProjectTitle}
+                    >
+                      {invite.projectTitle}
+                    </NamedLink>
+                  </td>
+                  <td className={css.inviteDate}>
+                    {formatDate(invite.sentAt)}
+                  </td>
+                  <td>
+                    <span className={classNames(css.inviteStatusBadge, getStatusBadgeClass(invite.status))}>
+                      {invite.status}
+                    </span>
+                  </td>
+                  <td>
+                    {invite.transactionId && (
+                      <NamedLink
+                        name="SaleDetailsPage"
+                        params={{ id: invite.transactionId }}
+                        className={css.viewTransactionLink}
+                      >
+                        View
+                      </NamedLink>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       )}
-
-      {activeTab === 'orders' && (
-        <div className={css.messagesListSection}>
-          <h4 className={css.messagesListTitle}>Your Orders</h4>
-          <p className={css.messagesListSubtitle}>Projects where you are a customer</p>
-          {renderTransactionList(inboxOrders, false)}
-        </div>
-      )}
-
-      {/* Message Detail Modal */}
-      {renderMessageDetail()}
     </div>
   );
 };
@@ -438,6 +415,9 @@ export const CorporateDashboardPageComponent = props => {
     inboxSales,
     inboxOrders,
     inboxInProgress,
+    sentInvites,
+    sentInvitesStats,
+    sentInvitesInProgress,
   } = props;
   const intl = useIntl();
   const config = useConfiguration();
@@ -448,8 +428,66 @@ export const CorporateDashboardPageComponent = props => {
 
   // State for stat detail modals
   const [statDetailModal, setStatDetailModal] = useState(null);
+  const [onboardingDismissed, setOnboardingDismissed] = useState(false);
 
   const title = intl.formatMessage({ id: 'CorporateDashboardPage.title' });
+
+  // Compute onboarding items for corporate partners
+  const publicData = currentUser?.attributes?.profile?.publicData || {};
+  const companyName = publicData?.companyName;
+  const companyLogo = currentUser?.profileImage?.id;
+  const hasPostedProject = listings.length > 0;
+  const hasReceivedApplication = inboxSales && inboxSales.length > 0;
+  const hasAcceptedStudent = inboxSales?.some(tx => tx.attributes?.lastTransition === 'transition/accept');
+
+  const onboardingItems = [
+    {
+      id: 'company-profile',
+      label: 'Complete your company profile',
+      description: 'Add your company name, logo, and description',
+      completed: !!companyName,
+      link: { name: 'ProfileSettingsPage' },
+    },
+    {
+      id: 'logo',
+      label: 'Upload your company logo',
+      description: 'Help students recognize your brand',
+      completed: !!companyLogo,
+      link: { name: 'ProfileSettingsPage' },
+    },
+    {
+      id: 'post-project',
+      label: 'Post your first project',
+      description: 'Create an opportunity for students',
+      completed: hasPostedProject,
+      link: { name: 'NewListingPage' },
+    },
+    {
+      id: 'review-applicants',
+      label: 'Review student applications',
+      description: hasReceivedApplication
+        ? 'Review and manage student applications'
+        : 'No applications yet - search for students to invite',
+      completed: hasReceivedApplication,
+      link: { name: 'ApplicationsPage' },
+    },
+    {
+      id: 'search-students',
+      label: 'Search for students',
+      description: 'Find talented students to invite to your projects',
+      completed: false,
+      link: { name: 'SearchStudentsPage' },
+    },
+    {
+      id: 'accept-student',
+      label: 'Accept a student for a project',
+      description: 'Start collaborating with talented students',
+      completed: hasAcceptedStudent,
+      link: hasAcceptedStudent ? undefined : { name: 'ApplicationsPage' },
+    },
+  ];
+
+  const showOnboarding = !onboardingDismissed && !queryInProgress;
 
   // Calculate stats
   const activeProjects = listings.filter(l => l.attributes.state === LISTING_STATE_PUBLISHED);
@@ -606,6 +644,17 @@ export const CorporateDashboardPageComponent = props => {
             </div>
           </div>
 
+          {/* Onboarding Checklist */}
+          {showOnboarding && (
+            <OnboardingChecklist
+              title="Get Started with Street2Ivy"
+              subtitle="Complete these steps to start connecting with top student talent"
+              items={onboardingItems}
+              variant="corporate"
+              onDismiss={() => setOnboardingDismissed(true)}
+            />
+          )}
+
           {/* Quick Stats */}
           <div className={css.statsSection}>
             <ClickableStatCard
@@ -709,37 +758,39 @@ export const CorporateDashboardPageComponent = props => {
           {/* Enhanced Stats Section */}
           {dashboardStats && (
             <>
-              {/* Application Stats */}
-              <div className={css.enhancedStatsSection}>
-                <h3 className={css.sectionTitle}>
-                  {intl.formatMessage({ id: 'CorporateDashboardPage.applicationStats' })}
-                </h3>
-                <div className={css.statsGrid}>
-                  <ClickableStatCard
-                    value={dashboardStats.applicationStats?.total || 0}
-                    label="Total Applications"
-                    onClick={() => handleStatClick('totalApplications')}
-                    hasData={inboxSales?.length > 0}
-                  />
-                  <ClickableStatCard
-                    value={dashboardStats.applicationStats?.accepted || 0}
-                    label="Accepted"
-                    onClick={() => handleStatClick('acceptedApplications')}
-                    hasData={inboxSales?.length > 0}
-                  />
-                  <ClickableStatCard
-                    value={dashboardStats.applicationStats?.declined || 0}
-                    label="Declined"
-                    onClick={() => handleStatClick('declinedApplications')}
-                    hasData={inboxSales?.length > 0}
-                  />
-                  <ClickableStatCard
-                    value={dashboardStats.applicationStats?.pending || 0}
-                    label="Pending"
-                    onClick={() => handleStatClick('pendingApplications')}
-                    hasData={inboxSales?.length > 0}
-                  />
+              {/* Application Summary Card - Links to dedicated Applications Page */}
+              <div className={css.applicationsSummarySection}>
+                <div className={css.applicationsSummaryCard}>
+                  <div className={css.applicationsSummaryContent}>
+                    <div className={css.applicationsSummaryInfo}>
+                      <h3 className={css.sectionTitle}>Student Applications</h3>
+                      <div className={css.applicationsSummaryStats}>
+                        <span className={css.applicationStatItem}>
+                          <strong>{dashboardStats.applicationStats?.total || 0}</strong> Total
+                        </span>
+                        <span className={css.applicationStatItem}>
+                          <strong>{dashboardStats.applicationStats?.pending || 0}</strong> Pending
+                        </span>
+                        <span className={css.applicationStatItem}>
+                          <strong>{dashboardStats.applicationStats?.accepted || 0}</strong> Accepted
+                        </span>
+                      </div>
+                    </div>
+                    <NamedLink name="ApplicationsPage" className={css.viewApplicationsButton}>
+                      Review Applications →
+                    </NamedLink>
+                  </div>
                 </div>
+              </div>
+
+              {/* Sent Invites Section */}
+              <div className={css.sentInvitesSection}>
+                <h3 className={css.sectionTitle}>Sent Invitations</h3>
+                <SentInvitesPanel
+                  invites={sentInvites || []}
+                  stats={sentInvitesStats}
+                  isLoading={sentInvitesInProgress}
+                />
               </div>
 
               {/* Completion Stats */}
@@ -798,28 +849,6 @@ export const CorporateDashboardPageComponent = props => {
                   </div>
                 )}
 
-              {/* Financial Summary */}
-              {dashboardStats.financialStats && (
-                <div className={css.enhancedStatsSection}>
-                  <h3 className={css.sectionTitle}>
-                    {intl.formatMessage({ id: 'CorporateDashboardPage.financialSummary' })}
-                  </h3>
-                  <div className={css.statsGrid}>
-                    <div className={css.statCard}>
-                      <div className={css.statValue}>
-                        ${(dashboardStats.financialStats.totalSpent / 100).toLocaleString()}
-                      </div>
-                      <div className={css.statLabel}>Total Spent</div>
-                    </div>
-                    <div className={css.statCard}>
-                      <div className={css.statValue}>
-                        ${(dashboardStats.financialStats.avgCostPerProject / 100).toLocaleString()}
-                      </div>
-                      <div className={css.statLabel}>Avg. Cost/Project</div>
-                    </div>
-                  </div>
-                </div>
-              )}
             </>
           )}
 
@@ -835,28 +864,17 @@ export const CorporateDashboardPageComponent = props => {
             <PendingAssessmentsPanel intl={intl} />
           </div>
 
-          {/* Messages / Inbox Section */}
-          <div className={css.messagesSection}>
-            <h3 className={css.sectionTitle}>
-              {intl.formatMessage({ id: 'CorporateDashboardPage.messagesTitle' })}
-            </h3>
-            <MessagesPanel
-              inboxSales={inboxSales}
-              inboxOrders={inboxOrders}
-              inboxInProgress={inboxInProgress}
-              intl={intl}
-            />
-          </div>
-
           {/* Active Projects */}
           <div className={css.projectsSection}>
             <div className={css.actionBar}>
               <h3 className={css.sectionTitle}>
                 {intl.formatMessage({ id: 'CorporateDashboardPage.activeProjectsTitle' })}
               </h3>
-              <NamedLink name="NewListingPage" className={css.postProjectButton}>
-                {intl.formatMessage({ id: 'CorporateDashboardPage.postProject' })}
-              </NamedLink>
+              {listings.length > 0 && (
+                <NamedLink name="NewListingPage" className={css.postProjectButton}>
+                  {intl.formatMessage({ id: 'CorporateDashboardPage.postProject' })}
+                </NamedLink>
+              )}
             </div>
 
             {queryInProgress ? (
@@ -914,6 +932,9 @@ const mapStateToProps = state => {
     inboxSales,
     inboxOrders,
     inboxInProgress,
+    sentInvites,
+    sentInvitesStats,
+    sentInvitesInProgress,
   } = state.CorporateDashboardPage;
 
   const listings = getOwnListingsById(state, currentPageResultIds);
@@ -929,6 +950,9 @@ const mapStateToProps = state => {
     inboxSales,
     inboxOrders,
     inboxInProgress,
+    sentInvites,
+    sentInvitesStats,
+    sentInvitesInProgress,
   };
 };
 

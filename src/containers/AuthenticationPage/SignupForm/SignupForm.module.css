@@ -1,13 +1,53 @@
 @import '../../../styles/customMediaQueries.css';
 
-.root {
-  composes: marketplaceModalFormRootStyles from global;
+/* ================ Enterprise Design System - Signup Form ================ */
 
+.root {
+  display: flex;
+  flex-direction: column;
   justify-content: flex-start;
 
   @media (--viewportMedium) {
     justify-content: space-between;
   }
+}
+
+/* Input field styling */
+.root :global(.FieldTextInput_input),
+.root :global(.FieldSelect_select) {
+  width: 100%;
+  padding: 14px 16px;
+  font-size: 15px;
+  color: var(--s2i-navy-900);
+  background: var(--s2i-slate-50);
+  border: 1.5px solid var(--s2i-slate-200);
+  border-radius: var(--s2i-radius-lg);
+  transition: var(--s2i-transition-all);
+  outline: none;
+
+  &::placeholder {
+    color: var(--s2i-slate-400);
+  }
+
+  &:hover {
+    border-color: var(--s2i-slate-300);
+  }
+
+  &:focus {
+    background: white;
+    border-color: var(--s2i-teal-500);
+    box-shadow: 0 0 0 3px rgba(0, 200, 190, 0.15);
+  }
+}
+
+/* Label styling */
+.root :global(.FieldTextInput_label),
+.root :global(.FieldSelect_label) {
+  font-size: 13px;
+  font-weight: var(--s2i-font-semibold);
+  color: var(--s2i-slate-700);
+  margin-bottom: 6px;
+  display: block;
 }
 
 .defaultUserFields {
@@ -16,87 +56,158 @@
 .name {
   display: flex;
   justify-content: space-between;
-  margin-top: 24px;
+  gap: 16px;
+  margin-top: 20px;
 
   @media (--viewportMedium) {
-    margin-top: 32px;
+    margin-top: 24px;
   }
 }
 
 .row,
 .customFields {
-  margin-top: 24px;
+  margin-top: 20px;
 
   @media (--viewportMedium) {
-    margin-top: 32px;
+    margin-top: 24px;
   }
 }
 
 .firstNameRoot {
-  width: calc(34% - 9px);
+  flex: 1;
 }
 
 .lastNameRoot {
-  width: calc(66% - 9px);
+  flex: 1;
 }
 
 .password {
-  composes: marketplaceModalPasswordMargins from global;
-}
-
-.bottomWrapper {
-  composes: marketplaceModalBottomWrapper from global;
-}
-
-.error {
-  composes: textXSmall from global;
-  color: var(--colorFail);
-  font-weight: var(--fontWeightBold);
-  text-align: left;
-  padding: 6px 0;
+  margin-top: 20px;
 
   @media (--viewportMedium) {
-    padding: 8px 0;
+    margin-top: 24px;
   }
 }
 
-/* Institution status checker */
+.bottomWrapper {
+  margin-top: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Submit button styling */
+.bottomWrapper :global(.Button_primaryButton) {
+  width: 100%;
+  padding: 16px 24px;
+  font-size: 15px;
+  font-weight: var(--s2i-font-semibold);
+  color: white;
+  background: linear-gradient(135deg, var(--s2i-teal-500) 0%, var(--s2i-emerald-500) 100%);
+  border: none;
+  border-radius: var(--s2i-radius-lg);
+  cursor: pointer;
+  transition: var(--s2i-transition-all);
+  box-shadow: 0 4px 14px rgba(0, 200, 190, 0.35);
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 200, 190, 0.45);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+  }
+}
+
+.error {
+  font-size: 13px;
+  color: var(--s2i-coral-600);
+  font-weight: var(--s2i-font-medium);
+  text-align: left;
+  padding: 8px 0;
+  line-height: 1.4;
+
+  @media (--viewportMedium) {
+    padding: 10px 0;
+  }
+}
+
+/* ================ Institution Status Checker ================ */
+
 .institutionStatus {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 10px 12px;
-  margin-top: 8px;
-  border-radius: 6px;
+  gap: 10px;
+  padding: 12px 14px;
+  margin-top: 10px;
+  border-radius: var(--s2i-radius-lg);
   font-size: 13px;
   line-height: 1.4;
+  font-weight: var(--s2i-font-medium);
 }
 
 .institutionStatusChecking {
-  background: var(--colorGrey50);
-  color: var(--colorGrey600);
-  border: 1px solid var(--colorGrey200);
+  background: var(--s2i-slate-100);
+  color: var(--s2i-slate-600);
+  border: 1px solid var(--s2i-slate-200);
 }
 
 .institutionStatusValid {
-  background: #dcfce7;
-  color: #166534;
-  border: 1px solid #86efac;
+  background: var(--s2i-emerald-50);
+  color: var(--s2i-emerald-700);
+  border: 1px solid var(--s2i-emerald-200);
+}
+
+.institutionStatusValid::before {
+  content: '✓';
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  background: var(--s2i-emerald-500);
+  color: white;
+  border-radius: var(--s2i-radius-full);
+  font-size: 10px;
+  flex-shrink: 0;
 }
 
 .institutionStatusInvalid {
-  background: #fef2f2;
-  color: #dc2626;
-  border: 1px solid #fecaca;
+  background: var(--s2i-coral-50);
+  color: var(--s2i-coral-700);
+  border: 1px solid var(--s2i-coral-200);
+}
+
+.institutionStatusInvalid::before {
+  content: '!';
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  background: var(--s2i-coral-500);
+  color: white;
+  border-radius: var(--s2i-radius-full);
+  font-size: 11px;
+  font-weight: bold;
+  flex-shrink: 0;
 }
 
 .spinner {
-  width: 14px;
-  height: 14px;
-  border: 2px solid var(--colorGrey300);
-  border-top-color: var(--marketplaceColor);
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--s2i-slate-200);
+  border-top-color: var(--s2i-teal-500);
   border-radius: 50%;
-  animation: spin 1s linear infinite;
+  animation: spin 0.8s linear infinite;
   flex-shrink: 0;
 }
 
@@ -106,10 +217,68 @@
   }
 }
 
-/* Student email hint */
+/* ================ Email Hint ================ */
+
 .emailHint {
   font-size: 13px;
-  color: var(--colorGrey600);
-  margin: 6px 0 0 0;
+  color: var(--s2i-slate-500);
+  margin: 8px 0 0 0;
   line-height: 1.4;
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+.emailHint::before {
+  content: 'ℹ';
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  background: var(--s2i-slate-200);
+  color: var(--s2i-slate-600);
+  border-radius: var(--s2i-radius-full);
+  font-size: 10px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+/* ================ User Type Selection ================ */
+
+.root :global(.FieldSelect_select) {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23475569' d='M6 8L2 4h8z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 16px center;
+  padding-right: 40px;
+}
+
+/* ================ Terms Checkbox ================ */
+
+.root :global(.FieldCheckbox_root) {
+  margin-top: 20px;
+}
+
+.root :global(.FieldCheckbox_input) {
+  width: 20px;
+  height: 20px;
+  accent-color: var(--s2i-teal-500);
+}
+
+.root :global(.FieldCheckbox_label) {
+  font-size: 13px;
+  color: var(--s2i-slate-600);
+  line-height: 1.5;
+  margin-left: 10px;
+}
+
+.root :global(.FieldCheckbox_label) a {
+  color: var(--s2i-teal-600);
+  text-decoration: none;
+  font-weight: var(--s2i-font-medium);
+
+  &:hover {
+    text-decoration: underline;
+  }
 }

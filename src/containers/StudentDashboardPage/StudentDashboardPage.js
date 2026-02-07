@@ -298,38 +298,16 @@ const BrowseProjectsPanel = ({ projects, isLoading }) => {
           </div>
         </div>
       </div>
-
-      {/* Quick Links */}
-      <div className={css.quickLinksGrid}>
-        <NamedLink name="SearchPage" className={css.quickLinkCard}>
-          <span className={css.quickLinkIcon}>🔍</span>
-          <span className={css.quickLinkText}>Browse Projects</span>
-          <span className={css.quickLinkArrow}>→</span>
-        </NamedLink>
-        <NamedLink name="ProfileSettingsPage" className={css.quickLinkCard}>
-          <span className={css.quickLinkIcon}>👤</span>
-          <span className={css.quickLinkText}>Update Profile</span>
-          <span className={css.quickLinkArrow}>→</span>
-        </NamedLink>
-        <NamedLink name="SearchCompaniesPage" className={css.quickLinkCard}>
-          <span className={css.quickLinkIcon}>🏢</span>
-          <span className={css.quickLinkText}>View Companies</span>
-          <span className={css.quickLinkArrow}>→</span>
-        </NamedLink>
-        <NamedLink name="InboxPage" params={{ tab: 'orders' }} className={css.quickLinkCard}>
-          <span className={css.quickLinkIcon}>📬</span>
-          <span className={css.quickLinkText}>My Messages</span>
-          <span className={css.quickLinkArrow}>→</span>
-        </NamedLink>
-      </div>
     </div>
   );
 };
 
 // ================ Message Center Component ================ //
 
-const MessageCenter = ({ transactions, isLoading, onSelectMessage, currentUserId }) => {
+const MessageCenter = ({ transactions, isLoading, onSelectMessage, currentUserId, institutionInfo }) => {
+  const history = useHistory();
   const [activeMessageTab, setActiveMessageTab] = useState('received');
+  const [showNewMessageDropdown, setShowNewMessageDropdown] = useState(false);
 
   const formatDate = dateString => {
     const date = new Date(dateString);
@@ -360,6 +338,49 @@ const MessageCenter = ({ transactions, isLoading, onSelectMessage, currentUserId
       'transition/review-2-by-customer': 'Reviewed',
     };
     return statusMap[lastTransition] || lastTransition?.replace('transition/', '').replace(/-/g, ' ') || 'Pending';
+  };
+
+  // Get unique corporate partners from transactions
+  const getEngagedPartners = () => {
+    if (!transactions || transactions.length === 0) return [];
+
+    const partnersMap = new Map();
+    transactions.forEach(tx => {
+      const providerId = tx.provider?.id?.uuid;
+      const providerName = tx.provider?.attributes?.profile?.displayName || 'Unknown Company';
+      const transactionId = tx.id?.uuid || tx.id;
+
+      if (providerId && !partnersMap.has(providerId)) {
+        partnersMap.set(providerId, {
+          id: providerId,
+          name: providerName,
+          transactionId, // Link to an existing transaction for messaging
+        });
+      }
+    });
+
+    return Array.from(partnersMap.values());
+  };
+
+  const engagedPartners = getEngagedPartners();
+
+  // Handle clicking on a partner to message them
+  const handleMessagePartner = (partner) => {
+    setShowNewMessageDropdown(false);
+    // Navigate to the transaction/order details page where they can send messages
+    history.push(`/order/${partner.transactionId}/details`);
+  };
+
+  // Handle messaging school admin
+  const handleMessageSchoolAdmin = () => {
+    setShowNewMessageDropdown(false);
+    // If institution has contact info, use mailto
+    if (institutionInfo?.adminEmail) {
+      window.location.href = `mailto:${institutionInfo.adminEmail}?subject=Student%20Inquiry%20from%20Street2Ivy`;
+    } else {
+      // Fallback to a generic career services email
+      window.location.href = `mailto:careerservices@${institutionInfo?.domain || 'university.edu'}?subject=Student%20Inquiry%20from%20Street2Ivy`;
+    }
   };
 
   // Categorize messages as sent (initiated by student) or received (initiated by company)
@@ -494,14 +515,56 @@ const MessageCenter = ({ transactions, isLoading, onSelectMessage, currentUserId
           <span className={css.messageCenterIcon}>💬</span>
           Message Center
         </h3>
-        <div className={css.messageCenterActions}>
-          <NamedLink name="SearchPage" className={css.composeMessageButton}>
-            <span>✍️</span>
+        <div className={css.newMessageWrapper}>
+          <button
+            className={css.composeMessageButton}
+            onClick={() => setShowNewMessageDropdown(!showNewMessageDropdown)}
+          >
+            <span>✉️</span>
             New Message
-          </NamedLink>
-          <NamedLink name="InboxPage" params={{ tab: 'orders' }} className={css.viewFullInboxLink}>
-            Open Full Inbox →
-          </NamedLink>
+            <span className={css.dropdownArrow}>{showNewMessageDropdown ? '▲' : '▼'}</span>
+          </button>
+
+          {showNewMessageDropdown && (
+            <div className={css.newMessageDropdown}>
+              <div className={css.dropdownSection}>
+                <div className={css.dropdownSectionTitle}>Corporate Partners</div>
+                {engagedPartners.length > 0 ? (
+                  engagedPartners.map(partner => (
+                    <button
+                      key={partner.id}
+                      className={css.dropdownItem}
+                      onClick={() => handleMessagePartner(partner)}
+                    >
+                      <span className={css.dropdownItemAvatar}>
+                        {partner.name.charAt(0).toUpperCase()}
+                      </span>
+                      <span className={css.dropdownItemName}>{partner.name}</span>
+                    </button>
+                  ))
+                ) : (
+                  <div className={css.dropdownEmpty}>
+                    No corporate partners yet. Apply to projects to connect!
+                  </div>
+                )}
+              </div>
+
+              <div className={css.dropdownDivider}></div>
+
+              <div className={css.dropdownSection}>
+                <div className={css.dropdownSectionTitle}>School Administrator</div>
+                <button
+                  className={css.dropdownItem}
+                  onClick={handleMessageSchoolAdmin}
+                >
+                  <span className={css.dropdownItemAvatar}>🎓</span>
+                  <span className={css.dropdownItemName}>
+                    {institutionInfo?.name || 'Career Services'}
+                  </span>
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
@@ -532,24 +595,6 @@ const MessageCenter = ({ transactions, isLoading, onSelectMessage, currentUserId
       {/* Message List */}
       <div className={css.messageListContainer}>
         {renderMessageTable(activeMessages, activeMessageTab)}
-      </div>
-
-      {/* Quick Compose Section */}
-      <div className={css.quickComposeSection}>
-        <div className={css.quickComposeInfo}>
-          <span className={css.quickComposeIcon}>💡</span>
-          <p className={css.quickComposeText}>
-            To send a new message, browse projects and click "Contact" on any listing, or reply to existing conversations in your inbox.
-          </p>
-        </div>
-        <div className={css.quickComposeActions}>
-          <NamedLink name="SearchPage" className={css.browseToMessageButton}>
-            Browse Projects
-          </NamedLink>
-          <NamedLink name="SearchCompaniesPage" className={css.browseCompaniesButton}>
-            View Companies
-          </NamedLink>
-        </div>
       </div>
     </div>
   );
@@ -984,24 +1029,17 @@ const StudentDashboardPageComponent = props => {
     },
     {
       id: 'skills',
-      label: 'Add your skills',
-      description: 'Highlight what makes you unique',
+      label: 'Add your skills & interests',
+      description: 'Highlight your expertise and career interests',
       completed: hasSkills,
       link: { name: 'ProfileSettingsPage' },
     },
     {
-      id: 'browse',
-      label: 'Browse available projects',
-      description: 'Discover opportunities that match your interests',
-      completed: hasAppliedToProject || totalActiveProjects > 0 || totalInvites > 0,
-      link: { name: 'SearchPage' },
-    },
-    {
-      id: 'apply',
-      label: 'Apply to your first project',
-      description: 'Take the first step towards real-world experience',
+      id: 'browse-apply',
+      label: 'Browse & apply to projects',
+      description: 'Search projects by company, use filters to find the right fit, and start your application',
       completed: hasAppliedToProject || totalActiveProjects > 0 || hasCompletedProject,
-      link: { name: 'SearchPage' },
+      link: { name: 'SearchPageWithListingType', params: { listingType: 'project' } },
     },
   ];
 
@@ -1045,66 +1083,6 @@ const StudentDashboardPageComponent = props => {
             />
           )}
 
-          {/* Stats Cards - Clickable to show detail modal */}
-          <div className={css.statsGrid}>
-            <div
-              className={classNames(css.statCard, css.statCardClickable)}
-              onClick={() => handleStatClick('activeProjects')}
-              role="button"
-              tabIndex={0}
-              onKeyPress={(e) => e.key === 'Enter' && handleStatClick('activeProjects')}
-            >
-              <span className={css.statIcon}>📋</span>
-              <div className={css.statContent}>
-                <span className={css.statValue}>{totalActiveProjects}</span>
-                <span className={css.statLabel}>Active Projects</span>
-              </div>
-              <span className={css.statArrow}>→</span>
-            </div>
-            <div
-              className={classNames(css.statCard, css.statCardClickable)}
-              onClick={() => handleStatClick('invites')}
-              role="button"
-              tabIndex={0}
-              onKeyPress={(e) => e.key === 'Enter' && handleStatClick('invites')}
-            >
-              <span className={css.statIcon}>✉️</span>
-              <div className={css.statContent}>
-                <span className={css.statValue}>{totalInvites}</span>
-                <span className={css.statLabel}>Pending Invites</span>
-              </div>
-              <span className={css.statArrow}>→</span>
-            </div>
-            <div
-              className={classNames(css.statCard, css.statCardClickable)}
-              onClick={() => handleStatClick('messages')}
-              role="button"
-              tabIndex={0}
-              onKeyPress={(e) => e.key === 'Enter' && handleStatClick('messages')}
-            >
-              <span className={css.statIcon}>💬</span>
-              <div className={css.statContent}>
-                <span className={css.statValue}>{unreadMessages}</span>
-                <span className={css.statLabel}>Unread Messages</span>
-              </div>
-              <span className={css.statArrow}>→</span>
-            </div>
-            <div
-              className={classNames(css.statCard, css.statCardClickable)}
-              onClick={() => handleStatClick('history')}
-              role="button"
-              tabIndex={0}
-              onKeyPress={(e) => e.key === 'Enter' && handleStatClick('history')}
-            >
-              <span className={css.statIcon}>🏆</span>
-              <div className={css.statContent}>
-                <span className={css.statValue}>{projects.history.length}</span>
-                <span className={css.statLabel}>Completed Projects</span>
-              </div>
-              <span className={css.statArrow}>→</span>
-            </div>
-          </div>
-
           {/* Tab Navigation */}
           <div className={css.tabNavigation}>
             <button
@@ -1115,6 +1093,16 @@ const StudentDashboardPageComponent = props => {
               Browse Projects
               {availableProjects.length > 0 && (
                 <span className={css.tabBadge}>{availableProjects.length}</span>
+              )}
+            </button>
+            <button
+              className={classNames(css.tab, { [css.tabActive]: activeTab === 'activeProjects' })}
+              onClick={() => setActiveTab('activeProjects')}
+            >
+              <span className={css.tabIcon}>🚀</span>
+              Active Projects
+              {projects.active.filter(p => p.status === 'accepted' || p.status === 'in-progress').length > 0 && (
+                <span className={css.tabBadge}>{projects.active.filter(p => p.status === 'accepted' || p.status === 'in-progress').length}</span>
               )}
             </button>
             <button
@@ -1154,6 +1142,10 @@ const StudentDashboardPageComponent = props => {
                 <span className={css.tabBadge}>{unreadMessages}</span>
               )}
             </button>
+            <NamedLink name="SearchCompaniesPage" className={css.tabLink}>
+              <span className={css.tabIcon}>🏢</span>
+              Search Companies
+            </NamedLink>
           </div>
 
           {/* Tab Content */}
@@ -1164,6 +1156,34 @@ const StudentDashboardPageComponent = props => {
                 projects={availableProjects}
                 isLoading={isLoadingProjects}
               />
+            )}
+
+            {/* Active Projects Tab */}
+            {activeTab === 'activeProjects' && (
+              <div className={css.projectsSection}>
+                {isLoading ? (
+                  <div className={css.loadingState}>
+                    <span className={css.spinner}></span>
+                    Loading active projects...
+                  </div>
+                ) : projects.active.filter(p => p.status === 'accepted' || p.status === 'in-progress').length > 0 ? (
+                  <div className={css.projectsGrid}>
+                    {projects.active
+                      .filter(p => p.status === 'accepted' || p.status === 'in-progress')
+                      .map(project => (
+                        <ProjectCard key={project.id} project={project} type="active" />
+                      ))}
+                  </div>
+                ) : (
+                  <EmptyState
+                    icon="🚀"
+                    title="No Active Projects"
+                    description="You don't have any active projects yet. Apply to projects or accept invites to get started!"
+                    actionLink="SearchPage"
+                    actionText="Browse Projects"
+                  />
+                )}
+              </div>
             )}
 
             {/* My Applications Tab */}
@@ -1256,6 +1276,7 @@ const StudentDashboardPageComponent = props => {
                   isLoading={isLoading}
                   onSelectMessage={setSelectedMessage}
                   currentUserId={currentUser?.id?.uuid}
+                  institutionInfo={institutionInfo}
                 />
 
                 {/* Message Detail Modal */}

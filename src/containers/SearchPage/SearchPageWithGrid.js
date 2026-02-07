@@ -15,6 +15,7 @@ import {
   isOriginInUse,
   getQueryParamNames,
 } from '../../util/search';
+import { saveSearchFilters, loadSearchFilters, hasSavedFilters } from '../../util/searchFilterPersistence';
 import {
   NO_ACCESS_PAGE_USER_PENDING_APPROVAL,
   NO_ACCESS_PAGE_VIEW_LISTINGS,
@@ -75,6 +76,7 @@ export class SearchPageComponent extends Component {
     this.state = {
       isMobileModalOpen: false,
       currentQueryParams: validUrlQueryParamsFromProps(props),
+      showSavedFiltersPrompt: false,
     };
 
     this.onOpenMobileModal = this.onOpenMobileModal.bind(this);
@@ -86,6 +88,51 @@ export class SearchPageComponent extends Component {
 
     // SortBy
     this.handleSortBy = this.handleSortBy.bind(this);
+
+    // Saved filters
+    this.applySavedFilters = this.applySavedFilters.bind(this);
+    this.dismissSavedFiltersPrompt = this.dismissSavedFiltersPrompt.bind(this);
+  }
+
+  componentDidMount() {
+    // Check if there are saved filters and no current filters in URL
+    const urlQueryParams = validUrlQueryParamsFromProps(this.props);
+    const hasCurrentFilters = isAnyFilterActive(
+      this.props.config?.search?.sortConfig,
+      urlQueryParams,
+      this.props.config?.listing?.listingFields,
+      this.props.config?.search?.defaultFilters
+    );
+
+    if (!hasCurrentFilters && hasSavedFilters('listings')) {
+      this.setState({ showSavedFiltersPrompt: true });
+    }
+  }
+
+  // Apply saved filters from localStorage
+  applySavedFilters() {
+    const { history, routeConfiguration, location } = this.props;
+    const savedFilters = loadSearchFilters('listings');
+
+    if (savedFilters) {
+      const urlQueryParams = validUrlQueryParamsFromProps(this.props);
+      const queryParams = { ...urlQueryParams, ...savedFilters };
+
+      const { routeName, pathParams } = getSearchPageResourceLocatorStringParams(
+        routeConfiguration,
+        location
+      );
+
+      history.push(
+        createResourceLocatorString(routeName, routeConfiguration, pathParams, queryParams)
+      );
+    }
+
+    this.setState({ showSavedFiltersPrompt: false });
+  }
+
+  dismissSavedFiltersPrompt() {
+    this.setState({ showSavedFiltersPrompt: false });
   }
 
   // Invoked when a modal is opened from a child component,
@@ -177,6 +224,9 @@ export class SearchPageComponent extends Component {
         if (useHistoryPush) {
           const searchParams = this.state.currentQueryParams;
           const search = cleanSearchFromConflictingParams(searchParams, filterConfigs, sortConfig);
+
+          // Save filters to localStorage for persistence
+          saveSearchFilters(search, 'listings');
 
           const { routeName, pathParams } = getSearchPageResourceLocatorStringParams(
             routeConfiguration,
@@ -387,6 +437,31 @@ export class SearchPageComponent extends Component {
         schema={schema}
       >
         <TopbarContainer rootClassName={topbarClasses} currentSearchParams={validQueryParams} />
+
+        {/* Saved filters prompt */}
+        {this.state.showSavedFiltersPrompt && (
+          <div className={css.savedFiltersPrompt}>
+            <div className={css.savedFiltersContent}>
+              <span className={css.savedFiltersIcon}>🔍</span>
+              <span className={css.savedFiltersText}>
+                <FormattedMessage id="SearchPage.savedFiltersPrompt" defaultMessage="You have saved search filters. Would you like to restore them?" />
+              </span>
+              <button
+                className={css.savedFiltersApply}
+                onClick={this.applySavedFilters}
+              >
+                <FormattedMessage id="SearchPage.restoreFilters" defaultMessage="Restore Filters" />
+              </button>
+              <button
+                className={css.savedFiltersDismiss}
+                onClick={this.dismissSavedFiltersPrompt}
+              >
+                ✕
+              </button>
+            </div>
+          </div>
+        )}
+
         <div className={css.layoutWrapperContainer}>
           <aside className={css.layoutWrapperFilterColumn} data-testid="filterColumnAside">
             <div className={css.filterColumnContent}>
@@ -489,15 +564,20 @@ export class SearchPageComponent extends Component {
                     <FormattedMessage id="SearchPage.invalidDatesFilter" />
                   </H5>
                 ) : null}
-                <SearchResultsPanel
-                  className={css.searchListingsPanel}
-                  listings={listings}
-                  pagination={listingsAreLoaded ? pagination : null}
-                  search={parse(location.search)}
-                  isMapVariant={false}
-                  listingTypeParam={listingTypePathParam}
-                  intl={intl}
-                />
+                {/* Show empty state directly in the listings area for better visibility */}
+                {listingsAreLoaded && totalItems === 0 && !searchListingsError ? (
+                  noResultsInfo
+                ) : (
+                  <SearchResultsPanel
+                    className={css.searchListingsPanel}
+                    listings={listings}
+                    pagination={listingsAreLoaded ? pagination : null}
+                    search={parse(location.search)}
+                    isMapVariant={false}
+                    listingTypeParam={listingTypePathParam}
+                    intl={intl}
+                  />
+                )}
               </div>
             </div>
           </div>

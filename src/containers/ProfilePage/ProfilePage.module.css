@@ -1,7 +1,12 @@
 @import '../../styles/customMediaQueries.css';
 
+/* ================ Enterprise Design System - Profile Page ================ */
+
 .error {
   margin-top: 5px;
+  color: var(--s2i-coral-600);
+  font-size: 14px;
+  font-weight: var(--s2i-font-medium);
 
   @media (--viewportMedium) {
     margin-top: 4px;
@@ -11,12 +16,16 @@
   }
 }
 
-.error {
-  color: var(--colorFail);
-}
-
 .aside {
   box-shadow: none;
+  background: white;
+  border-radius: var(--s2i-radius-xl);
+
+  @media (--viewportLarge) {
+    padding: 24px;
+    box-shadow: var(--s2i-shadow-sm);
+    border: 1px solid var(--s2i-slate-100);
+  }
 }
 
 .asideContent {
@@ -24,7 +33,7 @@
   display: flex;
   flex-direction: row;
   flex-wrap: wrap;
-  border-bottom: 1px solid var(--colorGrey100);
+  border-bottom: 1px solid var(--s2i-slate-200);
 
   @media (--viewportLarge) {
     flex-direction: column;
@@ -40,6 +49,7 @@
     margin: 0 96px 48px 0;
   }
 }
+
 .avatarPlaceholder {
   composes: avatar;
   width: 96px;
@@ -48,6 +58,9 @@
 .mobileHeading {
   flex-shrink: 0;
   margin: 60px 0 0 0;
+  font-family: 'Playfair Display', Georgia, serif;
+  font-weight: 700;
+  color: var(--s2i-navy-900);
 
   @media (--viewportMedium) {
     margin: 49px 0 0 0;
@@ -59,9 +72,14 @@
 
 .editLinkMobile {
   margin-top: 17px;
-
-  /* Pull the link to the end of the container */
   margin-left: auto;
+  color: var(--s2i-teal-600);
+  font-weight: var(--s2i-font-medium);
+  transition: var(--s2i-transition-colors);
+
+  &:hover {
+    color: var(--s2i-teal-700);
+  }
 
   @media (--viewportMedium) {
     margin-top: 20px;
@@ -73,6 +91,13 @@
 
 .editLinkDesktop {
   display: none;
+  color: var(--s2i-teal-600);
+  font-weight: var(--s2i-font-medium);
+  transition: var(--s2i-transition-colors);
+
+  &:hover {
+    color: var(--s2i-teal-700);
+  }
 
   @media (--viewportLarge) {
     display: inline;
@@ -86,6 +111,11 @@
   @media (--viewportLarge) {
     display: block;
     margin: 0 0 24px 0;
+    font-family: 'Playfair Display', Georgia, serif;
+    font-weight: 700;
+    font-size: 28px;
+    color: var(--s2i-navy-900);
+    letter-spacing: -0.02em;
   }
 }
 
@@ -95,9 +125,10 @@
 }
 
 .bio {
-  /* Preserve newlines, but collapse other whitespace */
   white-space: pre-line;
   margin: 5px 0 24px 0;
+  color: var(--s2i-slate-600);
+  line-height: 1.7;
 
   @media (--viewportMedium) {
     margin: 4px 0 51px 0;
@@ -108,9 +139,11 @@
   }
 }
 
+/* ================ Listings Section ================ */
+
 .listingsContainer {
   composes: clearfix from global;
-  border-top: 1px solid var(--colorGrey100);
+  border-top: 1px solid var(--s2i-slate-200);
   padding-bottom: 23px;
 
   @media (--viewportMedium) {
@@ -119,7 +152,10 @@
 }
 
 .listingsTitle {
-  color: var(--colorGrey700);
+  font-family: 'Playfair Display', Georgia, serif;
+  font-weight: 600;
+  font-size: 20px;
+  color: var(--s2i-navy-900);
   margin-bottom: 0;
 
   @media (--viewportMedium) {
@@ -133,11 +169,10 @@
 }
 
 .withBioMissingAbove {
-  /* Avoid extra borders in mobile when bio is missing */
   border-top: none;
 
   @media (--viewportLarge) {
-    border-top: 1px solid var(--colorGrey100);
+    border-top: 1px solid var(--s2i-slate-200);
   }
 }
 
@@ -149,19 +184,16 @@
 
 .listing {
   width: 100%;
-
-  /* Single column in mobile */
   margin-top: 34px;
+
   &:first-of-type {
     margin-top: 18px;
   }
 
   @media (--viewportMedium) {
-    /* Two columns in desktop */
     width: calc(50% - 12px);
     margin-bottom: 36px;
 
-    /* Horizontal space */
     &:nth-of-type(odd) {
       margin-right: 12px;
     }
@@ -169,7 +201,6 @@
       margin-left: 12px;
     }
 
-    /* Vertical space */
     margin-top: 0;
     &:nth-of-type(1),
     &:nth-of-type(2) {
@@ -178,17 +209,22 @@
   }
 }
 
+/* ================ Reviews Section ================ */
+
 .mobileReviewsTitle {
   margin: 24px 0 26px 0;
+  font-family: 'Playfair Display', Georgia, serif;
+  font-weight: 600;
+  color: var(--s2i-navy-900);
 }
 
 .mobileReviews {
-  border-top: 1px solid var(--colorGrey100);
+  border-top: 1px solid var(--s2i-slate-200);
   margin-bottom: 36px;
 }
 
 .desktopReviews {
-  border-top: 1px solid var(--colorGrey100);
+  border-top: 1px solid var(--s2i-slate-200);
 
   @media (--viewportMedium) {
     margin-bottom: 48px;
@@ -207,11 +243,16 @@
 .desktopReviewsTitle {
   composes: textLarge from global;
   margin-bottom: 0;
+  font-family: 'Playfair Display', Georgia, serif;
+  font-weight: 600;
+  color: var(--s2i-navy-900);
 }
 
 .desktopReviewsTabNav {
   margin-bottom: 32px;
 }
+
+/* ================ Content Sections ================ */
 
 .sectionText {
   padding: 0 24px;
@@ -223,16 +264,13 @@
   }
 }
 
-/* 
- * Custom field component classes 
- */
-
 .sectionHeading {
-  /* Font for sections titles */
   composes: p from global;
   padding: 0;
-  font-weight: var(--fontWeightBold);
-
+  font-family: 'Playfair Display', Georgia, serif;
+  font-weight: 600;
+  font-size: 18px;
+  color: var(--s2i-navy-900);
   margin-top: 0;
   margin-bottom: 12px;
 
@@ -246,9 +284,9 @@
   font-weight: var(--fontWeightRegular);
   padding: 1px 0 5px 0;
   margin: 0;
-
-  /* Preserve newlines, but collapse other whitespace */
   white-space: pre-line;
+  color: var(--s2i-slate-700);
+  line-height: 1.7;
 
   @media (--viewportMedium) {
     padding: 3px 0 5px 0;
@@ -259,9 +297,9 @@
 .ingress {
   composes: p from global;
   margin: 0;
-
-  /* Preserve newlines, but collapse other whitespace */
   white-space: pre-line;
+  color: var(--s2i-slate-700);
+  line-height: 1.7;
 
   @media (--viewportMedium) {
     margin: 0;
@@ -280,6 +318,8 @@
   }
 }
 
+/* ================ Details List ================ */
+
 .details {
   padding-bottom: 1px;
   margin: 0;
@@ -292,29 +332,35 @@
   list-style: none;
   font-weight: var(--fontWeightRegular);
   line-height: 24px;
-  padding: 7px 0px 10px;
+  padding: 12px 0;
   gap: 8px;
+  color: var(--s2i-slate-700);
 
   &:not(:last-child) {
-    border-bottom: 1px solid var(--colorGrey100);
+    border-bottom: 1px solid var(--s2i-slate-100);
   }
 
   @media (--viewportMedium) {
-    padding: 5px 0 2px 0;
+    padding: 10px 0;
     line-height: 32px;
   }
 }
 
 .detailLabel {
-  font-weight: var(--fontWeightSemiBold);
+  font-weight: var(--s2i-font-semibold);
+  color: var(--s2i-navy-900);
   letter-spacing: -0.09px;
 }
+
+/* ================ Video ================ */
 
 .video {
   position: relative;
   overflow: hidden;
-  border-radius: 8px;
+  border-radius: var(--s2i-radius-xl);
+  box-shadow: var(--s2i-shadow-md);
 }
+
 .iframe {
   position: absolute;
   top: 0;
@@ -329,9 +375,10 @@
 
 .companySubtitle {
   font-size: 13px;
-  color: var(--colorGrey500);
+  color: var(--s2i-slate-500);
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.05em;
+  font-weight: var(--s2i-font-semibold);
   margin: 4px 0 0 0;
   width: 100%;
 }
@@ -353,13 +400,18 @@
 }
 
 .companyWebsiteLink {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   font-size: 14px;
-  color: var(--marketplaceColor);
+  color: var(--s2i-teal-600);
   text-decoration: none;
+  font-weight: var(--s2i-font-medium);
   margin-bottom: 16px;
+  transition: var(--s2i-transition-colors);
 
   &:hover {
+    color: var(--s2i-teal-700);
     text-decoration: underline;
   }
 }
@@ -369,8 +421,71 @@
 }
 
 .companyDescriptionHeading {
-  font-size: 16px;
-  font-weight: var(--fontWeightSemiBold);
-  color: var(--colorGrey900);
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--s2i-navy-900);
   margin: 0 0 8px 0;
+}
+
+/* Company Spending Section - for students/edu admins viewing corporate profiles */
+.companySpendingSection {
+  margin: 24px 0 32px 0;
+  padding: 20px 24px;
+  background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+  border: 1px solid #86efac;
+  border-radius: 12px;
+}
+
+.companySpendingTitle {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 18px;
+  font-weight: 600;
+  color: #166534;
+  margin: 0 0 16px 0;
+}
+
+.companySpendingLoading {
+  color: #15803d;
+  font-size: 14px;
+  margin: 0;
+}
+
+.companySpendingGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+
+  @media (--viewportMedium) {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.companySpendingStat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 12px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.companySpendingValue {
+  font-size: 24px;
+  font-weight: 700;
+  color: #166534;
+  line-height: 1.2;
+
+  @media (--viewportMedium) {
+    font-size: 28px;
+  }
+}
+
+.companySpendingLabel {
+  font-size: 12px;
+  color: #15803d;
+  margin-top: 4px;
+  font-weight: 500;
 }

@@ -661,16 +661,21 @@ export class SearchPageComponent extends Component {
                     <FormattedMessage id="SearchPage.invalidDatesFilter" />
                   </H5>
                 ) : null}
-                <SearchResultsPanel
-                  className={css.searchListingsPanel}
-                  listings={listings}
-                  pagination={listingsAreLoaded ? pagination : null}
-                  search={parse(location.search)}
-                  setActiveListing={onActivateListing}
-                  isMapVariant
-                  listingTypeParam={listingTypePathParam}
-                  intl={intl}
-                />
+                {/* Show empty state directly in the listings area for better visibility */}
+                {listingsAreLoaded && totalItems === 0 && !searchListingsError ? (
+                  noResultsInfo
+                ) : (
+                  <SearchResultsPanel
+                    className={css.searchListingsPanel}
+                    listings={listings}
+                    pagination={listingsAreLoaded ? pagination : null}
+                    search={parse(location.search)}
+                    setActiveListing={onActivateListing}
+                    isMapVariant
+                    listingTypeParam={listingTypePathParam}
+                    intl={intl}
+                  />
+                )}
               </div>
             )}
           </div>

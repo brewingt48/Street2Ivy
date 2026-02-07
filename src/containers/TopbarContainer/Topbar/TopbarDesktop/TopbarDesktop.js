@@ -267,21 +267,22 @@ const TopbarDesktop = props => {
   const authenticatedOnClientSide = mounted && isAuthenticated;
   const isAuthenticatedOrJustHydrated = isAuthenticated || !mounted;
 
-  // Street2Ivy: Check if user is admin or corporate partner
+  // Street2Ivy: Check if user is admin or corporate partner or student
   const userType = currentUser?.attributes?.profile?.publicData?.userType;
   const isSystemAdmin = userType === 'system-admin';
   const isEducationalAdmin = userType === 'educational-admin';
   const isCorporatePartner = userType === 'corporate-partner';
+  const isStudent = userType === 'student';
   const isAdmin = isSystemAdmin || isEducationalAdmin;
 
   const giveSpaceForSearch = customLinks == null || customLinks?.length === 0;
   const classes = classNames(rootClassName || css.root, className);
 
-  // For corporate partners, hide inbox link (they have inbox in their dashboard)
-  // For admin users, hide inbox link (they access dashboard via profile menu)
+  // For corporate partners, students, and admin users, hide inbox link
+  // (they have messages in their respective dashboards)
   const inboxLinkMaybe = authenticatedOnClientSide ? (
-    isAdmin || isCorporatePartner ? (
-      null // Admins and corporate partners access their dashboards via the profile menu
+    isAdmin || isCorporatePartner || isStudent ? (
+      null // These users access their messages via their dashboards
     ) : (
       <InboxLink notificationCount={notificationCount} inboxTab={inboxTab} />
     )

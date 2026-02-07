@@ -2,7 +2,10 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { updatedEntities, denormalisedEntities } from '../../util/data';
 import { storableError } from '../../util/errors';
 import { createImageVariantConfig } from '../../util/sdkLoader';
-import { fetchCorporateDashboardStats as fetchCorporateDashboardStatsApi } from '../../util/api';
+import {
+  fetchCorporateDashboardStats as fetchCorporateDashboardStatsApi,
+  fetchCorporateInvites as fetchCorporateInvitesApi,
+} from '../../util/api';
 import { getMarketplaceEntities } from '../../ducks/marketplaceData.duck';
 
 import { fetchCurrentUser } from '../../ducks/user.duck';
@@ -104,6 +107,21 @@ export const fetchCorporateInboxThunk = createAsyncThunk(
 
 export const fetchCorporateInbox = () => dispatch => dispatch(fetchCorporateInboxThunk()).unwrap();
 
+// Fetch sent invites
+export const fetchSentInvitesThunk = createAsyncThunk(
+  'app/CorporateDashboardPage/fetchSentInvites',
+  async (params = {}, { rejectWithValue }) => {
+    try {
+      return await fetchCorporateInvitesApi(params);
+    } catch (e) {
+      return rejectWithValue(storableError(e));
+    }
+  }
+);
+
+export const fetchSentInvites = (params = {}) => dispatch =>
+  dispatch(fetchSentInvitesThunk(params)).unwrap();
+
 // ================ Slice ================ //
 
 const resultIds = data => data.data.map(l => l.id);
@@ -126,6 +144,11 @@ const corporateDashboardPageSlice = createSlice({
     inboxOrders: [],
     inboxInProgress: false,
     inboxError: null,
+    // Sent invites
+    sentInvites: [],
+    sentInvitesStats: null,
+    sentInvitesInProgress: false,
+    sentInvitesError: null,
   },
   reducers: {
     addOwnEntities: (state, action) => {
@@ -177,6 +200,20 @@ const corporateDashboardPageSlice = createSlice({
       .addCase(fetchCorporateInboxThunk.rejected, (state, action) => {
         state.inboxInProgress = false;
         state.inboxError = action.payload;
+      })
+      // Sent invites
+      .addCase(fetchSentInvitesThunk.pending, state => {
+        state.sentInvitesInProgress = true;
+        state.sentInvitesError = null;
+      })
+      .addCase(fetchSentInvitesThunk.fulfilled, (state, action) => {
+        state.sentInvitesInProgress = false;
+        state.sentInvites = action.payload?.invites || [];
+        state.sentInvitesStats = action.payload?.stats || null;
+      })
+      .addCase(fetchSentInvitesThunk.rejected, (state, action) => {
+        state.sentInvitesInProgress = false;
+        state.sentInvitesError = action.payload;
       });
   },
 });
@@ -208,5 +245,6 @@ export const loadData = (params, search, config) => (dispatch, getState, sdk) =>
     ),
     dispatch(fetchDashboardStatsThunk()),
     dispatch(fetchCorporateInboxThunk()),
+    dispatch(fetchSentInvitesThunk()),
   ]);
 };

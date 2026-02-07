@@ -569,3 +569,47 @@
   background-color: #b45309;
   text-decoration: none;
 }
+
+/* Company Profile Link - for students to learn more about the company */
+.companyInfoContainer {
+  margin: 24px 24px 0 24px;
+  padding: 20px;
+  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+  border: 1px solid #7dd3fc;
+  border-radius: 8px;
+
+  @media (--viewportLarge) {
+    margin: 24px 0 0 0;
+  }
+}
+
+.companyInfoTitle {
+  font-size: 16px;
+  font-weight: 600;
+  color: #0369a1;
+  margin: 0 0 8px 0;
+}
+
+.companyInfoDescription {
+  font-size: 14px;
+  color: #0c4a6e;
+  margin: 0 0 16px 0;
+  line-height: 1.5;
+}
+
+.companyProfileLink {
+  display: inline-block;
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 500;
+  color: white;
+  background-color: #0284c7;
+  border-radius: 4px;
+  text-decoration: none;
+  transition: background-color 0.2s;
+}
+
+.companyProfileLink:hover {
+  background-color: #0369a1;
+  text-decoration: none;
+}

@@ -1,12 +1,13 @@
 @import '../../styles/customMediaQueries.css';
 
-/* ================ Page Layout ================ */
+/* ================ Enterprise Design System - Onboarding Page ================ */
 
 .pageContent {
   width: 100%;
   max-width: 1200px;
   margin: 0 auto;
   padding: 24px 24px 48px;
+  background: var(--s2i-slate-50);
 
   @media (--viewportMedium) {
     padding: 32px 32px 64px;
@@ -20,11 +21,12 @@
 /* ================ Welcome Section ================ */
 
 .welcomeSection {
-  background: linear-gradient(135deg, var(--marketplaceColor) 0%, var(--marketplaceColorDark) 100%);
-  border-radius: 16px;
+  background: linear-gradient(135deg, var(--s2i-teal-500) 0%, var(--s2i-emerald-500) 100%);
+  border-radius: var(--s2i-radius-2xl);
   padding: 32px 24px;
   margin-bottom: 32px;
-  color: var(--colorWhite);
+  color: white;
+  box-shadow: 0 10px 40px rgba(0, 200, 190, 0.3);
 
   @media (--viewportMedium) {
     padding: 40px 32px;
@@ -50,7 +52,8 @@
   width: 80px;
   height: 80px;
   flex-shrink: 0;
-  border: 3px solid rgba(255, 255, 255, 0.3);
+  border: 3px solid rgba(255, 255, 255, 0.4);
+  border-radius: var(--s2i-radius-full);
 
   @media (--viewportMedium) {
     width: 100px;
@@ -63,11 +66,13 @@
 }
 
 .welcomeTitle {
+  font-family: 'Playfair Display', Georgia, serif;
   font-size: 24px;
-  font-weight: var(--fontWeightBold);
+  font-weight: 700;
   line-height: 1.2;
   margin: 0 0 8px;
-  color: var(--colorWhite);
+  color: white;
+  letter-spacing: -0.02em;
 
   @media (--viewportMedium) {
     font-size: 32px;
@@ -79,7 +84,7 @@
   font-size: 16px;
   line-height: 1.5;
   margin: 0;
-  opacity: 0.9;
+  opacity: 0.95;
 
   @media (--viewportMedium) {
     font-size: 18px;
@@ -101,11 +106,11 @@
 /* ================ Progress Section ================ */
 
 .progressSection {
-  background: var(--colorWhite);
-  border-radius: 12px;
+  background: white;
+  border-radius: var(--s2i-radius-xl);
   padding: 24px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  border: 1px solid var(--colorGrey100);
+  box-shadow: var(--s2i-shadow-sm);
+  border: 1px solid var(--s2i-slate-100);
 }
 
 .progressContainer {
@@ -121,27 +126,27 @@
 
 .progressLabel {
   font-size: 14px;
-  font-weight: var(--fontWeightSemiBold);
-  color: var(--colorGrey700);
+  font-weight: var(--s2i-font-semibold);
+  color: var(--s2i-navy-900);
 }
 
 .progressPercentage {
   font-size: 16px;
-  font-weight: var(--fontWeightBold);
-  color: var(--marketplaceColor);
+  font-weight: var(--s2i-font-bold);
+  color: var(--s2i-teal-600);
 }
 
 .progressBar {
   height: 12px;
-  background: var(--colorGrey100);
-  border-radius: 6px;
+  background: var(--s2i-slate-100);
+  border-radius: var(--s2i-radius-full);
   overflow: hidden;
 }
 
 .progressFill {
   height: 100%;
-  background: linear-gradient(90deg, var(--marketplaceColor) 0%, var(--successColor) 100%);
-  border-radius: 6px;
+  background: linear-gradient(90deg, var(--s2i-teal-500) 0%, var(--s2i-emerald-500) 100%);
+  border-radius: var(--s2i-radius-full);
   transition: width 0.5s ease-out;
 }
 
@@ -153,9 +158,9 @@
   gap: 16px;
   margin-top: 20px;
   padding: 16px 20px;
-  background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
-  border-radius: 12px;
-  border: 1px solid var(--successColor);
+  background: linear-gradient(135deg, var(--s2i-emerald-50) 0%, var(--s2i-teal-50) 100%);
+  border-radius: var(--s2i-radius-xl);
+  border: 1px solid var(--s2i-emerald-200);
 }
 
 .completionIcon {
@@ -165,32 +170,35 @@
 
 .completionText h3 {
   margin: 0 0 4px;
+  font-family: 'Playfair Display', Georgia, serif;
   font-size: 18px;
-  font-weight: var(--fontWeightBold);
-  color: var(--colorGrey900);
+  font-weight: 700;
+  color: var(--s2i-navy-900);
 }
 
 .completionText p {
   margin: 0;
   font-size: 14px;
-  color: var(--colorGrey700);
+  color: var(--s2i-slate-600);
 }
 
 /* ================ Steps Section ================ */
 
 .stepsSection {
-  background: var(--colorWhite);
-  border-radius: 12px;
+  background: white;
+  border-radius: var(--s2i-radius-xl);
   padding: 24px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  border: 1px solid var(--colorGrey100);
+  box-shadow: var(--s2i-shadow-sm);
+  border: 1px solid var(--s2i-slate-100);
 }
 
 .stepsTitle {
+  font-family: 'Playfair Display', Georgia, serif;
   font-size: 20px;
-  font-weight: var(--fontWeightBold);
-  color: var(--colorGrey900);
+  font-weight: 700;
+  color: var(--s2i-navy-900);
   margin: 0 0 20px;
+  letter-spacing: -0.02em;
 
   @media (--viewportMedium) {
     font-size: 22px;
@@ -215,10 +223,10 @@
   align-items: center;
   gap: 16px;
   padding: 16px;
-  background: var(--colorGrey50);
-  border-radius: 10px;
+  background: var(--s2i-slate-50);
+  border-radius: var(--s2i-radius-lg);
   border: 2px solid transparent;
-  transition: all 0.2s ease;
+  transition: var(--s2i-transition-all);
 
   @media (--viewportMedium) {
     padding: 20px;
@@ -227,14 +235,14 @@
 }
 
 .stepCard.active {
-  background: var(--colorWhite);
-  border-color: var(--marketplaceColor);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  background: white;
+  border-color: var(--s2i-teal-500);
+  box-shadow: var(--s2i-shadow-md);
 }
 
 .stepCard.completed {
-  background: #f0fdf4;
-  border-color: var(--successColor);
+  background: var(--s2i-emerald-50);
+  border-color: var(--s2i-emerald-300);
 }
 
 .stepIcon {
@@ -243,11 +251,11 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--colorWhite);
-  border-radius: 50%;
+  background: white;
+  border-radius: var(--s2i-radius-full);
   font-size: 24px;
   flex-shrink: 0;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  box-shadow: var(--s2i-shadow-sm);
 
   @media (--viewportMedium) {
     width: 56px;
@@ -257,13 +265,13 @@
 }
 
 .stepCard.completed .stepIcon {
-  background: var(--successColor);
+  background: linear-gradient(135deg, var(--s2i-emerald-500) 0%, var(--s2i-teal-500) 100%);
 }
 
 .checkmark {
-  color: var(--colorWhite);
+  color: white;
   font-size: 24px;
-  font-weight: var(--fontWeightBold);
+  font-weight: var(--s2i-font-bold);
 }
 
 .stepContent {
@@ -273,8 +281,8 @@
 
 .stepTitle {
   font-size: 16px;
-  font-weight: var(--fontWeightSemiBold);
-  color: var(--colorGrey900);
+  font-weight: var(--s2i-font-semibold);
+  color: var(--s2i-navy-900);
   margin: 0 0 4px;
 
   @media (--viewportMedium) {
@@ -283,15 +291,15 @@
 }
 
 .stepCard.completed .stepTitle {
-  color: var(--colorGrey600);
+  color: var(--s2i-slate-500);
   text-decoration: line-through;
 }
 
 .stepDescription {
   font-size: 14px;
-  color: var(--colorGrey600);
+  color: var(--s2i-slate-600);
   margin: 0;
-  line-height: 1.4;
+  line-height: 1.5;
 }
 
 .stepAction {
@@ -299,20 +307,23 @@
   align-items: center;
   justify-content: center;
   padding: 10px 20px;
-  background: var(--marketplaceColor);
-  color: var(--colorWhite);
+  background: linear-gradient(135deg, var(--s2i-teal-500) 0%, var(--s2i-emerald-500) 100%);
+  color: white;
   font-size: 14px;
-  font-weight: var(--fontWeightSemiBold);
-  border-radius: 8px;
+  font-weight: var(--s2i-font-semibold);
+  border-radius: var(--s2i-radius-lg);
   text-decoration: none;
   white-space: nowrap;
-  transition: background 0.2s ease;
+  transition: var(--s2i-transition-all);
   flex-shrink: 0;
+  box-shadow: 0 4px 14px rgba(0, 200, 190, 0.35);
 
   &:hover {
-    background: var(--marketplaceColorDark);
+    background: linear-gradient(135deg, var(--s2i-teal-600) 0%, var(--s2i-emerald-600) 100%);
     text-decoration: none;
-    color: var(--colorWhite);
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 200, 190, 0.45);
   }
 }
 
@@ -320,11 +331,11 @@
   display: inline-flex;
   align-items: center;
   padding: 6px 12px;
-  background: var(--successColor);
-  color: var(--colorWhite);
+  background: linear-gradient(135deg, var(--s2i-emerald-500) 0%, var(--s2i-teal-500) 100%);
+  color: white;
   font-size: 12px;
-  font-weight: var(--fontWeightSemiBold);
-  border-radius: 20px;
+  font-weight: var(--s2i-font-semibold);
+  border-radius: var(--s2i-radius-full);
   white-space: nowrap;
   flex-shrink: 0;
 }
@@ -332,18 +343,20 @@
 /* ================ Quick Actions ================ */
 
 .quickActions {
-  background: var(--colorWhite);
-  border-radius: 12px;
+  background: white;
+  border-radius: var(--s2i-radius-xl);
   padding: 24px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  border: 1px solid var(--colorGrey100);
+  box-shadow: var(--s2i-shadow-sm);
+  border: 1px solid var(--s2i-slate-100);
 }
 
 .quickActionsTitle {
+  font-family: 'Playfair Display', Georgia, serif;
   font-size: 20px;
-  font-weight: var(--fontWeightBold);
-  color: var(--colorGrey900);
+  font-weight: 700;
+  color: var(--s2i-navy-900);
   margin: 0 0 20px;
+  letter-spacing: -0.02em;
 
   @media (--viewportMedium) {
     font-size: 22px;
@@ -372,18 +385,18 @@
   align-items: center;
   justify-content: center;
   padding: 24px 16px;
-  background: var(--colorGrey50);
-  border-radius: 12px;
+  background: var(--s2i-slate-50);
+  border-radius: var(--s2i-radius-xl);
   text-decoration: none;
-  transition: all 0.2s ease;
+  transition: var(--s2i-transition-all);
   border: 2px solid transparent;
   text-align: center;
 
   &:hover {
-    background: var(--colorWhite);
-    border-color: var(--marketplaceColor);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    transform: translateY(-2px);
+    background: white;
+    border-color: var(--s2i-teal-500);
+    box-shadow: var(--s2i-shadow-md);
+    transform: translateY(-4px);
     text-decoration: none;
   }
 
@@ -404,8 +417,8 @@
 
 .quickActionLabel {
   font-size: 14px;
-  font-weight: var(--fontWeightSemiBold);
-  color: var(--colorGrey900);
+  font-weight: var(--s2i-font-semibold);
+  color: var(--s2i-navy-900);
   line-height: 1.3;
 
   @media (--viewportMedium) {
@@ -421,13 +434,14 @@
 }
 
 .skipLink {
-  color: var(--colorGrey600);
+  color: var(--s2i-slate-500);
   font-size: 14px;
+  font-weight: var(--s2i-font-medium);
   text-decoration: underline;
-  transition: color 0.2s ease;
+  transition: var(--s2i-transition-colors);
 
   &:hover {
-    color: var(--marketplaceColor);
+    color: var(--s2i-teal-600);
   }
 }
 

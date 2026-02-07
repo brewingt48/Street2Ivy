@@ -1,0 +1,194 @@
+@import '../../styles/customMediaQueries.css';
+
+.root {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+/* Variants */
+.compact {
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.detailed {
+  flex-direction: row;
+}
+
+/* User type color variants */
+.userStudent .progressFill {
+  stroke: #00C8BE;
+}
+
+.userCorporate .progressFill {
+  stroke: #FFB43C;
+}
+
+.complete .progressFill {
+  stroke: #22c55e;
+}
+
+/* Progress container */
+.progressContainer {
+  position: relative;
+  flex-shrink: 0;
+}
+
+/* SVG Progress Ring */
+.progressRing {
+  transform: rotate(0deg);
+}
+
+.progressBg {
+  stroke: #e5e7eb;
+}
+
+.progressFill {
+  transition: stroke-dashoffset 0.5s ease-out;
+}
+
+/* Percentage text overlay */
+.percentageText {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+}
+
+.percentageNumber {
+  font-size: 18px;
+  font-weight: 700;
+  color: #0C1430;
+  line-height: 1;
+}
+
+.detailed .percentageNumber {
+  font-size: 24px;
+}
+
+.percentageSymbol {
+  font-size: 10px;
+  font-weight: 600;
+  color: #666;
+  margin-left: 1px;
+}
+
+.detailed .percentageSymbol {
+  font-size: 12px;
+}
+
+.checkmark {
+  font-size: 24px;
+  color: #22c55e;
+  font-weight: bold;
+}
+
+.detailed .checkmark {
+  font-size: 32px;
+}
+
+/* Details section */
+.details {
+  flex: 1;
+  min-width: 0;
+}
+
+.statusText {
+  margin-bottom: 8px;
+}
+
+.completeText {
+  font-size: 16px;
+  font-weight: 600;
+  color: #22c55e;
+}
+
+.incompleteText {
+  font-size: 14px;
+  color: #666;
+}
+
+/* Missing fields */
+.missingFields {
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  padding: 12px;
+}
+
+.missingLabel {
+  font-size: 12px;
+  font-weight: 600;
+  color: #0C1430;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  display: block;
+  margin-bottom: 8px;
+}
+
+.fieldsList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.fieldItem {
+  margin-bottom: 6px;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.fieldLink {
+  display: flex;
+  align-items: center;
+  font-size: 13px;
+  color: #0C1430;
+  text-decoration: none;
+  transition: color 0.2s ease;
+
+  &:hover {
+    color: #00C8BE;
+    text-decoration: none;
+  }
+}
+
+.userCorporate .fieldLink:hover {
+  color: #FFB43C;
+}
+
+.fieldText {
+  display: flex;
+  align-items: center;
+  font-size: 13px;
+  color: #666;
+}
+
+.fieldIcon {
+  width: 12px;
+  height: 12px;
+  margin-right: 8px;
+  color: #ccc;
+  font-size: 10px;
+}
+
+/* Compact variant */
+.compact .compactLink {
+  font-size: 11px;
+  color: #666;
+  text-decoration: underline;
+  transition: color 0.2s ease;
+
+  &:hover {
+    color: #00C8BE;
+  }
+}
+
+.userCorporate.compact .compactLink:hover {
+  color: #FFB43C;
+}

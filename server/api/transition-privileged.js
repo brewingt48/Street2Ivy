@@ -15,11 +15,16 @@ const {
   handleError,
   serialize,
   fetchCommission,
+  getIntegrationSdk,
 } = require('../api-util/sdk');
+const { notifyTransactionStateChange } = require('../api-util/notifications');
 
 const { Money } = sharetribeSdk.types;
 
-const transactionPromise = (sdk, id) => sdk.transactions.show({ id, include: ['listing'] });
+const transactionPromise = (sdk, id) => sdk.transactions.show({
+  id,
+  include: ['listing', 'customer', 'provider'],
+});
 const getListingRelationShip = transactionShowAPIData => {
   const { data, included } = transactionShowAPIData;
   const { relationships } = data;
@@ -135,8 +140,10 @@ module.exports = (req, res) => {
       }
       return trustedSdk.transactions.transition(body, queryParams);
     })
-    .then(apiResponse => {
+    .then(async apiResponse => {
       const { status, statusText, data } = apiResponse;
+
+      // Send response immediately
       res
         .status(status)
         .set('Content-Type', 'application/transit+json')
@@ -148,6 +155,42 @@ module.exports = (req, res) => {
           })
         )
         .end();
+
+      // Send notifications asynchronously (don't block the response)
+      // Only send for non-speculative transitions
+      if (!isSpeculative && data?.data) {
+        try {
+          const integrationSdk = getIntegrationSdk();
+          const transactionId = data.data.id;
+
+          // Fetch full transaction data with relationships
+          const fullTxResponse = await integrationSdk.transactions.show({
+            id: transactionId,
+            include: ['listing', 'customer', 'provider'],
+          });
+
+          const transaction = fullTxResponse.data.data;
+          const included = fullTxResponse.data.included || [];
+
+          const listing = included.find(i => i.type === 'listing');
+          const customer = included.find(i => i.type === 'user' &&
+            i.id.uuid === transaction.relationships?.customer?.data?.id?.uuid);
+          const provider = included.find(i => i.type === 'user' &&
+            i.id.uuid === transaction.relationships?.provider?.data?.id?.uuid);
+
+          // Trigger notification for the transition
+          await notifyTransactionStateChange({
+            transaction,
+            transition: transitionName,
+            customer,
+            provider,
+            listing,
+          });
+        } catch (notifError) {
+          // Log notification errors but don't fail the request
+          console.error('[Notification Error]', notifError);
+        }
+      }
     })
     .catch(e => {
       handleError(res, e);

@@ -1,5 +1,6 @@
 @import '../assets/sanitize.css';
 @import './customMediaQueries.css';
+@import './enterpriseDesignSystem.css';
 
 /* ================ Custom Properties aka CSS variables ================ */
 
@@ -144,8 +145,8 @@
 
   /* ================ Topbar related ================ */
 
-  --topbarHeight: 60px;
-  --topbarHeightDesktop: 72px;
+  --topbarHeight: 72px;
+  --topbarHeightDesktop: 84px;
 
   --TopbarMobileMenu_topMargin: 96px;
 

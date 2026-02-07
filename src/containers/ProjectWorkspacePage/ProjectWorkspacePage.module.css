@@ -769,3 +769,145 @@
   font-size: 14px;
   margin: 0;
 }
+
+/* ─── Message Attachments ───────────────────────────────────────────────── */
+
+.messageAttachments {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.attachmentLink {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 6px;
+  text-decoration: none;
+  color: inherit;
+  transition: all 0.2s ease;
+}
+
+.attachmentLink:hover {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+.attachmentIcon {
+  font-size: 18px;
+}
+
+.attachmentName {
+  flex: 1;
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.attachmentSize {
+  font-size: 11px;
+  color: var(--colorGrey500);
+}
+
+/* Pending Attachments */
+.pendingAttachments {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 10px;
+  background: var(--colorGrey50);
+  border-radius: 8px 8px 0 0;
+  border: 1px solid var(--colorGrey200);
+  border-bottom: none;
+}
+
+.pendingAttachment {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  background: white;
+  border: 1px solid var(--colorGrey200);
+  border-radius: 6px;
+  font-size: 13px;
+}
+
+.pendingAttachmentIcon {
+  font-size: 16px;
+}
+
+.pendingAttachmentName {
+  max-width: 150px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.removeAttachmentBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  background: var(--colorGrey200);
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 12px;
+  color: var(--colorGrey600);
+  transition: all 0.2s ease;
+}
+
+.removeAttachmentBtn:hover {
+  background: #ff6b6b;
+  color: white;
+}
+
+/* Attachment Error */
+.attachmentError {
+  padding: 8px 12px;
+  background: #fff5f5;
+  border: 1px solid #fecaca;
+  border-radius: 6px;
+  font-size: 13px;
+  color: #dc2626;
+  margin-bottom: 8px;
+}
+
+/* Attach Button */
+.attachButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background: var(--colorGrey50);
+  border: 1px solid var(--colorGrey200);
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 18px;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.attachButton:hover {
+  background: var(--colorGrey100);
+  border-color: var(--colorGrey300);
+}
+
+.hiddenFileInput {
+  display: none;
+}
+
+.attachmentHint {
+  font-size: 11px;
+  color: var(--colorGrey500);
+  text-align: center;
+  padding: 4px 0;
+}

@@ -1,10 +1,13 @@
 @import '../../styles/customMediaQueries.css';
 
+/* ================ Enterprise Design System - Listing Page ================ */
+
 .root {
 }
 
 .pageRoot {
   padding-bottom: 90px;
+  background: var(--s2i-slate-50);
 
   @media (--viewportLarge) {
     padding-bottom: 0;
@@ -13,12 +16,18 @@
 
 .loadingText {
   margin: 24px;
+  color: var(--s2i-slate-600);
+  font-size: 15px;
 }
 
 .errorText {
-  color: var(--colorFail);
+  color: var(--s2i-coral-600);
   margin: 24px;
+  font-size: 15px;
+  font-weight: var(--s2i-font-medium);
 }
+
+/* ================ Hero Section ================ */
 
 .sectionHero {
   position: relative;
@@ -39,11 +48,11 @@
 
 .imageWrapperForSectionHero {
   composes: heroHeight;
-  background-color: var(--colorGrey100); /* Loading BG color */
-
-  /* Image carousel can be opened from the image, therefore we should show a pointer */
+  background: linear-gradient(135deg, var(--s2i-slate-100) 0%, var(--s2i-slate-50) 100%);
   cursor: pointer;
 }
+
+/* ================ Action Bar ================ */
 
 .actionBarWithCTAEnabled {
   display: inline-flex;
@@ -56,18 +65,15 @@
   justify-content: space-between;
   flex-direction: column;
   width: 100%;
-  color: var(--colorGrey100);
-  background-color: var(--colorGrey700);
-  z-index: 1; /* bring on top of mobile image */
+  color: white;
+  background: linear-gradient(135deg, var(--s2i-navy-800) 0%, var(--s2i-navy-900) 100%);
+  z-index: 1;
   padding: 0 24px;
-
-  /* Action bar prevents the image click events going to the parent and
-   should not show a pointer */
   cursor: initial;
 
   @media (--viewportMedium) {
     flex-direction: row;
-    border-radius: var(--borderRadiusMedium);
+    border-radius: var(--s2i-radius-lg);
   }
 }
 
@@ -100,7 +106,6 @@
 }
 
 .actionBarContainerForNoListingImage {
-  /* Mobile positioning for action bar when no listing image is present */
   position: absolute;
   width: 100%;
   border-radius: 0;
@@ -118,15 +123,13 @@
 }
 
 .actionBarForHeroLayout {
-  /* Action bar prevents the image click events going to the parent and
-   should not show a pointer */
   cursor: initial;
-  border-radius: var(--borderRadiusMedium);
+  border-radius: var(--s2i-radius-lg);
 
   &.actionBarNoBorderRadiusOnMobile {
     border-radius: 0;
     @media (--viewportMedium) {
-      border-radius: var(--borderRadiusMedium);
+      border-radius: var(--s2i-radius-lg);
     }
   }
 }
@@ -136,13 +139,20 @@
   display: inline-block;
   width: 100%;
   margin: 10px 0px 20px 0px;
+  background: linear-gradient(135deg, var(--s2i-teal-500) 0%, var(--s2i-emerald-500) 100%);
+  border: none;
+  color: white;
+  font-weight: var(--s2i-font-semibold);
+  border-radius: var(--s2i-radius-lg);
+  transition: var(--s2i-transition-all);
 
   &:hover,
   &:focus {
-    background-color: var(--marketplaceColor);
-    border-color: var(--marketplaceColor);
-    color: var(--colorWhite);
+    background: linear-gradient(135deg, var(--s2i-teal-600) 0%, var(--s2i-emerald-600) 100%);
+    color: white;
     text-decoration: none;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 14px rgba(0, 200, 190, 0.4);
   }
 
   @media (--viewportMedium) {
@@ -162,6 +172,7 @@
 .ownListingText {
   composes: h5 from global;
   margin: 14px 24px 0 0;
+  color: var(--s2i-slate-200);
 
   @media (--viewportMedium) {
     margin: 24px 24px 24px 0;
@@ -182,7 +193,7 @@
 }
 
 .ownListingTextPendingApproval {
-  color: var(--colorAttention);
+  color: var(--s2i-gold-400);
 }
 
 .closedListingText {
@@ -190,6 +201,7 @@
   margin: 14px 12px 11px 24px;
   text-align: center;
   width: 100%;
+  color: var(--s2i-coral-300);
 
   @media (--viewportMedium) {
     margin: 25px 12px 22px 24px;
@@ -200,12 +212,11 @@
 .editListingLink {
   composes: h5 from global;
   margin: 23px 24px 11px 0px;
-  color: var(--colorGrey100);
-
-  transition: var(--transitionStyleButton);
+  color: var(--s2i-teal-300);
+  transition: var(--s2i-transition-colors);
 
   &:hover {
-    color: var(--colorWhite);
+    color: white;
     text-decoration: none;
   }
 
@@ -219,7 +230,7 @@
 }
 
 .missingPayoutDetailsText {
-  color: var(--colorAttention);
+  color: var(--s2i-gold-400);
 }
 
 .payoutDetailsWarning {
@@ -235,38 +246,51 @@
 .rootForImage {
   composes: heroHeight;
   width: 100%;
-  transition: var(--transitionStyleButton);
+  transition: var(--s2i-transition-all);
 
   @media (--viewportMedium) {
     object-fit: cover;
-    border-radius: var(--borderRadius);
+    border-radius: var(--s2i-radius-lg);
 
     &:hover {
       transform: scale(1.005);
-      box-shadow: var(--boxShadowListingCard);
+      box-shadow: var(--s2i-shadow-lg);
     }
   }
 }
 
 .viewPhotos {
   composes: buttonSmall from global;
-
-  /* Position and dimensions */
   position: absolute;
   bottom: 19px;
   right: 24px;
+  background: white;
+  color: var(--s2i-navy-900);
+  border: none;
+  font-weight: var(--s2i-font-semibold);
+  border-radius: var(--s2i-radius-lg);
+  box-shadow: var(--s2i-shadow-md);
+  transition: var(--s2i-transition-all);
+
+  &:hover {
+    background: var(--s2i-slate-50);
+    transform: translateY(-2px);
+    box-shadow: var(--s2i-shadow-lg);
+  }
 }
 
 .carouselModalScrollLayer {
   width: 100vw;
   height: 100vh;
-  background-color: rgba(1, 1, 1, 0.92);
+  background-color: rgba(12, 20, 48, 0.95);
 }
 
 .carouselModalContainer {
   width: 100%;
   height: 100%;
 }
+
+/* ================ Content Layout ================ */
 
 .contentWrapperForHeroLayout {
   @media (--viewportMedium) {
@@ -294,7 +318,6 @@
   @media (--viewportMedium) {
   }
   @media (--viewportLarge) {
-    /* contentContainer's full width - (orderColumn + paddings + margin) */
     max-width: calc(100% - 360px);
     flex-basis: calc(100% - 360px);
     flex-shrink: 0;
@@ -336,17 +359,21 @@
 .mainColumnForHeroLayout {
   flex-basis: 100%;
   margin-bottom: 23px;
+  background: white;
+  border-radius: var(--s2i-radius-xl);
+  padding: 0;
 
   @media (--viewportMedium) {
     margin-top: 50px;
     margin-bottom: 51px;
     flex-shrink: 0;
+    padding: 0;
+    box-shadow: var(--s2i-shadow-sm);
   }
 
   @media (--viewportLarge) {
     margin-top: 80px;
     margin-bottom: 0px;
-    /* contentContainer's full width - (orderColumn + two paddings + margin + border) */
     max-width: calc(100% - 433px);
     flex-basis: calc(100% - 433px);
     flex-shrink: 0;
@@ -361,7 +388,7 @@
     display: block;
     margin-top: 80px;
     margin-left: 60px;
-    border-left: 1px solid var(--colorGrey100);
+    border-left: 1px solid var(--s2i-slate-200);
     padding-left: 60px;
     flex-basis: 312px;
     flex-shrink: 0;
@@ -369,7 +396,6 @@
 }
 
 .orderPanel {
-  /* Note: panel height might be too much on small viewport - hence min-height */
   @media (--viewportLarge) and (min-height: 950px) {
     position: sticky;
     top: 108px;
@@ -380,7 +406,6 @@
   @media (--viewportLarge) {
     display: block;
   }
-  /* Note: panel height might be too much on small viewport - hence min-height */
   @media (--viewportLarge) and (min-height: 950px) {
     position: sticky;
     top: 108px;
@@ -393,13 +418,14 @@
 }
 
 .orderPanelTitle {
-  /* Font */
-  font-weight: var(--fontWeightBold);
-
-  /* Layout */
+  font-family: 'Playfair Display', Georgia, serif;
+  font-weight: 700;
+  font-size: 24px;
+  color: var(--s2i-navy-900);
   width: 100%;
   margin-top: 0;
   margin-bottom: 0;
+
   &.titleMarginForOwnListingNoImage {
     margin-top: 100px;
     @media (--viewportMedium) {
@@ -408,15 +434,12 @@
   }
 }
 
+/* ================ Avatar Section ================ */
+
 .sectionAvatar {
-  /* Position (over the listing image)*/
   margin-left: 24px;
   margin-top: -31px;
-
-  /* Rendering context to the same lavel as listing image */
   position: relative;
-
-  /* Flexbox would give too much width by default. */
   width: 60px;
 
   @media (--viewportMedium) {
@@ -431,23 +454,24 @@
   display: flex;
 
   @media (--viewportMedium) {
-    display: none; /* Hide the medium avatar from the bigger screens */
+    display: none;
   }
 }
 
 .avatarDesktop {
-  display: none; /* Hide the large avatar from the smaller screens */
+  display: none;
 
   @media (--viewportMedium) {
     display: flex;
   }
 }
 
+/* ================ Price Display ================ */
+
 .desktopPriceContainer {
   display: none;
 
   @media (--viewportLarge) {
-    /* Layout */
     display: flex;
     flex-direction: column;
     align-items: flex-start;
@@ -458,9 +482,9 @@
 }
 
 .desktopPriceValue {
-  /* Font */
   composes: marketplaceModalTitleStyles from global;
-  color: var(--marketplaceColor);
+  color: var(--s2i-teal-600);
+  font-weight: var(--s2i-font-bold);
 
   @media (--viewportMedium) {
     margin-top: 0;
@@ -469,15 +493,17 @@
 }
 
 .desktopPerUnit {
-  /* Font */
   composes: h5 from global;
-  color: var(--colorGrey700);
+  color: var(--s2i-slate-500);
+  font-weight: var(--s2i-font-medium);
 
   @media (--viewportMedium) {
     margin-top: 0;
     margin-bottom: 0;
   }
 }
+
+/* ================ Heading & Title ================ */
 
 .heading {
   margin-bottom: 33px;
@@ -490,14 +516,15 @@
 }
 
 .title {
-  /* Font */
   composes: marketplaceModalTitleStyles from global;
-  color: var(--colorGrey700);
-
-  /* Layout */
+  font-family: 'Playfair Display', Georgia, serif;
+  color: var(--s2i-navy-900);
+  font-weight: 700;
+  letter-spacing: -0.02em;
   width: 100%;
   margin-top: 0;
   margin-bottom: 0;
+
   @media (--viewportMedium) {
     margin-top: 0;
     margin-bottom: 2px;
@@ -507,20 +534,25 @@
 .author {
   width: 100%;
   composes: h5 from global;
-
   margin-top: 7px;
   margin-bottom: 0;
+  color: var(--s2i-slate-600);
 
   @media (--viewportMedium) {
     margin-top: 0;
     margin-bottom: 0;
-    color: var(--colorGrey700);
   }
 }
 
 .authorNameLink {
   composes: textSmall from global;
-  color: var(--colorGrey700);
+  color: var(--s2i-teal-600);
+  font-weight: var(--s2i-font-medium);
+  transition: var(--s2i-transition-colors);
+
+  &:hover {
+    color: var(--s2i-teal-700);
+  }
 }
 
 .contactWrapper {
@@ -533,29 +565,24 @@
 
 .separator {
   margin: 0 6px;
+  color: var(--s2i-slate-300);
 }
 
 .contactLink {
-  /* Position and dimensions */
   display: inline;
   padding: 0;
-
-  /* Borders */
   border: none;
-
-  /* Colors */
-  color: var(--marketplaceColor);
-
-  /* Text size should be inherited */
+  color: var(--s2i-teal-600);
   text-decoration: none;
-
-  font-weight: var(--fontWeightMedium);
+  font-weight: var(--s2i-font-medium);
   font-size: 14px;
   line-height: 18px;
   letter-spacing: 0;
   margin: 0;
+  transition: var(--s2i-transition-colors);
 
   &:hover {
+    color: var(--s2i-teal-700);
     text-decoration: underline;
     cursor: pointer;
   }
@@ -564,6 +591,8 @@
     line-height: 16px;
   }
 }
+
+/* ================ Content Sections ================ */
 
 .sectionText {
   padding: 0 24px;
@@ -577,11 +606,12 @@
 
 .sectionHeading,
 .sectionHeadingWithExtraMargin {
-  /* Font for sections titles */
   composes: p from global;
   padding: 0;
-  font-weight: var(--fontWeightBold);
-
+  font-family: 'Playfair Display', Georgia, serif;
+  font-weight: 600;
+  font-size: 18px;
+  color: var(--s2i-navy-900);
   margin-top: 0;
   margin-bottom: 12px;
 
@@ -601,9 +631,9 @@
   font-weight: var(--fontWeightRegular);
   padding: 1px 0 5px 0;
   margin: 0;
-
-  /* Preserve newlines, but collapse other whitespace */
   white-space: pre-line;
+  color: var(--s2i-slate-700);
+  line-height: 1.7;
 
   @media (--viewportMedium) {
     padding: 3px 0 5px 0;
@@ -614,9 +644,9 @@
 .ingress {
   composes: p from global;
   margin: 0;
-
-  /* Preserve newlines, but collapse other whitespace */
   white-space: pre-line;
+  color: var(--s2i-slate-700);
+  line-height: 1.7;
 
   @media (--viewportMedium) {
     margin: 0;
@@ -661,6 +691,8 @@
   }
 }
 
+/* ================ Details List ================ */
+
 .details {
   padding-bottom: 1px;
   margin: 0;
@@ -673,23 +705,27 @@
   list-style: none;
   font-weight: var(--fontWeightRegular);
   line-height: 24px;
-  padding: 7px 0px 10px;
+  padding: 12px 0;
   gap: 8px;
+  color: var(--s2i-slate-700);
 
   &:not(:last-child) {
-    border-bottom: 1px solid var(--colorGrey100);
+    border-bottom: 1px solid var(--s2i-slate-100);
   }
 
   @media (--viewportMedium) {
-    padding: 5px 0 2px 0;
+    padding: 10px 0;
     line-height: 32px;
   }
 }
 
 .detailLabel {
-  font-weight: var(--fontWeightSemiBold);
+  font-weight: var(--s2i-font-semibold);
+  color: var(--s2i-navy-900);
   letter-spacing: -0.09px;
 }
+
+/* ================ Inquiry Modal ================ */
 
 .inquiryModalContent {
   flex-grow: 1;
@@ -714,27 +750,29 @@
   left: 0;
   right: 0;
   padding: 24px;
-  background-color: var(--colorWhite);
+  background-color: white;
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1);
 
   @media (--viewportMedium) {
     position: static;
     padding: 0;
     margin-top: auto;
+    box-shadow: none;
   }
 }
 
+/* ================ Map ================ */
+
 .map {
-  /* Dimensions: Map takes all available space from viewport (excludes action button and section title) */
   height: calc(100vh - 193px);
   width: 100%;
-
-  /* Static map: dimensions are 640px */
   max-width: 640px;
   max-height: 640px;
-  background-color: #eee;
+  background: var(--s2i-slate-100);
   padding: 0;
   border: 0;
   cursor: pointer;
+  border-radius: var(--s2i-radius-lg);
 
   @media (--viewportMedium) {
     height: 75vh;
@@ -750,6 +788,8 @@
   word-break: break-word;
   hyphens: auto;
 }
+
+/* ================ Product Gallery ================ */
 
 .productGallery {
   margin: 0 0 36px 0;
@@ -814,18 +854,20 @@
   @media (--viewportLarge) {
     display: block;
     margin-top: 24px;
-
-    /* The calendar needs 312px */
     flex-basis: 312px;
     flex-shrink: 0;
   }
 }
 
+/* ================ Video ================ */
+
 .video {
   position: relative;
   overflow: hidden;
-  border-radius: 8px;
+  border-radius: var(--s2i-radius-xl);
+  box-shadow: var(--s2i-shadow-md);
 }
+
 .iframe {
   position: absolute;
   top: 0;

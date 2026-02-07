@@ -42,6 +42,7 @@ const SearchStudentsPage = loadable(() => import(/* webpackChunkName: "SearchStu
 const EducationDashboardPage = loadable(() => import(/* webpackChunkName: "EducationDashboardPage" */ '../containers/EducationDashboardPage/EducationDashboardPage'));
 const EducationalAdminApplicationPage = loadable(() => import(/* webpackChunkName: "EducationalAdminApplicationPage" */ '../containers/EducationalAdminApplicationPage/EducationalAdminApplicationPage'));
 const AdminDashboardPage = loadable(() => import(/* webpackChunkName: "AdminDashboardPage" */ '../containers/AdminDashboardPage/AdminDashboardPage'));
+const ApplicationsPage = loadable(() => import(/* webpackChunkName: "ApplicationsPage" */ '../containers/ApplicationsPage/ApplicationsPage'));
 const StudentDashboardPage = loadable(() => import(/* webpackChunkName: "StudentDashboardPage" */ '../containers/StudentDashboardPage/StudentDashboardPage'));
 const OnboardingPage = loadable(() => import(/* webpackChunkName: "OnboardingPage" */ '../containers/OnboardingPage/OnboardingPage'));
 const StripePayoutPage = loadable(() => import(/* webpackChunkName: "StripePayoutPage" */ '../containers/StripePayoutPage/StripePayoutPage'));
@@ -323,6 +324,13 @@ const routeConfiguration = (layoutConfig, accessControlConfig) => {
       authPage: 'LoginPage',
       component: CorporateDashboardPage,
       loadData: pageDataLoadingAPI.CorporateDashboardPage.loadData,
+    },
+    {
+      path: '/dashboard/applications',
+      name: 'ApplicationsPage',
+      auth: true,
+      authPage: 'LoginPage',
+      component: ApplicationsPage,
     },
     {
       path: '/project-workspace/:id',

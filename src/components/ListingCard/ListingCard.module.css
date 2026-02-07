@@ -1,41 +1,71 @@
 @import '../../styles/customMediaQueries.css';
 
+/* ================ Enterprise Design System - Listing Card ================ */
+
 .root {
   /* Layout */
   display: flex;
   flex-direction: column;
+  background: white;
+  border-radius: var(--s2i-radius-xl);
+  overflow: hidden;
+  transition: var(--s2i-transition-all);
+  box-shadow: var(--s2i-shadow-sm);
+  border: 1px solid var(--s2i-slate-100);
 
   /* Remove link's hover effect */
   &:hover {
     text-decoration: none;
+    transform: translateY(-4px);
+    box-shadow: var(--s2i-shadow-lg);
+    border-color: var(--s2i-teal-200);
   }
 }
 
 .aspectRatioWrapper {
-  transition: var(--transitionStyleButton);
-  background: var(--colorGrey100); /* Loading BG color */
-  border-radius: var(--borderRadiusMedium);
+  transition: var(--s2i-transition-all);
+  background: linear-gradient(135deg, var(--s2i-slate-100) 0%, var(--s2i-slate-50) 100%);
+  border-radius: 0;
+  position: relative;
+  overflow: hidden;
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to bottom, transparent 60%, rgba(12, 20, 48, 0.05) 100%);
+    pointer-events: none;
+    opacity: 0;
+    transition: var(--s2i-transition-all);
+  }
 
   @media (--viewportMedium) {
-    &:hover {
-      transform: scale(1.02);
-      box-shadow: var(--boxShadowListingCard);
+    &:hover::after {
+      opacity: 1;
     }
   }
 }
 
 .rootForImage {
-  border: solid 1px var(--colorGrey100);
-  border-radius: var(--borderRadiusMedium);
+  border: none;
+  border-radius: 0;
   width: 100%;
   height: 100%;
+  object-fit: cover;
+  transition: var(--s2i-transition-all);
+
+  .root:hover & {
+    transform: scale(1.03);
+  }
 }
 
 .info {
   /* Layout */
   display: flex;
   flex-direction: column;
-  padding: 14px 0 2px 0;
+  padding: 16px 18px 18px;
+  background: white;
+  flex-grow: 1;
 }
 
 .price {
@@ -43,16 +73,20 @@
   /* Layout */
   display: flex;
   flex-direction: row;
-  justify-content: flex-start;
-  flex-shrink: 0;
-  margin-bottom: 4px;
-  color: var(--colorGrey700);
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
 }
 
 .priceValue {
   /* Font */
-  font-weight: var(--fontWeightSemiBold);
-  color: var(--marketplaceColor);
+  font-size: 15px;
+  font-weight: var(--s2i-font-bold);
+  color: var(--s2i-teal-600);
+  background: linear-gradient(135deg, var(--s2i-teal-50) 0%, var(--s2i-emerald-50) 100%);
+  padding: 4px 10px;
+  border-radius: var(--s2i-radius-md);
+  border: 1px solid var(--s2i-teal-100);
 
   /* Remove default margins from font */
   margin-top: 0;
@@ -66,8 +100,9 @@
 
 .perUnit {
   /* Font */
-  font-weight: var(--fontWeightSemiBold);
-  color: var(--marketplaceColor);
+  font-size: 13px;
+  font-weight: var(--s2i-font-medium);
+  color: var(--s2i-slate-500);
 
   /* Remove default margins from font */
   margin-top: 0;
@@ -82,28 +117,53 @@
 .mainInfo {
   display: flex;
   flex-direction: column;
+  gap: 6px;
 }
 
 .title {
   /* Font */
-  composes: textSmall from global;
-  font-weight: var(--fontWeightBold);
-  color: var(--colorGrey700);
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--s2i-navy-900);
+  line-height: 1.4;
   margin: 0;
+  transition: var(--s2i-transition-colors);
+
+  /* Limit to 2 lines */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+
+  .root:hover & {
+    color: var(--s2i-teal-700);
+  }
 }
 
 .authorInfo {
   /* Font */
-  composes: marketplaceTinyFontStyles from global;
-  font-weight: var(--fontWeightMedium);
-  color: var(--colorGrey700);
+  font-size: 13px;
+  font-weight: var(--s2i-font-medium);
+  color: var(--s2i-slate-500);
+  display: flex;
+  align-items: center;
+  gap: 6px;
 
   padding-top: 4px;
-  padding-bottom: 4px;
+  padding-bottom: 0;
 
   /* Remove default margins from font */
   margin-top: 0;
   margin-bottom: 0;
+
+  &::before {
+    content: '';
+    width: 4px;
+    height: 4px;
+    background: var(--s2i-teal-400);
+    border-radius: var(--s2i-radius-full);
+  }
 
   @media (--viewportMedium) {
     margin-top: 0;

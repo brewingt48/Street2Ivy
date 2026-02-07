@@ -1,9 +1,12 @@
 @import '../../styles/customMediaQueries.css';
 
+/* ================ Enterprise Design System - Transaction Page ================ */
+
 .root {
   display: flex;
   flex-direction: column;
   flex: 1;
+  background: var(--s2i-slate-50);
 }
 
 .loading {
@@ -13,11 +16,13 @@
   justify-content: center;
   gap: 16px;
   flex-grow: 1;
+  color: var(--s2i-slate-500);
 }
 
 .error {
   composes: loading;
-  color: var(--colorFail);
+  color: var(--s2i-coral-600);
+  font-weight: var(--s2i-font-medium);
 }
 
 .tabContent {
@@ -40,39 +45,47 @@
 .breakdown {
   margin: 14px 24px 0 24px;
   padding: 1px 0 5px 0;
+  background: white;
+  border-radius: var(--s2i-radius-xl);
+  box-shadow: var(--s2i-shadow-sm);
 
   @media (--viewportMedium) {
     margin: 16px 24px 0 24px;
-    padding: 3px 0 5px 0;
+    padding: 16px;
   }
+
   @media (--viewportLarge) {
     margin: 0px 48px 47px 48px;
-    padding: 6px 0 2px 0;
+    padding: 24px;
   }
 }
 
 /* OrderPanel subcomponent */
 .orderPanel {
   margin: 16px 48px 48px 48px;
+  background: white;
+  border-radius: var(--s2i-radius-xl);
+  box-shadow: var(--s2i-shadow-sm);
+  padding: 24px;
 }
+
 .orderPanelNextToTitle {
   margin: -24px 48px 48px 48px;
 }
 
 .orderTitle {
-  /* Font */
-  color: var(--colorGrey700);
-
+  font-family: 'Playfair Display', Georgia, serif;
+  font-weight: 600;
+  color: var(--s2i-navy-900);
   margin-top: 0;
   margin-bottom: 1px;
 }
 
 .orderPanelTitle {
-  /* Font */
-  font-weight: var(--fontWeightBold);
-  color: var(--colorGrey700);
-
-  /* Layout */
+  font-family: 'Playfair Display', Georgia, serif;
+  font-weight: 700;
+  font-size: 20px;
+  color: var(--s2i-navy-900);
   width: 100%;
   margin-top: 0;
   margin-bottom: 0;

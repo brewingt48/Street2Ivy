@@ -242,14 +242,14 @@ const TopbarMobileMenu = props => {
         </InlineTextButton>
 
         <ul className={css.accountLinksWrapper}>
-          {/* Show Admin Dashboard link for admins, hide inbox for corporate partners (they have it in dashboard), show inbox for others */}
+          {/* Show Admin Dashboard link for admins, hide inbox for corporate partners and students (they have it in their dashboards), show inbox for others */}
           {isAdmin ? (
             <>
               {adminDashboardLinkMaybe}
               {educationDashboardLinkMaybe}
             </>
-          ) : isCorporatePartner ? (
-            null /* Corporate partners have inbox built into their dashboard */
+          ) : (isCorporatePartner || isStudent) ? (
+            null /* Corporate partners and students have messages built into their dashboards */
           ) : (
             <li className={classNames(css.inbox, currentPageClass(`InboxPage:${inboxTab}`))}>
               <NamedLink name="InboxPage" params={{ tab: inboxTab }}>

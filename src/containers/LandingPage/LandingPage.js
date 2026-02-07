@@ -7,7 +7,7 @@ import { FormattedMessage, useIntl } from '../../util/reactIntl';
 import { LayoutComposer, NamedLink, Page } from '../../components';
 import TopbarContainer from '../TopbarContainer/TopbarContainer';
 import FooterContainer from '../FooterContainer/FooterContainer';
-import { fetchPublicContent } from '../../util/api';
+import { fetchPublicContent, fetchPublicCoachingConfig, apiBaseUrl } from '../../util/api';
 
 import css from './LandingPage.module.css';
 
@@ -64,10 +64,15 @@ const LandingPageComponent = props => {
   const { currentUser } = props;
   const intl = useIntl();
   const [dynamicContent, setDynamicContent] = useState(null);
+  const [coachingConfig, setCoachingConfig] = useState(null);
   const [activeTab, setActiveTab] = useState('companies');
   const [visibleElements, setVisibleElements] = useState({});
+  const [institutionInfo, setInstitutionInfo] = useState(null);
+  const [isLoadingInstitution, setIsLoadingInstitution] = useState(true);
 
   const isAuthenticated = !!currentUser;
+  const userType = currentUser?.attributes?.profile?.publicData?.userType;
+  const isStudent = userType === 'student';
 
   // Intersection observer for scroll animations
   useEffect(() => {
@@ -102,6 +107,54 @@ const LandingPageComponent = props => {
         console.log('Using static content - dynamic content not available:', err);
       });
   }, []);
+
+  // Fetch AI coaching config
+  useEffect(() => {
+    fetchPublicCoachingConfig()
+      .then(response => {
+        setCoachingConfig(response.data);
+      })
+      .catch(err => {
+        console.log('Using default coaching config:', err);
+      });
+  }, []);
+
+  // Fetch institution info for logged-in students to check AI coaching access
+  useEffect(() => {
+    const fetchInstitutionInfo = async () => {
+      if (!isStudent) {
+        setIsLoadingInstitution(false);
+        return;
+      }
+      try {
+        const baseUrl = apiBaseUrl();
+        const response = await fetch(`${baseUrl}/api/institutions/my-institution`, {
+          credentials: 'include',
+        });
+        if (response.ok) {
+          const data = await response.json();
+          setInstitutionInfo(data);
+        }
+      } catch (error) {
+        console.error('Failed to fetch institution info:', error);
+      } finally {
+        setIsLoadingInstitution(false);
+      }
+    };
+
+    if (currentUser && isStudent) {
+      fetchInstitutionInfo();
+    } else {
+      setIsLoadingInstitution(false);
+    }
+  }, [currentUser, isStudent]);
+
+  // Determine if AI coaching should be accessible
+  // For logged-in students: only if their institution has approved it
+  // For non-students or logged-out users: show the marketing content with signup CTA
+  const canAccessAICoaching = isStudent
+    ? institutionInfo?.aiCoachingEnabled && institutionInfo?.aiCoachingUrl
+    : true;
 
   const title = intl.formatMessage({ id: 'LandingPage.title' });
   const description = intl.formatMessage({ id: 'LandingPage.description' });
@@ -477,18 +530,20 @@ const LandingPageComponent = props => {
                   </div>
                 </section>
 
-                {/* ================ AI Career Coach Section ================ */}
+                {/* ================ AI Career Coaching Section ================ */}
                 <section className={css.aiSection} id="ai-section" data-animate>
                   <div className={css.sectionContainer}>
                     <div className={css.aiGrid}>
                       {/* Left - Text Content */}
                       <div className={css.aiText}>
-                        <span className={css.sectionLabel}>Powered by Amiko AI</span>
+                        <span className={css.sectionLabel}>
+                          {coachingConfig?.platformName ? `Powered by ${coachingConfig.platformName}` : 'Powered by AI Career Coaching'}
+                        </span>
                         <h2 className={css.sectionTitle} style={{ textAlign: 'left' }}>
-                          Your Personal Career Coach, Available 24/7
+                          Your Personal AI Career Coach, Available 24/7
                         </h2>
                         <p className={css.aiDescription}>
-                          Every Street2Ivy student gets access to an AI-powered career coach that provides
+                          Every Street2Ivy student gets access to AI-powered career coaching that provides
                           personalized guidance — from resume optimization to interview prep to long-term career strategy.
                         </p>
 
@@ -504,7 +559,7 @@ const LandingPageComponent = props => {
                             <div className={css.aiFeatureIcon}>🎤</div>
                             <div>
                               <h4>Interview Preparation</h4>
-                              <p>Practice with AI-simulated interviews tailored to your target roles</p>
+                              <p>Practice with AI-simulated career coaching interviews tailored to your target roles</p>
                             </div>
                           </div>
                           <div className={css.aiFeature}>
@@ -516,9 +571,40 @@ const LandingPageComponent = props => {
                           </div>
                         </div>
 
-                        <NamedLink name="SignupPage" className={css.btnPrimary}>
-                          See How It Works →
-                        </NamedLink>
+                        {/* AI Coaching CTA - different behavior based on user state */}
+                        {isStudent && !isLoadingInstitution ? (
+                          // Logged-in student: check institution approval
+                          canAccessAICoaching ? (
+                            <a
+                              href={institutionInfo?.aiCoachingUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className={css.btnPrimary}
+                            >
+                              Access AI Career Coaching →
+                            </a>
+                          ) : (
+                            <div className={css.coachingBlocked}>
+                              <span className={css.blockedIcon}>🔒</span>
+                              <p>AI Career Coaching is available when your institution enables this feature. Contact your career services office for more information.</p>
+                            </div>
+                          )
+                        ) : coachingConfig?.platformUrl && coachingConfig?.platformStatus ? (
+                          // Non-student with coaching configured
+                          <a
+                            href={coachingConfig.platformUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className={css.btnPrimary}
+                          >
+                            Get Started with Coaching →
+                          </a>
+                        ) : (
+                          // Not logged in - show signup CTA
+                          <NamedLink name="SignupPage" className={css.btnPrimary}>
+                            Get Started with Career Coaching →
+                          </NamedLink>
+                        )}
                       </div>
 
                       {/* Right - Chat Mockup */}
@@ -528,7 +614,7 @@ const LandingPageComponent = props => {
                           <div className={css.chatHeader}>
                             <div className={css.chatAvatar}>🤖</div>
                             <div className={css.chatHeaderText}>
-                              <h4>Career Coach</h4>
+                              <h4>{coachingConfig?.platformName || 'AI Career Coach'}</h4>
                               <span>● Online</span>
                             </div>
                           </div>
@@ -663,9 +749,14 @@ const LandingPageComponent = props => {
                       <li>AI career coaching for all students</li>
                       <li>Real-time analytics and reporting</li>
                     </ul>
-                    <NamedLink name="SignupPage" className={css.ctaBtnInstitution}>
+                    <a
+                      href="https://calendly.com/tavares-brewington-street2ivy/demo"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={css.ctaBtnInstitution}
+                    >
                       Schedule a Demo →
-                    </NamedLink>
+                    </a>
                     <p className={css.ctaUrgency}>🏛️ Special rates for founding partners</p>
                   </div>
                 </section>

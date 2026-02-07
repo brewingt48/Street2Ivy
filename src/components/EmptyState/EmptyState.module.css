@@ -1,0 +1,170 @@
+@import '../../styles/customMediaQueries.css';
+
+.root {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 32px 24px;
+}
+
+/* Size variants */
+.sizeSmall {
+  padding: 20px 16px;
+}
+
+.sizeSmall .icon {
+  font-size: 32px;
+}
+
+.sizeSmall .title {
+  font-size: 15px;
+}
+
+.sizeSmall .description {
+  font-size: 13px;
+}
+
+.sizeMedium {
+  padding: 40px 24px;
+}
+
+.sizeLarge {
+  padding: 60px 32px;
+
+  @media (--viewportMedium) {
+    padding: 80px 48px;
+  }
+}
+
+.sizeLarge .icon {
+  font-size: 64px;
+}
+
+.sizeLarge .title {
+  font-size: 22px;
+
+  @media (--viewportMedium) {
+    font-size: 26px;
+  }
+}
+
+.sizeLarge .description {
+  font-size: 16px;
+  max-width: 500px;
+}
+
+/* Visual variants */
+.variantDefault {
+  background-color: transparent;
+}
+
+.variantMuted {
+  background-color: #f8f9fa;
+  border-radius: 12px;
+}
+
+.variantIllustrated {
+  background: linear-gradient(135deg, #f0fcfb 0%, #f5f7fa 100%);
+  border-radius: 16px;
+  border: 1px dashed rgba(0, 200, 190, 0.3);
+}
+
+/* Icon wrapper */
+.iconWrapper {
+  margin-bottom: 16px;
+}
+
+.icon {
+  font-size: 48px;
+  line-height: 1;
+  display: block;
+}
+
+/* Content */
+.content {
+  max-width: 400px;
+}
+
+.title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #0C1430;
+  margin: 0 0 8px 0;
+  line-height: 1.3;
+}
+
+.description {
+  font-size: 14px;
+  color: #666;
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* Actions */
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 24px;
+  width: 100%;
+  max-width: 280px;
+
+  @media (--viewportSmall) {
+    flex-direction: row;
+    justify-content: center;
+    max-width: none;
+  }
+}
+
+.primaryButton {
+  min-width: 140px;
+  padding: 12px 24px;
+  font-size: 14px;
+  font-weight: 600;
+  background-color: #00C8BE;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  text-decoration: none;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background-color: #00b5ac;
+    text-decoration: none;
+  }
+}
+
+.secondaryButton {
+  min-width: 140px;
+  padding: 12px 24px;
+  font-size: 14px;
+  font-weight: 600;
+  background-color: transparent;
+  color: #0C1430;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  text-decoration: none;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background-color: #f5f5f5;
+    border-color: #ccc;
+    text-decoration: none;
+  }
+}
+
+/* State-specific styling classes */
+.variantIllustrated .primaryButton {
+  background: linear-gradient(135deg, #00C8BE 0%, #00D4C9 100%);
+}
+
+.variantIllustrated .primaryButton:hover {
+  background: linear-gradient(135deg, #00b5ac 0%, #00c1b7 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 200, 190, 0.25);
+}

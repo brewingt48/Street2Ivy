@@ -2,9 +2,9 @@
   "branding": {
     "id": "branding",
     "section": "branding",
-    "logoUrl": "http://localhost:3500/static/uploads/logo-1770332123500-ol16bf.png",
-    "logoHeight": 48,
-    "tagline": "Connecting Ivy League Talent with Industry Leaders",
+    "logoUrl": "http://localhost:3500/static/uploads/logo-1770373421088-a7p59j.png",
+    "logoHeight": 60,
+    "tagline": "",
     "faviconUrl": null,
     "socialFacebook": null,
     "socialTwitter": null,
@@ -13,21 +13,23 @@
     "socialYoutube": null,
     "socialTiktok": null,
     "isActive": true,
-    "updatedAt": "2026-02-05T22:55:34.199Z",
-    "updatedBy": "system"
+    "updatedAt": "2026-02-06T10:27:22.692Z",
+    "updatedBy": "system",
+    "siteDescription": "",
+    "socialIconSize": 32
   },
   "hero": {
     "id": "hero",
     "section": "hero",
-    "title": "Connect Ivy League Talent with Industry Leaders",
-    "subtitle": "Street2Ivy bridges the gap between elite university students and Fortune 500 companies through meaningful project-based collaborations.",
+    "title": "Bridge the Gap Between Campus and Career",
+    "subtitle": "AI is automating the work that once trained the next generation. Street2Ivy connects ambitious students with corporate project teams — giving talent real experience and giving companies a low-risk pipeline to the best minds on any campus.",
     "primaryButtonText": "Get Started",
     "secondaryButtonText": "Sign In",
-    "backgroundImage": null,
+    "backgroundImage": "http://localhost:3500/static/uploads/hero-1770371112741-0qmgxw.png",
     "backgroundVideo": null,
     "backgroundType": "image",
     "isActive": true,
-    "updatedAt": "2026-02-05T20:48:29.669Z",
+    "updatedAt": "2026-02-06T09:45:18.437Z",
     "updatedBy": "system"
   },
   "features": {
@@ -38,24 +40,24 @@
       {
         "id": "feature-1",
         "icon": "🎓",
-        "title": "Elite Talent Pool",
-        "description": "Access pre-vetted students from top universities including Harvard, Yale, Princeton, and more."
+        "title": "For Students:",
+        "description": "Go beyond the classroom. Build a portfolio of real corporate projects that proves you can do the work AI can't."
       },
       {
         "id": "feature-2",
         "icon": "💼",
-        "title": "Real Projects",
-        "description": "Engage students with meaningful work that makes a real impact on your business."
+        "title": "For Companies: ",
+        "description": "Access motivated, pre-vetted talent for scoped projects — no headcount commitment, no intern program overhead, just results."
       },
       {
         "id": "feature-3",
         "icon": "🤝",
-        "title": "Seamless Collaboration",
-        "description": "Our platform handles contracts, payments, and communication so you can focus on results."
+        "title": "For Universities:",
+        "description": "Boost graduate placement rates and career readiness without building new infrastructure. Plug your students into real opportunities."
       }
     ],
     "isActive": true,
-    "updatedAt": "2026-02-05T20:48:29.669Z",
+    "updatedAt": "2026-02-06T09:39:53.368Z",
     "updatedBy": "system"
   },
   "howItWorks": {

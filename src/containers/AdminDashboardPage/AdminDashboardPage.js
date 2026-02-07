@@ -9,7 +9,7 @@ import classNames from 'classnames';
 import { Page, LayoutSingleColumn, PaginationLinks, NamedLink } from '../../components';
 import TopbarContainer from '../../containers/TopbarContainer/TopbarContainer';
 import FooterContainer from '../../containers/FooterContainer/FooterContainer';
-import { exportAdminReport } from '../../util/api';
+import { exportAdminReport, apiBaseUrl, fetchAllCompaniesSpending } from '../../util/api';
 
 import {
   fetchUsers,
@@ -1125,7 +1125,12 @@ const ReportsPanel = props => {
     { key: 'users', label: 'Users Report' },
     { key: 'institutions', label: 'Institutions' },
     { key: 'transactions', label: 'Transactions' },
+    { key: 'corporate-spending', label: 'Corporate Spending' },
   ];
+
+  // State for company spending report
+  const [companySpending, setCompanySpending] = useState(null);
+  const [companySpendingLoading, setCompanySpendingLoading] = useState(false);
 
   // Helper to get users by type
   const getUsersByType = (userType) => {
@@ -1492,8 +1497,104 @@ const ReportsPanel = props => {
     );
   };
 
+  const formatCurrency = (amount, currency = 'USD') => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency,
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(amount / 100);
+  };
+
+  const renderCorporateSpendingReport = () => {
+    if (companySpendingLoading) {
+      return <div className={css.loadingState}>Loading corporate spending data...</div>;
+    }
+
+    if (!companySpending) {
+      return <div className={css.loadingState}>No spending data available.</div>;
+    }
+
+    const { companies, totals, currency } = companySpending;
+
+    return (
+      <>
+        <div className={css.statsGrid}>
+          <div className={css.statCard}>
+            <p className={css.statValue}>{formatCurrency(totals.totalSpentAllCompanies, currency)}</p>
+            <p className={css.statLabel}>Total Invested</p>
+          </div>
+          <div className={css.statCard}>
+            <p className={css.statValue}>{totals.totalProjectsAllCompanies}</p>
+            <p className={css.statLabel}>Total Projects</p>
+          </div>
+          <div className={css.statCard}>
+            <p className={css.statValue}>{totals.totalCompanies}</p>
+            <p className={css.statLabel}>Active Companies</p>
+          </div>
+          <div className={css.statCard}>
+            <p className={css.statValue}>{formatCurrency(totals.avgSpendingPerCompany, currency)}</p>
+            <p className={css.statLabel}>Avg. Investment/Company</p>
+          </div>
+        </div>
+
+        <div className={css.reportSection}>
+          <h4 className={css.reportSectionTitle}>Corporate Partners by Investment</h4>
+          {companies && companies.length > 0 ? (
+            <table className={css.institutionsTable}>
+              <thead>
+                <tr>
+                  <th>Company</th>
+                  <th>Total Invested</th>
+                  <th>Projects Posted</th>
+                  <th>Completed</th>
+                </tr>
+              </thead>
+              <tbody>
+                {companies.map((company) => (
+                  <tr key={company.companyId}>
+                    <td>
+                      <NamedLink
+                        name="ProfilePage"
+                        params={{ id: company.companyId }}
+                        className={css.clickableTableCell}
+                      >
+                        {company.companyName}
+                      </NamedLink>
+                    </td>
+                    <td>{formatCurrency(company.totalSpent, currency)}</td>
+                    <td>{company.totalProjects}</td>
+                    <td>{company.completedProjects}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          ) : (
+            <p>No corporate spending data available.</p>
+          )}
+        </div>
+      </>
+    );
+  };
+
+  // Fetch company spending when switching to that report type
+  useEffect(() => {
+    if (currentReportType === 'corporate-spending' && !companySpending) {
+      setCompanySpendingLoading(true);
+      fetchAllCompaniesSpending()
+        .then(data => {
+          setCompanySpending(data);
+          setCompanySpendingLoading(false);
+        })
+        .catch(err => {
+          console.error('Failed to fetch company spending:', err);
+          setCompanySpendingLoading(false);
+        });
+    }
+  }, [currentReportType, companySpending]);
+
   const renderReportContent = () => {
-    if (fetchInProgress) {
+    if (fetchInProgress && currentReportType !== 'corporate-spending') {
       return <div className={css.loadingState}>Loading report...</div>;
     }
 
@@ -1506,6 +1607,8 @@ const ReportsPanel = props => {
         return renderInstitutionsReport();
       case 'transactions':
         return renderTransactionsReport();
+      case 'corporate-spending':
+        return renderCorporateSpendingReport();
       default:
         return renderOverviewReport();
     }
@@ -1521,6 +1624,27 @@ const ReportsPanel = props => {
     }
   };
 
+  // Handle report type selection
+  const handleReportTypeClick = (typeKey) => {
+    if (typeKey === 'corporate-spending') {
+      // For corporate spending, we fetch client-side
+      if (!companySpending && !companySpendingLoading) {
+        setCompanySpendingLoading(true);
+        fetchAllCompaniesSpending()
+          .then(data => {
+            setCompanySpending(data);
+            setCompanySpendingLoading(false);
+          })
+          .catch(err => {
+            console.error('Failed to fetch company spending:', err);
+            setCompanySpendingLoading(false);
+          });
+      }
+    }
+    // Always call onFetchReports to update currentReportType in Redux
+    onFetchReports(typeKey);
+  };
+
   return (
     <div className={css.reportsPanel}>
       <div className={css.reportTypeSelector}>
@@ -1530,7 +1654,7 @@ const ReportsPanel = props => {
             className={classNames(css.reportTypeButton, {
               [css.reportTypeButtonActive]: currentReportType === type.key,
             })}
-            onClick={() => onFetchReports(type.key)}
+            onClick={() => handleReportTypeClick(type.key)}
           >
             {type.label}
           </button>
@@ -4810,9 +4934,9 @@ const EducationalAdminApplicationsPanel = props => {
 
 const BlogManagementPanel = props => {
   const {
-    posts,
+    posts = [],
     pagination,
-    categories,
+    categories = [],
     selectedPost,
     fetchInProgress,
     saveInProgress,
@@ -5230,6 +5354,424 @@ const BlogManagementPanel = props => {
           {pagination && pagination.totalPages > 1 && (
             <div className={css.pagination}>
               Page {pagination.page} of {pagination.totalPages} ({pagination.totalItems} posts)
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  );
+};
+
+// ================ AI Coaching Configuration Panel ================ //
+
+const AICoachingConfigPanel = () => {
+  const [config, setConfig] = useState({
+    platformUrl: '',
+    platformName: 'AI Career Coach',
+    platformStatus: false,
+    welcomeMessage: '',
+    termsOfUseUrl: '',
+    confidentialityWarning: '',
+  });
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [saveSuccess, setSaveSuccess] = useState(false);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchConfig = async () => {
+      try {
+        const response = await fetch(`${apiBaseUrl()}/api/admin/coaching-config`, {
+          credentials: 'include',
+        });
+        if (response.ok) {
+          const data = await response.json();
+          setConfig(data.data);
+        } else {
+          throw new Error('Failed to fetch coaching configuration');
+        }
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchConfig();
+  }, []);
+
+  const handleSave = async () => {
+    setSaving(true);
+    setError(null);
+    setSaveSuccess(false);
+    try {
+      const response = await fetch(`${apiBaseUrl()}/api/admin/coaching-config`, {
+        method: 'PUT',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(config),
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setConfig(data.data);
+        setSaveSuccess(true);
+        setTimeout(() => setSaveSuccess(false), 3000);
+      } else {
+        throw new Error('Failed to save coaching configuration');
+      }
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (loading) {
+    return <div className={css.loading}>Loading configuration...</div>;
+  }
+
+  return (
+    <div className={css.panel}>
+      <div className={css.panelHeader}>
+        <h2 className={css.panelTitle}>AI Coaching Configuration</h2>
+        <p className={css.panelDescription}>
+          Configure the external AI coaching platform connection (e.g., Amiko). These settings apply platform-wide.
+        </p>
+      </div>
+
+      {error && <div className={css.errorMessage}>{error}</div>}
+      {saveSuccess && <div className={css.successMessage}>Configuration saved successfully!</div>}
+
+      <div className={css.formSection}>
+        <div className={css.formGroup}>
+          <label className={css.formLabel}>Platform Status</label>
+          <div className={css.toggleWrapper}>
+            <label className={css.toggleSwitch}>
+              <input
+                type="checkbox"
+                checked={config.platformStatus}
+                onChange={e => setConfig({ ...config, platformStatus: e.target.checked })}
+              />
+              <span className={css.toggleSlider}></span>
+            </label>
+            <span className={css.toggleLabel}>
+              {config.platformStatus ? 'Enabled' : 'Disabled'}
+            </span>
+          </div>
+          <p className={css.formHint}>Enable or disable AI coaching platform-wide</p>
+        </div>
+
+        <div className={css.formGroup}>
+          <label className={css.formLabel}>Platform Name</label>
+          <input
+            type="text"
+            className={css.formInput}
+            value={config.platformName}
+            onChange={e => setConfig({ ...config, platformName: e.target.value })}
+            placeholder="AI Career Coach"
+          />
+          <p className={css.formHint}>Display name shown to students (default: "AI Career Coach")</p>
+        </div>
+
+        <div className={css.formGroup}>
+          <label className={css.formLabel}>Platform URL *</label>
+          <input
+            type="url"
+            className={css.formInput}
+            value={config.platformUrl}
+            onChange={e => setConfig({ ...config, platformUrl: e.target.value })}
+            placeholder="https://coaching-platform.example.com"
+          />
+          <p className={css.formHint}>The external URL where students access the AI coaching platform</p>
+        </div>
+
+        <div className={css.formGroup}>
+          <label className={css.formLabel}>Welcome Message</label>
+          <textarea
+            className={css.formTextarea}
+            value={config.welcomeMessage}
+            onChange={e => setConfig({ ...config, welcomeMessage: e.target.value })}
+            placeholder="Welcome message students see when first accessing coaching..."
+            rows={4}
+          />
+          <p className={css.formHint}>Custom message students see when they first access the coaching tool</p>
+        </div>
+
+        <div className={css.formGroup}>
+          <label className={css.formLabel}>Terms of Use URL</label>
+          <input
+            type="url"
+            className={css.formInput}
+            value={config.termsOfUseUrl}
+            onChange={e => setConfig({ ...config, termsOfUseUrl: e.target.value })}
+            placeholder="https://example.com/coaching-terms"
+          />
+          <p className={css.formHint}>Optional link to coaching-specific terms of use</p>
+        </div>
+
+        <div className={css.formGroup}>
+          <label className={css.formLabel}>Confidentiality Warning</label>
+          <textarea
+            className={css.formTextarea}
+            value={config.confidentialityWarning}
+            onChange={e => setConfig({ ...config, confidentialityWarning: e.target.value })}
+            placeholder="Do not share proprietary, confidential, or trade secret information..."
+            rows={4}
+          />
+          <p className={css.formHint}>Warning message displayed to students before accessing AI coaching</p>
+        </div>
+
+        <div className={css.formActions}>
+          <button
+            type="button"
+            className={css.primaryButton}
+            onClick={handleSave}
+            disabled={saving}
+          >
+            {saving ? 'Saving...' : 'Save Configuration'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ================ Student Waitlist Panel ================ //
+
+const StudentWaitlistPanel = () => {
+  const [entries, setEntries] = useState([]);
+  const [stats, setStats] = useState({ totalEntries: 0, uniqueDomains: 0, topDomains: [] });
+  const [pagination, setPagination] = useState({ page: 1, perPage: 50, totalPages: 1 });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [filter, setFilter] = useState({ search: '', domain: '', contacted: '' });
+  const [editingEntry, setEditingEntry] = useState(null);
+
+  const fetchWaitlist = async (page = 1) => {
+    setLoading(true);
+    try {
+      const params = new URLSearchParams({
+        page: String(page),
+        perPage: '50',
+        ...filter,
+      });
+      const response = await fetch(`${apiBaseUrl()}/api/admin/student-waitlist?${params}`, {
+        credentials: 'include',
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setEntries(data.entries);
+        setStats(data.stats);
+        setPagination(data.pagination);
+      } else {
+        throw new Error('Failed to fetch waitlist');
+      }
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchWaitlist();
+  }, []);
+
+  const handleFilterChange = (key, value) => {
+    setFilter({ ...filter, [key]: value });
+  };
+
+  const applyFilters = () => {
+    fetchWaitlist(1);
+  };
+
+  const handleMarkContacted = async (entryId, contacted) => {
+    try {
+      const response = await fetch(`${apiBaseUrl()}/api/admin/student-waitlist/${entryId}`, {
+        method: 'PUT',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ contacted }),
+      });
+      if (response.ok) {
+        fetchWaitlist(pagination.page);
+      }
+    } catch (err) {
+      console.error('Error updating entry:', err);
+    }
+  };
+
+  const handleDelete = async (entryId) => {
+    if (!window.confirm('Are you sure you want to delete this waitlist entry?')) return;
+    try {
+      const response = await fetch(`${apiBaseUrl()}/api/admin/student-waitlist/${entryId}`, {
+        method: 'DELETE',
+        credentials: 'include',
+      });
+      if (response.ok) {
+        fetchWaitlist(pagination.page);
+      }
+    } catch (err) {
+      console.error('Error deleting entry:', err);
+    }
+  };
+
+  const formatDate = dateStr => {
+    if (!dateStr) return '-';
+    return new Date(dateStr).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+    });
+  };
+
+  return (
+    <div className={css.panel}>
+      <div className={css.panelHeader}>
+        <h2 className={css.panelTitle}>Student Waitlist</h2>
+        <p className={css.panelDescription}>
+          Students who tried to register from non-partner institutions. Use this data for institutional outreach.
+        </p>
+      </div>
+
+      {/* Stats Summary */}
+      <div className={css.statsGrid}>
+        <div className={css.statCard}>
+          <span className={css.statValue}>{stats.totalEntries}</span>
+          <span className={css.statLabel}>Total Waitlist Entries</span>
+        </div>
+        <div className={css.statCard}>
+          <span className={css.statValue}>{stats.uniqueDomains}</span>
+          <span className={css.statLabel}>Unique Institutions</span>
+        </div>
+      </div>
+
+      {/* Top Domains */}
+      {stats.topDomains && stats.topDomains.length > 0 && (
+        <div className={css.topDomainsSection}>
+          <h4>Top Institutions by Interest</h4>
+          <div className={css.topDomainsList}>
+            {stats.topDomains.slice(0, 5).map(d => (
+              <div key={d.domain} className={css.topDomainItem}>
+                <span className={css.domainName}>{d.institutionName || d.domain}</span>
+                <span className={css.domainCount}>{d.count} students</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Filters */}
+      <div className={css.filterBar}>
+        <input
+          type="text"
+          className={css.filterInput}
+          placeholder="Search by name or email..."
+          value={filter.search}
+          onChange={e => handleFilterChange('search', e.target.value)}
+        />
+        <input
+          type="text"
+          className={css.filterInput}
+          placeholder="Filter by domain..."
+          value={filter.domain}
+          onChange={e => handleFilterChange('domain', e.target.value)}
+        />
+        <select
+          className={css.filterSelect}
+          value={filter.contacted}
+          onChange={e => handleFilterChange('contacted', e.target.value)}
+        >
+          <option value="">All Status</option>
+          <option value="false">Not Contacted</option>
+          <option value="true">Contacted</option>
+        </select>
+        <button type="button" className={css.filterButton} onClick={applyFilters}>
+          Apply Filters
+        </button>
+      </div>
+
+      {error && <div className={css.errorMessage}>{error}</div>}
+
+      {loading ? (
+        <div className={css.loading}>Loading waitlist...</div>
+      ) : entries.length === 0 ? (
+        <div className={css.emptyState}>
+          <p>No waitlist entries found.</p>
+        </div>
+      ) : (
+        <>
+          <table className={css.dataTable}>
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Institution</th>
+                <th>Domain</th>
+                <th>Date Added</th>
+                <th>Attempts</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {entries.map(entry => (
+                <tr key={entry.id}>
+                  <td>{entry.firstName} {entry.lastName}</td>
+                  <td>{entry.email}</td>
+                  <td>{entry.institutionName}</td>
+                  <td><code>{entry.domain}</code></td>
+                  <td>{formatDate(entry.createdAt)}</td>
+                  <td>{entry.attempts || 1}</td>
+                  <td>
+                    <span className={classNames(css.statusBadge, {
+                      [css.statusContacted]: entry.contacted,
+                      [css.statusPending]: !entry.contacted,
+                    })}>
+                      {entry.contacted ? 'Contacted' : 'Not Contacted'}
+                    </span>
+                  </td>
+                  <td>
+                    <div className={css.actionButtons}>
+                      <button
+                        type="button"
+                        className={css.smallButton}
+                        onClick={() => handleMarkContacted(entry.id, !entry.contacted)}
+                      >
+                        {entry.contacted ? 'Mark Pending' : 'Mark Contacted'}
+                      </button>
+                      <button
+                        type="button"
+                        className={css.deleteSmallButton}
+                        onClick={() => handleDelete(entry.id)}
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+
+          {pagination.totalPages > 1 && (
+            <div className={css.pagination}>
+              <button
+                type="button"
+                className={css.paginationButton}
+                onClick={() => fetchWaitlist(pagination.page - 1)}
+                disabled={pagination.page <= 1}
+              >
+                Previous
+              </button>
+              <span>Page {pagination.page} of {pagination.totalPages}</span>
+              <button
+                type="button"
+                className={css.paginationButton}
+                onClick={() => fetchWaitlist(pagination.page + 1)}
+                disabled={pagination.page >= pagination.totalPages}
+              >
+                Next
+              </button>
             </div>
           )}
         </>
@@ -6883,6 +7425,18 @@ const AdminDashboardPageComponent = props => {
             >
               <FormattedMessage id="AdminDashboardPage.tabBlog" />
             </button>
+            <button
+              className={classNames(css.tab, { [css.tabActive]: activeTab === 'coaching' })}
+              onClick={() => handleTabChange('coaching')}
+            >
+              AI Coaching
+            </button>
+            <button
+              className={classNames(css.tab, { [css.tabActive]: activeTab === 'waitlist' })}
+              onClick={() => handleTabChange('waitlist')}
+            >
+              Student Waitlist
+            </button>
           </div>
 
           {/* Tab Content */}
@@ -7034,6 +7588,14 @@ const AdminDashboardPageComponent = props => {
               onAddCategory={onAddBlogCategory}
               onDeleteCategory={onDeleteBlogCategory}
             />
+          )}
+
+          {activeTab === 'coaching' && (
+            <AICoachingConfigPanel />
+          )}
+
+          {activeTab === 'waitlist' && (
+            <StudentWaitlistPanel />
           )}
 
         </div>

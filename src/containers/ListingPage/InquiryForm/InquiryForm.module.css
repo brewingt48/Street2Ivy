@@ -1,5 +1,7 @@
 @import '../../../styles/customMediaQueries.css';
 
+/* ================ Enterprise Design System - Inquiry Form ================ */
+
 .root {
 }
 
@@ -9,11 +11,16 @@
   @media (--viewportMedium) {
     display: block;
     margin-bottom: 36px;
+    color: var(--s2i-teal-500);
   }
 }
 
 .heading {
   composes: marketplaceModalTitleStyles from global;
+  font-family: 'Playfair Display', Georgia, serif;
+  color: var(--s2i-navy-900);
+  font-weight: 700;
+  letter-spacing: -0.02em;
 }
 
 .field {
@@ -25,8 +32,10 @@
 }
 
 .error {
-  color: var(--colorFail);
+  color: var(--s2i-coral-600);
   margin-top: 0;
+  font-size: 14px;
+  font-weight: var(--s2i-font-medium);
 
   @media (--viewportMedium) {
     margin-top: 0;

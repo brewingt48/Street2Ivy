@@ -1,0 +1,142 @@
+@import '../../styles/customMediaQueries.css';
+
+.root {
+  width: 100%;
+  padding: 16px 24px;
+  background: linear-gradient(135deg, #0C1430 0%, #1a2847 100%);
+}
+
+/* Hide full progress on mobile, show simple indicator instead */
+.progressContainer {
+  display: none;
+  position: relative;
+  padding: 0 40px;
+
+  @media (--viewportMedium) {
+    display: block;
+  }
+}
+
+/* The background track line */
+.track {
+  position: absolute;
+  top: 16px;
+  left: 40px;
+  right: 40px;
+  height: 4px;
+  background-color: rgba(255, 255, 255, 0.2);
+  border-radius: 2px;
+}
+
+/* The filled progress line */
+.progress {
+  position: absolute;
+  top: 16px;
+  left: 40px;
+  height: 4px;
+  background: linear-gradient(90deg, #00C8BE 0%, #00D4C9 100%);
+  border-radius: 2px;
+  transition: width 0.4s ease-out;
+}
+
+/* Container for all step indicators */
+.stepsContainer {
+  display: flex;
+  justify-content: space-between;
+  position: relative;
+}
+
+/* Wrapper for each step (dot + label) */
+.stepWrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+  max-width: 120px;
+}
+
+/* The step circle/dot */
+.step {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 14px;
+  transition: all 0.3s ease;
+  position: relative;
+  z-index: 1;
+}
+
+.stepCompleted {
+  background-color: #00C8BE;
+  color: #0C1430;
+  box-shadow: 0 0 0 4px rgba(0, 200, 190, 0.2);
+}
+
+.stepCurrent {
+  background-color: #FFB43C;
+  color: #0C1430;
+  box-shadow: 0 0 0 4px rgba(255, 180, 60, 0.3);
+  transform: scale(1.1);
+}
+
+.stepUpcoming {
+  background-color: rgba(255, 255, 255, 0.15);
+  color: rgba(255, 255, 255, 0.6);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.checkmark {
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.stepNumber {
+  font-size: 14px;
+}
+
+/* Label below each step */
+.stepLabel {
+  margin-top: 8px;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.5);
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+  transition: color 0.3s ease;
+}
+
+.stepLabelActive {
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: 500;
+}
+
+/* Mobile indicator - simple text version */
+.mobileIndicator {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+
+  @media (--viewportMedium) {
+    display: none;
+  }
+}
+
+.mobileText {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.6);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.mobileLabel {
+  font-size: 16px;
+  font-weight: 600;
+  color: #00C8BE;
+}

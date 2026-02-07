@@ -1,31 +1,78 @@
 @import '../../styles/customMediaQueries.css';
 
+/* ================ Enterprise Design System - Authentication Page ================ */
+/* Dark gradient background matching the homepage hero section */
+
 .layoutWrapperMain {
 }
 
 .root {
   flex-grow: 1;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #0C1430 0%, #1a2744 50%, #1e3a5f 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Gradient overlay matching hero section */
+.root::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background:
+    radial-gradient(ellipse at 20% 80%, rgba(0, 200, 190, 0.1) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 20%, rgba(245, 158, 11, 0.08) 0%, transparent 50%);
+  z-index: 0;
+  pointer-events: none;
 }
 
 .contentContainer {
-  composes: marketplaceModalRootStyles from global;
-  min-height: calc(100vh - 60px);
-  height: auto;
+  position: relative;
+  z-index: 1;
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
 
   @media (--viewportMedium) {
-    height: unset;
-    min-height: unset;
+    padding: 48px;
   }
 }
 
 .content {
-  composes: marketplaceModalBaseStyles from global;
-  padding-top: 29px;
+  background: rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(20px);
+  border-radius: var(--s2i-radius-2xl);
+  box-shadow: 0 25px 80px rgba(0, 0, 0, 0.3), 0 10px 30px rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 32px 28px;
+  width: 100%;
+  max-width: 440px;
+  position: relative;
+  animation: slideUp 0.5s ease-out;
+  z-index: 2;
 
   @media (--viewportMedium) {
-    margin-top: 5vh;
-    margin-bottom: 7.5vh;
-    min-height: 700px;
+    padding: 48px 44px;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
@@ -34,96 +81,79 @@
   justify-content: center;
   align-items: center;
   height: 100%;
+  min-height: 300px;
 }
 
-/* ================ Tabs & Form ================ */
+/* ================ Tabs ================ */
 
 .tabs {
+  margin-bottom: 24px;
+
   @media (--viewportMedium) {
-    margin-top: 6px;
+    margin-bottom: 32px;
   }
 }
 
 .tab {
-  composes: marketplaceModalTitleStyles from global;
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--s2i-navy-900);
+  margin: 0;
   padding: 0;
-  margin-top: 0;
-  margin-bottom: 0;
-
-  /* Break long words into multiple lines to avoid overflow */
   word-break: break-word;
   hyphens: auto;
-  font-size: 20px;
+  letter-spacing: -0.02em;
 
   @media (min-width: 375px) {
-    font-size: 24px;
-  }
-
-  @media (min-width: 450px) {
-    font-size: 30px;
+    font-size: 28px;
   }
 
   @media (--viewportMedium) {
+    font-size: 32px;
     word-break: unset;
     hyphens: unset;
-    padding: 0;
-    margin-top: 0;
   }
 }
+
+/* ================ Forms ================ */
 
 .form {
   margin-top: 24px;
 
   @media (--viewportMedium) {
-    margin-top: 30px;
-    padding-top: 2px;
+    margin-top: 28px;
   }
 }
 
 .loginForm {
   margin-top: 24px;
-
-  /* We don't want the form to take the whole space so that on mobile view
-  the social login buttons will be after the sign up button
-  and not in the bottom of the page.
-  We also need to add flex-basis value so that Safari will show the
-  whole form correctly.  */
   flex-grow: 0;
   flex-basis: 260px;
 
   @media (--viewportMedium) {
     flex-basis: 330px;
-    margin-top: 30px;
-    padding-top: 2px;
+    margin-top: 28px;
   }
 }
 
 .signupForm {
   margin-top: 24px;
-
-  /* We don't want the form to take the whole space so that on mobile view
-  the social login buttons will be after the sign up button
-  and not in the bottom of the page.
-  We also need to add flex-basis value so that Safari will show the
-  whole form correctly.  */
   flex-grow: 0;
   flex-basis: 340px;
 
   @media (--viewportMedium) {
     flex-basis: 410px;
-    margin-top: 30px;
-    padding-top: 2px;
+    margin-top: 28px;
   }
 }
 
 .bottomWrapper {
-  composes: marketplaceModalBottomWrapper from global;
-
-  /* Align the helper links to the left since there isn't a Primary Button anymore */
+  margin-top: 24px;
   text-align: left;
 }
 
-/* Terms of Service modal*/
+/* ================ Terms & Privacy Modals ================ */
 
 .privacyWrapper,
 .termsWrapper {
@@ -132,11 +162,12 @@
 
   @media (--viewportMedium) {
     width: 604px;
-    padding-top: 11px;
+    padding-top: 16px;
   }
 }
 
-/* userType selection */
+/* ================ User Type Selection ================ */
+
 .userTypeSelect {
   margin-bottom: 24px;
 
@@ -146,20 +177,22 @@
 }
 
 .selectedLabel {
-  composes: label from global;
+  font-size: 13px;
+  font-weight: var(--s2i-font-semibold);
+  color: var(--s2i-slate-600);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 8px;
 }
+
 .selectedValue {
-  margin-top: 0;
-  margin-bottom: 6px;
-
-  @media (--viewportMedium) {
-    margin-top: 0;
-    margin-bottom: 0;
-    padding: 2px 0 6px 0;
-  }
+  margin: 0;
+  padding: 2px 0 6px 0;
+  font-size: 15px;
+  color: var(--s2i-navy-900);
 }
 
-/* ================ Hide Top bar in screens smaller than 768px  ================ */
+/* ================ Hide Topbar on Mobile ================ */
 
 .hideOnMobile {
   display: none;
@@ -169,100 +202,156 @@
   }
 }
 
-/* ================ Close icon ================ */
+/* ================ Close Icon ================ */
 
 .verifyClose {
-  composes: marketplaceModalCloseStyles from global;
-
-  /* This is not a real modal, z-index should not be modal's z-index */
+  position: absolute;
+  top: 16px;
+  right: 16px;
   z-index: 1;
 }
 
 .closeText {
-  composes: marketplaceModalCloseText from global;
+  display: none;
 }
 
 .closeIcon {
-  composes: marketplaceModalCloseIcon from global;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--s2i-slate-100);
+  border-radius: var(--s2i-radius-full);
+  color: var(--s2i-slate-600);
+  transition: var(--s2i-transition-all);
+  cursor: pointer;
+
+  &:hover {
+    background: var(--s2i-slate-200);
+    color: var(--s2i-navy-900);
+  }
 }
 
 /* ================ Typography ================ */
 
-/* Title of the modal */
 .modalTitle {
-  composes: marketplaceModalTitleStyles from global;
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--s2i-navy-900);
+  margin: 0 0 16px 0;
+  letter-spacing: -0.02em;
+
+  @media (--viewportMedium) {
+    font-size: 32px;
+  }
 }
 
-/* Paragraph for the Modal */
 .modalMessage {
-  composes: marketplaceModalParagraphStyles from global;
+  font-size: 15px;
+  color: var(--s2i-slate-600);
+  line-height: 1.6;
+  margin: 0 0 24px 0;
 }
 
-/* Make the email pop */
 .email {
-  font-weight: var(--fontWeightHighlightEmail);
-
-  /* fallback option */
-  word-break: break-all;
-  /* use break-word if available */
+  font-weight: var(--s2i-font-semibold);
+  color: var(--s2i-teal-600);
   word-break: break-word;
   hyphens: auto;
 }
 
-/* Helper links */
 .modalHelperLink {
-  composes: a from global;
-  composes: marketplaceModalHelperLink from global;
+  font-size: 14px;
+  color: var(--s2i-teal-600);
+  text-decoration: none;
+  font-weight: var(--s2i-font-medium);
+  transition: var(--s2i-transition-colors);
+
+  &:hover {
+    color: var(--s2i-teal-700);
+    text-decoration: underline;
+  }
 }
 
-/* Helper texts for the links, not the actual links */
 .modalHelperText {
-  composes: marketplaceModalHelperText from global;
+  font-size: 14px;
+  color: var(--s2i-slate-500);
+  margin: 0;
 }
 
 .modalIcon {
-  composes: marketplaceModalIconStyles from global;
-
-  /* Align the icon and rest of the content in the modal. Sign & Login doesn't use an icon, maybe we should add one? */
-  margin-top: 47px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 72px;
+  height: 72px;
+  background: linear-gradient(135deg, var(--s2i-teal-50) 0%, var(--s2i-emerald-50) 100%);
+  border: 2px solid var(--s2i-teal-200);
+  border-radius: var(--s2i-radius-xl);
+  margin: 0 auto 24px auto;
+  font-size: 32px;
 
   @media (--viewportMedium) {
-    margin-top: 0;
+    margin: 0 auto 32px auto;
   }
 }
 
 /* ================ Errors ================ */
 
 .error {
-  composes: marketplaceModalPasswordMargins from global;
+  background: var(--s2i-coral-50);
+  border: 1px solid var(--s2i-coral-200);
+  border-radius: var(--s2i-radius-lg);
+  padding: 12px 16px;
+  margin-bottom: 20px;
+  font-size: 14px;
+  color: var(--s2i-coral-700);
+  font-weight: var(--s2i-font-medium);
+  line-height: 1.5;
 }
 
-/* ================ Social logins & SSO ================ */
+/* ================ Social Login Buttons ================ */
+
+.idpButtons {
+  margin-top: 8px;
+}
 
 .signupWithIdpTitle {
-  composes: marketplaceModalTitleStyles from global;
-  margin-top: 0;
-  margin-bottom: 0;
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--s2i-navy-900);
+  margin: 0 0 8px 0;
   padding-top: 16px;
-  color: var(--colorBlack);
+  letter-spacing: -0.02em;
 
   @media (--viewportMedium) {
+    font-size: 28px;
     padding: 0;
     margin-top: 6px;
   }
 }
 
 .confirmInfoText {
+  font-size: 15px;
+  color: var(--s2i-slate-600);
+  line-height: 1.6;
+  margin: 0 0 20px 0;
 }
 
 .buttonIcon {
   position: absolute;
   left: 0;
   margin-left: 20px;
+  display: flex;
+  align-items: center;
 }
 
 .socialButtonWrapper {
-  margin-bottom: 6px;
+  margin-bottom: 12px;
+
   @media (--viewportMedium) {
     margin-top: 8px;
   }
@@ -270,72 +359,214 @@
 
 .socialButtonsOr {
   width: 100%;
-  height: 32px;
-  margin: 28px 0 20px 0;
+  height: 40px;
+  margin: 28px 0 24px 0;
   text-align: center;
   position: relative;
-  background-color: var(--colorWhite);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 
-  &:after {
+  &::before,
+  &::after {
     content: '';
-    width: 100%;
-    border-bottom: solid 1px #d2d2d2;
-    position: absolute;
-    left: 0;
-    top: 50%;
-    z-index: 1;
+    flex: 1;
+    height: 1px;
+    background: var(--s2i-slate-200);
   }
-}
 
-@media (--viewportMedium) {
-  .socialButtonsOr {
-    height: 34px;
-    margin: 15px 0;
+  @media (--viewportMedium) {
+    margin: 24px 0 20px 0;
   }
 }
 
 .socialButtonsOrText {
-  background-color: var(--colorWhite);
-  width: auto;
-  display: inline-block;
-  z-index: 3;
-  padding: 0 20px 0 20px;
-  position: relative;
-  margin: 0;
+  background: #ffffff;
+  padding: 0 16px;
+  font-size: 13px;
+  font-weight: var(--s2i-font-medium);
+  color: var(--s2i-slate-500);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 /* ================ Admin Portal ================ */
 
 .adminPortalBanner {
-  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-  color: var(--colorWhite);
-  padding: 12px 20px;
-  border-radius: 8px;
+  background: linear-gradient(135deg, var(--s2i-navy-800) 0%, var(--s2i-navy-900) 100%);
+  color: white;
+  padding: 14px 20px;
+  border-radius: var(--s2i-radius-lg);
   margin-bottom: 24px;
-  font-weight: var(--fontWeightSemiBold);
-  font-size: 14px;
+  font-weight: var(--s2i-font-semibold);
+  font-size: 13px;
   text-align: center;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.adminPortalBanner::before {
+  content: '🔐';
+  font-size: 16px;
 }
 
 .adminPortalLink {
-  margin-top: 24px;
+  margin-top: 28px;
   text-align: center;
-  border-top: 1px solid var(--colorGrey100);
-  padding-top: 16px;
+  border-top: 1px solid var(--s2i-slate-200);
+  padding-top: 20px;
 }
 
 .adminPortalLinkText {
   font-size: 13px;
-  color: var(--colorGrey600);
+  color: var(--s2i-slate-500);
 
   & a {
-    color: var(--colorGrey700);
-    text-decoration: underline;
+    color: var(--s2i-teal-600);
+    text-decoration: none;
+    font-weight: var(--s2i-font-medium);
+    transition: var(--s2i-transition-colors);
 
     &:hover {
-      color: var(--marketplaceColor);
+      color: var(--s2i-teal-700);
+      text-decoration: underline;
     }
   }
+}
+
+/* ================ Brand Accent ================ */
+
+.content::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80px;
+  height: 4px;
+  background: linear-gradient(90deg, var(--s2i-teal-500), var(--s2i-emerald-500));
+  border-radius: 0 0 4px 4px;
+}
+
+/* ================ Institution Not Found Modal ================ */
+
+.institutionModal {
+  padding: 32px;
+  text-align: center;
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+.modalIcon {
+  font-size: 56px;
+  display: block;
+  margin-bottom: 20px;
+}
+
+.modalTitle {
+  font-family: var(--s2i-font-display);
+  font-size: 24px;
+  font-weight: var(--s2i-font-bold);
+  color: var(--s2i-navy-900);
+  margin: 0 0 16px 0;
+  letter-spacing: -0.02em;
+}
+
+.modalText {
+  font-size: 15px;
+  color: var(--s2i-slate-600);
+  line-height: 1.6;
+  margin: 0 0 12px 0;
+}
+
+.modalText strong {
+  color: var(--s2i-navy-800);
+}
+
+.modalActions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 28px;
+}
+
+.modalPrimaryButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  padding: 16px 24px;
+  background: linear-gradient(135deg, var(--s2i-teal-500) 0%, var(--s2i-emerald-500) 100%);
+  color: white;
+  border: none;
+  border-radius: var(--s2i-radius-lg);
+  font-size: 15px;
+  font-weight: var(--s2i-font-semibold);
+  cursor: pointer;
+  transition: var(--s2i-transition-all);
+  box-shadow: 0 4px 14px rgba(0, 200, 190, 0.35);
+  text-decoration: none;
+}
+
+.modalPrimaryButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 200, 190, 0.45);
+}
+
+.modalSecondaryButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  padding: 14px 24px;
+  background: white;
+  color: var(--s2i-navy-700);
+  border: 1px solid var(--s2i-slate-300);
+  border-radius: var(--s2i-radius-lg);
+  font-size: 15px;
+  font-weight: var(--s2i-font-medium);
+  cursor: pointer;
+  transition: var(--s2i-transition-all);
+}
+
+.modalSecondaryButton:hover:not(:disabled) {
+  background: var(--s2i-slate-50);
+  border-color: var(--s2i-slate-400);
+}
+
+.modalSecondaryButton:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.modalCloseButton {
+  background: none;
+  border: none;
+  color: var(--s2i-slate-500);
+  font-size: 14px;
+  cursor: pointer;
+  padding: 8px;
+  margin-top: 8px;
+  transition: var(--s2i-transition-colors);
+}
+
+.modalCloseButton:hover {
+  color: var(--s2i-slate-700);
+}
+
+/* Waitlist Success State */
+.waitlistSuccess {
+  padding: 20px 0;
+}
+
+.successIcon {
+  font-size: 64px;
+  display: block;
+  margin-bottom: 20px;
 }
