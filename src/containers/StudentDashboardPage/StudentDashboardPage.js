@@ -271,32 +271,6 @@ const BrowseProjectsPanel = ({ projects, isLoading }) => {
 
   return (
     <div className={css.browseProjectsPanel}>
-      {/* Browse Projects CTA Card */}
-      <div className={css.browseProjectsCTA}>
-        <div className={css.browseProjectsCTAContent}>
-          <div className={css.browseProjectsCTAIcon}>🔍</div>
-          <div className={css.browseProjectsCTAInfo}>
-            <h3 className={css.browseProjectsCTATitle}>Find Your Next Opportunity</h3>
-            <p className={css.browseProjectsCTADescription}>
-              Explore available projects from top corporate partners. Search by industry,
-              filter by skills, and find the perfect match for your interests and experience.
-            </p>
-            <div className={css.browseProjectsCTAFeatures}>
-              <span className={css.featureItem}>🏢 Top Companies</span>
-              <span className={css.featureItem}>💼 Real Projects</span>
-              <span className={css.featureItem}>🎯 Skill Matching</span>
-              <span className={css.featureItem}>💰 Paid Opportunities</span>
-            </div>
-          </div>
-        </div>
-        <div className={css.browseProjectsCTAActions}>
-          <NamedLink name="SearchPage" className={css.browseAllButton}>
-            <span>🔍</span>
-            Browse All Projects
-          </NamedLink>
-        </div>
-      </div>
-
       {/* Quick Tips Card */}
       <div className={css.quickTipsCard}>
         <h4 className={css.quickTipsTitle}>💡 Tips for Finding Projects</h4>
@@ -327,6 +301,11 @@ const BrowseProjectsPanel = ({ projects, isLoading }) => {
 
       {/* Quick Links */}
       <div className={css.quickLinksGrid}>
+        <NamedLink name="SearchPage" className={css.quickLinkCard}>
+          <span className={css.quickLinkIcon}>🔍</span>
+          <span className={css.quickLinkText}>Browse Projects</span>
+          <span className={css.quickLinkArrow}>→</span>
+        </NamedLink>
         <NamedLink name="ProfileSettingsPage" className={css.quickLinkCard}>
           <span className={css.quickLinkIcon}>👤</span>
           <span className={css.quickLinkText}>Update Profile</span>
