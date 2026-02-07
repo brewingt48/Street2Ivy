@@ -144,8 +144,32 @@ function validateSvgSecurity(content) {
 /**
  * Verify file content matches its claimed MIME type using magic bytes
  * Returns true if valid, false if suspicious
+ * @param {Buffer|string} bufferOrPath - Either a buffer or a temp file path
+ * @param {string} mimeType - The claimed MIME type
  */
-function verifyFileContent(buffer, mimeType) {
+function verifyFileContent(bufferOrPath, mimeType) {
+  let buffer;
+
+  // Handle temp file path (when useTempFiles is enabled in express-fileupload)
+  if (typeof bufferOrPath === 'string') {
+    try {
+      // Read the file content for verification
+      buffer = fs.readFileSync(bufferOrPath);
+    } catch (err) {
+      console.error('Error reading temp file for verification:', err);
+      return false;
+    }
+  } else if (Buffer.isBuffer(bufferOrPath)) {
+    buffer = bufferOrPath;
+  } else if (!bufferOrPath) {
+    // If no data provided, skip verification but log warning
+    console.warn('No file data provided for verification, skipping magic byte check');
+    return true;
+  } else {
+    console.error('Invalid input type for verifyFileContent:', typeof bufferOrPath);
+    return false;
+  }
+
   const signatures = FILE_SIGNATURES[mimeType];
 
   // SVG files are XML-based, require comprehensive XSS validation
@@ -285,7 +309,9 @@ async function uploadLogo(req, res) {
     }
 
     // Security: Verify file content matches MIME type (magic byte validation)
-    if (!verifyFileContent(file.data, file.mimetype)) {
+    // Use tempFilePath when useTempFiles is enabled, otherwise use file.data
+    const fileContent = file.tempFilePath || file.data;
+    if (!verifyFileContent(fileContent, file.mimetype)) {
       console.error('File content verification failed for logo upload:', file.name, file.mimetype);
       return res.status(400).json({
         error: 'File content does not match file type. Please upload a valid image file.',
@@ -349,7 +375,9 @@ async function uploadFavicon(req, res) {
     }
 
     // Security: Verify file content matches MIME type (magic byte validation)
-    if (!verifyFileContent(file.data, file.mimetype)) {
+    // Use tempFilePath when useTempFiles is enabled, otherwise use file.data
+    const fileContent = file.tempFilePath || file.data;
+    if (!verifyFileContent(fileContent, file.mimetype)) {
       console.error('File content verification failed for favicon upload:', file.name, file.mimetype);
       return res.status(400).json({
         error: 'File content does not match file type. Please upload a valid favicon file.',
@@ -411,7 +439,9 @@ async function uploadHeroImage(req, res) {
     }
 
     // Security: Verify file content matches MIME type (magic byte validation)
-    if (!verifyFileContent(file.data, file.mimetype)) {
+    // Use tempFilePath when useTempFiles is enabled, otherwise use file.data
+    const fileContent = file.tempFilePath || file.data;
+    if (!verifyFileContent(fileContent, file.mimetype)) {
       console.error('File content verification failed for hero image upload:', file.name, file.mimetype);
       return res.status(400).json({
         error: 'File content does not match file type. Please upload a valid image file.',
@@ -473,7 +503,9 @@ async function uploadHeroVideo(req, res) {
     }
 
     // Security: Verify file content matches MIME type (magic byte validation)
-    if (!verifyFileContent(file.data, file.mimetype)) {
+    // Use tempFilePath when useTempFiles is enabled, otherwise use file.data
+    const fileContent = file.tempFilePath || file.data;
+    if (!verifyFileContent(fileContent, file.mimetype)) {
       console.error('File content verification failed for hero video upload:', file.name, file.mimetype);
       return res.status(400).json({
         error: 'File content does not match file type. Please upload a valid video file.',
