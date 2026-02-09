@@ -71,9 +71,10 @@
 /* Panel Sections */
 .panel {
   background: white;
-  border-radius: 8px;
+  border-radius: 12px;
   border: 1px solid var(--colorGrey200);
   padding: 24px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 }
 
 .panelHeader {
@@ -116,40 +117,47 @@
 
 .filterSelect,
 .filterInput {
-  padding: 8px 12px;
+  padding: 9px 14px;
   font-size: 14px;
-  border: 1px solid var(--colorGrey300);
-  border-radius: 4px;
+  border: 1px solid var(--colorGrey200);
+  border-radius: 8px;
   background: white;
   min-width: 160px;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
 }
 
 .filterSelect:focus,
 .filterInput:focus {
   outline: none;
   border-color: var(--marketplaceColor);
+  box-shadow: 0 0 0 3px rgba(0, 200, 190, 0.12);
 }
 
 .searchButton {
   align-self: flex-end;
-  padding: 8px 20px;
+  padding: 9px 22px;
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 600;
   color: white;
-  background-color: var(--marketplaceColor);
+  background: linear-gradient(135deg, #00C8BE, #10B981);
   border: none;
-  border-radius: 4px;
+  border-radius: 8px;
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 6px rgba(0, 200, 190, 0.2);
 }
 
 .searchButton:hover {
-  background-color: var(--marketplaceColorDark);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 200, 190, 0.3);
 }
 
 .searchButton:disabled {
-  background-color: var(--colorGrey300);
+  background: var(--colorGrey300);
   cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
 }
 
 /* Users Table */
@@ -273,50 +281,62 @@
 }
 
 .userTypeBadge {
-  display: inline-block;
-  padding: 4px 8px;
-  font-size: 11px;
-  font-weight: 500;
-  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 20px;
   text-transform: capitalize;
+  letter-spacing: 0.2px;
+  border: 1px solid transparent;
+  transition: all 0.2s ease;
 }
 
 .userTypeBadge.student {
-  background-color: #e0f2fe;
-  color: #0369a1;
+  background: linear-gradient(135deg, #e0f2fe, #bae6fd);
+  color: #0c4a6e;
+  border-color: rgba(14, 165, 233, 0.2);
 }
 
 .userTypeBadge.corporate-partner {
-  background-color: #dcfce7;
-  color: #166534;
+  background: linear-gradient(135deg, #dcfce7, #bbf7d0);
+  color: #14532d;
+  border-color: rgba(34, 197, 94, 0.2);
 }
 
 .userTypeBadge.educational-admin {
-  background-color: #fef3c7;
-  color: #92400e;
+  background: linear-gradient(135deg, #fef3c7, #fde68a);
+  color: #78350f;
+  border-color: rgba(245, 158, 11, 0.2);
 }
 
 .userTypeBadge.system-admin {
-  background-color: #f3e8ff;
-  color: #7c3aed;
+  background: linear-gradient(135deg, #f3e8ff, #e9d5ff);
+  color: #581c87;
+  border-color: rgba(168, 85, 247, 0.2);
 }
 
 .statusBadge {
-  display: inline-block;
-  padding: 4px 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 12px;
   font-size: 12px;
-  font-weight: 500;
+  font-weight: 600;
   border-radius: 20px;
+  letter-spacing: 0.2px;
 }
 
 .statusActive {
-  background-color: #dcfce7;
-  color: #166534;
+  background: linear-gradient(135deg, #dcfce7, #bbf7d0);
+  color: #14532d;
 }
 
 .statusBanned {
-  background-color: #fee2e2;
-  color: #dc2626;
+  background: linear-gradient(135deg, #fee2e2, #fecaca);
+  color: #991b1b;
 }
 
 .statusDeleted {
@@ -497,13 +517,18 @@
   display: flex;
   flex-direction: column;
   gap: 20px;
+  background: white;
+  border-radius: 12px;
+  border: 1px solid var(--colorGrey200);
+  padding: 24px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 }
 
 .composeSection,
 .messagesListSection {
-  background: white;
-  border-radius: 8px;
-  border: 1px solid var(--colorGrey200);
+  background: var(--colorGrey50);
+  border-radius: 10px;
+  border: 1px solid var(--colorGrey100);
   padding: 20px;
 }
 
@@ -785,48 +810,55 @@
 
 .messageTabs {
   display: flex;
-  gap: 0;
-  border-bottom: 1px solid var(--colorGrey200);
+  gap: 8px;
+  background: var(--colorGrey50);
+  padding: 4px;
+  border-radius: 10px;
 }
 
 .messageTab {
-  padding: 12px 20px;
+  padding: 10px 20px;
   font-size: 14px;
   font-weight: 500;
   color: var(--colorGrey600);
   background: none;
   border: none;
-  border-bottom: 2px solid transparent;
+  border-radius: 8px;
   cursor: pointer;
   transition: all 0.2s ease;
-  margin-bottom: -1px;
 }
 
 .messageTab:hover {
   color: var(--colorGrey900);
-  background-color: var(--colorGrey50);
+  background-color: rgba(0, 0, 0, 0.04);
 }
 
 .messageTabActive {
-  color: var(--marketplaceColor);
-  border-bottom-color: var(--marketplaceColor);
+  color: var(--colorGrey900);
+  background: white;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04);
+  font-weight: 600;
 }
 
 .messageTabCompose {
   margin-left: auto;
-  background-color: var(--marketplaceColor);
+  background: linear-gradient(135deg, #00C8BE, #10B981);
   color: white;
-  border-radius: 4px 4px 0 0;
+  border-radius: 8px;
+  font-weight: 600;
 }
 
 .messageTabCompose:hover {
-  background-color: var(--marketplaceColorDark);
+  background: linear-gradient(135deg, #00b5ab, #0ea572);
   color: white;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 200, 190, 0.3);
 }
 
 .messageTabCompose.messageTabActive {
-  background-color: var(--marketplaceColor);
+  background: linear-gradient(135deg, #00C8BE, #10B981);
   color: white;
+  box-shadow: 0 2px 8px rgba(0, 200, 190, 0.3);
 }
 
 /* Email-like List */
@@ -2897,8 +2929,14 @@
 }
 
 .userTypeBadgeClickable:hover {
-  transform: scale(1.05);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transform: translateY(-1px) scale(1.03);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  filter: brightness(0.97);
+}
+
+.userTypeBadgeClickable:active {
+  transform: translateY(0) scale(0.98);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
 }
 
 /* Clickable table cell in reports */

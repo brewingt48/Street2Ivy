@@ -73,6 +73,7 @@ const LandingPageComponent = props => {
   const [dynamicContent, setDynamicContent] = useState(null);
   const [coachingConfig, setCoachingConfig] = useState(null);
   const [activeTab, setActiveTab] = useState('companies');
+  const [howItWorksTab, setHowItWorksTab] = useState('companies');
   const [visibleElements, setVisibleElements] = useState({});
   const [institutionInfo, setInstitutionInfo] = useState(null);
   const [isLoadingInstitution, setIsLoadingInstitution] = useState(true);
@@ -191,13 +192,14 @@ const LandingPageComponent = props => {
   // Section visibility — checks both global isActive (System Admin) and tenant-specific visibility (Education Admin)
   const tenant = useTenant();
   const isSectionVisible = (sectionKey) => {
-    // If the section doesn't exist in dynamicContent, it was filtered out by the server (isActive: false)
-    // Also check if it's explicitly marked inactive (in case of admin preview)
     const globalActive = dynamicContent?.[sectionKey]?.isActive !== false;
-    // Tenant-specific override (Education Admin can hide sections for their institution)
     const tenantVisible = tenant?.sectionVisibility?.[sectionKey] !== false;
     return globalActive && tenantVisible;
   };
+
+  // Multi-tenant awareness
+  const tenantName = tenant?.name || null;
+  const corporatePartnersEnabled = tenant?.corporatePartnersEnabled !== false;
 
   // Get dynamic stats values or use defaults
   const statsItems = statisticsContent?.items || [];
@@ -216,8 +218,8 @@ const LandingPageComponent = props => {
   const companyBenefits = [
     {
       icon: '⚡',
-      title: 'Flexible Talent, Zero Overhead',
-      description: 'Scale your workforce on demand. No benefits packages, no office space, no long-term commitments.'
+      title: intl.formatMessage({ id: 'LandingPage.feature2Title' }),
+      description: intl.formatMessage({ id: 'LandingPage.feature2Description' }),
     },
     {
       icon: '💡',
@@ -284,6 +286,91 @@ const LandingPageComponent = props => {
     }
   ];
 
+  // Trust points — "Your Work Stays Yours"
+  const trustPoints = [
+    {
+      icon: '🔒',
+      title: intl.formatMessage({ id: 'LandingPage.trustNoData' }),
+      description: intl.formatMessage({ id: 'LandingPage.trustNoDataDesc' }),
+    },
+    {
+      icon: '📋',
+      title: intl.formatMessage({ id: 'LandingPage.trustNoLegal' }),
+      description: intl.formatMessage({ id: 'LandingPage.trustNoLegalDesc' }),
+    },
+    {
+      icon: '🛠️',
+      title: intl.formatMessage({ id: 'LandingPage.trustYourTools' }),
+      description: intl.formatMessage({ id: 'LandingPage.trustYourToolsDesc' }),
+    },
+    {
+      icon: '⭐',
+      title: intl.formatMessage({ id: 'LandingPage.trustVerified' }),
+      description: intl.formatMessage({ id: 'LandingPage.trustVerifiedDesc' }),
+    },
+    {
+      icon: '🎯',
+      title: intl.formatMessage({ id: 'LandingPage.trustTry' }),
+      description: intl.formatMessage({ id: 'LandingPage.trustTryDesc' }),
+    },
+  ];
+
+  // How It Works — 5 steps per audience
+  const howItWorksSteps = {
+    companies: [
+      { title: intl.formatMessage({ id: 'LandingPage.howCompanyStep1Title' }), desc: intl.formatMessage({ id: 'LandingPage.howCompanyStep1Desc' }) },
+      { title: intl.formatMessage({ id: 'LandingPage.howCompanyStep2Title' }), desc: intl.formatMessage({ id: 'LandingPage.howCompanyStep2Desc' }) },
+      { title: intl.formatMessage({ id: 'LandingPage.howCompanyStep3Title' }), desc: intl.formatMessage({ id: 'LandingPage.howCompanyStep3Desc' }) },
+      { title: intl.formatMessage({ id: 'LandingPage.howCompanyStep4Title' }), desc: intl.formatMessage({ id: 'LandingPage.howCompanyStep4Desc' }) },
+      { title: intl.formatMessage({ id: 'LandingPage.howCompanyStep5Title' }), desc: intl.formatMessage({ id: 'LandingPage.howCompanyStep5Desc' }) },
+    ],
+    students: [
+      { title: intl.formatMessage({ id: 'LandingPage.howStudentStep1Title' }), desc: intl.formatMessage({ id: 'LandingPage.howStudentStep1Desc' }) },
+      { title: intl.formatMessage({ id: 'LandingPage.howStudentStep2Title' }), desc: intl.formatMessage({ id: 'LandingPage.howStudentStep2Desc' }) },
+      { title: intl.formatMessage({ id: 'LandingPage.howStudentStep3Title' }), desc: intl.formatMessage({ id: 'LandingPage.howStudentStep3Desc' }) },
+      { title: intl.formatMessage({ id: 'LandingPage.howStudentStep4Title' }), desc: intl.formatMessage({ id: 'LandingPage.howStudentStep4Desc' }) },
+      { title: intl.formatMessage({ id: 'LandingPage.howStudentStep5Title' }), desc: intl.formatMessage({ id: 'LandingPage.howStudentStep5Desc' }) },
+    ],
+    universities: [
+      { title: intl.formatMessage({ id: 'LandingPage.howUniStep1Title' }), desc: intl.formatMessage({ id: 'LandingPage.howUniStep1Desc' }) },
+      { title: intl.formatMessage({ id: 'LandingPage.howUniStep2Title' }), desc: intl.formatMessage({ id: 'LandingPage.howUniStep2Desc' }) },
+      { title: intl.formatMessage({ id: 'LandingPage.howUniStep3Title' }), desc: intl.formatMessage({ id: 'LandingPage.howUniStep3Desc' }) },
+      { title: intl.formatMessage({ id: 'LandingPage.howUniStep4Title' }), desc: intl.formatMessage({ id: 'LandingPage.howUniStep4Desc' }) },
+      // University only has 4 steps
+    ],
+  };
+
+  // Value propositions per audience
+  const valueProps = {
+    students: {
+      heading: intl.formatMessage({ id: 'LandingPage.valueStudentsHeading' }),
+      points: [
+        intl.formatMessage({ id: 'LandingPage.valueStudentsP1' }),
+        intl.formatMessage({ id: 'LandingPage.valueStudentsP2' }),
+        intl.formatMessage({ id: 'LandingPage.valueStudentsP3' }),
+        intl.formatMessage({ id: 'LandingPage.valueStudentsP4' }),
+      ],
+    },
+    companies: {
+      heading: intl.formatMessage({ id: 'LandingPage.valueCompaniesHeading' }),
+      points: [
+        intl.formatMessage({ id: 'LandingPage.valueCompaniesP1' }),
+        intl.formatMessage({ id: 'LandingPage.valueCompaniesP2' }),
+        intl.formatMessage({ id: 'LandingPage.valueCompaniesP3' }),
+        intl.formatMessage({ id: 'LandingPage.valueCompaniesP4' }),
+      ],
+    },
+    universities: {
+      heading: intl.formatMessage({ id: 'LandingPage.valueUnisHeading' }),
+      points: [
+        intl.formatMessage({ id: 'LandingPage.valueUnisP1' }),
+        intl.formatMessage({ id: 'LandingPage.valueUnisP2' }),
+        intl.formatMessage({ id: 'LandingPage.valueUnisP3' }),
+        intl.formatMessage({ id: 'LandingPage.valueUnisP4' }),
+      ],
+    },
+  };
+
   // Testimonials - use dynamic or static
   const staticTestimonials = [
     {
@@ -297,14 +384,22 @@ const LandingPageComponent = props => {
       author: 'Jasmine Rodriguez',
       role: 'Junior, Marketing Major',
       avatar: '👩‍🎓'
+    },
+    {
+      quote: 'Our career services team can\'t be available 24/7, but the AI coaching can. It\'s transformed how our students prepare for interviews and build their professional brand.',
+      author: 'Dr. Lisa Anderson',
+      role: 'Dean of Career Services, Metro State University',
+      avatar: '👩‍🏫'
     }
   ];
 
-  const testimonials = testimonialsContent?.items?.slice(0, 2).map(t => ({
+  const testimonials = testimonialsContent?.items?.slice(0, 3).map(t => ({
     quote: t.quote,
     author: t.author,
     role: t.role,
-    avatar: t.initials?.charAt(0) === 'S' ? '👩‍🎓' : '👨‍💼'
+    avatar: t.role?.includes('Student') || t.role?.includes('Junior') || t.role?.includes('Graduate') ? '👩‍🎓'
+      : t.role?.includes('Dean') || t.role?.includes('Professor') || t.role?.includes('University') ? '👩‍🏫'
+      : '👨‍💼'
   })) || staticTestimonials;
 
   const layoutAreas = `
@@ -381,10 +476,18 @@ const LandingPageComponent = props => {
                   <div className={css.heroGrid}>
                     {/* Left side - Content */}
                     <div className={css.heroContent}>
-                      <div className={css.heroBadge}>
-                        <span className={css.badgeDot} />
-                        Now Accepting Early Access Applications
-                      </div>
+                      {/* Multi-tenant: show school-specific badge */}
+                      {tenantName ? (
+                        <div className={css.heroBadge}>
+                          <span className={css.badgeDot} />
+                          {intl.formatMessage({ id: 'LandingPage.tenantHeroPrefix' }, { schoolName: tenantName })}
+                        </div>
+                      ) : (
+                        <div className={css.heroBadge}>
+                          <span className={css.badgeDot} />
+                          <FormattedMessage id="LandingPage.heroBadge" />
+                        </div>
+                      )}
                       <h1 className={css.heroTitle}>
                         {heroContent?.title ? (
                           <>
@@ -395,28 +498,35 @@ const LandingPageComponent = props => {
                           </>
                         ) : (
                           <>
-                            The Best Talent Isn't Always{' '}
-                            <span className={css.heroTitleGradient}>Where You're Looking</span>
+                            <FormattedMessage id="LandingPage.heroTitle" />
                           </>
                         )}
                       </h1>
                       <p className={css.heroSubtitle}>
-                        {heroContent?.subtitle ||
-                          'Street2Ivy connects ambitious companies with high-performing college students for real project work. No legacy recruiting. No overhead. Just results.'}
+                        {heroContent?.subtitle || intl.formatMessage({ id: 'LandingPage.heroSubtitle' })}
                       </p>
+
+                      {/* Multi-tenant: show "Powered by Street2Ivy" */}
+                      {tenantName && (
+                        <p className={css.tenantPoweredBy}>
+                          <FormattedMessage id="LandingPage.tenantPoweredBy" />
+                        </p>
+                      )}
+
+                      {/* Hero CTA — Book a Demo */}
                       <div className={css.heroButtons}>
                         {!isAuthenticated ? (
-                          <>
-                            <NamedLink name="SignupPage" className={css.btnPrimary}>
-                              {heroContent?.primaryButtonText || 'Get Started'} →
-                            </NamedLink>
-                            <NamedLink name="LoginPage" className={css.btnSecondary}>
-                              {heroContent?.secondaryButtonText || 'Sign In'} →
-                            </NamedLink>
-                          </>
+                          <a
+                            href="https://calendly.com/tavares-brewington-street2ivy/demo"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className={css.btnPrimary}
+                          >
+                            Book a Demo →
+                          </a>
                         ) : (
                           <NamedLink name="SearchPage" className={css.btnPrimary}>
-                            Browse Projects →
+                            <FormattedMessage id="LandingPage.browseProjects" /> →
                           </NamedLink>
                         )}
                       </div>
@@ -424,16 +534,26 @@ const LandingPageComponent = props => {
                       {/* User Type Quick Links */}
                       {!isAuthenticated && (
                         <div className={css.userTypeLinks}>
-                          <span className={css.userTypeLinkLabel}>I am a:</span>
-                          <a href="#why-section" className={css.userTypeLink} onClick={() => setActiveTab('companies')}>
-                            Company
-                          </a>
+                          <span className={css.userTypeLinkLabel}>
+                            <FormattedMessage id="LandingPage.iAmA" />
+                          </span>
+                          {corporatePartnersEnabled && (
+                            <a href="#why-section" className={css.userTypeLink} onClick={() => setActiveTab('companies')}>
+                              <FormattedMessage id="LandingPage.iAmCompany" />
+                            </a>
+                          )}
                           <a href="#why-section" className={css.userTypeLink} onClick={() => setActiveTab('students')}>
-                            Student
+                            <FormattedMessage id="LandingPage.iAmStudent" />
                           </a>
                           <a href="#why-section" className={css.userTypeLink} onClick={() => setActiveTab('institutions')}>
-                            Institution
+                            <FormattedMessage id="LandingPage.iAmInstitution" />
                           </a>
+                          {/* Multi-tenant: alumni CTA */}
+                          {tenantName && (
+                            <a href="#why-section" className={css.userTypeLink} onClick={() => setActiveTab('companies')}>
+                              {intl.formatMessage({ id: 'LandingPage.tenantAlumniCta' }, { schoolName: tenantName })}
+                            </a>
+                          )}
                         </div>
                       )}
                     </div>
@@ -457,33 +577,37 @@ const LandingPageComponent = props => {
                 {/* ================ Why Street2Ivy Section (Features) ================ */}
                 {isSectionVisible('features') && <section className={css.whySection} id="why-section" data-animate>
                   <div className={css.sectionContainer}>
-                    <span className={css.sectionLabel}>The Opportunity</span>
+                    <span className={css.sectionLabel}>
+                      <FormattedMessage id="LandingPage.theOpportunity" />
+                    </span>
                     <h2 className={css.sectionTitle}>
-                      {featuresContent?.sectionTitle || 'Why Street2Ivy?'}
+                      {featuresContent?.sectionTitle || intl.formatMessage({ id: 'LandingPage.whyStreet2Ivy' })}
                     </h2>
                     <p className={css.sectionSubtitle}>
-                      A talent marketplace built on mutual value. Everyone wins when potential meets opportunity.
+                      <FormattedMessage id="LandingPage.whySubtitle" />
                     </p>
 
                     {/* Toggle Tabs */}
                     <div className={css.toggleTabs}>
-                      <button
-                        className={`${css.toggleTab} ${activeTab === 'companies' ? css.toggleTabActive : ''}`}
-                        onClick={() => setActiveTab('companies')}
-                      >
-                        For Companies
-                      </button>
+                      {corporatePartnersEnabled && (
+                        <button
+                          className={`${css.toggleTab} ${activeTab === 'companies' ? css.toggleTabActive : ''}`}
+                          onClick={() => setActiveTab('companies')}
+                        >
+                          <FormattedMessage id="LandingPage.forCompanies" />
+                        </button>
+                      )}
                       <button
                         className={`${css.toggleTab} ${activeTab === 'students' ? css.toggleTabActive : ''}`}
                         onClick={() => setActiveTab('students')}
                       >
-                        For Students
+                        <FormattedMessage id="LandingPage.forStudents" />
                       </button>
                       <button
                         className={`${css.toggleTab} ${activeTab === 'institutions' ? css.toggleTabActive : ''}`}
                         onClick={() => setActiveTab('institutions')}
                       >
-                        For Institutions
+                        <FormattedMessage id="LandingPage.forInstitutions" />
                       </button>
                     </div>
 
@@ -506,84 +630,160 @@ const LandingPageComponent = props => {
                   </div>
                 </section>}
 
-                {/* ================ How It Works Section ================ */}
+                {/* ================ How It Works Section — 3 Tabs, 5 Steps ================ */}
                 {isSectionVisible('howItWorks') && <section className={css.howSection} id="how-section" data-animate>
                   <div className={css.sectionContainer}>
-                    <span className={css.sectionLabel}>The Process</span>
+                    <span className={css.sectionLabel}>
+                      <FormattedMessage id="LandingPage.theProcess" />
+                    </span>
                     <h2 className={css.sectionTitle}>
-                      {howItWorksContent?.sectionTitle || 'How It Works'}
+                      {howItWorksContent?.sectionTitle || intl.formatMessage({ id: 'LandingPage.howItWorks' })}
                     </h2>
                     <p className={css.sectionSubtitle}>
-                      Simple, streamlined, and built for results.
+                      <FormattedMessage id="LandingPage.howSubtitle" />
                     </p>
 
-                    <div className={css.howGrid}>
-                      {/* Companies Column */}
-                      <div className={css.howColumn}>
-                        <h3 className={css.howColumnTitle}>
-                          <span className={css.howColumnIcon}>🏢</span>
-                          For Companies
-                        </h3>
-                        <div className={css.howSteps}>
-                          <div className={css.stepsLine} />
-                          <div className={`${css.howStep} ${visibleElements['how-section'] ? css.visible : ''}`}>
-                            <div className={css.stepNumber}>1</div>
-                            <div className={css.stepContent}>
-                              <h4>{howItWorksContent?.items?.[0]?.title || 'Post Your Project'}</h4>
-                              <p>{howItWorksContent?.items?.[0]?.description || 'Define the scope, timeline, and budget. We\'ll match you with qualified candidates.'}</p>
-                            </div>
-                          </div>
-                          <div className={`${css.howStep} ${visibleElements['how-section'] ? css.visible : ''}`} style={{ animationDelay: '0.2s' }}>
-                            <div className={css.stepNumber}>2</div>
-                            <div className={css.stepContent}>
-                              <h4>{howItWorksContent?.items?.[1]?.title || 'Review Matched Talent'}</h4>
-                              <p>{howItWorksContent?.items?.[1]?.description || 'Browse applications, review portfolios, and interview your top picks.'}</p>
-                            </div>
-                          </div>
-                          <div className={`${css.howStep} ${visibleElements['how-section'] ? css.visible : ''}`} style={{ animationDelay: '0.4s' }}>
-                            <div className={css.stepNumber}>3</div>
-                            <div className={css.stepContent}>
-                              <h4>{howItWorksContent?.items?.[2]?.title || 'Get Results'}</h4>
-                              <p>{howItWorksContent?.items?.[2]?.description || 'Connect with matched talent, collaborate on the project, and hand off directly.'}</p>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
+                    {/* How It Works Tabs */}
+                    <div className={css.toggleTabs}>
+                      {corporatePartnersEnabled && (
+                        <button
+                          className={`${css.toggleTab} ${howItWorksTab === 'companies' ? css.toggleTabActive : ''}`}
+                          onClick={() => setHowItWorksTab('companies')}
+                        >
+                          🏢 <FormattedMessage id="LandingPage.forCompanies" />
+                        </button>
+                      )}
+                      <button
+                        className={`${css.toggleTab} ${howItWorksTab === 'students' ? css.toggleTabActive : ''}`}
+                        onClick={() => setHowItWorksTab('students')}
+                      >
+                        🎓 <FormattedMessage id="LandingPage.forStudents" />
+                      </button>
+                      <button
+                        className={`${css.toggleTab} ${howItWorksTab === 'universities' ? css.toggleTabActive : ''}`}
+                        onClick={() => setHowItWorksTab('universities')}
+                      >
+                        🏛️ <FormattedMessage id="LandingPage.forInstitutions" />
+                      </button>
+                    </div>
 
-                      {/* Students Column */}
-                      <div className={css.howColumn}>
-                        <h3 className={css.howColumnTitle}>
-                          <span className={css.howColumnIcon}>🎓</span>
-                          For Students
-                        </h3>
-                        <div className={css.howSteps}>
-                          <div className={css.stepsLine} />
-                          <div className={`${css.howStep} ${visibleElements['how-section'] ? css.visible : ''}`} style={{ animationDelay: '0.1s' }}>
-                            <div className={css.stepNumber}>1</div>
+                    {/* Steps for active tab */}
+                    <div className={css.howStepsContainer}>
+                      <div className={css.howSteps}>
+                        <div className={css.stepsLine} />
+                        {(howItWorksSteps[howItWorksTab] || []).map((step, index) => (
+                          <div
+                            key={`${howItWorksTab}-${index}`}
+                            className={`${css.howStep} ${visibleElements['how-section'] ? css.visible : ''}`}
+                            style={{ animationDelay: `${index * 0.15}s` }}
+                          >
+                            <div className={css.stepNumber}>{index + 1}</div>
                             <div className={css.stepContent}>
-                              <h4>Create Your Profile</h4>
-                              <p>Showcase your skills, experience, and portfolio. Let your work speak for itself.</p>
+                              <h4>{step.title}</h4>
+                              <p>{step.desc}</p>
                             </div>
                           </div>
-                          <div className={`${css.howStep} ${visibleElements['how-section'] ? css.visible : ''}`} style={{ animationDelay: '0.3s' }}>
-                            <div className={css.stepNumber}>2</div>
-                            <div className={css.stepContent}>
-                              <h4>Apply to Projects</h4>
-                              <p>Browse opportunities that match your skills and interests. Apply with one click.</p>
-                            </div>
-                          </div>
-                          <div className={`${css.howStep} ${visibleElements['how-section'] ? css.visible : ''}`} style={{ animationDelay: '0.5s' }}>
-                            <div className={css.stepNumber}>3</div>
-                            <div className={css.stepContent}>
-                              <h4>Build Your Career</h4>
-                              <p>Complete projects, earn money, and grow your professional portfolio.</p>
-                            </div>
-                          </div>
-                        </div>
+                        ))}
                       </div>
                     </div>
                   </div>
                 </section>}
+
+                {/* ================ Trust / Differentiation Section ================ */}
+                <section className={css.trustSection} id="trust-section" data-animate>
+                  <div className={css.sectionContainer}>
+                    <span className={css.sectionLabelLight}>
+                      <FormattedMessage id="LandingPage.trustSubheading" />
+                    </span>
+                    <h2 className={css.sectionTitleLight}>
+                      <FormattedMessage id="LandingPage.trustHeading" />
+                    </h2>
+
+                    <div className={`${css.trustGrid} ${visibleElements['trust-section'] ? css.visible : ''}`}>
+                      {trustPoints.map((point, index) => (
+                        <div
+                          key={index}
+                          className={css.trustCard}
+                          style={{ animationDelay: `${index * 0.1}s` }}
+                        >
+                          <div className={css.trustIcon}>{point.icon}</div>
+                          <h3 className={css.trustCardTitle}>{point.title}</h3>
+                          <p className={css.trustCardDesc}>{point.description}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </section>
+
+                {/* ================ Value Propositions Section ================ */}
+                <section className={css.valuePropsSection} id="value-props-section" data-animate>
+                  <div className={css.sectionContainer}>
+                    {/* Students Value Prop */}
+                    <div className={`${css.valuePropRow} ${visibleElements['value-props-section'] ? css.visible : ''}`}>
+                      <div className={css.valuePropIcon}>🎓</div>
+                      <div className={css.valuePropContent}>
+                        <h3 className={css.valuePropHeading}>{valueProps.students.heading}</h3>
+                        <ul className={css.valuePropList}>
+                          {valueProps.students.points.map((point, i) => (
+                            <li key={i}>{point}</li>
+                          ))}
+                        </ul>
+                        <a
+                          href="https://calendly.com/tavares-brewington-street2ivy/demo"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className={css.valuePropCta}
+                        >
+                          Book a Demo →
+                        </a>
+                      </div>
+                    </div>
+
+                    {/* Companies Value Prop */}
+                    {corporatePartnersEnabled && (
+                      <div className={`${css.valuePropRow} ${css.valuePropRowReverse} ${visibleElements['value-props-section'] ? css.visible : ''}`}>
+                        <div className={css.valuePropIcon}>🏢</div>
+                        <div className={css.valuePropContent}>
+                          <h3 className={css.valuePropHeading}>{valueProps.companies.heading}</h3>
+                          <ul className={css.valuePropList}>
+                            {valueProps.companies.points.map((point, i) => (
+                              <li key={i}>{point}</li>
+                            ))}
+                          </ul>
+                          <a
+                            href="https://calendly.com/tavares-brewington-street2ivy/demo"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className={css.valuePropCta}
+                          >
+                            Book a Demo →
+                          </a>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Universities Value Prop */}
+                    <div className={`${css.valuePropRow} ${visibleElements['value-props-section'] ? css.visible : ''}`}>
+                      <div className={css.valuePropIcon}>🏛️</div>
+                      <div className={css.valuePropContent}>
+                        <h3 className={css.valuePropHeading}>{valueProps.universities.heading}</h3>
+                        <ul className={css.valuePropList}>
+                          {valueProps.universities.points.map((point, i) => (
+                            <li key={i}>{point}</li>
+                          ))}
+                        </ul>
+                        <a
+                          href="https://calendly.com/tavares-brewington-street2ivy/demo"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className={css.valuePropCta}
+                        >
+                          <FormattedMessage id="LandingPage.ctaUnisBtn" />
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                </section>
 
                 {/* ================ AI Career Coaching Section ================ */}
                 {isSectionVisible('aiCoaching') && <section className={css.aiSection} id="ai-section" data-animate>
@@ -595,10 +795,10 @@ const LandingPageComponent = props => {
                           {coachingConfig?.platformName ? `Powered by ${coachingConfig.platformName}` : 'Powered by AI Career Coaching'}
                         </span>
                         <h2 className={css.sectionTitle} style={{ textAlign: 'left' }}>
-                          {aiCoachingContent?.sectionTitle || 'Your Personal AI Career Coach, Available 24/7'}
+                          {aiCoachingContent?.sectionTitle || intl.formatMessage({ id: 'LandingPage.aiCoachingHeading' })}
                         </h2>
                         <p className={css.aiDescription}>
-                          {aiCoachingContent?.description || 'Every Street2Ivy student gets access to AI-powered career coaching that provides personalized guidance — from resume optimization to interview prep to long-term career strategy.'}
+                          {aiCoachingContent?.description || intl.formatMessage({ id: 'LandingPage.aiCoachingDesc' })}
                         </p>
 
                         <div className={css.aiFeatures}>
@@ -722,12 +922,14 @@ const LandingPageComponent = props => {
                 {/* ================ Testimonials Section ================ */}
                 {isSectionVisible('testimonials') && <section className={css.testimonialsSection} id="testimonials-section" data-animate>
                   <div className={css.sectionContainer}>
-                    <span className={css.sectionLabel}>Success Stories</span>
+                    <span className={css.sectionLabel}>
+                      <FormattedMessage id="LandingPage.successStories" />
+                    </span>
                     <h2 className={css.sectionTitle}>
-                      {testimonialsContent?.sectionTitle || 'What They\'re Saying'}
+                      {testimonialsContent?.sectionTitle || intl.formatMessage({ id: 'LandingPage.testimonialsTitle' })}
                     </h2>
                     <p className={css.sectionSubtitle}>
-                      Real results from real people on both sides of the marketplace.
+                      <FormattedMessage id="LandingPage.testimonialsSubtitle" />
                     </p>
 
                     <div className={css.testimonialsGrid}>
@@ -752,50 +954,62 @@ const LandingPageComponent = props => {
                   </div>
                 </section>}
 
-                {/* ================ Triple CTA Section ================ */}
+                {/* ================ Final Triple CTA Section ================ */}
                 {isSectionVisible('cta') && <section className={css.tripleCtaSection}>
-                  <div className={css.ctaCompanies}>
-                    <h2 className={css.ctaTitle}>Ready to Tap Into Fresh Talent?</h2>
-                    <ul className={css.ctaList}>
-                      <li>Post your first project in under 5 minutes</li>
-                      <li>Get matched with pre-vetted candidates</li>
-                      <li>Pay only when work is delivered</li>
-                    </ul>
-                    <NamedLink name="SignupPage" className={css.ctaBtn}>
-                      Start Posting Projects →
-                    </NamedLink>
-                    <p className={css.ctaUrgency}>🔥 Limited spots for launch cohort partners</p>
-                  </div>
+                  {/* Companies CTA */}
+                  {corporatePartnersEnabled && (
+                    <div className={css.ctaCompanies}>
+                      <h3 className={css.ctaCardHeading}>
+                        <FormattedMessage id="LandingPage.ctaCompaniesHeading" />
+                      </h3>
+                      <p className={css.ctaCardDesc}>
+                        <FormattedMessage id="LandingPage.ctaCompaniesDesc" />
+                      </p>
+                      <a
+                        href="https://calendly.com/tavares-brewington-street2ivy/demo"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={css.ctaBtn}
+                      >
+                        Book a Demo →
+                      </a>
+                    </div>
+                  )}
 
+                  {/* Students CTA */}
                   <div className={css.ctaStudents}>
-                    <h2 className={css.ctaTitle}>Ready to Prove What You Can Do?</h2>
-                    <ul className={css.ctaList}>
-                      <li>Create your profile and showcase your skills</li>
-                      <li>Get access to AI-powered career coaching</li>
-                      <li>Start building your professional portfolio</li>
-                    </ul>
-                    <NamedLink name="SignupPage" className={css.ctaBtnAlt}>
-                      Join the Talent Network →
-                    </NamedLink>
-                    <p className={css.ctaUrgency}>🚀 Early access — applications closing soon</p>
+                    <h3 className={css.ctaCardHeading}>
+                      <FormattedMessage id="LandingPage.ctaStudentsHeading" />
+                    </h3>
+                    <p className={css.ctaCardDesc}>
+                      <FormattedMessage id="LandingPage.ctaStudentsDesc" />
+                    </p>
+                    <a
+                      href="https://calendly.com/tavares-brewington-street2ivy/demo"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={css.ctaBtnAlt}
+                    >
+                      Book a Demo →
+                    </a>
                   </div>
 
+                  {/* Universities CTA */}
                   <div className={css.ctaInstitutions}>
-                    <h2 className={css.ctaTitle}>Ready to Elevate Your Career Services?</h2>
-                    <ul className={css.ctaList}>
-                      <li>Enterprise licensing for your institution</li>
-                      <li>AI career coaching for all students</li>
-                      <li>Real-time analytics and reporting</li>
-                    </ul>
+                    <h3 className={css.ctaCardHeading}>
+                      <FormattedMessage id="LandingPage.ctaUnisHeading" />
+                    </h3>
+                    <p className={css.ctaCardDesc}>
+                      <FormattedMessage id="LandingPage.ctaUnisDesc" />
+                    </p>
                     <a
                       href="https://calendly.com/tavares-brewington-street2ivy/demo"
                       target="_blank"
                       rel="noopener noreferrer"
                       className={css.ctaBtnInstitution}
                     >
-                      Schedule a Demo →
+                      Book a Demo →
                     </a>
-                    <p className={css.ctaUrgency}>🏛️ Special rates for founding partners</p>
                   </div>
                 </section>}
                 </>

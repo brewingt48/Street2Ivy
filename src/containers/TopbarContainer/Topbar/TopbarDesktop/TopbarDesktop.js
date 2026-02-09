@@ -52,18 +52,8 @@ const DashboardLink = ({ currentUser, currentPage }) => {
 
 const SignupLink = () => {
   return (
-    <NamedLink id="signup-link" name="SignupPage" className={css.topbarLink}>
-      <span className={css.topbarLinkLabel}>
-        <FormattedMessage id="TopbarDesktop.signup" />
-      </span>
-    </NamedLink>
-  );
-};
-
-const LoginLink = () => {
-  return (
-    <NamedLink id="login-link" name="LoginPage" className={css.topbarLink}>
-      <span className={css.topbarLinkLabel}>
+    <NamedLink id="signup-link" name="SignupPage" className={css.signUpButton}>
+      <span className={css.signUpButtonLabel}>
         <FormattedMessage id="TopbarDesktop.login" />
       </span>
     </NamedLink>
@@ -280,7 +270,6 @@ const TopbarDesktop = props => {
   ) : null;
 
   const signupLinkMaybe = isAuthenticatedOrJustHydrated ? null : <SignupLink />;
-  const loginLinkMaybe = isAuthenticatedOrJustHydrated ? null : <LoginLink />;
 
   const searchFormMaybe = showSearchForm ? (
     <TopbarSearchForm
@@ -325,7 +314,6 @@ const TopbarDesktop = props => {
 
       {profileMenuMaybe}
       {signupLinkMaybe}
-      {loginLinkMaybe}
     </nav>
   );
 };

@@ -81,7 +81,7 @@
         "id": "step-3",
         "number": "3",
         "title": "Collaborate & Succeed",
-        "description": "Work together through our secure platform with built-in tools for communication and delivery."
+        "description": "We facilitate the introduction and handoff. All project work happens through the company's own tools \u2014 your workflow, your way."
       }
     ],
     "isActive": true,
@@ -106,31 +106,31 @@
     "items": [
       {
         "id": "testimonial-1",
-        "quote": "Street2Ivy connected me with an amazing internship opportunity at a Fortune 500 company. The experience was invaluable!",
-        "author": "Sarah Chen",
-        "role": "Harvard University, Class of 2024",
-        "initials": "SC",
+        "quote": "We needed a competitive analysis done fast, and hiring a consultant would have cost 10x more. The student we worked with delivered insights our strategy team is still referencing six months later.",
+        "author": "Michael Chen",
+        "role": "VP of Strategy, Growth Ventures LLC",
+        "initials": "MC",
         "avatarUrl": null
       },
       {
         "id": "testimonial-2",
-        "quote": "The quality of talent we found through Street2Ivy exceeded our expectations. These students brought fresh perspectives to our projects.",
-        "author": "Michael Roberts",
-        "role": "VP of Innovation, Tech Corp",
-        "initials": "MR",
+        "quote": "I go to a state school nobody's heard of. Before Street2Ivy, I couldn't even get interviews. Now I have three completed projects on my resume and a standing offer from a Series B startup.",
+        "author": "Jasmine Rodriguez",
+        "role": "Junior, Marketing Major",
+        "initials": "JR",
         "avatarUrl": null
       },
       {
         "id": "testimonial-3",
-        "quote": "As a first-generation college student, Street2Ivy gave me access to opportunities I never knew existed.",
-        "author": "James Williams",
-        "role": "Yale University, Class of 2025",
-        "initials": "JW",
+        "quote": "The best part? We didn't have to put any proprietary data on a third-party platform. Students worked in our Slack and Google Drive just like our regular team.",
+        "author": "Sarah Kim",
+        "role": "Director of Talent, Nexus Digital",
+        "initials": "SK",
         "avatarUrl": null
       },
       {
         "id": "testimonial-4",
-        "quote": "We've hired three full-time employees from Street2Ivy projects. It's become our primary talent pipeline.",
+        "quote": "We've hired three full-time employees from Street2Ivy projects. It's become our primary talent pipeline for early-career hires.",
         "author": "Emily Thompson",
         "role": "HR Director, Global Finance Inc",
         "initials": "ET",
@@ -138,17 +138,17 @@
       },
       {
         "id": "testimonial-5",
-        "quote": "The platform made it easy to showcase my skills and connect with companies that value diversity and fresh thinking.",
+        "quote": "As a first-generation college student, I never had a network. Street2Ivy gave me access to real corporate work that built my reputation on merit, not connections.",
         "author": "David Park",
-        "role": "Princeton University, Class of 2024",
+        "role": "Recent Graduate, Computer Science",
         "initials": "DP",
         "avatarUrl": null
       },
       {
         "id": "testimonial-6",
-        "quote": "Street2Ivy's vetting process ensures we only work with the most motivated and talented students.",
-        "author": "Lisa Anderson",
-        "role": "CEO, StartUp Ventures",
+        "quote": "Our career services team can't be available 24/7, but the AI coaching can. It's transformed how our students prepare for interviews and build their professional brand.",
+        "author": "Dr. Lisa Anderson",
+        "role": "Dean of Career Services, Metro State University",
         "initials": "LA",
         "avatarUrl": null
       }

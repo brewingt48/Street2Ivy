@@ -169,6 +169,18 @@ exports[`ManageListingCard matches snapshot (purchase) 1`] = `
                   </span>
                 </button>
               </li>
+              <li
+                class="root"
+                role="menuitem"
+              >
+                <button
+                  class="menuItem deleteMenuItem inlineTextButton"
+                >
+                  <span>
+                    ManageListingCard.deleteListing
+                  </span>
+                </button>
+              </li>
             </ul>
           </div>
         </div>

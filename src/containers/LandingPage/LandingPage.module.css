@@ -1259,17 +1259,6 @@
   }
 }
 
-.testimonialsGrid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 32px;
-
-  @media (--viewportLarge) {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 40px;
-  }
-}
-
 .testimonialCard {
   background: #ffffff;
   padding: 36px;
@@ -1834,4 +1823,341 @@
   animation-delay: 1.5s;
   background: linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(217, 119, 6, 0.15));
   border-color: var(--s2i-gold-500);
+}
+
+/* ================ Multi-tenant Powered By Badge ================ */
+
+.tenantPoweredBy {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.5);
+  margin: -20px 0 24px 0;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+}
+
+/* ================ How It Works Steps Container ================ */
+
+.howStepsContainer {
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+/* ================ Trust / Differentiation Section ================ */
+
+.trustSection {
+  padding: 80px 0;
+  background: linear-gradient(135deg, var(--s2i-navy-900) 0%, var(--s2i-navy-800) 100%);
+
+  @media (--viewportMedium) {
+    padding: 100px 0;
+  }
+
+  @media (--viewportLarge) {
+    padding: 120px 0;
+  }
+}
+
+.trustGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+  margin-top: 48px;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: all 0.6s ease;
+
+  @media (--viewportMedium) {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
+  }
+
+  @media (--viewportLarge) {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+  }
+}
+
+.trustGrid.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.trustCard {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  padding: 32px;
+  transition: all 0.3s ease;
+  animation: fadeInUp 0.5s ease forwards;
+  opacity: 0;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(0, 200, 190, 0.3);
+    transform: translateY(-6px);
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.3);
+  }
+
+  @media (--viewportMedium) {
+    padding: 36px;
+  }
+}
+
+/* Make the last card span full width if it's alone on its row (5 items = 3+2) */
+.trustGrid .trustCard:last-child:nth-child(odd) {
+  @media (--viewportMedium) {
+    grid-column: 1 / -1;
+    max-width: 50%;
+    margin: 0 auto;
+  }
+
+  @media (--viewportLarge) {
+    grid-column: auto;
+    max-width: 100%;
+    margin: 0;
+  }
+}
+
+/* For 5 items on large screens: last 2 center */
+.trustGrid .trustCard:nth-child(4),
+.trustGrid .trustCard:nth-child(5) {
+  @media (--viewportLarge) {
+    /* These will naturally be on the second row of the 3-col grid */
+  }
+}
+
+.trustIcon {
+  width: 56px;
+  height: 56px;
+  background: linear-gradient(135deg, rgba(0, 200, 190, 0.15), rgba(16, 185, 129, 0.15));
+  border: 1px solid rgba(0, 200, 190, 0.25);
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  margin-bottom: 20px;
+}
+
+.trustCardTitle {
+  font-size: 17px;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0 0 12px 0;
+  line-height: 1.3;
+
+  @media (--viewportMedium) {
+    font-size: 18px;
+  }
+}
+
+.trustCardDesc {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.65);
+  line-height: 1.65;
+  margin: 0;
+
+  @media (--viewportMedium) {
+    font-size: 15px;
+  }
+}
+
+/* ================ Value Propositions Section ================ */
+
+.valuePropsSection {
+  padding: 80px 0;
+  background: #ffffff;
+
+  @media (--viewportMedium) {
+    padding: 100px 0;
+  }
+
+  @media (--viewportLarge) {
+    padding: 120px 0;
+  }
+}
+
+.valuePropRow {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 32px;
+  margin-bottom: 60px;
+  padding: 40px 32px;
+  background: #f8fafc;
+  border-radius: 24px;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: all 0.6s ease;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+
+  @media (--viewportMedium) {
+    flex-direction: row;
+    gap: 48px;
+    padding: 48px;
+  }
+
+  @media (--viewportLarge) {
+    gap: 64px;
+    padding: 56px 64px;
+  }
+}
+
+.valuePropRow.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.valuePropRowReverse {
+  @media (--viewportMedium) {
+    flex-direction: row-reverse;
+  }
+}
+
+.valuePropIcon {
+  width: 80px;
+  height: 80px;
+  min-width: 80px;
+  background: linear-gradient(135deg, rgba(0, 200, 190, 0.1), rgba(16, 185, 129, 0.1));
+  border: 2px solid rgba(0, 200, 190, 0.2);
+  border-radius: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 40px;
+
+  @media (--viewportMedium) {
+    width: 100px;
+    height: 100px;
+    min-width: 100px;
+    font-size: 48px;
+  }
+}
+
+.valuePropContent {
+  flex: 1;
+}
+
+.valuePropHeading {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--s2i-navy-900);
+  margin: 0 0 20px 0;
+  line-height: 1.3;
+
+  @media (--viewportMedium) {
+    font-size: 28px;
+  }
+
+  @media (--viewportLarge) {
+    font-size: 32px;
+  }
+}
+
+.valuePropList {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 24px 0;
+}
+
+.valuePropList li {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  font-size: 15px;
+  color: #475569;
+  line-height: 1.6;
+  margin-bottom: 12px;
+
+  &::before {
+    content: '✓';
+    width: 24px;
+    height: 24px;
+    min-width: 24px;
+    background: linear-gradient(135deg, var(--s2i-teal-500), var(--s2i-emerald-500));
+    color: #ffffff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    margin-top: 2px;
+  }
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+
+  @media (--viewportMedium) {
+    font-size: 16px;
+  }
+}
+
+.valuePropCta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  background: linear-gradient(135deg, var(--s2i-teal-500), var(--s2i-emerald-500));
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 600;
+  text-decoration: none;
+  border-radius: 10px;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(0, 200, 190, 0.25);
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 200, 190, 0.35);
+    color: #ffffff;
+    text-decoration: none;
+  }
+}
+
+/* ================ Updated Triple CTA — Card-style ================ */
+
+.ctaCardHeading {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 26px;
+  font-weight: 700;
+  margin: 0 0 16px 0;
+  line-height: 1.3;
+
+  @media (--viewportMedium) {
+    font-size: 30px;
+  }
+}
+
+.ctaCardDesc {
+  font-size: 15px;
+  opacity: 0.9;
+  line-height: 1.6;
+  margin: 0 0 28px 0;
+
+  @media (--viewportMedium) {
+    font-size: 16px;
+  }
+}
+
+/* ================ Testimonials — 3-column grid ================ */
+
+.testimonialsGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+
+  @media (--viewportMedium) {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 32px;
+  }
+
+  @media (--viewportLarge) {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 32px;
+  }
 }

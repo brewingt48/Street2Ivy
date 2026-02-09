@@ -374,6 +374,12 @@ export const InboxPageComponent = props => {
   const filteredTxList = useMemo(() => {
     let list = txWithStateData;
 
+    // Filter out transactions whose listing has been closed/deleted
+    list = list.filter(({ tx }) => {
+      const listingState = tx.listing?.attributes?.state;
+      return listingState !== 'closed';
+    });
+
     // "Unread" filter
     if (filter === 'unread') {
       list = list.filter(({ stateData }) =>

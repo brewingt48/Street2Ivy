@@ -176,6 +176,18 @@
   }
 }
 
+.deleteMenuItem {
+  color: var(--colorFail);
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
+  margin-top: 2px;
+  padding-top: 10px;
+
+  &:hover {
+    background-color: var(--colorFail);
+    color: var(--colorWhite);
+  }
+}
+
 .info {
   /* Layout */
   display: flex;

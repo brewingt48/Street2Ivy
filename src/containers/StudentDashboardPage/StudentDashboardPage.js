@@ -792,14 +792,21 @@ const StudentDashboardPageComponent = props => {
         if (response.ok) {
           const data = await response.json();
           const txList = data.data || [];
-          setTransactions(txList);
+
+          // Filter out transactions whose listing has been closed/deleted
+          const activeTxList = txList.filter(tx => {
+            const listingState = tx.listing?.attributes?.state;
+            return listingState !== 'closed';
+          });
+
+          setTransactions(activeTxList);
 
           // Process transactions into active, invites, and history
           const active = [];
           const invites = [];
           const completed = [];
 
-          txList.forEach(tx => {
+          activeTxList.forEach(tx => {
             const lastTransition = tx.attributes?.lastTransition || '';
             const projectData = {
               id: tx.id?.uuid || tx.id,
@@ -827,7 +834,7 @@ const StudentDashboardPageComponent = props => {
           });
 
           setProjects({ active, invites, history: completed });
-          setMessages(txList); // Use transactions as messages for the messages tab
+          setMessages(activeTxList); // Use transactions as messages for the messages tab
         }
       } catch (error) {
         console.error('Failed to fetch student transactions:', error);

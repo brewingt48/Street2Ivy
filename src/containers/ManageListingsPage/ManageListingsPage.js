@@ -36,6 +36,7 @@ import {
 } from './ManageListingsPage.duck';
 import css from './ManageListingsPage.module.css';
 import DiscardDraftModal from './DiscardDraftModal/DiscardDraftModal';
+import DeleteListingModal from './DeleteListingModal/DeleteListingModal';
 
 const Heading = props => {
   const { listingsAreLoaded, pagination } = props;
@@ -106,6 +107,8 @@ export const ManageListingsPageComponent = props => {
   const [listingMenuOpen, setListingMenuOpen] = useState(null);
   const [discardDraftModalOpen, setDiscardDraftModalOpen] = useState(null);
   const [discardDraftModalId, setDiscardDraftModalId] = useState(null);
+  const [deleteListingModalOpen, setDeleteListingModalOpen] = useState(false);
+  const [deleteListingModalId, setDeleteListingModalId] = useState(null);
   const history = useHistory();
   const routeConfiguration = useRouteConfiguration();
   const config = useConfiguration();
@@ -166,6 +169,18 @@ export const ManageListingsPageComponent = props => {
     onDiscardDraft(discardDraftModalId);
     setDiscardDraftModalOpen(false);
     setDiscardDraftModalId(null);
+  };
+
+  const openDeleteListingModal = listingId => {
+    setDeleteListingModalId(listingId);
+    setDeleteListingModalOpen(true);
+  };
+
+  const handleDeleteListing = () => {
+    // "Delete" = close the listing (removes it from the marketplace)
+    onCloseListing(deleteListingModalId);
+    setDeleteListingModalOpen(false);
+    setDeleteListingModalId(null);
   };
 
   const hasPaginationInfo = !!pagination && pagination.totalItems != null;
@@ -236,6 +251,7 @@ export const ManageListingsPageComponent = props => {
                 onCloseListing={onCloseListing}
                 onOpenListing={handleOpenListing}
                 onDiscardDraft={openDiscardDraftModal}
+                onDeleteListing={openDeleteListingModal}
                 hasOpeningError={openingErrorListingId.uuid === l.id.uuid}
                 hasClosingError={closingErrorListingId.uuid === l.id.uuid}
                 hasDiscardingError={discardingErrorListingId.uuid === l.id.uuid}
@@ -252,6 +268,19 @@ export const ManageListingsPageComponent = props => {
               onDiscardDraft={handleDiscardDraft}
               focusElementId={
                 discardDraftModalId ? `discardButton_${discardDraftModalId.uuid}` : null
+              }
+            />
+          ) : null}
+
+          {onManageDisableScrolling && deleteListingModalOpen ? (
+            <DeleteListingModal
+              id="ManageListingsPageDelete"
+              isOpen={deleteListingModalOpen}
+              onManageDisableScrolling={onManageDisableScrolling}
+              onCloseModal={() => setDeleteListingModalOpen(false)}
+              onDeleteListing={handleDeleteListing}
+              focusElementId={
+                deleteListingModalId ? `deleteButton_${deleteListingModalId.uuid}` : null
               }
             />
           ) : null}

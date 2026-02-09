@@ -404,6 +404,7 @@ const PriceMaybe = props => {
  * @param {function} props.onCloseListing - The function to close the listing
  * @param {function} props.onOpenListing - The function to open the listing
  * @param {function} props.onDiscardDraft - The function to discard the draft
+ * @param {function} props.onDeleteListing - The function to delete (close) the listing with confirmation
  * @param {function} props.onToggleMenu - The function to toggle the menu
  * @param {string} [props.renderSizes] - The render sizes
  * @returns {JSX.Element} Manage listing card component
@@ -425,6 +426,7 @@ export const ManageListingCard = props => {
     onCloseListing,
     onOpenListing,
     onDiscardDraft,
+    onDeleteListing,
     onToggleMenu,
     renderSizes,
   } = props;
@@ -565,6 +567,21 @@ export const ManageListingCard = props => {
                     }}
                   >
                     <FormattedMessage id="ManageListingCard.closeListing" />
+                  </InlineTextButton>
+                </MenuItem>
+                <MenuItem key="delete-listing">
+                  <InlineTextButton
+                    rootClassName={classNames(menuItemClasses, css.deleteMenuItem)}
+                    onClick={event => {
+                      event.preventDefault();
+                      event.stopPropagation();
+                      if (!actionsInProgressListingId) {
+                        onToggleMenu(null);
+                        onDeleteListing(currentListing.id);
+                      }
+                    }}
+                  >
+                    <FormattedMessage id="ManageListingCard.deleteListing" />
                   </InlineTextButton>
                 </MenuItem>
               </MenuContent>

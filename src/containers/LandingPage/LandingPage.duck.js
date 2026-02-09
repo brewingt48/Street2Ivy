@@ -137,32 +137,40 @@ const fetchHomeDataPayloadCreator = async ({ userType, currentUser }, { rejectWi
             includedMap[key] = item;
           });
 
-          applications = txData.map(tx => {
-            const listingRef = tx.relationships?.listing?.data;
-            const providerRef = tx.relationships?.provider?.data;
+          applications = txData
+            .map(tx => {
+              const listingRef = tx.relationships?.listing?.data;
+              const providerRef = tx.relationships?.provider?.data;
 
-            const listing = listingRef
-              ? includedMap[`listing_${listingRef.id.uuid || listingRef.id}`]
-              : null;
-            const provider = providerRef
-              ? includedMap[`user_${providerRef.id.uuid || providerRef.id}`]
-              : null;
+              const listing = listingRef
+                ? includedMap[`listing_${listingRef.id.uuid || listingRef.id}`]
+                : null;
+              const provider = providerRef
+                ? includedMap[`user_${providerRef.id.uuid || providerRef.id}`]
+                : null;
 
-            const lastTransition = tx.attributes?.lastTransition || '';
-            const state = getApplicationState(lastTransition);
+              // If the listing has been closed/deleted, skip this application
+              const listingState = listing?.attributes?.state;
+              if (listingState === 'closed') {
+                return null;
+              }
 
-            return {
-              id: tx.id.uuid || tx.id,
-              state,
-              lastTransition,
-              createdAt: tx.attributes?.createdAt,
-              lastTransitionedAt: tx.attributes?.lastTransitionedAt,
-              projectTitle: listing?.attributes?.title || 'Project',
-              companyName: provider?.attributes?.profile?.publicData?.companyName
-                || provider?.attributes?.profile?.displayName
-                || 'Company',
-            };
-          });
+              const lastTransition = tx.attributes?.lastTransition || '';
+              const state = getApplicationState(lastTransition);
+
+              return {
+                id: tx.id.uuid || tx.id,
+                state,
+                lastTransition,
+                createdAt: tx.attributes?.createdAt,
+                lastTransitionedAt: tx.attributes?.lastTransitionedAt,
+                projectTitle: listing?.attributes?.title || 'Project',
+                companyName: provider?.attributes?.profile?.publicData?.companyName
+                  || provider?.attributes?.profile?.displayName
+                  || 'Company',
+              };
+            })
+            .filter(Boolean);
         } else {
           console.warn('Failed to fetch student applications for dashboard:', txResult.reason);
         }
