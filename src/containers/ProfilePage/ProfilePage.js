@@ -43,6 +43,7 @@ import {
   AvatarLarge,
   NamedLink,
   ListingCard,
+  ReputationDashboard,
   Reviews,
   ButtonTabNavHorizontal,
   LayoutSideNavigation,
@@ -66,8 +67,10 @@ const MIN_LENGTH_FOR_LONG_WORDS = 20;
 export const AsideContent = props => {
   const { user, displayName, showLinkToProfileSettingsPage } = props;
   const publicData = user?.attributes?.profile?.publicData || {};
-  const isCorporatePartner = publicData?.userType === 'corporate-partner';
-  const isEducationalAdmin = publicData?.userType === 'educational-admin';
+  const userType = publicData?.userType;
+  const isCorporatePartner = userType === 'corporate-partner';
+  const isEducationalAdmin = userType === 'educational-admin';
+  const isStudent = userType === 'student';
   const companyName = publicData?.companyName;
   const institutionName = publicData?.institutionName;
   const isVerified = publicData?.isVerified;
@@ -124,6 +127,11 @@ export const AsideContent = props => {
           <NamedLink className={css.editLinkDesktop} name="ProfileSettingsPage">
             <FormattedMessage id="ProfilePage.editProfileLinkDesktop" />
           </NamedLink>
+          {isStudent ? (
+            <NamedLink className={css.backToDashboardLink} name="LandingPage">
+              <FormattedMessage id="ProfilePage.backToDashboard" />
+            </NamedLink>
+          ) : null}
         </>
       ) : null}
     </div>
@@ -139,52 +147,98 @@ export const ReviewsErrorMaybe = props => {
   ) : null;
 };
 
+/**
+ * Returns context-aware translation IDs for review section titles based on the
+ * viewed profile's user type. Replaces generic "Provider"/"Customer" labels with
+ * Street2Ivy-specific terminology.
+ *
+ * reviewsOfProvider = reviews written ABOUT this user as a provider (by students)
+ * reviewsOfCustomer = reviews written ABOUT this user as a customer (by project hosts)
+ */
+const getReviewTitleIds = profileUserType => {
+  if (profileUserType === 'corporate-partner') {
+    // Viewing a company: "Reviews from students" / "Reviews from project hosts" (less likely)
+    return {
+      providerTitleId: 'ProfilePage.reviewsFromStudents',
+      customerTitleId: 'ProfilePage.reviewsFromProjectHosts',
+    };
+  } else if (profileUserType === 'student') {
+    // Viewing a student: "Reviews from project hosts" / "Reviews from students" (less likely)
+    return {
+      providerTitleId: 'ProfilePage.reviewsFromStudents',
+      customerTitleId: 'ProfilePage.reviewsFromProjectHosts',
+    };
+  }
+  // Fallback: generic labels
+  return {
+    providerTitleId: 'ProfilePage.reviewsFromStudents',
+    customerTitleId: 'ProfilePage.reviewsFromProjectHosts',
+  };
+};
+
 export const MobileReviews = props => {
-  const { reviews, queryReviewsError } = props;
+  const { reviews, queryReviewsError, profileUserType } = props;
   const reviewsOfProvider = reviews.filter(r => r.attributes.type === REVIEW_TYPE_OF_PROVIDER);
   const reviewsOfCustomer = reviews.filter(r => r.attributes.type === REVIEW_TYPE_OF_CUSTOMER);
+  const { providerTitleId, customerTitleId } = getReviewTitleIds(profileUserType);
   return (
     <div className={css.mobileReviews}>
-      <H4 as="h2" className={css.mobileReviewsTitle}>
-        <FormattedMessage
-          id="ProfilePage.reviewsFromMyCustomersTitle"
-          values={{ count: reviewsOfProvider.length }}
-        />
-      </H4>
-      <ReviewsErrorMaybe queryReviewsError={queryReviewsError} />
-      <Reviews reviews={reviewsOfProvider} />
-      <H4 as="h2" className={css.mobileReviewsTitle}>
-        <FormattedMessage
-          id="ProfilePage.reviewsAsACustomerTitle"
-          values={{ count: reviewsOfCustomer.length }}
-        />
-      </H4>
-      <ReviewsErrorMaybe queryReviewsError={queryReviewsError} />
-      <Reviews reviews={reviewsOfCustomer} />
+      {reviewsOfProvider.length > 0 ? (
+        <>
+          <H4 as="h2" className={css.mobileReviewsTitle}>
+            <FormattedMessage
+              id={providerTitleId}
+              values={{ count: reviewsOfProvider.length }}
+            />
+          </H4>
+          <ReviewsErrorMaybe queryReviewsError={queryReviewsError} />
+          <Reviews reviews={reviewsOfProvider} />
+        </>
+      ) : null}
+      {reviewsOfCustomer.length > 0 ? (
+        <>
+          <H4 as="h2" className={css.mobileReviewsTitle}>
+            <FormattedMessage
+              id={customerTitleId}
+              values={{ count: reviewsOfCustomer.length }}
+            />
+          </H4>
+          <ReviewsErrorMaybe queryReviewsError={queryReviewsError} />
+          <Reviews reviews={reviewsOfCustomer} />
+        </>
+      ) : null}
     </div>
   );
 };
 
 export const DesktopReviews = props => {
-  const { reviews, queryReviewsError, userTypeRoles, intl } = props;
+  const { reviews, queryReviewsError, userTypeRoles, profileUserType, intl } = props;
   const { customer: isCustomerUserType, provider: isProviderUserType } = userTypeRoles;
-
-  const initialReviewState = !isProviderUserType
-    ? REVIEW_TYPE_OF_CUSTOMER
-    : REVIEW_TYPE_OF_PROVIDER;
-  const [showReviewsType, setShowReviewsType] = useState(initialReviewState);
+  const { providerTitleId, customerTitleId } = getReviewTitleIds(profileUserType);
 
   const reviewsOfProvider = reviews.filter(r => r.attributes.type === REVIEW_TYPE_OF_PROVIDER);
   const reviewsOfCustomer = reviews.filter(r => r.attributes.type === REVIEW_TYPE_OF_CUSTOMER);
+
+  // Default to whichever tab has reviews; prioritize provider reviews if both exist
+  const hasProviderReviews = isProviderUserType && reviewsOfProvider.length > 0;
+  const hasCustomerReviews = isCustomerUserType && reviewsOfCustomer.length > 0;
+  const initialReviewState = hasProviderReviews
+    ? REVIEW_TYPE_OF_PROVIDER
+    : hasCustomerReviews
+      ? REVIEW_TYPE_OF_CUSTOMER
+      : REVIEW_TYPE_OF_PROVIDER;
+  const [showReviewsType, setShowReviewsType] = useState(initialReviewState);
+
   const isReviewTypeProviderSelected = showReviewsType === REVIEW_TYPE_OF_PROVIDER;
   const isReviewTypeCustomerSelected = showReviewsType === REVIEW_TYPE_OF_CUSTOMER;
-  const providerReviewsMaybe = isProviderUserType
+
+  const providerReviewsMaybe = isProviderUserType && reviewsOfProvider.length > 0
     ? [
         {
           text: (
             <Heading as="h3" rootClassName={css.desktopReviewsTitle}>
               <FormattedMessage
-                id="ProfilePage.reviewsFromMyCustomersTitle"
+                id={providerTitleId}
                 values={{ count: reviewsOfProvider.length }}
               />
             </Heading>
@@ -195,13 +249,13 @@ export const DesktopReviews = props => {
       ]
     : [];
 
-  const customerReviewsMaybe = isCustomerUserType
+  const customerReviewsMaybe = isCustomerUserType && reviewsOfCustomer.length > 0
     ? [
         {
           text: (
             <Heading as="h3" rootClassName={css.desktopReviewsTitle}>
               <FormattedMessage
-                id="ProfilePage.reviewsAsACustomerTitle"
+                id={customerTitleId}
                 values={{ count: reviewsOfCustomer.length }}
               />
             </Heading>
@@ -212,6 +266,11 @@ export const DesktopReviews = props => {
       ]
     : [];
   const desktopReviewTabs = [...providerReviewsMaybe, ...customerReviewsMaybe];
+
+  // Don't render reviews section if no tabs have content
+  if (desktopReviewTabs.length === 0 && reviews.length === 0) {
+    return null;
+  }
 
   return (
     <div className={css.desktopReviews}>
@@ -475,17 +534,23 @@ export const MainContent = props => {
           </ul>
         </div>
       ) : null}
+      {/* Reputation Dashboard — aggregated scores above individual reviews */}
+      {!hideReviews && reviews.length > 0 ? (
+        <ReputationDashboard reviews={reviews} />
+      ) : null}
       {hideReviews ? null : isMobileLayout ? (
         <MobileReviews
           reviews={reviews}
           queryReviewsError={queryReviewsError}
           userTypeRoles={userTypeRoles}
+          profileUserType={publicData?.userType}
         />
       ) : (
         <DesktopReviews
           reviews={reviews}
           queryReviewsError={queryReviewsError}
           userTypeRoles={userTypeRoles}
+          profileUserType={publicData?.userType}
           intl={intl}
         />
       )}

@@ -172,24 +172,8 @@ const TopbarMobileMenu = props => {
     </li>
   ) : null;
 
-  // Removed: Search Students link for corporate partners
-  const findStudentsLinkMaybe = null;
-
-  const dashboardLinkMaybe = isCorporatePartner ? (
-    <li className={classNames(css.navigationLink, currentPageClass('CorporateDashboardPage'))}>
-      <NamedLink name="CorporateDashboardPage">
-        <FormattedMessage id="TopbarMobileMenu.dashboardLink" />
-      </NamedLink>
-    </li>
-  ) : null;
-
-  const studentDashboardLinkMaybe = isStudent ? (
-    <li className={classNames(css.navigationLink, currentPageClass('StudentDashboardPage'))}>
-      <NamedLink name="StudentDashboardPage">
-        <FormattedMessage id="TopbarMobileMenu.studentDashboardLink" />
-      </NamedLink>
-    </li>
-  ) : null;
+  // Street2Ivy: Dashboard links removed — Home (/) is the single personalized entry point
+  // Old dashboard pages remain accessible via action cards on the home views
 
   const findCompaniesLinkMaybe = isStudent ? (
     <li className={classNames(css.navigationLink, currentPageClass('SearchCompaniesPage'))}>
@@ -211,25 +195,6 @@ const TopbarMobileMenu = props => {
     </li>
   ) : null;
 
-  // Admin dashboard links
-  const adminDashboardLinkMaybe = isSystemAdmin ? (
-    <li className={classNames(css.inbox, currentPageClass('AdminDashboardPage'))}>
-      <NamedLink name="AdminDashboardPage">
-        <FormattedMessage id="TopbarMobileMenu.adminDashboardLink" />
-        {notificationCountBadge}
-      </NamedLink>
-    </li>
-  ) : null;
-
-  const educationDashboardLinkMaybe = isEducationalAdmin ? (
-    <li className={classNames(css.inbox, currentPageClass('EducationDashboardPage'))}>
-      <NamedLink name="EducationDashboardPage">
-        <FormattedMessage id="TopbarMobileMenu.educationDashboardLink" />
-        {notificationCountBadge}
-      </NamedLink>
-    </li>
-  ) : null;
-
   return (
     <div className={css.root}>
       <AvatarLarge className={css.avatar} user={currentUser} />
@@ -242,26 +207,20 @@ const TopbarMobileMenu = props => {
         </InlineTextButton>
 
         <ul className={css.accountLinksWrapper}>
-          {/* Show Admin Dashboard link for admins, hide inbox for corporate partners and students (they have it in their dashboards), show inbox for others */}
-          {isAdmin ? (
-            <>
-              {adminDashboardLinkMaybe}
-              {educationDashboardLinkMaybe}
-            </>
-          ) : (isCorporatePartner || isStudent) ? (
-            null /* Corporate partners and students have messages built into their dashboards */
-          ) : (
-            <li className={classNames(css.inbox, currentPageClass(`InboxPage:${inboxTab}`))}>
-              <NamedLink name="InboxPage" params={{ tab: inboxTab }}>
-                <FormattedMessage id="TopbarMobileMenu.inboxLink" />
-                {notificationCountBadge}
-              </NamedLink>
-            </li>
-          )}
+          {/* Street2Ivy: Home is the single personalized entry point for all roles */}
+          <li className={classNames(css.navigationLink, currentPageClass('LandingPage'))}>
+            <NamedLink name="LandingPage">
+              <FormattedMessage id="TopbarMobileMenu.homeLink" />
+            </NamedLink>
+          </li>
+          {/* Street2Ivy: Inbox link available for ALL authenticated users */}
+          <li className={classNames(css.inbox, currentPageClass(`InboxPage:${inboxTab}`))}>
+            <NamedLink name="InboxPage" params={{ tab: inboxTab }}>
+              <FormattedMessage id="TopbarMobileMenu.inboxLink" />
+              {notificationCountBadge}
+            </NamedLink>
+          </li>
           {manageListingsLinkMaybe}
-          {findStudentsLinkMaybe}
-          {dashboardLinkMaybe}
-          {studentDashboardLinkMaybe}
           {findCompaniesLinkMaybe}
           {aiCoachingLinkMaybe}
           <li className={classNames(css.navigationLink, currentPageClass('ProfileSettingsPage'))}>

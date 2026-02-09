@@ -34,6 +34,38 @@
   border-radius: 0;
 }
 
+/* Street2Ivy: Global "Back to Dashboard" link */
+.dashboardLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  margin-left: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--s2i-slate-500, #64748b);
+  text-decoration: none;
+  border-radius: var(--s2i-radius-md, 8px);
+  transition: all 150ms ease;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.dashboardLink:hover {
+  color: var(--s2i-teal-700, #0f766e);
+  background: var(--s2i-teal-50, #f0fdfa);
+  text-decoration: none;
+}
+
+.dashboardLinkArrow {
+  font-size: 14px;
+  line-height: 1;
+}
+
+.dashboardLinkLabel {
+  line-height: 1;
+}
+
 /* Search */
 .searchLink {
   min-width: 320px;

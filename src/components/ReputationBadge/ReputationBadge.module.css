@@ -1,0 +1,64 @@
+.root {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* Sizes */
+.small {
+  font-size: 11px;
+  padding: 2px 8px;
+}
+
+.medium {
+  font-size: 13px;
+  padding: 4px 10px;
+}
+
+.large {
+  font-size: 15px;
+  padding: 6px 14px;
+}
+
+.icon {
+  line-height: 1;
+}
+
+.label {
+  line-height: 1.2;
+}
+
+.score {
+  font-weight: 700;
+  margin-left: 2px;
+}
+
+/* Tier Colors */
+.tierNew {
+  background: var(--s2i-slate-100, #f1f5f9);
+  color: var(--s2i-slate-600, #475569);
+}
+
+.tierEmerging {
+  background: #ecfdf5;
+  color: #065f46;
+}
+
+.tierBuilding {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.tierEstablished {
+  background: linear-gradient(135deg, #dbeafe 0%, #e0e7ff 100%);
+  color: #1e40af;
+}
+
+.tierExceptional {
+  background: linear-gradient(135deg, #fae8ff 0%, #e0e7ff 100%);
+  color: #6b21a8;
+}

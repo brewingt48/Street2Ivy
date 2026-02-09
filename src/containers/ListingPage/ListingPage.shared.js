@@ -146,9 +146,35 @@ export const handleSubmitInquiry = parameters => values => {
 
   const listingId = new UUID(params.id);
   const listing = getListing(listingId);
-  const { message } = values;
 
-  onSendInquiry(listing, message.trim())
+  // Support both simple message (inquiry) and structured application fields
+  let message;
+  if (values.interest) {
+    // Project application form — format fields into structured message
+    const parts = [
+      'PROJECT APPLICATION',
+      '',
+      'Why I\'m interested:',
+      values.interest,
+      '',
+      'Relevant experience/skills:',
+      values.experience,
+      '',
+      'Availability:',
+      values.availability,
+    ];
+    if (values.hoursPerWeek) {
+      parts.push('', `Hours per week: ${values.hoursPerWeek}`);
+    }
+    if (values.additionalNotes) {
+      parts.push('', 'Additional notes:', values.additionalNotes);
+    }
+    message = parts.join('\n').trim();
+  } else {
+    message = (values.message || '').trim();
+  }
+
+  onSendInquiry(listing, message)
     .then(txId => {
       setInquiryModalOpen(false);
 

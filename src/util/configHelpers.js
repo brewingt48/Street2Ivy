@@ -1150,19 +1150,95 @@ const mergeListingConfig = (hostedConfig, defaultConfigs, categoriesInUse) => {
   const { listingTypes: defaultListingTypes, listingFields: defaultListingFields, ...rest } =
     defaultConfigs.listing || {};
 
-  // Street2Ivy: Always merge default listing types and fields so that local
-  // configuration (project listing type and fields) is always included
-  const mergedListingTypes = union(hostedListingTypes, defaultListingTypes, 'listingType');
+  // Street2Ivy: Merge hosted and local listing types.
+  // - If no hosted types exist, use local defaults (project type).
+  // - If hosted types only contain the Console's generic 'free-listing',
+  //   merge in local types and filter out 'free-listing'.
+  // - If hosted types contain specific types (e.g. from tests or Console customization),
+  //   use them as-is without injecting local types.
+  const hasHostedListingTypes = hostedListingTypes && hostedListingTypes.length > 0;
+  const listingTypes = (() => {
+    if (!hasHostedListingTypes) {
+      return defaultListingTypes;
+    }
+    // Check if hosted types are only the Console's generic default
+    const onlyGenericHostedTypes = hostedListingTypes.every(
+      lt => lt.listingType === 'free-listing'
+    );
+    if (onlyGenericHostedTypes) {
+      // Replace generic types with our local types (project type)
+      return defaultListingTypes;
+    }
+    // Hosted config has specific types (tests or Console customization) — use as-is
+    return hostedListingTypes;
+  })();
 
-  // Street2Ivy: Filter out free listing types (default-inquiry process)
-  // to only show the "project" listing type
-  const listingTypes = mergedListingTypes.filter(lt => {
-    const processAlias = lt.transactionType?.alias || '';
-    // Only include project listing type, exclude default-inquiry (free listings)
-    return !processAlias.startsWith('default-inquiry');
-  });
+  // Street2Ivy: Merge hosted listing fields with local listing fields.
+  // Hosted fields provide the basic schema (key, scope, schemaType, enumOptions),
+  // but local configListing.js fields contain our custom filterConfig (indexForSearch,
+  // filterType, group, searchMode), showConfig, saveConfig, and listingTypeConfig.
+  // Strategy: For each hosted field, overlay local enhancements if they exist.
+  // Also include any local-only fields (fields that exist in configListing.js
+  // but not in hosted config) so custom filters always appear.
+  const hasHostedListingFields = hostedListingFields && hostedListingFields.length > 0;
 
-  const listingFields = union(hostedListingFields, defaultListingFields, 'key');
+  const listingFields = (() => {
+    if (!hasHostedListingFields) {
+      return defaultListingFields;
+    }
+
+    // Build a lookup map of local field configs by key
+    const localFieldsByKey = {};
+    (defaultListingFields || []).forEach(field => {
+      if (field?.key) {
+        localFieldsByKey[field.key] = field;
+      }
+    });
+
+    // Merge: for each hosted field, overlay local config enhancements
+    const hostedKeys = new Set();
+    const mergedFields = hostedListingFields.map(hostedField => {
+      if (!hostedField?.key) return hostedField;
+      hostedKeys.add(hostedField.key);
+
+      const localField = localFieldsByKey[hostedField.key];
+      if (!localField) return hostedField;
+
+      // Deep-merge: hosted field provides base, local field provides enhancements
+      // For filterConfig, showConfig, saveConfig — local values take precedence
+      return {
+        ...hostedField,
+        // Preserve local listingTypeConfig (limits field to specific listing types)
+        listingTypeConfig: localField.listingTypeConfig || hostedField.listingTypeConfig,
+        // Merge filterConfig: local overrides hosted (adds indexForSearch, group, filterType, etc.)
+        filterConfig: {
+          ...(hostedField.filterConfig || {}),
+          ...(localField.filterConfig || {}),
+        },
+        // Merge showConfig: local overrides hosted
+        showConfig: {
+          ...(hostedField.showConfig || {}),
+          ...(localField.showConfig || {}),
+        },
+        // Merge saveConfig: local overrides hosted
+        saveConfig: {
+          ...(hostedField.saveConfig || {}),
+          ...(localField.saveConfig || {}),
+        },
+        // Preserve local categoryConfig if present
+        ...(localField.categoryConfig ? { categoryConfig: localField.categoryConfig } : {}),
+        // Preserve local sectionHeader for form grouping
+        ...(localField.sectionHeader ? { sectionHeader: localField.sectionHeader } : {}),
+      };
+    });
+
+    // Add any local-only fields (not in hosted config) so custom filters still appear
+    const localOnlyFields = (defaultListingFields || []).filter(
+      field => field?.key && !hostedKeys.has(field.key)
+    );
+
+    return [...mergedFields, ...localOnlyFields];
+  })();
 
   const listingTypesInUse = listingTypes.map(lt => `${lt.listingType}`);
 
@@ -1176,6 +1252,7 @@ const mergeListingConfig = (hostedConfig, defaultConfigs, categoriesInUse) => {
 
 const mergeUserConfig = (hostedConfig, defaultConfigs) => {
   const hostedUserFields = restructureUserFields(hostedConfig?.userFields?.userFields);
+  const hostedUserTypes = hostedConfig?.userTypes?.userTypes || [];
 
   const {
     userFields: defaultUserFields,
@@ -1199,9 +1276,18 @@ const mergeUserConfig = (hostedConfig, defaultConfigs) => {
     ...(defaultAdminUserTypes || []),
   ];
   const userTypesInUse = allUserTypesForValidation.map(ut => `${ut.userType}`);
+
+  // Street2Ivy: Also include hosted config user type IDs for validation.
+  // This ensures user fields referencing hosted user types (e.g. test configs
+  // with types 'a', 'b', 'c') are not wrongly dropped during validation.
+  const hostedUserTypeIds = hostedUserTypes
+    .map(ut => ut.userType || ut.id)
+    .filter(Boolean);
+  const allUserTypesInUse = [...new Set([...userTypesInUse, ...hostedUserTypeIds])];
+
   return {
     userTypes: validUserTypes(userTypes),
-    userFields: validUserFields(userFields, userTypesInUse),
+    userFields: validUserFields(userFields, allUserTypesInUse),
     // Street2Ivy: Include admin user types for admin portal signup
     adminUserTypes: defaultAdminUserTypes || [],
   };
@@ -1355,6 +1441,14 @@ const mergeSearchConfig = (
         listingTypeFilter: defaultSearchConfig.listingTypeFilter,
         categoryFilter: defaultSearchConfig.categoryFilter,
         ...hostedSearchConfig,
+        // Street2Ivy: Force local filter overrides AFTER hosted config spread.
+        // This ensures our disabled price/date filters aren't re-enabled by hosted config.
+        ...(defaultSearchConfig.priceFilter?.enabled === false
+          ? { priceFilter: defaultSearchConfig.priceFilter }
+          : {}),
+        ...(defaultSearchConfig.dateRangeFilter?.enabled === false
+          ? { dateRangeFilter: defaultSearchConfig.dateRangeFilter }
+          : {}),
       }
     : defaultSearchConfig;
 
@@ -1557,5 +1651,102 @@ export const mergeConfig = (configAsset = {}, defaultConfigs = {}) => {
 
     // Check if all the mandatory info have been retrieved from hosted assets
     hasMandatoryConfigurations: hasMandatoryConfigs(configAsset),
+  };
+};
+
+//////////////////////////////////////////////
+// Multi-tenant branding override support   //
+//////////////////////////////////////////////
+
+/**
+ * Merge tenant-specific branding overrides into an existing app configuration.
+ *
+ * This function takes the fully-merged app config (from mergeConfig) and a tenant object,
+ * then returns a new config with tenant branding values overlaid where they are set.
+ *
+ * If the tenant is null/undefined or has no branding, the original config is returned unchanged.
+ * Individual branding fields are only overridden when they have a truthy value in tenant.branding.
+ *
+ * @param {Object} appConfig - The fully-merged application config (output of mergeConfig)
+ * @param {Object|null} tenant - The tenant object (from TenantContext), or null for default marketplace
+ * @returns {Object} A new config object with tenant branding overrides applied
+ */
+export const mergeConfigWithTenantBranding = (appConfig, tenant) => {
+  if (!tenant) {
+    return appConfig;
+  }
+
+  // Street2Ivy: Always attach tenant metadata to config for use in loadData (e.g., scoped search)
+  const tenantMeta = {
+    id: tenant.id || null,
+    name: tenant.name || null,
+    institutionDomain: tenant.institutionDomain || null,
+    logoUrl: tenant.branding?.logoUrl || null,
+  };
+
+  if (!tenant.branding) {
+    return { ...appConfig, tenant: tenantMeta };
+  }
+
+  const tenantBranding = tenant.branding;
+  const existingBranding = appConfig.branding || {};
+
+  // Override marketplace name if tenant provides one
+  const marketplaceName = tenantBranding.marketplaceName || appConfig.marketplaceName;
+
+  // Override marketplace color (and auto-generate dark/light variants)
+  const marketplaceColor = tenantBranding.marketplaceColor || existingBranding.marketplaceColor;
+  const marketplaceColorDark = tenantBranding.marketplaceColor
+    ? hexToCssHsl(tenantBranding.marketplaceColor, -10)
+    : existingBranding.marketplaceColorDark;
+  const marketplaceColorLight = tenantBranding.marketplaceColor
+    ? hexToCssHsl(tenantBranding.marketplaceColor, 10)
+    : existingBranding.marketplaceColorLight;
+
+  // Override primary button color (and auto-generate dark/light variants)
+  const colorPrimaryButton =
+    tenantBranding.colorPrimaryButton || existingBranding.colorPrimaryButton;
+  const colorPrimaryButtonDark = tenantBranding.colorPrimaryButton
+    ? hexToCssHsl(tenantBranding.colorPrimaryButton, -10)
+    : existingBranding.colorPrimaryButtonDark;
+  const colorPrimaryButtonLight = tenantBranding.colorPrimaryButton
+    ? hexToCssHsl(tenantBranding.colorPrimaryButton, 10)
+    : existingBranding.colorPrimaryButtonLight;
+
+  // Override logo if tenant provides a logo URL
+  const logoImageDesktop = tenantBranding.logoUrl || existingBranding.logoImageDesktop;
+  const logoImageMobile = tenantBranding.logoUrl || existingBranding.logoImageMobile;
+
+  // Override favicon if tenant provides one
+  const favicon = tenantBranding.faviconUrl
+    ? { type: 'url', url: tenantBranding.faviconUrl }
+    : existingBranding.favicon;
+
+  // Override social sharing images if tenant provides them
+  const facebookImage = tenantBranding.facebookImageUrl || existingBranding.facebookImage;
+  const twitterImage = tenantBranding.twitterImageUrl || existingBranding.twitterImage;
+
+  // Override brand image (hero section background) if tenant provides one
+  const brandImage = tenantBranding.brandImageUrl || existingBranding.brandImage;
+
+  return {
+    ...appConfig,
+    marketplaceName,
+    tenant: tenantMeta,
+    branding: {
+      ...existingBranding,
+      marketplaceColor,
+      marketplaceColorDark,
+      marketplaceColorLight,
+      colorPrimaryButton,
+      colorPrimaryButtonDark,
+      colorPrimaryButtonLight,
+      logoImageDesktop,
+      logoImageMobile,
+      favicon,
+      facebookImage,
+      twitterImage,
+      brandImage,
+    },
   };
 };

@@ -5,7 +5,7 @@ import { useHistory, useLocation } from 'react-router-dom';
 import { FormattedMessage, useIntl } from '../../util/reactIntl';
 import { isScrollingDisabled } from '../../ducks/ui.duck';
 
-import { Page, LayoutSingleColumn, PaginationLinks } from '../../components';
+import { Page, LayoutSingleColumn, NamedLink, PaginationLinks } from '../../components';
 import TopbarContainer from '../../containers/TopbarContainer/TopbarContainer';
 import FooterContainer from '../../containers/FooterContainer/FooterContainer';
 import CompanyCard from './CompanyCard';
@@ -181,6 +181,24 @@ const SearchCompaniesPageComponent = props => {
     <Page title={title} scrollingDisabled={scrollingDisabled}>
       <LayoutSingleColumn topbar={<TopbarContainer />} footer={<FooterContainer />}>
         <div className={css.pageContent}>
+          {/* Back to Dashboard breadcrumb */}
+          <div className={css.breadcrumbBar}>
+            <NamedLink name="LandingPage" className={css.breadcrumbLink}>
+              <span className={css.breadcrumbArrow}>&larr;</span>
+              <FormattedMessage id="SearchPage.backToDashboard" defaultMessage="Back to Dashboard" />
+            </NamedLink>
+          </div>
+
+          {/* Projects/Companies toggle */}
+          <div className={css.searchModeToggle}>
+            <NamedLink className={css.searchModeBtn} name="SearchPage">
+              <FormattedMessage id="SearchPage.modeProjects" defaultMessage="Projects" />
+            </NamedLink>
+            <span className={`${css.searchModeBtn} ${css.searchModeBtnActive}`}>
+              <FormattedMessage id="SearchPage.modeCompanies" defaultMessage="Companies" />
+            </span>
+          </div>
+
           <h1 className={css.pageHeading}>
             <FormattedMessage id="SearchCompaniesPage.heading" />
           </h1>

@@ -36,6 +36,7 @@ export const stateDataShape = shape({
   showActionButtons: bool,
   showDetailCardHeadings: bool,
   showDispute: bool,
+  showHandoffInfo: bool,
   showOrderPanel: bool,
   showReviewAsFirstLink: bool,
   showReviewAsSecondLink: bool,

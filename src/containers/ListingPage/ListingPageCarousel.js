@@ -89,6 +89,7 @@ import SectionReviews from './SectionReviews';
 import SectionAuthorMaybe from './SectionAuthorMaybe';
 import SectionMapMaybe from './SectionMapMaybe';
 import SectionGallery from './SectionGallery';
+import SectionHowItWorks from './SectionHowItWorks';
 import CustomListingFields from './CustomListingFields';
 
 import css from './ListingPage.module.css';
@@ -402,6 +403,8 @@ export const ListingPageComponent = props => {
               categoryConfiguration={config.categoryConfiguration}
               intl={intl}
             />
+
+            <SectionHowItWorks />
 
             <SectionMapMaybe
               geolocation={geolocation}

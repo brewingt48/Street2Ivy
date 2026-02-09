@@ -8,8 +8,13 @@ const {
 } = require('../api-util/security');
 
 /**
- * Verify the current user has permission to search users
- * Only corporate-partner, educational-admin, and system-admin can search
+ * Verify the current user has permission to search users.
+ *
+ * Allowed user types:
+ *   - student             – can search corporate-partner only (browse companies)
+ *   - corporate-partner   – can search students
+ *   - educational-admin   – can search students (scoped to institution)
+ *   - system-admin        – can search any user type
  */
 async function verifySearchPermission(req, res) {
   try {
@@ -24,14 +29,14 @@ async function verifySearchPermission(req, res) {
     const publicData = currentUser.attributes?.profile?.publicData || {};
     const userType = publicData.userType;
 
-    // Only these user types can search other users
-    const allowedTypes = ['corporate-partner', 'educational-admin', 'system-admin'];
+    // User types that are allowed to search other users
+    const allowedTypes = ['student', 'corporate-partner', 'educational-admin', 'system-admin'];
 
     if (!allowedTypes.includes(userType)) {
       return {
         authorized: false,
         error:
-          'Access denied. Only corporate partners, educational administrators, and system administrators can search users.',
+          'Access denied. You do not have permission to search users.',
         status: 403,
       };
     }
@@ -49,8 +54,11 @@ async function verifySearchPermission(req, res) {
  * Uses the Integration API (which supports users.query) since the
  * Marketplace API only supports users.show (single user by ID).
  *
- * SECURITY: This endpoint requires authentication and only allows
- * corporate-partner, educational-admin, and system-admin to search.
+ * SECURITY: This endpoint requires authentication. Allowed callers:
+ *   - student             → can only search for corporate-partner
+ *   - corporate-partner   → can search for students
+ *   - educational-admin   → can search for students (scoped to institution)
+ *   - system-admin        → can search any user type
  *
  * Query params:
  *   userType       - 'student' or 'corporate-partner' (required)
@@ -96,6 +104,14 @@ module.exports = async (req, res) => {
       'userType query parameter is required and must be "student" or "corporate-partner".',
       'userType'
     );
+  }
+
+  // SECURITY: Students can only browse corporate partners (company search)
+  if (authResult.userType === 'student' && userType !== 'corporate-partner') {
+    return res.status(403).json({
+      error: 'Students can only search for corporate partners.',
+      code: 'FORBIDDEN',
+    });
   }
 
   // SECURITY: Educational admins can only search students from their institution

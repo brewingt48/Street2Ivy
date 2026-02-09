@@ -9,8 +9,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const { getIntegrationSdk } = require('../../api-util/integrationSdk');
-const { handleError, serialize } = require('../../api-util/sdk');
+const { handleError, serialize, getSdk } = require('../../api-util/sdk');
 
 // In-memory store for institutions (in production, use a database)
 // This maps email domains to institution membership data
@@ -93,8 +92,9 @@ loadInstitutions();
 /**
  * Helper to verify user is a system admin
  */
-async function verifySystemAdmin(sdk) {
-  const currentUserRes = await sdk.currentUser.show();
+async function verifySystemAdmin(req, res) {
+  const marketplaceSdk = getSdk(req, res);
+  const currentUserRes = await marketplaceSdk.currentUser.show();
   const currentUser = currentUserRes.data.data;
   const userType = currentUser.attributes.profile.publicData?.userType;
 
@@ -111,8 +111,7 @@ async function verifySystemAdmin(sdk) {
  */
 async function listInstitutions(req, res) {
   try {
-    const sdk = await getIntegrationSdk(req);
-    await verifySystemAdmin(sdk);
+    await verifySystemAdmin(req, res);
 
     const institutions = Array.from(institutionMemberships.values());
 
@@ -134,8 +133,7 @@ async function listInstitutions(req, res) {
  */
 async function getInstitution(req, res) {
   try {
-    const sdk = await getIntegrationSdk(req);
-    await verifySystemAdmin(sdk);
+    await verifySystemAdmin(req, res);
 
     const { domain } = req.params;
     const normalizedDomain = domain.toLowerCase();
@@ -168,8 +166,7 @@ async function getInstitution(req, res) {
  */
 async function createOrUpdateInstitution(req, res) {
   try {
-    const sdk = await getIntegrationSdk(req);
-    await verifySystemAdmin(sdk);
+    await verifySystemAdmin(req, res);
 
     const {
       domain,
@@ -228,8 +225,7 @@ async function createOrUpdateInstitution(req, res) {
  */
 async function updateInstitutionStatus(req, res) {
   try {
-    const sdk = await getIntegrationSdk(req);
-    await verifySystemAdmin(sdk);
+    await verifySystemAdmin(req, res);
 
     const { domain } = req.params;
     const { membershipStatus } = req.body;
@@ -268,8 +264,7 @@ async function updateInstitutionStatus(req, res) {
  */
 async function updateCoachingSettings(req, res) {
   try {
-    const sdk = await getIntegrationSdk(req);
-    await verifySystemAdmin(sdk);
+    await verifySystemAdmin(req, res);
 
     const { domain } = req.params;
     const { aiCoachingEnabled, aiCoachingUrl } = req.body;
@@ -307,8 +302,7 @@ async function updateCoachingSettings(req, res) {
  */
 async function deleteInstitution(req, res) {
   try {
-    const sdk = await getIntegrationSdk(req);
-    await verifySystemAdmin(sdk);
+    await verifySystemAdmin(req, res);
 
     const { domain } = req.params;
     const normalizedDomain = domain.toLowerCase();
@@ -380,7 +374,10 @@ async function checkInstitutionMembership(req, res) {
  */
 async function getMyInstitution(req, res) {
   try {
-    const sdk = await getIntegrationSdk(req);
+    // Use the per-user Marketplace SDK (not Integration SDK) because we need
+    // sdk.currentUser.show() which is only available on the Marketplace API.
+    const { getSdk } = require('../../api-util/sdk');
+    const sdk = getSdk(req, res);
     const currentUserRes = await sdk.currentUser.show();
     const currentUser = currentUserRes.data.data;
     const publicData = currentUser.attributes.profile.publicData || {};

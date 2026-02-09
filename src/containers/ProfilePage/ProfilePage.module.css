@@ -105,6 +105,21 @@
   }
 }
 
+.backToDashboardLink {
+  display: block;
+  width: 100%;
+  margin-top: 12px;
+  padding: 8px 0;
+  font-size: 14px;
+  color: var(--s2i-slate-500);
+  font-weight: var(--s2i-font-medium);
+  transition: var(--s2i-transition-colors);
+
+  &:hover {
+    color: var(--s2i-navy-900);
+  }
+}
+
 .desktopHeading {
   display: none;
 

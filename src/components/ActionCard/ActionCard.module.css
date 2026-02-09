@@ -1,0 +1,126 @@
+@import '../../styles/customMediaQueries.css';
+
+.root {
+  background: #ffffff;
+  border: 1px solid var(--s2i-slate-200, #e2e8f0);
+  border-radius: var(--s2i-radius-xl, 16px);
+  padding: var(--s2i-space-5, 20px);
+  box-shadow: var(--s2i-shadow-sm, 0 1px 3px rgba(0, 0, 0, 0.08));
+  transition: var(--s2i-transition-all, all 200ms ease);
+  display: flex;
+  align-items: center;
+  gap: var(--s2i-space-4, 16px);
+  cursor: pointer;
+  text-decoration: none;
+  color: inherit;
+  animation: cardFadeIn 0.4s ease both;
+
+  /* Reset button styles */
+  font-family: inherit;
+  font-size: inherit;
+  text-align: left;
+  width: 100%;
+}
+
+.root:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--s2i-shadow-card-hover, 0 4px 12px rgba(0, 0, 0, 0.1), 0 16px 32px rgba(0, 0, 0, 0.06));
+  border-color: var(--s2i-slate-300, #cbd5e1);
+}
+
+.root:active {
+  transform: translateY(0);
+}
+
+/* Icon */
+.iconWrapper {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--s2i-radius-lg, 12px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 20px;
+  transition: var(--s2i-transition-transform, transform 200ms ease);
+
+  @media (--viewportMedium) {
+    width: 48px;
+    height: 48px;
+  }
+}
+
+.root:hover .iconWrapper {
+  transform: scale(1.05);
+}
+
+.icon {
+  line-height: 1;
+}
+
+/* Content */
+.content {
+  flex: 1;
+  min-width: 0;
+}
+
+.title {
+  font-size: var(--s2i-text-sm, 14px);
+  font-weight: 600;
+  color: var(--s2i-navy-900, #0c1430);
+  margin: 0 0 2px 0;
+  line-height: 1.3;
+}
+
+.description {
+  font-size: var(--s2i-text-xs, 12px);
+  color: var(--s2i-slate-500, #64748b);
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* Arrow */
+.arrow {
+  font-size: 16px;
+  color: var(--s2i-slate-400, #94a3b8);
+  flex-shrink: 0;
+  transition: var(--s2i-transition-all, all 200ms ease);
+}
+
+.root:hover .arrow {
+  color: var(--s2i-teal-500, #00c8be);
+  transform: translateX(2px);
+}
+
+/* Color schemes */
+.colorteal .iconWrapper {
+  background: linear-gradient(135deg, var(--s2i-teal-50, #f0fdfa) 0%, var(--s2i-teal-100, #ccfbf1) 100%);
+}
+
+.coloramber .iconWrapper {
+  background: linear-gradient(135deg, var(--s2i-amber-50, #fffbeb) 0%, var(--s2i-amber-100, #fef3c7) 100%);
+}
+
+.coloremerald .iconWrapper {
+  background: linear-gradient(135deg, var(--s2i-emerald-50, #ecfdf5) 0%, var(--s2i-emerald-100, #d1fae5) 100%);
+}
+
+.colorcoral .iconWrapper {
+  background: linear-gradient(135deg, var(--s2i-coral-50, #fff1f2) 0%, var(--s2i-coral-100, #ffe4e6) 100%);
+}
+
+.colornavy .iconWrapper {
+  background: linear-gradient(135deg, var(--s2i-navy-50, #eff6ff) 0%, var(--s2i-navy-100, #dbeafe) 100%);
+}
+
+/* Fade-in animation */
+@keyframes cardFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

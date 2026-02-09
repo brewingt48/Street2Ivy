@@ -377,6 +377,11 @@ export const loadData = (params, search, config) => (dispatch, getState, sdk) =>
   const { page = 1, address, origin, ...rest } = queryParams;
   const originMaybe = isOriginInUse(config) && origin ? { origin } : {};
 
+  // Street2Ivy: Inject tenant-scoped institutionDomain filter when tenant context is active
+  const tenantDomainMaybe = config?.tenant?.institutionDomain
+    ? { pub_institutionDomain: config.tenant.institutionDomain }
+    : {};
+
   const listingTypeVariantMaybe = listingTypePathParam
     ? { listingTypePathParam, isListingTypeVariant: true }
     : {};
@@ -393,6 +398,7 @@ export const loadData = (params, search, config) => (dispatch, getState, sdk) =>
       ...rest,
       ...originMaybe,
       ...listingTypeVariantMaybe,
+      ...tenantDomainMaybe,
       page,
       perPage: RESULT_PAGE_SIZE,
       include: ['author', 'images'],

@@ -80,7 +80,6 @@ class SearchFiltersMobileComponent extends Component {
       onMapIconClick = () => {},
       onManageDisableScrolling,
       selectedFiltersCount = 0,
-      noResultsInfo,
       intl,
       isMapVariant = true,
     } = this.props;
@@ -122,8 +121,6 @@ class SearchFiltersMobileComponent extends Component {
             </div>
           ) : null}
         </div>
-
-        {noResultsInfo ? noResultsInfo : null}
 
         <ModalInMobile
           id="SearchFiltersMobile.filters"

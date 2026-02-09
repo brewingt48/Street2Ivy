@@ -45,8 +45,9 @@ const RecommendedProjects = props => {
   const scoredListings = listings.map(listing => {
     const listingData = listing.attributes?.publicData || {};
     const listingSkills = listingData.requiredSkills || listingData.skills || [];
-    const listingCategory = listingData.category || '';
-    const listingIndustry = listingData.industry || '';
+    const listingCategory = listingData.companySector || listingData.category || '';
+    const listingIndustry = listingData.companySector || listingData.industry || '';
+    const listingMajorPrefs = listingData.majorPreference || [];
 
     let score = 0;
 
@@ -85,6 +86,18 @@ const RecommendedProjects = props => {
         score += 3;
       }
     });
+
+    // Match listing's majorPreference to student's major
+    if (userMajor && listingMajorPrefs.length > 0) {
+      const majorLower = userMajor.toLowerCase();
+      if (
+        listingMajorPrefs.some(
+          m => m === 'any' || majorLower.includes(m.toLowerCase()) || m.toLowerCase().includes(majorLower)
+        )
+      ) {
+        score += 7;
+      }
+    }
 
     // Boost recently posted listings
     const createdAt = listing.attributes?.createdAt;

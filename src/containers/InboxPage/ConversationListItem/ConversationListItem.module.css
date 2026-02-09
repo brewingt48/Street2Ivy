@@ -1,0 +1,154 @@
+@import '../../../styles/customMediaQueries.css';
+
+.root {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--s2i-inbox-item-gap);
+  padding: var(--s2i-inbox-item-padding);
+  border-radius: var(--s2i-inbox-item-radius);
+  cursor: pointer;
+  transition: var(--s2i-transition-colors);
+  border-left: 3px solid transparent;
+  text-decoration: none;
+  color: inherit;
+}
+
+.root:hover {
+  background: var(--s2i-inbox-item-hover-bg);
+  text-decoration: none;
+  color: inherit;
+}
+
+.rootActive {
+  background: var(--s2i-inbox-item-active-bg);
+  border-left-color: var(--s2i-inbox-item-active-border);
+}
+
+.rootActive:hover {
+  background: var(--s2i-inbox-item-active-bg);
+}
+
+.rootUnread {
+  /* Unread items have slightly different visual weight handled by child elements */
+}
+
+.rootBanned {
+  opacity: 0.6;
+}
+
+.rootFinal {
+  opacity: 0.8;
+}
+
+/* Dot column - fixed width for alignment */
+.dotColumn {
+  width: var(--s2i-inbox-unread-dot-size);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-top: var(--s2i-space-2);
+}
+
+.unreadDot {
+  width: var(--s2i-inbox-unread-dot-size);
+  height: var(--s2i-inbox-unread-dot-size);
+  border-radius: var(--s2i-radius-full);
+  background: var(--s2i-inbox-unread-dot-color);
+  flex-shrink: 0;
+}
+
+/* Avatar column */
+.avatarColumn {
+  flex-shrink: 0;
+}
+
+.avatar {
+  width: 40px;
+  height: 40px;
+}
+
+/* Content area */
+.content {
+  flex: 1;
+  min-width: 0; /* Allow text truncation */
+  display: flex;
+  flex-direction: column;
+  gap: var(--s2i-space-1);
+}
+
+/* Top row: name + role badge + timestamp */
+.topRow {
+  display: flex;
+  align-items: center;
+  gap: var(--s2i-space-2);
+}
+
+.userName {
+  font-size: var(--s2i-text-base);
+  font-weight: var(--s2i-font-medium);
+  color: var(--s2i-navy-900);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex-shrink: 1;
+  min-width: 0;
+}
+
+.userNameUnread {
+  font-weight: var(--s2i-inbox-unread-name-weight);
+}
+
+.roleBadge {
+  font-size: var(--s2i-text-xs);
+  font-weight: var(--s2i-font-medium);
+  color: var(--s2i-teal-700);
+  background: var(--s2i-teal-50);
+  padding: 1px var(--s2i-space-2);
+  border-radius: var(--s2i-radius-full);
+  white-space: nowrap;
+  flex-shrink: 0;
+  line-height: var(--s2i-leading-normal);
+}
+
+.timestamp {
+  font-size: var(--s2i-msg-timestamp-size);
+  color: var(--s2i-msg-timestamp-color);
+  white-space: nowrap;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+/* Project title */
+.projectTitle {
+  font-size: var(--s2i-text-sm);
+  color: var(--s2i-slate-600);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: var(--s2i-leading-snug);
+}
+
+/* Bottom row: status preview */
+.bottomRow {
+  display: flex;
+  align-items: center;
+}
+
+.status {
+  font-size: var(--s2i-text-sm);
+  line-height: var(--s2i-leading-snug);
+}
+
+.statusActionNeeded {
+  color: var(--s2i-gold-600);
+  font-weight: var(--s2i-font-semibold);
+}
+
+.statusNoAction {
+  color: var(--s2i-teal-600);
+}
+
+.statusFinal {
+  color: var(--s2i-slate-500);
+}

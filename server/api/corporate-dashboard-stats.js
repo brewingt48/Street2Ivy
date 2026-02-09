@@ -65,7 +65,7 @@ module.exports = async (req, res) => {
     const currency = 'USD'; // Default currency
 
     listings.forEach(listing => {
-      const category = listing.attributes.publicData?.industryCategory || 'other';
+      const category = listing.attributes.publicData?.companySector || listing.attributes.publicData?.industryCategory || 'other';
       projectsByCategory[category] = (projectsByCategory[category] || 0) + 1;
 
       // Count by listing state

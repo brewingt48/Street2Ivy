@@ -13,12 +13,42 @@ import {
   MenuContent,
   MenuItem,
   NamedLink,
+  NotificationBadge,
 } from '../../../../components';
 
 import TopbarSearchForm from '../TopbarSearchForm/TopbarSearchForm';
 import CustomLinksMenu from './CustomLinksMenu/CustomLinksMenu';
 
 import css from './TopbarDesktop.module.css';
+
+// Street2Ivy: Global "Back to Dashboard" link for all authenticated users
+// Maps each user type to its appropriate dashboard page name
+const DASHBOARD_BY_USER_TYPE = {
+  student: 'LandingPage',
+  'corporate-partner': 'LandingPage',
+  alumni: 'LandingPage',
+  'educational-admin': 'LandingPage',
+  'system-admin': 'LandingPage',
+};
+
+const DashboardLink = ({ currentUser, currentPage }) => {
+  const userType = currentUser?.attributes?.profile?.publicData?.userType;
+  const dashboardPage = DASHBOARD_BY_USER_TYPE[userType] || 'LandingPage';
+
+  // Don't show on the dashboard itself
+  if (currentPage === 'LandingPage') {
+    return null;
+  }
+
+  return (
+    <NamedLink className={css.dashboardLink} name={dashboardPage}>
+      <span className={css.dashboardLinkArrow}>&larr;</span>
+      <span className={css.dashboardLinkLabel}>
+        <FormattedMessage id="TopbarDesktop.backToDashboard" />
+      </span>
+    </NamedLink>
+  );
+};
 
 const SignupLink = () => {
   return (
@@ -41,7 +71,8 @@ const LoginLink = () => {
 };
 
 const InboxLink = ({ notificationCount, inboxTab }) => {
-  const notificationDot = notificationCount > 0 ? <div className={css.notificationDot} /> : null;
+  const notificationBadge =
+    notificationCount > 0 ? <NotificationBadge count={notificationCount} /> : null;
   return (
     <NamedLink
       id="inbox-link"
@@ -51,24 +82,7 @@ const InboxLink = ({ notificationCount, inboxTab }) => {
     >
       <span className={css.topbarLinkLabel}>
         <FormattedMessage id="TopbarDesktop.inbox" />
-        {notificationDot}
-      </span>
-    </NamedLink>
-  );
-};
-
-// Admin Dashboard link for system admins
-const AdminDashboardLink = ({ notificationCount }) => {
-  const notificationDot = notificationCount > 0 ? <div className={css.notificationDot} /> : null;
-  return (
-    <NamedLink
-      id="admin-dashboard-link"
-      className={css.topbarLink}
-      name="AdminDashboardPage"
-    >
-      <span className={css.topbarLinkLabel}>
-        <FormattedMessage id="TopbarDesktop.adminDashboard" />
-        {notificationDot}
+        {notificationBadge}
       </span>
     </NamedLink>
   );
@@ -111,28 +125,16 @@ const ProfileMenu = ({
         <Avatar className={css.avatar} user={currentUser} disableProfileLink />
       </MenuLabel>
       <MenuContent className={css.profileMenuContent}>
-        {isSystemAdmin ? (
-          <MenuItem key="AdminDashboardPage">
-            <NamedLink
-              className={classNames(css.menuLink, currentPageClass('AdminDashboardPage'))}
-              name="AdminDashboardPage"
-            >
-              <span className={css.menuItemBorder} />
-              <FormattedMessage id="TopbarDesktop.adminDashboardLink" />
-            </NamedLink>
-          </MenuItem>
-        ) : null}
-        {isEducationalAdmin ? (
-          <MenuItem key="EducationDashboardPage">
-            <NamedLink
-              className={classNames(css.menuLink, currentPageClass('EducationDashboardPage'))}
-              name="EducationDashboardPage"
-            >
-              <span className={css.menuItemBorder} />
-              <FormattedMessage id="TopbarDesktop.educationDashboardLink" />
-            </NamedLink>
-          </MenuItem>
-        ) : null}
+        {/* Street2Ivy: Single "Home" entry point — personalized dashboard for all roles */}
+        <MenuItem key="HomePage">
+          <NamedLink
+            className={classNames(css.menuLink, currentPageClass('LandingPage'))}
+            name="LandingPage"
+          >
+            <span className={css.menuItemBorder} />
+            <FormattedMessage id="TopbarDesktop.homeLink" />
+          </NamedLink>
+        </MenuItem>
         {showManageListingsLink && !isAdmin ? (
           <MenuItem key="ManageListingsPage">
             <NamedLink
@@ -141,28 +143,6 @@ const ProfileMenu = ({
             >
               <span className={css.menuItemBorder} />
               <FormattedMessage id="TopbarDesktop.yourListingsLink" />
-            </NamedLink>
-          </MenuItem>
-        ) : null}
-        {isCorporatePartner ? (
-          <MenuItem key="CorporateDashboardPage">
-            <NamedLink
-              className={classNames(css.menuLink, currentPageClass('CorporateDashboardPage'))}
-              name="CorporateDashboardPage"
-            >
-              <span className={css.menuItemBorder} />
-              <FormattedMessage id="TopbarDesktop.dashboardLink" />
-            </NamedLink>
-          </MenuItem>
-        ) : null}
-        {isStudent ? (
-          <MenuItem key="StudentDashboardPage">
-            <NamedLink
-              className={classNames(css.menuLink, currentPageClass('StudentDashboardPage'))}
-              name="StudentDashboardPage"
-            >
-              <span className={css.menuItemBorder} />
-              <FormattedMessage id="TopbarDesktop.studentDashboardLink" />
             </NamedLink>
           </MenuItem>
         ) : null}
@@ -278,14 +258,10 @@ const TopbarDesktop = props => {
   const giveSpaceForSearch = customLinks == null || customLinks?.length === 0;
   const classes = classNames(rootClassName || css.root, className);
 
-  // For corporate partners, students, and admin users, hide inbox link
-  // (they have messages in their respective dashboards)
+  // Street2Ivy: Show inbox link for ALL authenticated users.
+  // The split-pane messaging system is available to all user types.
   const inboxLinkMaybe = authenticatedOnClientSide ? (
-    isAdmin || isCorporatePartner || isStudent ? (
-      null // These users access their messages via their dashboards
-    ) : (
-      <InboxLink notificationCount={notificationCount} inboxTab={inboxTab} />
-    )
+    <InboxLink notificationCount={notificationCount} inboxTab={inboxTab} />
   ) : null;
 
   const profileMenuMaybe = authenticatedOnClientSide ? (
@@ -297,6 +273,10 @@ const TopbarDesktop = props => {
       intl={intl}
       institutionInfo={institutionInfo}
     />
+  ) : null;
+
+  const dashboardLinkMaybe = authenticatedOnClientSide ? (
+    <DashboardLink currentUser={currentUser} currentPage={currentPage} />
   ) : null;
 
   const signupLinkMaybe = isAuthenticatedOrJustHydrated ? null : <SignupLink />;
@@ -330,6 +310,7 @@ const TopbarDesktop = props => {
         alt={intl.formatMessage({ id: 'TopbarDesktop.logo' }, { marketplaceName })}
         linkToExternalSite={config?.topbar?.logoLink}
       />
+      {dashboardLinkMaybe}
       {searchFormMaybe}
 
       <CustomLinksMenu

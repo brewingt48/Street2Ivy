@@ -21,21 +21,47 @@
   }
 }
 
-.reviewRating {
-  margin-bottom: 18px;
+/* Structured Category Ratings Section */
+.categoryRatingsSection {
+  margin-bottom: 16px;
+}
 
-  @media (--viewportMedium) {
-    margin-bottom: 16px;
-  }
+.categoryRatingsTitle {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--s2i-navy-900, #0C1430);
+  margin: 0 0 4px 0;
+}
+
+.categoryRatingsSubtitle {
+  font-size: 13px;
+  color: var(--s2i-slate-500, #64748B);
+  margin: 0 0 16px 0;
+  line-height: 1.4;
+}
+
+.categoryRatingRow {
+  margin-bottom: 4px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--s2i-slate-100, #f1f5f9);
+}
+
+.categoryRatingRow:last-child {
+  border-bottom: none;
+}
+
+.categoryRating {
+  /* Override default FieldReviewRating spacing */
+  margin-bottom: 0;
 }
 
 .reviewContent {
   flex-shrink: 0;
-  margin-top: 24px;
+  margin-top: 16px;
   margin-bottom: 24px;
 
   @media (--viewportMedium) {
-    margin-top: 30px;
+    margin-top: 20px;
   }
 }
 

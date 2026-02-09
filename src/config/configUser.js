@@ -80,6 +80,15 @@ export const userFields = [
     scope: 'public',
     schemaType: 'enum',
     enumOptions: [
+      { option: '2015', label: '2015' },
+      { option: '2016', label: '2016' },
+      { option: '2017', label: '2017' },
+      { option: '2018', label: '2018' },
+      { option: '2019', label: '2019' },
+      { option: '2020', label: '2020' },
+      { option: '2021', label: '2021' },
+      { option: '2022', label: '2022' },
+      { option: '2023', label: '2023' },
       { option: '2024', label: '2024' },
       { option: '2025', label: '2025' },
       { option: '2026', label: '2026' },
@@ -99,7 +108,7 @@ export const userFields = [
     },
     userTypeConfig: {
       limitToUserTypeIds: true,
-      userTypeIds: ['student'],
+      userTypeIds: ['student', 'alumni'],
     },
   },
   {
@@ -231,6 +240,45 @@ export const userFields = [
     saveConfig: {
       label: 'Industry Interests',
       placeholderMessage: 'Select industries you are interested in...',
+      displayInSignUp: true,
+      isRequired: false,
+    },
+    userTypeConfig: {
+      limitToUserTypeIds: true,
+      userTypeIds: ['student'],
+    },
+  },
+  {
+    key: 'sport',
+    scope: 'public',
+    schemaType: 'enum',
+    enumOptions: [
+      { option: 'none', label: 'Not an Athlete' },
+      { option: 'baseball', label: 'Baseball' },
+      { option: 'basketball', label: 'Basketball' },
+      { option: 'cross-country', label: 'Cross Country' },
+      { option: 'field-hockey', label: 'Field Hockey' },
+      { option: 'football', label: 'Football' },
+      { option: 'golf', label: 'Golf' },
+      { option: 'gymnastics', label: 'Gymnastics' },
+      { option: 'ice-hockey', label: 'Ice Hockey' },
+      { option: 'lacrosse', label: 'Lacrosse' },
+      { option: 'rowing', label: 'Rowing' },
+      { option: 'soccer', label: 'Soccer' },
+      { option: 'softball', label: 'Softball' },
+      { option: 'swimming-diving', label: 'Swimming & Diving' },
+      { option: 'tennis', label: 'Tennis' },
+      { option: 'track-field', label: 'Track & Field' },
+      { option: 'volleyball', label: 'Volleyball' },
+      { option: 'wrestling', label: 'Wrestling' },
+      { option: 'other', label: 'Other' },
+    ],
+    showConfig: {
+      label: 'Sport',
+    },
+    saveConfig: {
+      label: 'Sport',
+      placeholderMessage: 'Select your sport...',
       displayInSignUp: true,
       isRequired: false,
     },
@@ -505,7 +553,7 @@ export const userFields = [
     },
     userTypeConfig: {
       limitToUserTypeIds: true,
-      userTypeIds: ['educational-institution', 'educational-admin'],
+      userTypeIds: ['educational-institution', 'educational-admin', 'alumni'],
     },
   },
   {
@@ -604,6 +652,63 @@ export const userFields = [
       userTypeIds: ['corporate-partner', 'educational-institution', 'educational-admin'],
     },
   },
+  // =====================
+  // Alumni-specific fields
+  // =====================
+  {
+    key: 'currentCompany',
+    scope: 'public',
+    schemaType: 'text',
+    showConfig: {
+      label: 'Current Company',
+    },
+    saveConfig: {
+      label: 'Current Company',
+      placeholderMessage: 'e.g. Google, Goldman Sachs',
+      displayInSignUp: true,
+      isRequired: false,
+    },
+    userTypeConfig: {
+      limitToUserTypeIds: true,
+      userTypeIds: ['alumni'],
+    },
+  },
+  {
+    key: 'currentRole',
+    scope: 'public',
+    schemaType: 'text',
+    showConfig: {
+      label: 'Current Role',
+    },
+    saveConfig: {
+      label: 'Current Role',
+      placeholderMessage: 'e.g. Software Engineer, Analyst',
+      displayInSignUp: true,
+      isRequired: false,
+    },
+    userTypeConfig: {
+      limitToUserTypeIds: true,
+      userTypeIds: ['alumni'],
+    },
+  },
+  {
+    key: 'linkedInUrl',
+    scope: 'public',
+    schemaType: 'text',
+    showConfig: {
+      label: 'LinkedIn Profile',
+    },
+    saveConfig: {
+      label: 'LinkedIn Profile URL',
+      placeholderMessage: 'e.g. https://linkedin.com/in/your-name',
+      displayInSignUp: false,
+      isRequired: false,
+    },
+    userTypeConfig: {
+      limitToUserTypeIds: true,
+      userTypeIds: ['alumni'],
+    },
+  },
 ];
 
 /////////////////////////////////////
@@ -667,6 +772,15 @@ export const allUserTypes = [
   {
     userType: 'corporate-partner',
     label: 'Corporate Partner',
+    accountLinksVisibility: {
+      paymentMethods: false,
+      payoutDetails: false,
+    },
+  },
+  {
+    userType: 'alumni',
+    label: 'Alumni',
+    // Alumni signup is invitation-only — not in userTypes (public signup) or adminUserTypes
     accountLinksVisibility: {
       paymentMethods: false,
       payoutDetails: false,

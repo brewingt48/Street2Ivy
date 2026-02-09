@@ -103,7 +103,7 @@ const tabsForListingType = (processName, listingTypeConfig) => {
   const tabs = {
     ['default-booking']: [DETAILS, ...locationMaybe, PRICING, AVAILABILITY, ...photosTabMaybe],
     ['default-purchase']: [DETAILS, PRICING_AND_STOCK, ...deliveryMaybe, ...photosTabMaybe],
-    ['default-negotiation']: [DETAILS, ...locationMaybe, ...pricingMaybe, ...photosTabMaybe],
+    ['default-negotiation']: [DETAILS, STYLE, ...locationMaybe, ...pricingMaybe, ...photosTabMaybe],
     ['default-inquiry']: [DETAILS, ...locationMaybe, ...pricingMaybe, ...photosTabMaybe],
     // Project application process - for Street2Ivy corporate project postings
     ['default-project-application']: [DETAILS],
@@ -718,6 +718,7 @@ class EditListingWizard extends Component {
                 fetchInProgress={fetchInProgress}
                 onListingTypeChange={selectedListingType => this.setState({ selectedListingType })}
                 onManageDisableScrolling={onManageDisableScrolling}
+                currentUser={currentUser}
                 config={config}
                 routeConfiguration={routeConfiguration}
                 intl={intl}

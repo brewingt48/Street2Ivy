@@ -525,49 +525,130 @@
   }
 }
 
-/* Project Workspace Link */
-.workspaceLinkContainer {
+/* Project Handoff / Kickoff Info */
+.handoffContainer {
   margin: 24px 24px 0 24px;
   padding: 20px;
-  background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
-  border: 1px solid #fcd34d;
-  border-radius: 8px;
-  text-align: center;
+  background: linear-gradient(135deg, var(--s2i-teal-50, #f0fdfa) 0%, var(--s2i-emerald-50, #ecfdf5) 100%);
+  border: 1px solid var(--s2i-teal-200, #99f6e4);
+  border-radius: var(--s2i-radius-xl, 16px);
 
   @media (--viewportLarge) {
     margin: 24px 0 0 0;
   }
 }
 
-.workspaceLinkTitle {
-  font-size: 16px;
-  font-weight: 600;
-  color: #92400e;
-  margin: 0 0 8px 0;
+.handoffHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
 }
 
-.workspaceLinkDescription {
+.handoffIcon {
+  font-size: 24px;
+  line-height: 1;
+}
+
+.handoffTitle {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--s2i-navy-900, #0C1430);
+  margin: 0;
+}
+
+.handoffDescription {
   font-size: 14px;
-  color: #78350f;
+  color: var(--s2i-slate-600, #475569);
   margin: 0 0 16px 0;
+  line-height: 1.6;
+}
+
+.handoffDetail {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: 12px;
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.6);
+  border-radius: var(--s2i-radius-md, 8px);
+}
+
+.handoffDetailLabel {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--s2i-slate-500, #64748B);
+}
+
+.handoffDetailValue {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--s2i-navy-900, #0C1430);
+}
+
+.handoffChecklist {
+  margin: 16px 0;
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: var(--s2i-radius-md, 8px);
+}
+
+.handoffChecklistTitle {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--s2i-navy-900, #0C1430);
+  margin: 0 0 10px 0;
+}
+
+.handoffChecklistItems {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.handoffChecklistItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 14px;
+  color: var(--s2i-slate-600, #475569);
   line-height: 1.5;
 }
 
-.workspaceLink {
-  display: inline-block;
-  padding: 12px 24px;
+.checkIcon {
+  flex-shrink: 0;
   font-size: 14px;
-  font-weight: 500;
-  color: white;
-  background-color: #d97706;
-  border-radius: 4px;
-  text-decoration: none;
-  transition: background-color 0.2s;
+  color: var(--s2i-teal-600, #0D9488);
+  margin-top: 1px;
 }
 
-.workspaceLink:hover {
-  background-color: #b45309;
-  text-decoration: none;
+.handoffReminder {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-top: 16px;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.7);
+  border-radius: var(--s2i-radius-md, 8px);
+  border-left: 3px solid var(--s2i-teal-500, #00C8BE);
+}
+
+.handoffReminderIcon {
+  flex-shrink: 0;
+  font-size: 16px;
+  line-height: 1.4;
+}
+
+.handoffReminderText {
+  font-size: 13px;
+  color: var(--s2i-slate-600, #475569);
+  margin: 0;
+  line-height: 1.5;
 }
 
 /* Company Profile Link - for students to learn more about the company */

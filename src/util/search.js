@@ -53,9 +53,18 @@ export const getQueryParamNames = (listingFieldsConfig, defaultFiltersConfig) =>
 };
 /**
  * Check if any of the filters (defined by filterKeys) have currently active query parameter in URL.
+ *
+ * Supports two call signatures:
+ *   isAnyFilterActive(filterKeys, urlQueryParams, { listingFieldsConfig, defaultFiltersConfig })
+ *   isAnyFilterActive(filterKeys, urlQueryParams, listingFieldsConfig, defaultFiltersConfig)
  */
-export const isAnyFilterActive = (filterKeys, urlQueryParams, filterConfigs) => {
-  const { listingFieldsConfig, defaultFiltersConfig } = filterConfigs;
+export const isAnyFilterActive = (filterKeys, urlQueryParams, filterConfigsOrListingFields, maybeDefaultFilters) => {
+  const listingFieldsConfig = maybeDefaultFilters != null
+    ? (filterConfigsOrListingFields || [])
+    : (filterConfigsOrListingFields?.listingFieldsConfig || []);
+  const defaultFiltersConfig = maybeDefaultFilters != null
+    ? (maybeDefaultFilters || [])
+    : (filterConfigsOrListingFields?.defaultFiltersConfig || []);
   const queryParamKeys = getQueryParamNames(listingFieldsConfig, defaultFiltersConfig);
 
   const getQueryParamKeysOfGivenFilters = (pickedKeys, key) => {

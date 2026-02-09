@@ -22,7 +22,7 @@ import {
   LISTING_PAGE_DRAFT_VARIANT,
   LISTING_PAGE_PENDING_APPROVAL_VARIANT,
 } from '../../util/urlHelpers';
-import { getProcess, isBookingProcessAlias } from '../../transactions/transaction';
+import { getProcess, isBookingProcessAlias, isProjectApplicationProcess } from '../../transactions/transaction';
 import { fetchCurrentUser, setCurrentUserHasOrders } from '../../ducks/user.duck';
 
 const { UUID } = sdkTypes;
@@ -224,8 +224,13 @@ const sendInquiryPayloadCreator = (
   const [processName, alias] = processAlias.split('/');
   const transitions = getProcess(processName)?.transitions;
 
+  // Use APPLY for project applications, INQUIRE for everything else
+  const transition = isProjectApplicationProcess(processName)
+    ? transitions.APPLY
+    : transitions.INQUIRE;
+
   const bodyParams = {
-    transition: transitions.INQUIRE,
+    transition,
     processAlias,
     params: { listingId },
   };

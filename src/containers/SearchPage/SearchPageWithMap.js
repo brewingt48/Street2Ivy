@@ -550,7 +550,6 @@ export class SearchPageComponent extends Component {
               onCloseModal={this.onCloseMobileModal}
               resetAll={this.resetAll}
               selectedFiltersCount={selectedFiltersCountForMobile}
-              noResultsInfo={noResultsInfo}
               location={location}
               isMapVariant
             >
@@ -585,7 +584,6 @@ export class SearchPageComponent extends Component {
               resultsCount={totalItems}
               searchInProgress={searchInProgress}
               searchListingsError={searchListingsError}
-              noResultsInfo={noResultsInfo}
             >
               <SearchFiltersPrimary {...propsForSecondaryFiltersToggle}>
                 {availablePrimaryFilters.map(filterConfig => {

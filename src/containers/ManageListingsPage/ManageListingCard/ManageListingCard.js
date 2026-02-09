@@ -142,7 +142,7 @@ const ShowFinishDraftOverlayMaybe = props => {
         <NamedLink
           className={css.finishListingDraftLink}
           name="EditListingPage"
-          params={{ id, slug, type: LISTING_PAGE_PARAM_TYPE_DRAFT, tab: 'photos' }}
+          params={{ id, slug, type: LISTING_PAGE_PARAM_TYPE_DRAFT, tab: 'details' }}
           ariaLabel={`${intl.formatMessage({
             id: 'ManageListingCard.finishListingDraft',
           })}: ${title}`}

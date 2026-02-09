@@ -13,12 +13,12 @@
   {
     "domain": "gmail.com",
     "name": "Gmail Test Institution (DEV ONLY)",
-    "membershipStatus": "active",
+    "membershipStatus": "inactive",
     "membershipStartDate": "2024-01-01",
     "membershipEndDate": "2026-12-31",
     "aiCoachingEnabled": true,
     "aiCoachingUrl": "https://coaching.street2ivy.com/test",
     "createdAt": "2026-02-07T07:27:51.840Z",
-    "updatedAt": "2026-02-07T07:27:51.840Z"
+    "updatedAt": "2026-02-09T02:12:53.341Z"
   }
 ]

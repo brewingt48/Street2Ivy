@@ -16,6 +16,9 @@ import { richText } from '../../util/richText';
 import { createSlug } from '../../util/urlHelpers';
 import { isBookingProcessAlias } from '../../transactions/transaction';
 
+import { useRouteConfiguration } from '../../context/routeConfigurationContext';
+import { createResourceLocatorString } from '../../util/routes';
+
 import {
   AspectRatioWrapper,
   NamedLink,
@@ -165,6 +168,7 @@ const ListingCardImage = props => {
  */
 export const ListingCard = props => {
   const config = useConfiguration();
+  const routeConfiguration = useRouteConfiguration();
   const intl = props.intl || useIntl();
 
   const {
@@ -185,6 +189,9 @@ export const ListingCard = props => {
 
   const author = ensureUser(listing.author);
   const authorName = author.attributes.profile.displayName;
+  const authorPublicData = author.attributes.profile?.publicData || {};
+  const isCorporatePartner = authorPublicData.userType === 'corporate-partner';
+  const companyName = authorPublicData.companyName || authorName;
 
   const { listingType, cardStyle } = publicData || {};
   const validListingTypes = config.listing.listingTypes;
@@ -238,7 +245,41 @@ export const ListingCard = props => {
           )}
           {showAuthorInfo ? (
             <div className={css.authorInfo}>
-              <FormattedMessage id="ListingCard.author" values={{ authorName }} />
+              {isCorporatePartner && author.id ? (
+                <span
+                  className={css.authorLink}
+                  role="link"
+                  tabIndex={0}
+                  onClick={e => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const profileUrl = createResourceLocatorString(
+                      'ProfilePage',
+                      routeConfiguration,
+                      { id: author.id.uuid },
+                      {}
+                    );
+                    window.location.assign(profileUrl);
+                  }}
+                  onKeyDown={e => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      const profileUrl = createResourceLocatorString(
+                        'ProfilePage',
+                        routeConfiguration,
+                        { id: author.id.uuid },
+                        {}
+                      );
+                      window.location.assign(profileUrl);
+                    }
+                  }}
+                >
+                  {companyName}
+                </span>
+              ) : (
+                <FormattedMessage id="ListingCard.author" values={{ authorName }} />
+              )}
             </div>
           ) : null}
         </div>

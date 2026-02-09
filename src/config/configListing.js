@@ -58,6 +58,7 @@ export const listingFields = [
     key: 'companyName',
     scope: 'public',
     schemaType: 'text',
+    sectionHeader: 'Section 1: Company Information',
     listingTypeConfig: {
       limitToListingTypeIds: true,
       listingTypeIds: ['project'],
@@ -166,26 +167,28 @@ export const listingFields = [
     saveConfig: {
       label: 'Company Website',
       placeholderMessage: 'https://www.yourcompany.com',
-      isRequired: false,
+      isRequired: true,
+      requiredMessage: 'Company website is required.',
     },
   },
-  // ─── Street2Ivy: Section 2 - Project Mentor Information ────────────────────────────
+  // ─── Street2Ivy: Section 2 - Project Sponsor Information ────────────────────────────
   {
     key: 'mentorName',
     scope: 'public',
     schemaType: 'text',
+    sectionHeader: 'Section 2: Project Mentor',
     listingTypeConfig: {
       limitToListingTypeIds: true,
       listingTypeIds: ['project'],
     },
     showConfig: {
-      label: 'Project Mentor Name',
+      label: 'Project Sponsor',
     },
     saveConfig: {
-      label: 'Project Mentor Name',
-      placeholderMessage: 'Name of primary contact and mentor for the student...',
+      label: 'Project Sponsor Name',
+      placeholderMessage: 'Name of the primary contact for this project...',
       isRequired: true,
-      requiredMessage: 'Please provide a mentor name.',
+      requiredMessage: 'Please provide a project sponsor name.',
     },
   },
   {
@@ -197,13 +200,13 @@ export const listingFields = [
       listingTypeIds: ['project'],
     },
     showConfig: {
-      label: 'Mentor Title',
+      label: 'Sponsor Title',
     },
     saveConfig: {
-      label: 'Mentor Title',
+      label: 'Sponsor Title',
       placeholderMessage: 'e.g., Marketing Director, Senior Engineer...',
       isRequired: true,
-      requiredMessage: 'Please provide the mentor\'s job title.',
+      requiredMessage: 'Please provide the sponsor\'s job title.',
     },
   },
   {
@@ -215,13 +218,13 @@ export const listingFields = [
       listingTypeIds: ['project'],
     },
     showConfig: {
-      label: 'Mentor Email',
+      label: 'Sponsor Email',
     },
     saveConfig: {
-      label: 'Mentor Email',
-      placeholderMessage: 'mentor@company.com',
+      label: 'Sponsor Email',
+      placeholderMessage: 'sponsor@company.com',
       isRequired: true,
-      requiredMessage: 'Please provide the mentor\'s email address.',
+      requiredMessage: 'Please provide the sponsor\'s email address.',
     },
   },
   {
@@ -233,10 +236,10 @@ export const listingFields = [
       listingTypeIds: ['project'],
     },
     showConfig: {
-      label: 'Mentor Phone',
+      label: 'Sponsor Phone',
     },
     saveConfig: {
-      label: 'Mentor Phone',
+      label: 'Sponsor Phone (optional)',
       placeholderMessage: '+1 (555) 123-4567',
       isRequired: false,
     },
@@ -246,6 +249,7 @@ export const listingFields = [
     key: 'projectType',
     scope: 'public',
     schemaType: 'enum',
+    sectionHeader: 'Section 3: Project Details',
     enumOptions: [
       { option: 'research', label: 'Research & Analysis' },
       { option: 'marketing', label: 'Marketing & Branding' },
@@ -399,7 +403,7 @@ export const listingFields = [
       indexForSearch: true,
       filterType: 'SelectMultipleFilter',
       label: 'Compensation',
-      group: 'secondary',
+      group: 'primary',
     },
     showConfig: {
       label: 'Compensation Type',
@@ -416,6 +420,7 @@ export const listingFields = [
     key: 'majorPreference',
     scope: 'public',
     schemaType: 'multi-enum',
+    sectionHeader: 'Section 4: Student Requirements',
     enumOptions: [
       { option: 'business', label: 'Business/Management' },
       { option: 'computer-science', label: 'Computer Science' },
@@ -632,155 +637,99 @@ export const listingFields = [
       requiredMessage: 'Please select the number of students needed.',
     },
   },
+  // NOTE: industryCategory removed — it duplicated companySector.
+  // Use companySector (key: 'companySector') as the single Industry/Sector filter.
+  // ─── Street2Ivy: Contact & Communication Preferences ────────────────────────
   {
-    key: 'industryCategory',
+    key: 'preferredContactMethod',
     scope: 'public',
     schemaType: 'enum',
+    sectionHeader: 'Section 5: Contact & Visibility',
     enumOptions: [
-      { option: 'technology', label: 'Technology' },
-      { option: 'finance', label: 'Finance' },
-      { option: 'consulting', label: 'Consulting' },
-      { option: 'healthcare', label: 'Healthcare' },
-      { option: 'education', label: 'Education' },
-      { option: 'manufacturing', label: 'Manufacturing' },
-      { option: 'retail', label: 'Retail' },
-      { option: 'media', label: 'Media & Entertainment' },
-      { option: 'nonprofit', label: 'Nonprofit' },
-      { option: 'government', label: 'Government' },
-      { option: 'energy', label: 'Energy' },
-      { option: 'real-estate', label: 'Real Estate' },
-      { option: 'legal', label: 'Legal' },
+      { option: 'email', label: 'Email' },
+      { option: 'phone', label: 'Phone' },
+      { option: 'linkedin', label: 'LinkedIn' },
+      { option: 'slack', label: 'Slack' },
+      { option: 'teams', label: 'Microsoft Teams' },
       { option: 'other', label: 'Other' },
     ],
     listingTypeConfig: {
       limitToListingTypeIds: true,
       listingTypeIds: ['project'],
     },
-    filterConfig: {
-      indexForSearch: true,
-      filterType: 'SelectMultipleFilter',
-      label: 'Industry',
-      group: 'primary',
-    },
     showConfig: {
-      label: 'Industry',
+      label: 'Preferred Contact Method',
       isDetail: true,
     },
     saveConfig: {
-      label: 'Industry Category',
-      placeholderMessage: 'Select an industry...',
+      label: 'Preferred Contact Method',
+      placeholderMessage: 'How should selected students reach you?',
       isRequired: true,
-      requiredMessage: 'Please select an industry category.',
+      requiredMessage: 'Please select your preferred contact method.',
     },
   },
-  // ─── Street2Ivy: Confidential Project Details (visible only in workspace) ────
   {
-    key: 'confidentialBrief',
-    scope: 'public', // Stored in publicData but only shown in workspace after acceptance
+    key: 'contactInstructions',
+    scope: 'public',
     schemaType: 'text',
     listingTypeConfig: {
       limitToListingTypeIds: true,
       listingTypeIds: ['project'],
     },
     showConfig: {
-      label: 'Confidential Project Brief',
-      isDetail: false, // Don't show on public listing page
+      label: 'Contact Instructions',
+      isDetail: false, // Shown only after acceptance in handoff screen
     },
     saveConfig: {
-      label: 'Confidential Project Brief',
+      label: 'Contact Instructions',
       placeholderMessage:
-        'Detailed project brief that will only be visible to accepted students...',
+        'How should selected students get in touch? e.g., "Email me at jane@acme.com" or "Connect with me on LinkedIn..."',
       isRequired: false,
     },
   },
+  // ─── Street2Ivy: Project Visibility ─────────────────────────────────────────
   {
-    key: 'confidentialDeliverables',
+    key: 'projectVisibility',
+    scope: 'public',
+    schemaType: 'enum',
+    enumOptions: [
+      { option: 'open', label: 'Open to all eligible students' },
+      { option: 'invite-only', label: 'Invite only' },
+    ],
+    listingTypeConfig: {
+      limitToListingTypeIds: true,
+      listingTypeIds: ['project'],
+    },
+    showConfig: {
+      label: 'Project Visibility',
+      isDetail: true,
+    },
+    saveConfig: {
+      label: 'Project Visibility',
+      placeholderMessage: 'Who can apply to this project?',
+      isRequired: true,
+      requiredMessage: 'Please select project visibility.',
+    },
+  },
+  // ─── Street2Ivy: Institution Domain for Tenant-Scoped Search ────
+  // Auto-populated for alumni users from their profile publicData.
+  // Enables tenant-scoped project browsing via pub_institutionDomain filter.
+  {
+    key: 'institutionDomain',
     scope: 'public',
     schemaType: 'text',
-    listingTypeConfig: {
-      limitToListingTypeIds: true,
-      listingTypeIds: ['project'],
+    filterConfig: {
+      indexForSearch: true,
+      label: 'Institution Domain',
+      group: 'primary',
     },
     showConfig: {
-      label: 'Detailed Deliverables',
-      isDetail: false,
+      label: 'Institution',
+      isDetail: false, // Internal field — not shown on public listing page
     },
     saveConfig: {
-      label: 'Detailed Deliverables (Confidential)',
-      placeholderMessage:
-        'Specific deliverables and requirements that will only be visible to accepted students...',
-      isRequired: false,
-    },
-  },
-  {
-    key: 'ndaRequired',
-    scope: 'public',
-    schemaType: 'boolean',
-    listingTypeConfig: {
-      limitToListingTypeIds: true,
-      listingTypeIds: ['project'],
-    },
-    showConfig: {
-      label: 'NDA Required',
-      isDetail: false,
-    },
-    saveConfig: {
-      label: 'Require NDA Acceptance',
-      placeholderMessage: 'Students must accept NDA before viewing confidential details',
-      isRequired: false,
-    },
-  },
-  {
-    key: 'contactName',
-    scope: 'public',
-    schemaType: 'text',
-    listingTypeConfig: {
-      limitToListingTypeIds: true,
-      listingTypeIds: ['project'],
-    },
-    showConfig: {
-      label: 'Project Contact Name',
-      isDetail: false,
-    },
-    saveConfig: {
-      label: 'Project Contact Name (Confidential)',
-      placeholderMessage: 'Name of person students should contact...',
-      isRequired: false,
-    },
-  },
-  {
-    key: 'contactEmail',
-    scope: 'public',
-    schemaType: 'text',
-    listingTypeConfig: {
-      limitToListingTypeIds: true,
-      listingTypeIds: ['project'],
-    },
-    showConfig: {
-      label: 'Project Contact Email',
-      isDetail: false,
-    },
-    saveConfig: {
-      label: 'Project Contact Email (Confidential)',
-      placeholderMessage: 'Email for project communication...',
-      isRequired: false,
-    },
-  },
-  {
-    key: 'contactPhone',
-    scope: 'public',
-    schemaType: 'text',
-    listingTypeConfig: {
-      limitToListingTypeIds: true,
-      listingTypeIds: ['project'],
-    },
-    showConfig: {
-      label: 'Project Contact Phone',
-      isDetail: false,
-    },
-    saveConfig: {
-      label: 'Project Contact Phone (Confidential)',
-      placeholderMessage: 'Phone number for project communication...',
+      label: 'Institution Domain',
+      placeholderMessage: 'Auto-populated from your institution',
       isRequired: false,
     },
   },

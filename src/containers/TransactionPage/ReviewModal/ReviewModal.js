@@ -44,6 +44,7 @@ const ReviewModal = props => {
     reviewSent = false,
     sendReviewInProgress = false,
     sendReviewError,
+    reviewerRole,
   } = props;
 
   const classes = classNames(rootClassName || css.root, className);
@@ -74,6 +75,7 @@ const ReviewModal = props => {
         reviewSent={reviewSent}
         sendReviewInProgress={sendReviewInProgress}
         sendReviewError={sendReviewError}
+        reviewerRole={reviewerRole}
       />
     </Modal>
   );

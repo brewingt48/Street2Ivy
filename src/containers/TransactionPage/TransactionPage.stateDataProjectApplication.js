@@ -9,7 +9,8 @@ import {
  * Get UI data mapped to specific transaction state & role
  * for the Street2Ivy project application process.
  *
- * Process flow: Apply → Accept/Decline → Mark Completed → Reviews
+ * Simplified matching & reputation model:
+ *   Apply → Accept/Decline → Handoff → Work off-platform → Complete → Reviews
  */
 export const getStateDataForProjectApplicationProcess = (txInfo, processInfo) => {
   const { transactionRole } = txInfo;
@@ -39,35 +40,77 @@ export const getStateDataForProjectApplicationProcess = (txInfo, processInfo) =>
       };
     })
     .cond([states.APPLIED, TX_TRANSITION_ACTOR_CUSTOMER], () => {
-      // Student sees "Application submitted" - no action needed
-      return {
-        processName,
-        processState,
-        showDetailCardHeadings: true,
-      };
-    })
-    .cond([states.ACCEPTED, TX_TRANSITION_ACTOR_PROVIDER], () => {
-      // Corporate partner can mark as completed
-      const primaryButtonProps = actionButtonProps(transitions.MARK_COMPLETED, 'provider');
+      // Student sees "Application submitted" — can withdraw
+      const secondaryButtonProps = actionButtonProps(transitions.WITHDRAW, 'customer');
       return {
         processName,
         processState,
         showDetailCardHeadings: true,
         showActionButtons: true,
-        primaryButtonProps,
+        secondaryButtonProps,
       };
     })
-    .cond([states.ACCEPTED, TX_TRANSITION_ACTOR_CUSTOMER], () => {
-      // Student sees "Application accepted" - project in progress
-      // Show link to secure project workspace
+    .cond([states.ACCEPTED, TX_TRANSITION_ACTOR_PROVIDER], () => {
+      // Corporate partner accepted — show Hand Off + Mark Completed buttons
+      const primaryButtonProps = actionButtonProps(transitions.HAND_OFF, 'provider');
+      const secondaryButtonProps = actionButtonProps(transitions.MARK_COMPLETED, 'provider');
       return {
         processName,
         processState,
         showDetailCardHeadings: true,
-        showWorkspaceLink: true,
+        showActionButtons: true,
+        showHandoffInfo: true,
+        primaryButtonProps,
+        secondaryButtonProps,
+      };
+    })
+    .cond([states.ACCEPTED, TX_TRANSITION_ACTOR_CUSTOMER], () => {
+      // Student's application was accepted — show handoff info
+      return {
+        processName,
+        processState,
+        showDetailCardHeadings: true,
+        showHandoffInfo: true,
+      };
+    })
+    .cond([states.HANDED_OFF, TX_TRANSITION_ACTOR_PROVIDER], () => {
+      // Handoff complete — provider can mark completed or cancel
+      const primaryButtonProps = actionButtonProps(transitions.MARK_COMPLETED, 'provider');
+      const tertiaryButtonProps = actionButtonProps(transitions.CANCEL, 'provider');
+      return {
+        processName,
+        processState,
+        showDetailCardHeadings: true,
+        showActionButtons: true,
+        showHandoffInfo: true,
+        primaryButtonProps,
+        tertiaryButtonProps,
+      };
+    })
+    .cond([states.HANDED_OFF, TX_TRANSITION_ACTOR_CUSTOMER], () => {
+      // Student sees handoff info — work is happening off-platform
+      return {
+        processName,
+        processState,
+        showDetailCardHeadings: true,
+        showHandoffInfo: true,
       };
     })
     .cond([states.DECLINED, _], () => {
+      return {
+        processName,
+        processState,
+        showDetailCardHeadings: true,
+      };
+    })
+    .cond([states.WITHDRAWN, _], () => {
+      return {
+        processName,
+        processState,
+        showDetailCardHeadings: true,
+      };
+    })
+    .cond([states.CANCELLED, _], () => {
       return {
         processName,
         processState,
@@ -82,7 +125,6 @@ export const getStateDataForProjectApplicationProcess = (txInfo, processInfo) =>
         showReviewAsFirstLink: true,
         showActionButtons: true,
         primaryButtonProps: leaveReviewProps,
-        showWorkspaceLink: true,
       };
     })
     .cond([states.REVIEWED_BY_CUSTOMER, TX_TRANSITION_ACTOR_CUSTOMER], () => {

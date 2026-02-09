@@ -1,0 +1,78 @@
+.errorContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 300px;
+  padding: 24px;
+}
+
+.errorCard {
+  text-align: center;
+  max-width: 480px;
+  padding: 48px 32px;
+  border-radius: 8px;
+  background-color: var(--colorWhite, #ffffff);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  border: 1px solid var(--colorGrey100, #e7e7e7);
+}
+
+.errorIcon {
+  font-size: 48px;
+  line-height: 1;
+  margin-bottom: 16px;
+  color: var(--colorFail, #ff0000);
+}
+
+.errorTitle {
+  font-size: 20px;
+  font-weight: var(--fontWeightSemiBold, 600);
+  color: var(--colorGrey900, #1a1a1a);
+  margin: 0 0 12px;
+  line-height: 1.3;
+}
+
+.errorDescription {
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--colorGrey500, #6b6b6b);
+  margin: 0 0 24px;
+}
+
+.errorActions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.retryButton {
+  padding: 10px 24px;
+  font-size: 14px;
+  font-weight: var(--fontWeightSemiBold, 600);
+  border-radius: 4px;
+  border: none;
+  cursor: pointer;
+  background-color: var(--marketplaceColor, #1c7881);
+  color: var(--colorWhite, #ffffff);
+  transition: background-color 0.15s ease;
+}
+
+.retryButton:hover {
+  background-color: var(--marketplaceColorDark, #145e65);
+}
+
+.reloadButton {
+  padding: 10px 24px;
+  font-size: 14px;
+  font-weight: var(--fontWeightSemiBold, 600);
+  border-radius: 4px;
+  border: 1px solid var(--colorGrey300, #b2b2b2);
+  cursor: pointer;
+  background-color: transparent;
+  color: var(--colorGrey700, #4a4a4a);
+  transition: border-color 0.15s ease;
+}
+
+.reloadButton:hover {
+  border-color: var(--colorGrey500, #6b6b6b);
+}

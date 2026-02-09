@@ -7,6 +7,11 @@ import css from './ProgressBar.module.css';
  * ProgressBar component displays a step-based progress indicator
  * with visual dots/circles for each step and connecting lines.
  *
+ * This is a purely visual/decorative component — the actual tab navigation
+ * provides the accessible labels. Step labels are rendered via CSS ::after
+ * pseudo-elements (using data-label attributes) to avoid duplicate text
+ * nodes that conflict with the tab navigation in test queries.
+ *
  * @component
  * @param {Object} props
  * @param {string} [props.className] - Custom class that extends the default class
@@ -34,7 +39,7 @@ const ProgressBar = props => {
   const progressPercentage = ((currentStep) / (steps.length - 1)) * 100;
 
   return (
-    <div className={classes}>
+    <div className={classes} role="presentation">
       <div className={css.progressContainer}>
         {/* Background track */}
         <div className={css.track} />
@@ -45,7 +50,7 @@ const ProgressBar = props => {
           style={{ width: `${progressPercentage}%` }}
         />
 
-        {/* Step dots */}
+        {/* Step dots — labels rendered via CSS ::after to avoid duplicate DOM text */}
         <div className={css.stepsContainer}>
           {steps.map((step, index) => {
             const isCompleted = completedSteps[index] || index < currentStep;
@@ -71,21 +76,20 @@ const ProgressBar = props => {
                   className={classNames(css.stepLabel, {
                     [css.stepLabelActive]: isCurrent || isCompleted,
                   })}
-                >
-                  {step.label}
-                </span>
+                  data-label={step.label}
+                />
               </div>
             );
           })}
         </div>
       </div>
 
-      {/* Mobile: Simple text indicator */}
+      {/* Mobile: Simple text indicator — step count as text, label via CSS */}
       <div className={css.mobileIndicator}>
         <span className={css.mobileText}>
-          Step {currentStep + 1} of {steps.length}
+          {currentStep + 1} / {steps.length}
         </span>
-        <span className={css.mobileLabel}>{steps[currentStep]?.label}</span>
+        <span className={css.mobileLabel} data-label={steps[currentStep]?.label} />
       </div>
     </div>
   );

@@ -20,10 +20,13 @@ const { getSdk } = require('./sdk');
 
 // ================ CONFIGURATION ================ //
 
+const isDev = process.env.NODE_ENV === 'development';
+
 const SECURITY_CONFIG = {
-  // Rate limiting
+  // Rate limiting — higher limit in dev to avoid false positives when
+  // the admin dashboard loads many tabs concurrently on localhost
   rateLimitWindowMs: 15 * 60 * 1000, // 15 minutes
-  rateLimitMaxRequests: 200,
+  rateLimitMaxRequests: isDev ? 2000 : 200,
   strictRateLimitWindowMs: 60 * 1000, // 1 minute
   strictRateLimitMaxRequests: 10,
 

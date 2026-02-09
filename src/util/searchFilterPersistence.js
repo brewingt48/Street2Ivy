@@ -20,14 +20,18 @@ const PERSISTABLE_FILTER_KEYS = [
   'pub_listingType',
 
   // Industry/skill filters
-  'pub_industryCategory',
-  'pub_skills',
+  'pub_companySector',
+  'pub_requiredSkills',
 
   // Project filters
   'pub_projectType',
+  'pub_experienceLevel',
+  'pub_workMode',
+  'pub_compensationType',
+  'pub_projectDuration',
   'pub_estimatedHours',
   'pub_studentsNeeded',
-  'pub_compensationType',
+  'pub_majorPreference',
 
   // Sort
   'sort',

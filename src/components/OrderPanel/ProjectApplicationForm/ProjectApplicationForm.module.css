@@ -1,0 +1,25 @@
+.root {
+  display: flex;
+  flex-direction: column;
+}
+
+.heading {
+  font-size: 20px;
+  font-weight: 600;
+  color: #1e3a5f;
+  margin: 0 0 16px;
+}
+
+.field {
+  margin-bottom: 20px;
+}
+
+.field:last-of-type {
+  margin-bottom: 24px;
+}
+
+.submitButton {
+  display: flex;
+  flex-direction: column;
+  margin-top: 8px;
+}

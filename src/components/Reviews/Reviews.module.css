@@ -96,3 +96,43 @@
     margin-right: 0;
   }
 }
+
+/* Structured Review Category Breakdown */
+.categoryBreakdown {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 8px 0 12px 0;
+  padding: 10px 12px;
+  background: var(--s2i-slate-50, #f8fafc);
+  border-radius: var(--s2i-radius-md, 8px);
+}
+
+.categoryRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.categoryLabel {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--s2i-slate-600, #475569);
+  flex-shrink: 0;
+}
+
+.categoryStars {
+  display: inline-flex;
+  white-space: nowrap;
+}
+
+.categoryRatingStar {
+  height: 10px;
+  width: 10px;
+  margin-right: 1px;
+
+  &:last-of-type {
+    margin-right: 0;
+  }
+}

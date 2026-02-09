@@ -29,7 +29,6 @@ const transactionTransition = require('./api/transaction-transition');
 const deleteAccount = require('./api/delete-account');
 const searchUsers = require('./api/search-users');
 const inviteToApply = require('./api/invite-to-apply');
-const checkDepositStatus = require('./api/check-deposit-status');
 const companyListings = require('./api/company-listings');
 const companySpending = require('./api/company-spending');
 const userStats = require('./api/user-stats');
@@ -51,8 +50,6 @@ const adminUsers = require('./api/admin/users');
 const adminMessages = require('./api/admin/messages');
 const adminReports = require('./api/admin/reports');
 const adminExportReport = require('./api/admin/export-report');
-const adminDeposits = require('./api/admin/deposits');
-const adminCorporateDeposits = require('./api/admin/corporate-deposits');
 const adminInstitutions = require('./api/admin/institutions');
 const adminContent = require('./api/admin/content');
 const adminUpload = require('./api/admin/upload');
@@ -61,14 +58,30 @@ const adminCoachingConfig = require('./api/admin/coaching-config');
 const adminStudentCoachingAccess = require('./api/admin/student-coaching-access');
 const studentWaitlist = require('./api/admin/student-waitlist');
 
+// Multi-tenant management
+const adminTenants = require('./api/admin/tenants');
+
+// Email management (system admin)
+const adminEmail = require('./api/admin/email');
+
+// Education tenant management (edu-admin scoped)
+const educationTenant = require('./api/education-tenant');
+
+// Alumni management (edu-admin scoped)
+const educationAlumni = require('./api/education-alumni');
+
+// Education students and reports (edu-admin scoped)
+const educationStudents = require('./api/education-students');
+const educationReports = require('./api/education-reports');
+
+// Alumni dashboard (alumni user)
+const alumniDashboard = require('./api/alumni-dashboard');
+
+// Alumni referrals (alumni user)
+const alumniReferrals = require('./api/alumni-referrals');
+
 // File upload middleware
 const fileUpload = require('express-fileupload');
-
-// Project Workspace (secure portal for accepted students)
-const projectWorkspace = require('./api/project-workspace');
-
-// NDA E-Signature
-const ndaSignature = require('./api/nda-signature');
 
 // Student Performance Assessments
 const assessments = require('./api/assessments');
@@ -83,6 +96,26 @@ const createUserWithIdp = require('./api/auth/createUserWithIdp');
 
 const { authenticateFacebook, authenticateFacebookCallback } = require('./api/auth/facebook');
 const { authenticateGoogle, authenticateGoogleCallback } = require('./api/auth/google');
+
+// ================ Startup JSON validation ================ //
+const { validateJSONFile } = require('./api-util/jsonStore');
+const pathForValidation = require('path');
+
+const dataDir = pathForValidation.join(__dirname, 'data');
+const jsonFilesToValidate = [
+  { file: pathForValidation.join(dataDir, 'tenants.json'), type: 'array' },
+  { file: pathForValidation.join(dataDir, 'alumni.json'), type: 'array' },
+  { file: pathForValidation.join(dataDir, 'tenant-requests.json'), type: 'array' },
+  { file: pathForValidation.join(dataDir, 'email-log.json'), type: 'array' },
+  { file: pathForValidation.join(dataDir, 'referrals.json'), type: 'array' },
+];
+
+jsonFilesToValidate.forEach(({ file, type }) => {
+  const result = validateJSONFile(file, type);
+  if (!result.valid) {
+    console.warn(`[apiRouter] Data file warning: ${pathForValidation.basename(file)} — ${result.error}`);
+  }
+});
 
 const router = express.Router();
 
@@ -189,9 +222,6 @@ router.get('/companies/spending-report', companySpending.allCompanies);
 // Street2Ivy: User statistics (projects completed, pending, etc.)
 router.get('/user-stats/:userId', userStats);
 
-// Street2Ivy: Deposit status check (for corporate partners)
-router.get('/check-deposit-status/:transactionId', checkDepositStatus);
-
 // Street2Ivy: Educational Admin endpoints
 router.get('/education/dashboard', educationDashboard);
 router.get('/education/students/:studentId/transactions', educationStudentTransactions);
@@ -255,19 +285,6 @@ router.get('/admin/audit-logs', async (req, res) => {
   res.json(logs);
 });
 
-// Street2Ivy: Deposit management endpoints (offline payment tracking)
-router.get('/admin/deposits', adminDeposits.list);
-router.get('/admin/deposits/:transactionId', adminDeposits.status);
-router.post('/admin/deposits/:transactionId/confirm', adminDeposits.confirm);
-router.post('/admin/deposits/:transactionId/revoke', adminDeposits.revoke);
-
-// Street2Ivy: Corporate Partner Deposit Management (track by partner and project)
-router.get('/admin/corporate-deposits', adminCorporateDeposits.list);
-router.get('/admin/corporate-deposits/:partnerId', adminCorporateDeposits.getPartner);
-router.post('/admin/corporate-deposits/:transactionId/clear-hold', adminCorporateDeposits.clearHold);
-router.post('/admin/corporate-deposits/:transactionId/reinstate-hold', adminCorporateDeposits.reinstateHold);
-router.post('/admin/corporate-deposits/:partnerId/clear-all-holds', adminCorporateDeposits.clearAllHolds);
-
 // Street2Ivy: Institution membership management
 router.get('/admin/institutions', adminInstitutions.list);
 router.get('/admin/institutions/:domain', adminInstitutions.get);
@@ -279,6 +296,70 @@ router.delete('/admin/institutions/:domain', adminInstitutions.delete);
 // Public institution check (for signup and students)
 router.get('/institutions/check/:domain', adminInstitutions.checkMembership);
 router.get('/institutions/my-institution', adminInstitutions.getMyInstitution);
+
+// Street2Ivy: Education Tenant Management (edu-admin scoped)
+router.get('/education/tenant', educationTenant.getMyTenant);
+router.put('/education/tenant/branding', educationTenant.updateBranding);
+router.put('/education/tenant/settings', educationTenant.updateSettings);
+router.post('/education/tenant/activate', educationTenant.activateTenant);
+router.post('/education/tenant-request', educationTenant.submitTenantRequest);
+
+// Street2Ivy: Alumni Management (edu-admin scoped)
+router.post('/education/alumni/invite', educationAlumni.invite);
+router.get('/education/alumni', educationAlumni.list);
+
+// Street2Ivy: Alumni Invitation Verification/Acceptance
+// IMPORTANT: Specific paths BEFORE parameterized :id routes to avoid conflicts
+router.get('/education/alumni/verify-invitation/:code', educationAlumni.verifyInvitation);
+router.post('/education/alumni/accept-invitation', educationAlumni.acceptInvitation);
+router.delete('/education/alumni/:id', educationAlumni.delete);
+router.put('/education/alumni/:id/resend', educationAlumni.resend);
+
+// Street2Ivy: Education Students (edu-admin scoped)
+router.get('/education/students', educationStudents.list);
+router.get('/education/students/stats', educationStudents.stats);
+
+// Street2Ivy: Education Reports (edu-admin scoped)
+router.get('/education/reports/overview', educationReports.overview);
+router.get('/education/reports/export', educationReports.export);
+
+// Street2Ivy: Education Tenant logo upload
+router.post('/education/tenant/logo', educationTenant.uploadLogo);
+
+// Street2Ivy: Alumni Dashboard (alumni user)
+router.get('/alumni/dashboard', alumniDashboard);
+
+// Street2Ivy: Alumni Referrals (alumni user)
+router.get('/alumni/referral-link', alumniReferrals.getReferralLink);
+router.get('/alumni/referrals', alumniReferrals.listReferrals);
+router.post('/alumni/referrals/track', alumniReferrals.trackReferral);
+router.get('/alumni/referrals/stats', alumniReferrals.getReferralStats);
+
+// Street2Ivy: Tenant Requests Management (system admin only)
+router.get('/admin/tenant-requests', educationTenant.listTenantRequests);
+router.post('/admin/tenant-requests/:id/approve', educationTenant.approveTenantRequest);
+router.post('/admin/tenant-requests/:id/reject', educationTenant.rejectTenantRequest);
+
+// Street2Ivy: Multi-tenant management (system admin only)
+router.get('/admin/tenants', adminTenants.list);
+router.get('/admin/tenants/:tenantId', adminTenants.get);
+router.post('/admin/tenants', adminTenants.create);
+router.put('/admin/tenants/:tenantId', adminTenants.update);
+router.delete('/admin/tenants/:tenantId', strictRateLimit, adminTenants.delete); // SECURITY: strict rate limit
+router.put('/admin/tenants/:tenantId/branding', adminTenants.updateBranding);
+
+// Public tenant resolution (called on page load to detect which tenant to use)
+router.get('/tenants/resolve', adminTenants.resolve);
+
+// Tenant lookup by institution domain (system admin or edu admin)
+router.get('/tenants/by-institution/:domain', adminTenants.getByInstitutionDomain);
+
+// Street2Ivy: Email Management (system admin only)
+router.get('/admin/email/status', adminEmail.getStatus);
+router.post('/admin/email/verify', adminEmail.verifySmtp);
+router.get('/admin/email/preview/:templateName', adminEmail.previewTemplate);
+router.post('/admin/email/test', strictRateLimit, adminEmail.sendTestEmail); // SECURITY: strict rate limit
+router.get('/admin/email/log', adminEmail.getLog);
 
 // Street2Ivy: Content Management System (CMS) endpoints
 router.get('/admin/content', adminContent.getContent);
@@ -336,21 +417,6 @@ router.post('/admin/upload/favicon', adminUpload.uploadFavicon);
 router.post('/admin/upload/hero-image', adminUpload.uploadHeroImage);
 router.post('/admin/upload/hero-video', adminUpload.uploadHeroVideo);
 router.delete('/admin/upload/:filename', adminUpload.deleteFile);
-
-// Street2Ivy: Secure Project Workspace (for accepted students with confirmed deposits)
-router.get('/project-workspace/:transactionId', projectWorkspace.get);
-router.post('/project-workspace/:transactionId/messages', projectWorkspace.sendMessage);
-router.post('/project-workspace/:transactionId/accept-nda', projectWorkspace.acceptNda);
-router.post('/project-workspace/:transactionId/mark-read', projectWorkspace.markRead);
-
-// Street2Ivy: NDA E-Signature endpoints
-router.post('/nda/upload', ndaSignature.uploadDocument);
-router.get('/nda/:listingId', ndaSignature.getDocument);
-router.post('/nda/request-signature/:transactionId', ndaSignature.requestSignature);
-router.get('/nda/signature-status/:transactionId', ndaSignature.getSignatureStatus);
-router.post('/nda/sign/:transactionId', ndaSignature.sign);
-router.get('/nda/download/:transactionId', ndaSignature.download);
-router.post('/nda/webhook', ndaSignature.webhook);
 
 // Street2Ivy: Student Performance Assessments
 router.get('/assessments/criteria', assessments.getAssessmentCriteria);

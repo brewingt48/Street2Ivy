@@ -18,6 +18,7 @@ import {
 import { timestampToDate } from '../../util/dates';
 import { createSlug } from '../../util/urlHelpers';
 import { requireListingImage } from '../../util/configHelpers';
+import { encodeStructuredReview } from '../../util/structuredReview';
 
 import {
   INQUIRY_PROCESS_NAME,
@@ -445,8 +446,16 @@ export const TransactionPageComponent = props => {
 
   // Submit review and close the review modal
   const onSubmitReview = values => {
-    const { reviewRating, reviewContent } = values;
-    const rating = Number.parseInt(reviewRating, 10);
+    const { categoryRatings, reviewContent } = values;
+    const reviewerRole = transactionRole === CUSTOMER ? 'customer' : 'provider';
+
+    // Encode structured category ratings into the review content
+    const { content: encodedContent, overallRating } = encodeStructuredReview(
+      reviewContent,
+      categoryRatings,
+      reviewerRole
+    );
+
     const { states, transitions } = process;
     const transitionOptions =
       transactionRole === CUSTOMER
@@ -464,7 +473,7 @@ export const TransactionPageComponent = props => {
               .getTransitionsToStates([states.REVIEWED_BY_CUSTOMER])
               .includes(transaction.attributes.lastTransition),
           };
-    const params = { reviewRating: rating, reviewContent };
+    const params = { reviewRating: overallRating, reviewContent: encodedContent };
 
     onSendReview(transaction, transitionOptions, params, config)
       .then(r => {
@@ -827,6 +836,7 @@ export const TransactionPageComponent = props => {
           sendReviewInProgress={sendReviewInProgress}
           sendReviewError={sendReviewError}
           marketplaceName={config.marketplaceName}
+          reviewerRole={transactionRole === CUSTOMER ? 'customer' : 'provider'}
         />
         {process?.transitions?.DISPUTE ? (
           <DisputeModal

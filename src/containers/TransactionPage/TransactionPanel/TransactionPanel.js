@@ -24,7 +24,7 @@ import BookingLocationMaybe from './BookingLocationMaybe';
 import FeedSection from './FeedSection';
 import DiminishedActionButtonMaybe from './DiminishedActionButtonMaybe';
 import PanelHeading from './PanelHeading';
-import WorkspaceLinkMaybe from './WorkspaceLinkMaybe';
+import HandoffKickoffMaybe from './HandoffKickoffMaybe';
 
 import css from './TransactionPanel.module.css';
 
@@ -298,9 +298,11 @@ export class TransactionPanelComponent extends Component {
               showText={isInquiryProcess}
             />
 
-            <WorkspaceLinkMaybe
-              showWorkspaceLink={stateData.showWorkspaceLink}
-              transactionId={transactionId?.uuid}
+            <HandoffKickoffMaybe
+              showHandoffInfo={stateData.showHandoffInfo}
+              isProvider={isProvider}
+              listing={listing}
+              protectedData={protectedData}
             />
 
             {/* Company Profile Link - Show for students (customers) viewing applications/invites */}

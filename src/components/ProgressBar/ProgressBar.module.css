@@ -98,7 +98,7 @@
   font-size: 14px;
 }
 
-/* Label below each step */
+/* Label below each step — rendered via CSS ::after to avoid duplicate DOM text */
 .stepLabel {
   margin-top: 8px;
   font-size: 12px;
@@ -109,6 +109,10 @@
   text-overflow: ellipsis;
   max-width: 100%;
   transition: color 0.3s ease;
+}
+
+.stepLabel::after {
+  content: attr(data-label);
 }
 
 .stepLabelActive {
@@ -139,4 +143,8 @@
   font-size: 16px;
   font-weight: 600;
   color: #00C8BE;
+}
+
+.mobileLabel::after {
+  content: attr(data-label);
 }

@@ -8,7 +8,7 @@ import { isScrollingDisabled } from '../../ducks/ui.duck';
 import { getOwnListingsById } from './CorporateDashboardPage.duck';
 import { fetchPendingAssessments, exportCorporateReport } from '../../util/api';
 
-import { Page, LayoutSingleColumn, NamedLink, H3, StudentAssessmentForm, OnboardingChecklist } from '../../components';
+import { Page, LayoutSingleColumn, NamedLink, H3, StudentAssessmentForm, OnboardingChecklist, DashboardErrorBoundary } from '../../components';
 
 import TopbarContainer from '../../containers/TopbarContainer/TopbarContainer';
 import FooterContainer from '../../containers/FooterContainer/FooterContainer';
@@ -378,15 +378,15 @@ const ProjectCard = props => {
 
   const estimatedHours = publicData?.estimatedHours || '';
   const studentsNeeded = publicData?.studentsNeeded || '';
-  const industryCategory = publicData?.industryCategory || '';
+  const sector = publicData?.companySector || publicData?.industryCategory || '';
 
   return (
     <NamedLink className={css.projectCard} name="ListingPage" params={{ id: listingId, slug }}>
       <h4 className={css.projectCardTitle}>{title || 'Untitled Project'}</h4>
       <div className={css.projectCardMeta}>
-        {industryCategory && (
+        {sector && (
           <span className={css.projectCardMetaItem}>
-            {industryCategory.charAt(0).toUpperCase() + industryCategory.slice(1)}
+            {sector.charAt(0).toUpperCase() + sector.slice(1)}
           </span>
         )}
         {estimatedHours && <span className={css.projectCardMetaItem}>{estimatedHours} hrs</span>}
@@ -619,6 +619,7 @@ export const CorporateDashboardPageComponent = props => {
   return (
     <Page title={title} scrollingDisabled={scrollingDisabled}>
       <LayoutSingleColumn topbar={<TopbarContainer />} footer={<FooterContainer />}>
+        <DashboardErrorBoundary pageName="CorporateDashboard">
         <div className={css.content}>
           <div className={css.pageHeader}>
             <H3 as="h1" className={css.title}>
@@ -676,84 +677,6 @@ export const CorporateDashboardPageComponent = props => {
               hasData={true}
             />
           </div>
-
-          {/* Deposit Status Alert Section */}
-          {dashboardStats?.depositStats && dashboardStats.depositStats.projectsOnHold > 0 && (
-            <div className={css.depositAlertSection}>
-              <div className={css.depositAlertIcon}>⏳</div>
-              <div className={css.depositAlertContent}>
-                <h3 className={css.depositAlertTitle}>
-                  {intl.formatMessage({ id: 'CorporateDashboardPage.depositAlertTitle' })}
-                </h3>
-                <p className={css.depositAlertText}>
-                  {intl.formatMessage(
-                    { id: 'CorporateDashboardPage.depositAlertText' },
-                    { count: dashboardStats.depositStats.projectsOnHold }
-                  )}
-                </p>
-                <p className={css.depositAlertSubtext}>
-                  {intl.formatMessage({ id: 'CorporateDashboardPage.depositAlertSubtext' })}
-                </p>
-              </div>
-            </div>
-          )}
-
-          {/* Deposit Tracker Section */}
-          {dashboardStats?.depositStats && dashboardStats.depositStats.totalHired > 0 && (
-            <div className={css.depositTrackerSection}>
-              <h3 className={css.sectionTitle}>
-                {intl.formatMessage({ id: 'CorporateDashboardPage.depositTrackerTitle' })}
-              </h3>
-              <div className={css.depositTrackerGrid}>
-                <div className={css.depositTrackerCard}>
-                  <div className={css.depositTrackerValue}>
-                    {dashboardStats.depositStats.totalHired}
-                  </div>
-                  <div className={css.depositTrackerLabel}>
-                    {intl.formatMessage({ id: 'CorporateDashboardPage.totalHired' })}
-                  </div>
-                </div>
-                <div className={classNames(css.depositTrackerCard, css.depositTrackerCardWarning)}>
-                  <div className={css.depositTrackerValue}>
-                    {dashboardStats.depositStats.projectsOnHold}
-                  </div>
-                  <div className={css.depositTrackerLabel}>
-                    {intl.formatMessage({ id: 'CorporateDashboardPage.projectsOnHold' })}
-                  </div>
-                </div>
-                <div className={classNames(css.depositTrackerCard, css.depositTrackerCardSuccess)}>
-                  <div className={css.depositTrackerValue}>
-                    {dashboardStats.depositStats.projectsCleared}
-                  </div>
-                  <div className={css.depositTrackerLabel}>
-                    {intl.formatMessage({ id: 'CorporateDashboardPage.projectsCleared' })}
-                  </div>
-                </div>
-              </div>
-
-              {/* Progress Bar */}
-              {dashboardStats.depositStats.totalHired > 0 && (
-                <div className={css.depositProgressContainer}>
-                  <div className={css.depositProgressBar}>
-                    <div
-                      className={css.depositProgressFill}
-                      style={{
-                        width: `${(dashboardStats.depositStats.projectsCleared / dashboardStats.depositStats.totalHired) * 100}%`,
-                      }}
-                    />
-                  </div>
-                  <div className={css.depositProgressText}>
-                    {Math.round(
-                      (dashboardStats.depositStats.projectsCleared /
-                        dashboardStats.depositStats.totalHired) *
-                        100
-                    )}
-                    % {intl.formatMessage({ id: 'CorporateDashboardPage.clearedForWork' })}
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
 
           {/* Enhanced Stats Section */}
           {dashboardStats && (
@@ -916,6 +839,7 @@ export const CorporateDashboardPageComponent = props => {
             renderItem={statDetailModal.renderItem}
           />
         )}
+        </DashboardErrorBoundary>
       </LayoutSingleColumn>
     </Page>
   );

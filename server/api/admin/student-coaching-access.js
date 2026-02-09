@@ -48,10 +48,14 @@ function saveBlockedStudents(data) {
 }
 
 /**
- * Helper to verify user is a system admin
+ * Helper to verify user is a system admin.
+ * Uses the per-user Marketplace SDK (not Integration SDK) because
+ * sdk.currentUser.show() is only available on the Marketplace API.
  */
-async function verifySystemAdmin(sdk) {
-  const currentUserRes = await sdk.currentUser.show();
+async function verifySystemAdmin(req, res) {
+  const { getSdk } = require('../../api-util/sdk');
+  const marketplaceSdk = getSdk(req, res);
+  const currentUserRes = await marketplaceSdk.currentUser.show();
   const currentUser = currentUserRes.data.data;
   const userType = currentUser.attributes.profile.publicData?.userType;
 
@@ -69,7 +73,7 @@ async function verifySystemAdmin(sdk) {
 async function listBlockedStudents(req, res) {
   try {
     const sdk = await getIntegrationSdk(req);
-    await verifySystemAdmin(sdk);
+    await verifySystemAdmin(req, res);
 
     const data = loadBlockedStudents();
     const blockedStudents = data.blockedStudents || [];
@@ -120,7 +124,7 @@ async function listBlockedStudents(req, res) {
 async function blockStudent(req, res) {
   try {
     const sdk = await getIntegrationSdk(req);
-    const adminUser = await verifySystemAdmin(sdk);
+    const adminUser = await verifySystemAdmin(req, res);
 
     const { userId, reason } = req.body;
 
@@ -179,7 +183,7 @@ async function blockStudent(req, res) {
 async function unblockStudent(req, res) {
   try {
     const sdk = await getIntegrationSdk(req);
-    await verifySystemAdmin(sdk);
+    await verifySystemAdmin(req, res);
 
     const { userId } = req.body;
 
@@ -217,7 +221,7 @@ async function unblockStudent(req, res) {
 async function checkStudentAccess(req, res) {
   try {
     const sdk = await getIntegrationSdk(req);
-    await verifySystemAdmin(sdk);
+    await verifySystemAdmin(req, res);
 
     const { userId } = req.params;
 
@@ -242,7 +246,7 @@ async function checkStudentAccess(req, res) {
 async function getInstitutionsCoachingSummary(req, res) {
   try {
     const sdk = await getIntegrationSdk(req);
-    await verifySystemAdmin(sdk);
+    await verifySystemAdmin(req, res);
 
     // Get institutions from the institutions module
     const adminInstitutions = require('./institutions');
@@ -320,7 +324,7 @@ async function getInstitutionsCoachingSummary(req, res) {
 async function getInstitutionStudents(req, res) {
   try {
     const sdk = await getIntegrationSdk(req);
-    await verifySystemAdmin(sdk);
+    await verifySystemAdmin(req, res);
 
     const { domain } = req.params;
     const normalizedDomain = domain.toLowerCase();

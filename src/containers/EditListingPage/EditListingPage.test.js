@@ -381,8 +381,9 @@ describe('EditListingPage', () => {
     expect(queryAllByText('EditListingDetailsForm.categoryLabel')).toHaveLength(2);
 
     // Simulate user selecting subcategory
-    // first combobox is location searc, second the first category, third the subcategory
-    const selectSubcategory = screen.getAllByRole('combobox')[2];
+    // Street2Ivy: search form removed from topbar, so combobox indices shifted:
+    // first combobox is the first category, second is the subcategory
+    const selectSubcategory = screen.getAllByRole('combobox')[1];
     await user.selectOptions(selectSubcategory, screen.getByRole('option', { name: 'Adidas' }));
 
     expect(getByRole('option', { name: 'Adidas' }).selected).toBe(true);
@@ -512,8 +513,9 @@ describe('EditListingPage', () => {
     expect(queryAllByText('EditListingDetailsForm.categoryLabel')).toHaveLength(2);
 
     // Simulate user interaction and select sub level category
-    // first combobox is location searc, second the first category, third the subcategory
-    const selectSubcategory = screen.getAllByRole('combobox')[2];
+    // Street2Ivy: search form removed from topbar, so combobox indices shifted:
+    // first combobox is the first category, second is the subcategory
+    const selectSubcategory = screen.getAllByRole('combobox')[1];
     await user.selectOptions(selectSubcategory, screen.getByRole('option', { name: 'Adidas' }));
 
     expect(getByRole('option', { name: 'Adidas' }).selected).toBe(true);

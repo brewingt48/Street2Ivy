@@ -109,6 +109,7 @@ const EditListingWizardTab = props => {
     updatedTab,
     updateInProgress,
     tabSubmitButtonText,
+    currentUser,
     config,
     routeConfiguration,
     titleId,
@@ -144,6 +145,18 @@ const EditListingWizardTab = props => {
   };
 
   const onCompleteEditListingWizardTab = (tab, updateValues) => {
+    // Street2Ivy: Auto-populate institutionDomain on listings created by alumni users
+    const currentUserPublicData = currentUser?.attributes?.profile?.publicData || {};
+    if (currentUserPublicData.userType === 'alumni' && currentUserPublicData.institutionDomain) {
+      updateValues = {
+        ...updateValues,
+        publicData: {
+          ...(updateValues.publicData || {}),
+          institutionDomain: currentUserPublicData.institutionDomain,
+        },
+      };
+    }
+
     const onUpdateListingOrCreateListingDraft = isNewURI
       ? (tab, values) => onCreateListingDraft(values, config)
       : (tab, values) => onUpdateListing(tab, values, config);

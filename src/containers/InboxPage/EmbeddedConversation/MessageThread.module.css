@@ -1,0 +1,183 @@
+@import '../../../styles/customMediaQueries.css';
+
+.root {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--s2i-space-5);
+  background: var(--s2i-inbox-detail-bg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--s2i-msg-gap);
+}
+
+/* Show older messages */
+.showOlderWrapper {
+  display: flex;
+  justify-content: center;
+  padding: var(--s2i-space-3) 0;
+}
+
+.showOlderButton {
+  font-size: var(--s2i-text-sm);
+  font-weight: var(--s2i-font-medium);
+  color: var(--s2i-text-link);
+  background: var(--s2i-white);
+  border: 1px solid var(--s2i-border-light);
+  border-radius: var(--s2i-radius-full);
+  padding: var(--s2i-space-2) var(--s2i-space-4);
+  cursor: pointer;
+  transition: var(--s2i-transition-colors);
+}
+
+.showOlderButton:hover {
+  background: var(--s2i-slate-50);
+  border-color: var(--s2i-border-default);
+}
+
+.showOlderButton:disabled {
+  opacity: var(--s2i-compose-send-disabled-opacity);
+  cursor: not-allowed;
+}
+
+/* Message rows */
+.messageRow {
+  display: flex;
+  max-width: var(--s2i-msg-max-width);
+  gap: var(--s2i-space-2);
+}
+
+.messageRowReceived {
+  composes: messageRow;
+  align-self: flex-start;
+}
+
+.messageRowSent {
+  composes: messageRow;
+  align-self: flex-end;
+  flex-direction: row-reverse;
+}
+
+/* Message bubbles */
+.messageBubble {
+  padding: var(--s2i-msg-bubble-padding-y) var(--s2i-msg-bubble-padding-x);
+  font-size: var(--s2i-text-base);
+  line-height: var(--s2i-leading-relaxed);
+  white-space: pre-line;
+  word-break: break-word;
+}
+
+.messageBubbleReceived {
+  composes: messageBubble;
+  background: var(--s2i-msg-received-bg);
+  color: var(--s2i-msg-received-color);
+  border-radius: var(--s2i-msg-received-radius);
+  box-shadow: var(--s2i-msg-received-shadow);
+}
+
+.messageBubbleSent {
+  composes: messageBubble;
+  background: var(--s2i-msg-sent-bg);
+  color: var(--s2i-msg-sent-color);
+  border-radius: var(--s2i-msg-sent-radius);
+}
+
+.messageBubbleSent a {
+  color: var(--s2i-msg-sent-link-color);
+  text-decoration: underline;
+}
+
+.messageBubbleSent a:hover {
+  text-decoration: none;
+}
+
+/* Message avatar (received only) */
+.messageAvatar {
+  flex-shrink: 0;
+  align-self: flex-end;
+}
+
+/* Timestamp below bubble */
+.messageTimestamp {
+  font-size: var(--s2i-msg-timestamp-size);
+  color: var(--s2i-msg-timestamp-color);
+  margin-top: var(--s2i-space-1);
+}
+
+.messageTimestampReceived {
+  composes: messageTimestamp;
+  text-align: left;
+}
+
+.messageTimestampSent {
+  composes: messageTimestamp;
+  text-align: right;
+}
+
+/* System / transition messages */
+.transitionRow {
+  display: flex;
+  justify-content: center;
+  padding: var(--s2i-space-2) 0;
+  margin: var(--s2i-space-2) 0;
+}
+
+.transitionContent {
+  font-size: var(--s2i-text-sm);
+  color: var(--s2i-msg-system-color);
+  background: var(--s2i-msg-system-bg);
+  padding: var(--s2i-space-1) var(--s2i-space-3);
+  border-radius: var(--s2i-radius-full);
+  text-align: center;
+  max-width: 80%;
+}
+
+.transitionDate {
+  font-size: var(--s2i-msg-timestamp-size);
+  color: var(--s2i-msg-timestamp-color);
+  margin-top: var(--s2i-space-1);
+  text-align: center;
+}
+
+/* Scroll anchor */
+.scrollAnchor {
+  height: 0;
+  flex-shrink: 0;
+}
+
+/* Loading state */
+.loadingSpinner {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: var(--s2i-space-6);
+  color: var(--s2i-text-tertiary);
+  font-size: var(--s2i-text-sm);
+}
+
+/* Empty state when no messages */
+.emptyMessages {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  padding: var(--s2i-space-8);
+  text-align: center;
+  color: var(--s2i-text-tertiary);
+}
+
+.emptyMessagesIcon {
+  font-size: 2rem;
+  margin-bottom: var(--s2i-space-3);
+}
+
+.emptyMessagesText {
+  font-size: var(--s2i-text-sm);
+  color: var(--s2i-text-secondary);
+}
+
+/* Long word handling */
+.longWord {
+  word-break: break-word;
+  hyphens: auto;
+}

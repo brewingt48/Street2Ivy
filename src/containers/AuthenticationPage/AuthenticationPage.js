@@ -307,6 +307,10 @@ export const AuthenticationForms = props => {
     // Store the email domain for institution matching
     const emailDomain = email.split('@')[1]?.toLowerCase() || null;
 
+    // Check for alumni referral code in URL (e.g., ?ref=ref_abc123)
+    const urlParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
+    const referralCode = urlParams?.get('ref') || null;
+
     const params = {
       email,
       password,
@@ -316,6 +320,7 @@ export const AuthenticationForms = props => {
       publicData: {
         userType,
         emailDomain, // Store domain for institution matching
+        ...(referralCode ? { referredByCode: referralCode } : {}),
         ...pickUserFieldsData(rest, 'public', userType, userFields),
       },
       privateData: {
@@ -328,6 +333,23 @@ export const AuthenticationForms = props => {
     };
 
     submitSignup(params);
+
+    // Fire-and-forget: track alumni referral if a referral code was present
+    if (referralCode && userType === 'student') {
+      const baseUrl = apiBaseUrl();
+      fetch(`${baseUrl}/api/alumni/referrals/track`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          referralCode,
+          studentUserId: email, // Use email as identifier until userId is available
+          studentName: `${fname.trim()} ${lname.trim()}`,
+          studentEmail: email,
+        }),
+      }).catch(() => {
+        // Non-blocking — referral tracking failure should not affect signup
+      });
+    }
   };
 
   const [waitlistError, setWaitlistError] = useState(null);
@@ -882,17 +904,10 @@ export const AuthenticationPageComponent = props => {
   const shouldRedirectAfterLogin =
     isAuthenticated && currentUserLoaded && !showEmailVerification;
 
-  // Determine where to redirect based on user type
+  // Street2Ivy: All authenticated users land on the personalized home (/)
+  // The LandingPage renders role-specific dashboards for authenticated users
+  // while showing the marketing page for anonymous visitors
   const getRedirectDestination = () => {
-    if (currentUserType === 'system-admin') {
-      return 'AdminDashboardPage';
-    } else if (currentUserType === 'educational-admin') {
-      return 'EducationDashboardPage';
-    } else if (currentUserType === 'corporate-partner') {
-      return 'CorporateDashboardPage';
-    } else if (currentUserType === 'student') {
-      return 'StudentDashboardPage';
-    }
     return 'LandingPage';
   };
 

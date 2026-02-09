@@ -247,7 +247,7 @@ const AddListingFields = props => {
   const targetCategoryIds = Object.values(selectedCategories);
 
   const fields = listingFieldsConfig.reduce((pickedFields, fieldConfig) => {
-    const { key, schemaType, scope } = fieldConfig || {};
+    const { key, schemaType, scope, sectionHeader } = fieldConfig || {};
     const namespacedKey = scope === 'public' ? `pub_${key}` : `priv_${key}`;
 
     const isKnownSchemaType = EXTENDED_DATA_SCHEMA_TYPES.includes(schemaType);
@@ -255,20 +255,33 @@ const AddListingFields = props => {
     const isTargetListingType = isFieldForListingType(listingType, fieldConfig);
     const isTargetCategory = isFieldForCategory(targetCategoryIds, fieldConfig);
 
-    return isKnownSchemaType && isProviderScope && isTargetListingType && isTargetCategory
-      ? [
-          ...pickedFields,
-          <CustomExtendedDataField
-            key={namespacedKey}
-            name={namespacedKey}
-            fieldConfig={fieldConfig}
-            defaultRequiredMessage={intl.formatMessage({
-              id: 'EditListingDetailsForm.defaultRequiredMessage',
-            })}
-            formId={formId}
-          />,
-        ]
-      : pickedFields;
+    if (isKnownSchemaType && isProviderScope && isTargetListingType && isTargetCategory) {
+      const elements = [];
+
+      // Add section header if this field starts a new section
+      if (sectionHeader) {
+        elements.push(
+          <h3 key={`section_${key}`} className={css.sectionHeader}>
+            {sectionHeader}
+          </h3>
+        );
+      }
+
+      elements.push(
+        <CustomExtendedDataField
+          key={namespacedKey}
+          name={namespacedKey}
+          fieldConfig={fieldConfig}
+          defaultRequiredMessage={intl.formatMessage({
+            id: 'EditListingDetailsForm.defaultRequiredMessage',
+          })}
+          formId={formId}
+        />
+      );
+
+      return [...pickedFields, ...elements];
+    }
+    return pickedFields;
   }, []);
 
   return <>{fields}</>;

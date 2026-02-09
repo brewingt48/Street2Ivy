@@ -64,6 +64,19 @@
   display: none;
 }
 
+.sectionHeader {
+  font-size: 18px;
+  font-weight: 600;
+  color: #1e3a5f;
+  margin: 32px 0 16px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.sectionHeader:first-of-type {
+  margin-top: 16px;
+}
+
 .submitButton {
   margin-top: auto;
   margin-bottom: 24px;

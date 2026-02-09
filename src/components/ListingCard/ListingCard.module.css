@@ -171,6 +171,17 @@
   }
 }
 
+.authorLink {
+  color: var(--s2i-teal-600);
+  cursor: pointer;
+  transition: var(--s2i-transition-colors);
+
+  &:hover {
+    color: var(--s2i-teal-700);
+    text-decoration: underline;
+  }
+}
+
 .longWord {
   /* fallback option */
   word-break: break-all;

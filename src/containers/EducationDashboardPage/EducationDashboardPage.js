@@ -1,12 +1,12 @@
-import React, { useState, useCallback, useEffect, useMemo } from 'react';
+import React, { useState, useCallback, useEffect, useMemo, memo } from 'react';
 import { connect } from 'react-redux';
 import { compose } from 'redux';
-import { useHistory, useLocation } from 'react-router-dom';
+import { useParams, useHistory, useLocation } from 'react-router-dom';
 import { FormattedMessage, useIntl } from '../../util/reactIntl';
 import { isScrollingDisabled, manageDisableScrolling } from '../../ducks/ui.duck';
 import { fetchAllCompaniesSpending } from '../../util/api';
 
-import { Page, LayoutSingleColumn, PaginationLinks, AvatarMedium, Modal, NamedLink } from '../../components';
+import { Page, LayoutSingleColumn, PaginationLinks, AvatarMedium, Modal, NamedLink, DashboardErrorBoundary, EmptyState, HelpTip } from '../../components';
 import TopbarContainer from '../../containers/TopbarContainer/TopbarContainer';
 import FooterContainer from '../../containers/FooterContainer/FooterContainer';
 
@@ -17,6 +17,24 @@ import {
   sendEducationalAdminMessage,
   fetchEducationalAdminMessages,
   clearMessageState,
+  saveTenantBranding,
+  saveTenantSettings,
+  activateTenantAction,
+  submitTenantRequestAction,
+  inviteAlumniAction,
+  fetchAlumni,
+  clearTenantSaveState,
+  clearTenantRequestState,
+  clearAlumniInviteState,
+  deleteAlumniAction,
+  resendAlumniInvitationAction,
+  uploadTenantLogoAction,
+  fetchStudentsAction,
+  fetchStudentStatsAction,
+  fetchReportsOverviewAction,
+  clearAlumniDeleteState,
+  clearAlumniResendState,
+  clearLogoUploadState,
 } from './EducationDashboardPage.duck';
 
 import css from './EducationDashboardPage.module.css';
@@ -65,7 +83,7 @@ const generateStudentReportData = (students) => {
 
 // ================ Company Spending Report ================ //
 
-const CompanySpendingReport = () => {
+const CompanySpendingReport = memo(() => {
   const [spendingData, setSpendingData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -264,7 +282,7 @@ const CompanySpendingReport = () => {
       )}
     </div>
   );
-};
+});
 
 // ================ Messages Panel ================ //
 
@@ -584,6 +602,118 @@ const MessagesPanel = props => {
   );
 };
 
+// ================ Onboarding Wizard ================ //
+
+const OnboardingWizard = ({ tenant, onSaveBranding, onActivate, saveInProgress, saveSuccess }) => {
+  const [step, setStep] = React.useState(1);
+  const [brandingForm, setBrandingForm] = React.useState({
+    marketplaceName: tenant?.branding?.marketplaceName || tenant?.name || '',
+    marketplaceColor: tenant?.branding?.marketplaceColor || '#2D5BE3',
+    logoUrl: tenant?.branding?.logoUrl || '',
+  });
+
+  const handleBrandingChange = (field, value) => {
+    setBrandingForm(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleSaveBranding = () => {
+    onSaveBranding(brandingForm);
+  };
+
+  return (
+    <div className={css.onboardingWizard}>
+      <div className={css.onboardingProgress}>
+        <div className={`${css.progressStep} ${step >= 1 ? css.progressStepActive : ''}`}>1. Welcome</div>
+        <div className={`${css.progressStep} ${step >= 2 ? css.progressStepActive : ''}`}>2. Branding</div>
+        <div className={`${css.progressStep} ${step >= 3 ? css.progressStepActive : ''}`}>3. Launch</div>
+      </div>
+
+      {step === 1 && (
+        <div className={css.onboardingStep}>
+          <h2>Welcome to Your Portal</h2>
+          <p>Let's set up your institution's branded portal on Street2Ivy.</p>
+          <div className={css.onboardingInfo}>
+            <p><strong>Institution:</strong> {tenant?.name}</p>
+            <p><strong>Domain:</strong> {tenant?.domain}</p>
+          </div>
+          <button className={css.primaryButton} onClick={() => setStep(2)}>Continue to Branding</button>
+        </div>
+      )}
+
+      {step === 2 && (
+        <div className={css.onboardingStep}>
+          <h2>Customize Your Branding</h2>
+          <div className={css.brandingForm}>
+            <label className={css.formLabel}>
+              Portal Name
+              <HelpTip
+                content="The name displayed in the header and emails for your portal. Example: 'Harvard x Street2Ivy'."
+                position="right"
+                size="small"
+              />
+              <input type="text" value={brandingForm.marketplaceName} onChange={(e) => handleBrandingChange('marketplaceName', e.target.value)} className={css.formInput} />
+            </label>
+            <label className={css.formLabel}>
+              Brand Color
+              <HelpTip
+                content="Your institution's primary brand color. Used for headers, buttons, and accents throughout your branded portal."
+                position="right"
+                size="small"
+              />
+              <div className={css.colorPickerRow}>
+                <input type="color" value={brandingForm.marketplaceColor} onChange={(e) => handleBrandingChange('marketplaceColor', e.target.value)} className={css.colorPicker} />
+                <input type="text" value={brandingForm.marketplaceColor} onChange={(e) => handleBrandingChange('marketplaceColor', e.target.value)} className={css.colorInput} />
+              </div>
+            </label>
+            <label className={css.formLabel}>
+              Logo URL (optional)
+              <HelpTip
+                content="URL to your institution's logo. Use a square image (at least 200x200px) for best results."
+                position="right"
+                size="small"
+              />
+              <input type="url" value={brandingForm.logoUrl} onChange={(e) => handleBrandingChange('logoUrl', e.target.value)} className={css.formInput} placeholder="https://example.com/logo.png" />
+            </label>
+          </div>
+          <div className={css.brandingPreview}>
+            <h3>Preview</h3>
+            <div className={css.previewCard} style={{ borderTopColor: brandingForm.marketplaceColor }}>
+              <div className={css.previewHeader} style={{ backgroundColor: brandingForm.marketplaceColor }}>
+                {brandingForm.marketplaceName || 'Your Portal'}
+              </div>
+              <div className={css.previewBody}>Sample content area</div>
+            </div>
+          </div>
+          <div className={css.onboardingActions}>
+            <button className={css.secondaryButton} onClick={() => setStep(1)}>Back</button>
+            <button className={css.primaryButton} onClick={() => { handleSaveBranding(); setStep(3); }} disabled={saveInProgress}>
+              {saveInProgress ? 'Saving...' : 'Save & Continue'}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {step === 3 && (
+        <div className={css.onboardingStep}>
+          <h2>Ready to Launch!</h2>
+          <p>Your portal is ready. Review your settings and activate when ready.</p>
+          <div className={css.onboardingInfo}>
+            <p><strong>Name:</strong> {brandingForm.marketplaceName}</p>
+            <p><strong>Color:</strong> <span style={{ display: 'inline-block', width: 16, height: 16, backgroundColor: brandingForm.marketplaceColor, verticalAlign: 'middle', borderRadius: 2, marginRight: 6 }} />{brandingForm.marketplaceColor}</p>
+            <p><strong>Domain:</strong> {tenant?.domain}</p>
+          </div>
+          <div className={css.onboardingActions}>
+            <button className={css.secondaryButton} onClick={() => setStep(2)}>Back</button>
+            <button className={css.primaryButton} onClick={onActivate} disabled={saveInProgress}>
+              {saveInProgress ? 'Activating...' : 'Launch My Portal'}
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
 // ================ Main Component ================ //
 
 const EducationDashboardPageComponent = props => {
@@ -607,6 +737,17 @@ const EducationDashboardPageComponent = props => {
     sendInProgress,
     sendSuccess,
     sendError,
+    tenant,
+    tenantFetchInProgress,
+    tenantSaveInProgress,
+    tenantSaveSuccess,
+    tenantRequestSubmitted,
+    tenantRequestInProgress,
+    alumni,
+    alumniPagination,
+    alumniFetchInProgress,
+    alumniInviteInProgress,
+    alumniInviteSuccess,
     onFetchDashboard,
     onFetchStudentTransactions,
     onClearStudentTransactions,
@@ -614,13 +755,20 @@ const EducationDashboardPageComponent = props => {
     onFetchMessages,
     onClearMessageState,
     onManageDisableScrolling,
+    dispatch,
   } = props;
 
   const intl = useIntl();
+  const params = useParams();
   const history = useHistory();
   const location = useLocation();
 
-  const [activeTab, setActiveTab] = useState('overview');
+  const activeTab = params.tab || 'overview';
+
+  const handleTabChange = (tab) => {
+    history.push('/education/dashboard/' + tab);
+  };
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -642,19 +790,21 @@ const EducationDashboardPageComponent = props => {
   }, [onClearStudentTransactions]);
 
   const handlePageChange = page => {
-    const params = new URLSearchParams(location.search);
-    params.set('page', page);
-    history.push({ pathname: '/education/dashboard', search: params.toString() });
+    const urlParams = new URLSearchParams(location.search);
+    urlParams.set('page', page);
+    history.push({ pathname: '/education/dashboard', search: urlParams.toString() });
     onFetchDashboard({ page });
   };
 
   const title = intl.formatMessage({ id: 'EducationDashboardPage.title' });
 
+  const topbar = <TopbarContainer />;
+
   // Access control
   if (currentUser && !isEducationalAdmin) {
     return (
       <Page title={title} scrollingDisabled={scrollingDisabled}>
-        <LayoutSingleColumn topbar={<TopbarContainer />} footer={<FooterContainer />}>
+        <LayoutSingleColumn topbar={topbar} footer={<FooterContainer />}>
           <div className={css.noAccess}>
             <h1>
               <FormattedMessage id="EducationDashboardPage.noAccessTitle" />
@@ -663,6 +813,76 @@ const EducationDashboardPageComponent = props => {
               <FormattedMessage id="EducationDashboardPage.noAccessMessage" />
             </p>
           </div>
+        </LayoutSingleColumn>
+      </Page>
+    );
+  }
+
+  // Onboarding/Request flow detection
+  if (!tenantFetchInProgress && tenant === null) {
+    // No tenant exists for this institution — show Request Access form
+    return (
+      <Page title="Education Dashboard" scrollingDisabled={false}>
+        <LayoutSingleColumn topbar={topbar}>
+          <div className={css.requestAccessContainer}>
+            <h1 className={css.requestAccessTitle}>Request Portal Access</h1>
+            <p className={css.requestAccessDescription}>
+              Your institution does not yet have a Street2Ivy portal. Submit a request to get started.
+            </p>
+            {tenantRequestSubmitted ? (
+              <div className={css.successMessage}>
+                Your request has been submitted! Our team will review it and get back to you shortly.
+              </div>
+            ) : (
+              <form onSubmit={(e) => {
+                e.preventDefault();
+                const formData = new FormData(e.target);
+                dispatch(submitTenantRequestAction({
+                  institutionName: formData.get('institutionName'),
+                  adminName: formData.get('adminName'),
+                  adminEmail: formData.get('adminEmail'),
+                  reason: formData.get('reason'),
+                }));
+              }} className={css.requestAccessForm}>
+                <label className={css.formLabel}>
+                  Institution Name
+                  <input type="text" name="institutionName" required className={css.formInput} defaultValue={institutionName || ''} />
+                </label>
+                <label className={css.formLabel}>
+                  Your Name
+                  <input type="text" name="adminName" required className={css.formInput} />
+                </label>
+                <label className={css.formLabel}>
+                  Contact Email
+                  <input type="email" name="adminEmail" required className={css.formInput} />
+                </label>
+                <label className={css.formLabel}>
+                  Why do you want a portal? (optional)
+                  <textarea name="reason" rows={3} className={css.formTextarea} />
+                </label>
+                <button type="submit" className={css.submitButton} disabled={tenantRequestInProgress}>
+                  {tenantRequestInProgress ? 'Submitting...' : 'Submit Request'}
+                </button>
+              </form>
+            )}
+          </div>
+        </LayoutSingleColumn>
+      </Page>
+    );
+  }
+
+  if (!tenantFetchInProgress && tenant?.status === 'onboarding') {
+    // Tenant is in onboarding — show wizard
+    return (
+      <Page title="Set Up Your Portal" scrollingDisabled={false}>
+        <LayoutSingleColumn topbar={topbar}>
+          <OnboardingWizard
+            tenant={tenant}
+            onSaveBranding={(data) => dispatch(saveTenantBranding(data))}
+            onActivate={() => dispatch(activateTenantAction())}
+            saveInProgress={tenantSaveInProgress}
+            saveSuccess={tenantSaveSuccess}
+          />
         </LayoutSingleColumn>
       </Page>
     );
@@ -698,7 +918,7 @@ const EducationDashboardPageComponent = props => {
 
   return (
     <Page title={title} scrollingDisabled={scrollingDisabled}>
-      <LayoutSingleColumn topbar={<TopbarContainer />} footer={<FooterContainer />}>
+      <LayoutSingleColumn topbar={topbar} footer={<FooterContainer />}>
         <div className={css.pageContent}>
           <div className={css.pageHeader}>
             <h1 className={css.pageHeading}>
@@ -721,18 +941,6 @@ const EducationDashboardPageComponent = props => {
             {subscriptionStatus && (
               <div className={css.subscriptionStatusBanner}>
                 <div className={css.subscriptionStatusItems}>
-                  <div className={`${css.subscriptionStatusItem} ${subscriptionStatus.depositPaid ? css.statusActive : css.statusInactive}`}>
-                    <span className={css.statusIcon}>{subscriptionStatus.depositPaid ? '✅' : '⏳'}</span>
-                    <span className={css.statusLabel}>
-                      <FormattedMessage id="EducationDashboardPage.depositStatus" />
-                    </span>
-                    <span className={css.statusValue}>
-                      {subscriptionStatus.depositPaid
-                        ? <FormattedMessage id="EducationDashboardPage.depositPaid" />
-                        : <FormattedMessage id="EducationDashboardPage.depositPending" />
-                      }
-                    </span>
-                  </div>
                   <div className={`${css.subscriptionStatusItem} ${subscriptionStatus.aiCoachingApproved ? css.statusActive : css.statusInactive}`}>
                     <span className={css.statusIcon}>{subscriptionStatus.aiCoachingApproved ? '✅' : '⏳'}</span>
                     <span className={css.statusLabel}>
@@ -746,7 +954,7 @@ const EducationDashboardPageComponent = props => {
                     </span>
                   </div>
                 </div>
-                {(!subscriptionStatus.depositPaid || !subscriptionStatus.aiCoachingApproved) && (
+                {!subscriptionStatus.aiCoachingApproved && (
                   <p className={css.subscriptionNote}>
                     <FormattedMessage id="EducationDashboardPage.subscriptionNote" />
                   </p>
@@ -759,27 +967,39 @@ const EducationDashboardPageComponent = props => {
           <div className={css.tabs}>
             <button
               className={`${css.tab} ${activeTab === 'overview' ? css.activeTab : ''}`}
-              onClick={() => setActiveTab('overview')}
+              onClick={() => handleTabChange('overview')}
             >
               <FormattedMessage id="EducationDashboardPage.tabOverview" />
             </button>
             <button
               className={`${css.tab} ${activeTab === 'students' ? css.activeTab : ''}`}
-              onClick={() => setActiveTab('students')}
+              onClick={() => handleTabChange('students')}
             >
               <FormattedMessage id="EducationDashboardPage.tabStudents" />
             </button>
             <button
+              className={`${css.tab} ${activeTab === 'alumni' ? css.activeTab : ''}`}
+              onClick={() => handleTabChange('alumni')}
+            >
+              Alumni
+            </button>
+            <button
               className={`${css.tab} ${activeTab === 'reports' ? css.activeTab : ''}`}
-              onClick={() => setActiveTab('reports')}
+              onClick={() => handleTabChange('reports')}
             >
               <FormattedMessage id="EducationDashboardPage.tabReports" />
             </button>
             <button
               className={`${css.tab} ${activeTab === 'messages' ? css.activeTab : ''}`}
-              onClick={() => setActiveTab('messages')}
+              onClick={() => handleTabChange('messages')}
             >
               <FormattedMessage id="EducationDashboardPage.tabMessages" />
+            </button>
+            <button
+              className={`${css.tab} ${activeTab === 'branding' ? css.activeTab : ''}`}
+              onClick={() => handleTabChange('branding')}
+            >
+              Branding
             </button>
           </div>
 
@@ -797,11 +1017,26 @@ const EducationDashboardPageComponent = props => {
             </div>
           )}
 
+          {/* Initial loading guard */}
+          {fetchInProgress && !stats && (
+            <div className={css.loadingContainer}>
+              <div className={css.loadingSpinner} />
+              <FormattedMessage id="EducationDashboardPage.loading" />
+            </div>
+          )}
+
+          <DashboardErrorBoundary pageName="EducationDashboard">
           {/* Overview Tab */}
           {activeTab === 'overview' && !fetchInProgress && stats && (
             <div className={css.statsSection}>
               <h2 className={css.statsSectionTitle}>
                 <FormattedMessage id="EducationDashboardPage.statsTitle" />
+                <HelpTip
+                  content={intl.formatMessage({ id: 'EducationDashboardPage.helpOverview' })}
+                  title={intl.formatMessage({ id: 'EducationDashboardPage.helpOverviewTitle' })}
+                  position="right"
+                  size="large"
+                />
               </h2>
 
               {/* Primary Stats - Clickable Cards */}
@@ -809,12 +1044,17 @@ const EducationDashboardPageComponent = props => {
                 <button
                   type="button"
                   className={css.statCardClickable}
-                  onClick={() => setActiveTab('students')}
+                  onClick={() => handleTabChange('students')}
                   title="Click to view all students"
                 >
                   <div className={css.statValue}>{stats.totalStudents}</div>
                   <div className={css.statLabel}>
                     <FormattedMessage id="EducationDashboardPage.statStudents" />
+                    <HelpTip
+                      content={intl.formatMessage({ id: 'EducationDashboardPage.helpStatStudents' })}
+                      position="top"
+                      size="medium"
+                    />
                   </div>
                   <div className={css.statSubtext}>
                     {stats.activeStudents || 0} active
@@ -823,12 +1063,17 @@ const EducationDashboardPageComponent = props => {
                 <button
                   type="button"
                   className={css.statCardClickable}
-                  onClick={() => setActiveTab('reports')}
+                  onClick={() => handleTabChange('reports')}
                   title="Click to view detailed reports"
                 >
                   <div className={css.statValue}>{stats.projectsApplied}</div>
                   <div className={css.statLabel}>
                     <FormattedMessage id="EducationDashboardPage.statApplied" />
+                    <HelpTip
+                      content={intl.formatMessage({ id: 'EducationDashboardPage.helpStatApplications' })}
+                      position="top"
+                      size="medium"
+                    />
                   </div>
                   <div className={css.statSubtext}>
                     {stats.projectsPending || 0} pending
@@ -837,12 +1082,17 @@ const EducationDashboardPageComponent = props => {
                 <button
                   type="button"
                   className={`${css.statCardClickable} ${css.statCardSuccess}`}
-                  onClick={() => setActiveTab('reports')}
+                  onClick={() => handleTabChange('reports')}
                   title="Click to view placement details"
                 >
                   <div className={css.statValue}>{stats.projectsAccepted || 0}</div>
                   <div className={css.statLabel}>
                     <FormattedMessage id="EducationDashboardPage.statAccepted" />
+                    <HelpTip
+                      content={intl.formatMessage({ id: 'EducationDashboardPage.helpStatPlacements' })}
+                      position="top"
+                      size="medium"
+                    />
                   </div>
                   <div className={css.statSubtext}>
                     {stats.acceptanceRate || 0}% acceptance rate
@@ -851,23 +1101,33 @@ const EducationDashboardPageComponent = props => {
                 <button
                   type="button"
                   className={`${css.statCardClickable} ${css.statCardWarning}`}
-                  onClick={() => setActiveTab('reports')}
+                  onClick={() => handleTabChange('reports')}
                   title="Click to view decline details"
                 >
                   <div className={css.statValue}>{stats.projectsDeclined}</div>
                   <div className={css.statLabel}>
                     <FormattedMessage id="EducationDashboardPage.statDeclined" />
+                    <HelpTip
+                      content={intl.formatMessage({ id: 'EducationDashboardPage.helpStatDeclined' })}
+                      position="top"
+                      size="medium"
+                    />
                   </div>
                 </button>
                 <button
                   type="button"
                   className={`${css.statCardClickable} ${css.statCardComplete}`}
-                  onClick={() => setActiveTab('reports')}
+                  onClick={() => handleTabChange('reports')}
                   title="Click to view completed projects"
                 >
                   <div className={css.statValue}>{stats.projectsCompleted}</div>
                   <div className={css.statLabel}>
                     <FormattedMessage id="EducationDashboardPage.statCompleted" />
+                    <HelpTip
+                      content={intl.formatMessage({ id: 'EducationDashboardPage.helpStatCompleted' })}
+                      position="top"
+                      size="medium"
+                    />
                   </div>
                   <div className={css.statSubtext}>
                     {stats.completionRate || 0}% completion rate
@@ -878,6 +1138,11 @@ const EducationDashboardPageComponent = props => {
               {/* Secondary Stats Row */}
               <h3 className={css.secondaryStatsTitle}>
                 <FormattedMessage id="EducationDashboardPage.engagementMetrics" />
+                <HelpTip
+                  content={intl.formatMessage({ id: 'EducationDashboardPage.helpEngagementMetrics' })}
+                  position="right"
+                  size="medium"
+                />
               </h3>
               <div className={css.secondaryStatsGrid}>
                 <div className={css.secondaryStatCard}>
@@ -927,7 +1192,7 @@ const EducationDashboardPageComponent = props => {
                   <button
                     type="button"
                     className={css.quickActionButton}
-                    onClick={() => setActiveTab('students')}
+                    onClick={() => handleTabChange('students')}
                   >
                     <span className={css.quickActionIcon}>👥</span>
                     <span className={css.quickActionText}>
@@ -937,7 +1202,7 @@ const EducationDashboardPageComponent = props => {
                   <button
                     type="button"
                     className={css.quickActionButton}
-                    onClick={() => setActiveTab('reports')}
+                    onClick={() => handleTabChange('reports')}
                   >
                     <span className={css.quickActionIcon}>📊</span>
                     <span className={css.quickActionText}>
@@ -947,7 +1212,7 @@ const EducationDashboardPageComponent = props => {
                   <button
                     type="button"
                     className={css.quickActionButton}
-                    onClick={() => setActiveTab('messages')}
+                    onClick={() => handleTabChange('messages')}
                   >
                     <span className={css.quickActionIcon}>✉️</span>
                     <span className={css.quickActionText}>
@@ -965,6 +1230,12 @@ const EducationDashboardPageComponent = props => {
               <div className={css.sectionHeader}>
                 <h2 className={css.sectionTitle}>
                   <FormattedMessage id="EducationDashboardPage.studentsTitle" />
+                  <HelpTip
+                    content={intl.formatMessage({ id: 'EducationDashboardPage.helpStudents' })}
+                    title={intl.formatMessage({ id: 'EducationDashboardPage.helpStudentsTitle' })}
+                    position="right"
+                    size="large"
+                  />
                 </h2>
                 <input
                   type="text"
@@ -974,13 +1245,17 @@ const EducationDashboardPageComponent = props => {
                   })}
                   value={searchTerm}
                   onChange={e => setSearchTerm(e.target.value)}
+                  title={intl.formatMessage({ id: 'EducationDashboardPage.helpStudentsSearch' })}
                 />
               </div>
 
               {filteredStudents.length === 0 ? (
-                <div className={css.noResults}>
-                  <FormattedMessage id="EducationDashboardPage.noStudents" />
-                </div>
+                <EmptyState
+                  icon="👩‍🎓"
+                  title={intl.formatMessage({ id: 'EducationDashboardPage.emptyStudentsTitle' })}
+                  description={intl.formatMessage({ id: 'EducationDashboardPage.emptyStudentsDescription' })}
+                  size="medium"
+                />
               ) : (
                 <>
                   {/* Desktop Table View */}
@@ -1189,12 +1464,126 @@ const EducationDashboardPageComponent = props => {
             </div>
           )}
 
+          {/* Alumni Tab */}
+          {activeTab === 'alumni' && (
+            <div className={css.alumniSection}>
+              <h2 className={css.sectionTitle}>
+                <FormattedMessage id="EducationDashboardPage.alumniTitle" />
+                <HelpTip
+                  content={intl.formatMessage({ id: 'EducationDashboardPage.helpAlumni' })}
+                  title={intl.formatMessage({ id: 'EducationDashboardPage.helpAlumniTitle' })}
+                  position="right"
+                  size="large"
+                />
+              </h2>
+
+              {/* Invite Form */}
+              <div className={css.alumniInviteForm}>
+                <h3>
+                  <FormattedMessage id="EducationDashboardPage.inviteAlumni" />
+                  <HelpTip
+                    content={intl.formatMessage({ id: 'EducationDashboardPage.helpAlumniInvite' })}
+                    position="right"
+                    size="medium"
+                  />
+                </h3>
+                {alumniInviteSuccess && (
+                  <div className={css.successMessage}>Alumni invited successfully!</div>
+                )}
+                <form onSubmit={(e) => {
+                  e.preventDefault();
+                  const formData = new FormData(e.target);
+                  dispatch(inviteAlumniAction({
+                    firstName: formData.get('firstName'),
+                    lastName: formData.get('lastName'),
+                    email: formData.get('email'),
+                    graduationYear: formData.get('graduationYear'),
+                    program: formData.get('program'),
+                  }));
+                  e.target.reset();
+                }} className={css.inviteForm}>
+                  <div className={css.formRow}>
+                    <label className={css.formLabel}>
+                      First Name *
+                      <input type="text" name="firstName" required className={css.formInput} />
+                    </label>
+                    <label className={css.formLabel}>
+                      Last Name *
+                      <input type="text" name="lastName" required className={css.formInput} />
+                    </label>
+                  </div>
+                  <div className={css.formRow}>
+                    <label className={css.formLabel}>
+                      Email *
+                      <input type="email" name="email" required className={css.formInput} />
+                    </label>
+                    <label className={css.formLabel}>
+                      Graduation Year
+                      <input type="text" name="graduationYear" className={css.formInput} placeholder="e.g. 2023" />
+                    </label>
+                  </div>
+                  <label className={css.formLabel}>
+                    Program
+                    <input type="text" name="program" className={css.formInput} placeholder="e.g. Computer Science" />
+                  </label>
+                  <button type="submit" className={css.submitButton} disabled={alumniInviteInProgress}>
+                    {alumniInviteInProgress ? 'Inviting...' : 'Send Invitation'}
+                  </button>
+                </form>
+              </div>
+
+              {/* Alumni Table */}
+              <div className={css.alumniTable}>
+                <h3>Invited Alumni ({alumniPagination?.total || alumni.length})</h3>
+                {alumni.length === 0 ? (
+                  <EmptyState
+                    icon="🎓"
+                    title={intl.formatMessage({ id: 'EducationDashboardPage.emptyAlumniTitle' })}
+                    description={intl.formatMessage({ id: 'EducationDashboardPage.emptyAlumniDescription' })}
+                    size="medium"
+                  />
+                ) : (
+                  <table className={css.dataTable}>
+                    <thead>
+                      <tr>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Grad Year</th>
+                        <th>Program</th>
+                        <th>Status</th>
+                        <th>Invited</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {alumni.map(a => (
+                        <tr key={a.id}>
+                          <td>{a.firstName} {a.lastName}</td>
+                          <td>{a.email}</td>
+                          <td>{a.graduationYear || '—'}</td>
+                          <td>{a.program || '—'}</td>
+                          <td><span className={`${css.statusBadge} ${css['status_' + a.status]}`}>{a.status}</span></td>
+                          <td>{new Date(a.invitedAt).toLocaleDateString()}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                )}
+              </div>
+            </div>
+          )}
+
           {/* Reports Tab */}
           {activeTab === 'reports' && !fetchInProgress && (
             <div className={css.reportsSection}>
               <div className={css.reportsSectionHeader}>
                 <h2 className={css.sectionTitle}>
                   <FormattedMessage id="EducationDashboardPage.reportsTitle" />
+                  <HelpTip
+                    content={intl.formatMessage({ id: 'EducationDashboardPage.helpReports' })}
+                    title={intl.formatMessage({ id: 'EducationDashboardPage.helpReportsTitle' })}
+                    position="right"
+                    size="large"
+                  />
                 </h2>
                 <p className={css.reportsDescription}>
                   <FormattedMessage id="EducationDashboardPage.reportsDescription" />
@@ -1206,6 +1595,11 @@ const EducationDashboardPageComponent = props => {
                 <div className={css.reportCardHeader}>
                   <h3 className={css.reportCardTitle}>
                     <FormattedMessage id="EducationDashboardPage.summaryReport" />
+                    <HelpTip
+                      content={intl.formatMessage({ id: 'EducationDashboardPage.helpReportsSummary' })}
+                      position="right"
+                      size="medium"
+                    />
                   </h3>
                   <button
                     type="button"
@@ -1288,6 +1682,11 @@ const EducationDashboardPageComponent = props => {
                 <div className={css.reportCardHeader}>
                   <h3 className={css.reportCardTitle}>
                     <FormattedMessage id="EducationDashboardPage.studentActivityReport" />
+                    <HelpTip
+                      content={intl.formatMessage({ id: 'EducationDashboardPage.helpReportsActivity' })}
+                      position="right"
+                      size="medium"
+                    />
                   </h3>
                   <button
                     type="button"
@@ -1350,7 +1749,7 @@ const EducationDashboardPageComponent = props => {
                                   className={css.clickableFieldSmall}
                                   onClick={() => {
                                     setSearchTerm(publicData.major);
-                                    setActiveTab('students');
+                                    handleTabChange('students');
                                   }}
                                   title={`Filter by major: ${publicData.major}`}
                                 >
@@ -1406,6 +1805,11 @@ const EducationDashboardPageComponent = props => {
                 <div className={css.reportCardHeader}>
                   <h3 className={css.reportCardTitle}>
                     <FormattedMessage id="EducationDashboardPage.engagementReport" />
+                    <HelpTip
+                      content={intl.formatMessage({ id: 'EducationDashboardPage.helpReportsEngagement' })}
+                      position="right"
+                      size="medium"
+                    />
                   </h3>
                   <button
                     type="button"
@@ -1514,6 +1918,182 @@ const EducationDashboardPageComponent = props => {
               onClearMessageState={onClearMessageState}
             />
           )}
+
+          {/* Branding & Settings Tab */}
+          {activeTab === 'branding' && (
+            <div className={css.brandingSection}>
+              <h2 className={css.sectionTitle}>
+                <FormattedMessage id="EducationDashboardPage.brandingTitle" />
+                <HelpTip
+                  content={intl.formatMessage({ id: 'EducationDashboardPage.helpBranding' })}
+                  title={intl.formatMessage({ id: 'EducationDashboardPage.helpBrandingTitle' })}
+                  position="right"
+                  size="large"
+                />
+              </h2>
+
+              {tenantSaveSuccess && (
+                <div className={css.successMessage}>
+                  <FormattedMessage id="EducationDashboardPage.settingsSaved" />
+                </div>
+              )}
+
+              {tenant ? (
+                <>
+                  {/* Branding Form */}
+                  <div className={css.settingsCard}>
+                    <h3><FormattedMessage id="EducationDashboardPage.portalBranding" /></h3>
+                    <form onSubmit={(e) => {
+                      e.preventDefault();
+                      const formData = new FormData(e.target);
+                      dispatch(saveTenantBranding({
+                        marketplaceName: formData.get('marketplaceName'),
+                        marketplaceColor: formData.get('marketplaceColor'),
+                        logoUrl: formData.get('logoUrl'),
+                      }));
+                    }}>
+                      <label className={css.formLabel}>
+                        <FormattedMessage id="EducationDashboardPage.portalName" />
+                        <HelpTip
+                          content={intl.formatMessage({ id: 'EducationDashboardPage.helpPortalName' })}
+                          position="right"
+                          size="small"
+                        />
+                        <input type="text" name="marketplaceName" defaultValue={tenant.branding?.marketplaceName || ''} className={css.formInput} />
+                      </label>
+                      <label className={css.formLabel}>
+                        <FormattedMessage id="EducationDashboardPage.brandColor" />
+                        <HelpTip
+                          content={intl.formatMessage({ id: 'EducationDashboardPage.helpBrandColor' })}
+                          position="right"
+                          size="small"
+                        />
+                        <div className={css.colorPickerRow}>
+                          <input type="color" name="marketplaceColor" defaultValue={tenant.branding?.marketplaceColor || '#2D5BE3'} className={css.colorPicker} />
+                        </div>
+                      </label>
+                      <label className={css.formLabel}>
+                        <FormattedMessage id="EducationDashboardPage.logoUrl" />
+                        <HelpTip
+                          content={intl.formatMessage({ id: 'EducationDashboardPage.helpLogoUrl' })}
+                          position="right"
+                          size="medium"
+                        />
+                        <input type="url" name="logoUrl" defaultValue={tenant.branding?.logoUrl || ''} className={css.formInput} />
+                      </label>
+                      <button type="submit" className={css.submitButton} disabled={tenantSaveInProgress}>
+                        {tenantSaveInProgress
+                          ? intl.formatMessage({ id: 'EducationDashboardPage.saving' })
+                          : intl.formatMessage({ id: 'EducationDashboardPage.saveBranding' })}
+                      </button>
+                    </form>
+                  </div>
+
+                  {/* Features Form */}
+                  <div className={css.settingsCard}>
+                    <h3>
+                      <FormattedMessage id="EducationDashboardPage.featureToggles" />
+                      <HelpTip
+                        content={intl.formatMessage({ id: 'EducationDashboardPage.helpFeatureToggles' })}
+                        position="right"
+                        size="medium"
+                      />
+                    </h3>
+                    <form onSubmit={(e) => {
+                      e.preventDefault();
+                      const formData = new FormData(e.target);
+                      dispatch(saveTenantSettings({
+                        aiCoaching: formData.get('aiCoaching') === 'on',
+                        assessments: formData.get('assessments') === 'on',
+                      }));
+                    }}>
+                      <label className={css.toggleLabel}>
+                        <input type="checkbox" name="aiCoaching" defaultChecked={tenant.features?.aiCoaching} />
+                        <FormattedMessage id="EducationDashboardPage.featureAiCoaching" />
+                        <HelpTip
+                          content={intl.formatMessage({ id: 'EducationDashboardPage.helpFeatureAiCoaching' })}
+                          position="right"
+                          size="small"
+                        />
+                      </label>
+                      <label className={css.toggleLabel}>
+                        <input type="checkbox" name="assessments" defaultChecked={tenant.features?.assessments} />
+                        <FormattedMessage id="EducationDashboardPage.featureAssessments" />
+                        <HelpTip
+                          content={intl.formatMessage({ id: 'EducationDashboardPage.helpFeatureAssessments' })}
+                          position="right"
+                          size="small"
+                        />
+                      </label>
+                      <button type="submit" className={css.submitButton} disabled={tenantSaveInProgress}>
+                        {tenantSaveInProgress
+                          ? intl.formatMessage({ id: 'EducationDashboardPage.saving' })
+                          : intl.formatMessage({ id: 'EducationDashboardPage.saveSettings' })}
+                      </button>
+                    </form>
+                  </div>
+
+                  {/* Landing Page Section Visibility */}
+                  <div className={css.settingsCard}>
+                    <h3>Landing Page Sections</h3>
+                    <p className={css.cardDescription}>
+                      Choose which sections appear on your institution's landing page. Sections disabled by the platform administrator cannot be re-enabled here.
+                    </p>
+                    <form onSubmit={(e) => {
+                      e.preventDefault();
+                      const formData = new FormData(e.target);
+                      const sectionVisibility = {};
+                      ['hero', 'statistics', 'features', 'howItWorks', 'videoTestimonial', 'testimonials', 'aiCoaching', 'cta'].forEach(key => {
+                        sectionVisibility[key] = formData.get(key) === 'on';
+                      });
+                      dispatch(saveTenantSettings({ sectionVisibility }));
+                    }}>
+                      {[
+                        { key: 'hero', label: 'Hero Banner' },
+                        { key: 'statistics', label: 'Statistics' },
+                        { key: 'features', label: 'Features / Why Us' },
+                        { key: 'howItWorks', label: 'How It Works' },
+                        { key: 'videoTestimonial', label: 'Video Testimonial' },
+                        { key: 'testimonials', label: 'Written Testimonials' },
+                        { key: 'aiCoaching', label: 'AI Coaching' },
+                        { key: 'cta', label: 'Call to Action' },
+                      ].map(section => (
+                        <label key={section.key} className={css.toggleLabel}>
+                          <input
+                            type="checkbox"
+                            name={section.key}
+                            defaultChecked={tenant?.sectionVisibility?.[section.key] !== false}
+                          />
+                          {section.label}
+                        </label>
+                      ))}
+                      <button type="submit" className={css.submitButton} disabled={tenantSaveInProgress}>
+                        {tenantSaveInProgress
+                          ? intl.formatMessage({ id: 'EducationDashboardPage.saving' })
+                          : 'Save Section Visibility'}
+                      </button>
+                    </form>
+                  </div>
+
+                  {/* Tenant Info */}
+                  <div className={css.settingsCard}>
+                    <h3><FormattedMessage id="EducationDashboardPage.portalInfo" /></h3>
+                    <p><strong>Status:</strong> <span className={`${css.statusBadge} ${css['status_' + tenant.status]}`}>{tenant.status}</span></p>
+                    <p><strong>Domain:</strong> {tenant.domain}</p>
+                    <p><strong>Tenant ID:</strong> {tenant.id}</p>
+                  </div>
+                </>
+              ) : (
+                <EmptyState
+                  icon="🏛️"
+                  title={intl.formatMessage({ id: 'EducationDashboardPage.emptyBrandingTitle' })}
+                  description={intl.formatMessage({ id: 'EducationDashboardPage.emptyBrandingDescription' })}
+                  size="medium"
+                />
+              )}
+            </div>
+          )}
+          </DashboardErrorBoundary>
         </div>
 
         {/* Student Transactions Modal */}
@@ -1622,6 +2202,17 @@ const mapStateToProps = state => {
     sendInProgress,
     sendSuccess,
     sendError,
+    tenant,
+    tenantFetchInProgress,
+    tenantSaveInProgress,
+    tenantSaveSuccess,
+    tenantRequestSubmitted,
+    tenantRequestInProgress,
+    alumni,
+    alumniPagination,
+    alumniFetchInProgress,
+    alumniInviteInProgress,
+    alumniInviteSuccess,
   } = state.EducationDashboardPage;
 
   return {
@@ -1644,6 +2235,26 @@ const mapStateToProps = state => {
     sendInProgress: sendInProgress || false,
     sendSuccess: sendSuccess || false,
     sendError: sendError || null,
+    tenant: typeof tenant !== 'undefined' ? tenant : null,
+    tenantFetchInProgress: tenantFetchInProgress || false,
+    tenantSaveInProgress: tenantSaveInProgress || false,
+    tenantSaveSuccess: tenantSaveSuccess || false,
+    tenantRequestSubmitted: tenantRequestSubmitted || false,
+    tenantRequestInProgress: tenantRequestInProgress || false,
+    alumni: alumni || [],
+    alumniPagination: alumniPagination || null,
+    alumniFetchInProgress: alumniFetchInProgress || false,
+    alumniInviteInProgress: alumniInviteInProgress || false,
+    alumniInviteSuccess: alumniInviteSuccess || false,
+    alumniDeleteInProgress: state.EducationDashboardPage.alumniDeleteInProgress || false,
+    alumniResendInProgress: state.EducationDashboardPage.alumniResendInProgress || false,
+    studentsDetail: state.EducationDashboardPage.studentsDetail || [],
+    studentsPagination: state.EducationDashboardPage.studentsPagination || null,
+    studentsFetchInProgress: state.EducationDashboardPage.studentsFetchInProgress || false,
+    studentStats: state.EducationDashboardPage.studentStats || null,
+    reportsOverview: state.EducationDashboardPage.reportsOverview || null,
+    reportsFetchInProgress: state.EducationDashboardPage.reportsFetchInProgress || false,
+    logoUploadInProgress: state.EducationDashboardPage.logoUploadInProgress || false,
   };
 };
 
@@ -1657,6 +2268,13 @@ const mapDispatchToProps = dispatch => ({
   onClearMessageState: () => dispatch(clearMessageState()),
   onManageDisableScrolling: (componentId, disableScrolling) =>
     dispatch(manageDisableScrolling(componentId, disableScrolling)),
+  onDeleteAlumni: alumniId => dispatch(deleteAlumniAction(alumniId)),
+  onResendInvitation: alumniId => dispatch(resendAlumniInvitationAction(alumniId)),
+  onUploadLogo: (logoData, mimeType) => dispatch(uploadTenantLogoAction(logoData, mimeType)),
+  onFetchStudents: params => dispatch(fetchStudentsAction(params)),
+  onFetchStudentStats: () => dispatch(fetchStudentStatsAction()),
+  onFetchReportsOverview: params => dispatch(fetchReportsOverviewAction(params)),
+  dispatch,
 });
 
 const EducationDashboardPage = compose(

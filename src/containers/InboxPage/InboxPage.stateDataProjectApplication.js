@@ -24,13 +24,28 @@ export const getStateDataForProjectApplicationProcess = (txInfo, processInfo) =>
       return { processName, processState };
     })
     .cond([states.ACCEPTED, TX_TRANSITION_ACTOR_CUSTOMER], () => {
-      // Student's application was accepted
+      // Student's application was accepted — view handoff info
       return { processName, processState, actionNeeded: true };
     })
     .cond([states.ACCEPTED, TX_TRANSITION_ACTOR_PROVIDER], () => {
+      // Corporate partner needs to initiate handoff
+      return { processName, processState, actionNeeded: true };
+    })
+    .cond([states.HANDED_OFF, TX_TRANSITION_ACTOR_PROVIDER], () => {
+      // Provider handed off — work happening off-platform
+      return { processName, processState };
+    })
+    .cond([states.HANDED_OFF, TX_TRANSITION_ACTOR_CUSTOMER], () => {
+      // Student received handoff — work happening off-platform
       return { processName, processState };
     })
     .cond([states.DECLINED, _], () => {
+      return { processName, processState, isFinal: true };
+    })
+    .cond([states.WITHDRAWN, _], () => {
+      return { processName, processState, isFinal: true };
+    })
+    .cond([states.CANCELLED, _], () => {
       return { processName, processState, isFinal: true };
     })
     .cond([states.COMPLETED, _], () => {

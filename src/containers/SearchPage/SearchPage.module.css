@@ -310,6 +310,36 @@
   background-color: var(--s2i-slate-100);
 }
 
+/* ================ Tenant Banner ================ */
+
+.tenantBanner {
+  background: white;
+  border: 1px solid var(--s2i-slate-200, #e2e8f0);
+  border-radius: var(--s2i-radius-xl, 16px);
+  padding: 16px 24px;
+  margin: 16px 24px 0;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+
+  @media (--viewportMedium) {
+    margin: 16px 32px 0;
+  }
+}
+
+.tenantLogo {
+  height: 40px;
+  width: auto;
+  object-fit: contain;
+}
+
+.tenantName {
+  font-family: var(--s2i-font-display, 'Inter', sans-serif);
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--s2i-navy-900, #0f172a);
+}
+
 /* ================ Saved Filters Prompt ================ */
 
 .savedFiltersPrompt {
@@ -380,4 +410,181 @@
     color: var(--s2i-navy-900);
     background: var(--s2i-slate-100);
   }
+}
+
+/* ================ Projects / Companies Toggle ================ */
+
+.searchModeToggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s2i-space-1);
+  padding: 8px 24px;
+  background: var(--s2i-white);
+  border-bottom: 1px solid var(--s2i-slate-200);
+
+  @media (--viewportMedium) {
+    padding: 8px 32px;
+  }
+}
+
+.searchModeBtn {
+  padding: var(--s2i-space-2) var(--s2i-space-4);
+  font-size: var(--s2i-text-sm);
+  font-weight: var(--s2i-font-medium);
+  color: var(--s2i-slate-500);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--s2i-radius-md);
+  cursor: pointer;
+  text-decoration: none;
+  transition: var(--s2i-transition-colors);
+
+  &:hover {
+    color: var(--s2i-navy-900);
+    background: var(--s2i-slate-50);
+    text-decoration: none;
+  }
+}
+
+.searchModeBtnActive {
+  color: var(--s2i-teal-700);
+  background: var(--s2i-teal-50);
+  border-color: var(--s2i-teal-200);
+  font-weight: var(--s2i-font-semibold);
+  cursor: default;
+}
+
+/* ================ Back to Dashboard Breadcrumb ================ */
+
+.breadcrumbBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 24px;
+  background: var(--s2i-white, #ffffff);
+  border-bottom: 1px solid var(--s2i-slate-200, #e2e8f0);
+
+  @media (--viewportMedium) {
+    position: fixed;
+    top: var(--topbarHeightDesktop);
+    left: 0;
+    right: 0;
+    z-index: calc(var(--zIndexTopbar) - 1);
+    padding: 10px 32px;
+  }
+}
+
+.breadcrumbLink {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s2i-space-2, 8px);
+  font-size: var(--s2i-text-sm, 14px);
+  font-weight: var(--s2i-font-medium, 500);
+  color: var(--s2i-slate-600, #475569);
+  text-decoration: none;
+  transition: var(--s2i-transition-colors, color 200ms ease);
+}
+
+.breadcrumbLink:hover {
+  color: var(--s2i-teal-600, #0d9488);
+  text-decoration: none;
+}
+
+.breadcrumbArrow {
+  font-size: 16px;
+  line-height: 1;
+}
+
+.breadcrumbStatus {
+  display: none;
+  align-items: center;
+  gap: var(--s2i-space-2, 8px);
+  font-size: var(--s2i-text-xs, 12px);
+  font-weight: var(--s2i-font-medium, 500);
+  color: var(--s2i-teal-700, #0f766e);
+  background: var(--s2i-teal-50, #f0fdfa);
+  border: 1px solid var(--s2i-teal-200, #99f6e4);
+  border-radius: var(--s2i-radius-full, 9999px);
+  padding: 4px 12px;
+  text-decoration: none;
+  transition: var(--s2i-transition-all, all 200ms ease);
+
+  @media (--viewportMedium) {
+    display: inline-flex;
+  }
+}
+
+.breadcrumbStatus:hover {
+  background: var(--s2i-teal-100, #ccfbf1);
+  text-decoration: none;
+}
+
+.breadcrumbStatusDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--s2i-emerald-500, #10b981);
+  flex-shrink: 0;
+}
+
+/* ================ Sidebar Application Status Card ================ */
+
+.sidebarStatusCard {
+  margin-top: var(--s2i-space-6, 24px);
+  padding: var(--s2i-space-4, 16px);
+  background: linear-gradient(135deg, var(--s2i-teal-50, #f0fdfa) 0%, var(--s2i-emerald-50, #ecfdf5) 100%);
+  border: 1px solid var(--s2i-teal-200, #99f6e4);
+  border-radius: var(--s2i-radius-lg, 12px);
+}
+
+.sidebarStatusTitle {
+  font-size: var(--s2i-text-sm, 14px);
+  font-weight: var(--s2i-font-semibold, 600);
+  color: var(--s2i-navy-900, #0c1430);
+  margin: 0 0 var(--s2i-space-3, 12px) 0;
+}
+
+.sidebarStatusStats {
+  display: flex;
+  gap: var(--s2i-space-3, 12px);
+  margin-bottom: var(--s2i-space-3, 12px);
+}
+
+.sidebarStatusStat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+}
+
+.sidebarStatusValue {
+  font-size: var(--s2i-text-lg, 18px);
+  font-weight: 700;
+  color: var(--s2i-teal-700, #0f766e);
+  line-height: 1.2;
+}
+
+.sidebarStatusLabel {
+  font-size: 11px;
+  color: var(--s2i-slate-500, #64748b);
+  margin-top: 2px;
+}
+
+.sidebarStatusLink {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: var(--s2i-text-xs, 12px);
+  font-weight: var(--s2i-font-semibold, 600);
+  color: var(--s2i-teal-600, #0d9488);
+  text-decoration: none;
+  padding-top: var(--s2i-space-3, 12px);
+  border-top: 1px solid var(--s2i-teal-200, #99f6e4);
+  transition: var(--s2i-transition-colors, color 200ms ease);
+}
+
+.sidebarStatusLink:hover {
+  color: var(--s2i-teal-700, #0f766e);
+  text-decoration: none;
 }

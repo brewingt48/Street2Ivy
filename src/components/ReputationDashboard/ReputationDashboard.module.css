@@ -1,0 +1,139 @@
+@import '../../styles/customMediaQueries.css';
+
+.root {
+  margin-bottom: 32px;
+  padding: 24px;
+  background: linear-gradient(135deg, var(--s2i-slate-50, #f8fafc) 0%, #ffffff 100%);
+  border: 1px solid var(--s2i-slate-200, #e2e8f0);
+  border-radius: var(--s2i-radius-xl, 16px);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.title {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--s2i-navy-900, #0C1430);
+  margin: 0;
+}
+
+.reputationSection {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid var(--s2i-slate-200, #e2e8f0);
+}
+
+.sectionTitle {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--s2i-slate-600, #475569);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 0 0 12px 0;
+}
+
+.scoreOverview {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+
+  @media (--viewportMedium) {
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 32px;
+  }
+}
+
+.overallScore {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-shrink: 0;
+  min-width: 80px;
+}
+
+.overallScoreNumber {
+  font-size: 36px;
+  font-weight: 800;
+  color: var(--s2i-navy-900, #0C1430);
+  line-height: 1;
+}
+
+.overallStars {
+  display: flex;
+  margin: 6px 0;
+}
+
+.overallStar {
+  height: 16px;
+  width: 16px;
+  margin-right: 2px;
+}
+
+.overallStar:last-of-type {
+  margin-right: 0;
+}
+
+.reviewCount {
+  font-size: 12px;
+  color: var(--s2i-slate-500, #64748B);
+}
+
+.categoryBreakdown {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+/* Category Bar */
+.categoryBar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.categoryBarLabel {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--s2i-slate-600, #475569);
+  width: 120px;
+  flex-shrink: 0;
+  text-align: right;
+
+  @media (--viewportMedium) {
+    width: 140px;
+  }
+}
+
+.categoryBarTrack {
+  flex: 1;
+  height: 8px;
+  background: var(--s2i-slate-200, #e2e8f0);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.categoryBarFill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--s2i-teal-500, #00C8BE) 0%, var(--s2i-emerald-500, #10b981) 100%);
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+.categoryBarScore {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--s2i-navy-900, #0C1430);
+  width: 30px;
+  text-align: right;
+  flex-shrink: 0;
+}

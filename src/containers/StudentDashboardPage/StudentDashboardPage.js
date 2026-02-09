@@ -79,7 +79,7 @@ const AICoachingWarningModal = ({ isOpen, onClose, onConfirm, coachingUrl }) => 
                 <strong>I understand and agree that:</strong>
                 <ul className={css.warningList}>
                   <li>Uploading, mentioning, or inputting any confidential information into the AI coaching platform is <strong>strictly prohibited</strong>.</li>
-                  <li>This includes but is not limited to: proprietary company information, NDAs, trade secrets, personal identifying information of others, or any sensitive project details.</li>
+                  <li>This includes but is not limited to: proprietary company information, trade secrets, personal identifying information of others, or any sensitive project details.</li>
                   <li>I will only share general career advice questions and publicly available information.</li>
                   <li>Violation of these terms may result in suspension of my account.</li>
                 </ul>
@@ -160,7 +160,7 @@ const ProjectCard = ({ project, type, onAccept, onDecline }) => {
 
   const handleViewProject = () => {
     if (project.transactionId) {
-      history.push(`/project-workspace/${project.transactionId}`);
+      history.push(`/order/${project.transactionId}/details`);
     }
   };
 
@@ -872,7 +872,7 @@ const StudentDashboardPageComponent = props => {
           active: [...prev.active, { ...project, status: 'active' }],
         }));
         // Redirect to project workspace
-        history.push(`/project-workspace/${project.transactionId}`);
+        history.push(`/order/${project.transactionId}/details`);
       }
     } catch (error) {
       console.error('Failed to accept invite:', error);

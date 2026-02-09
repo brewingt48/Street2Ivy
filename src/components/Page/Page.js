@@ -6,6 +6,8 @@ import classNames from 'classnames';
 
 import { useConfiguration } from '../../context/configurationContext';
 import { useRouteConfiguration } from '../../context/routeConfigurationContext';
+import { useTenant } from '../../context/tenantContext';
+import { mergeConfigWithTenantBranding } from '../../util/configHelpers';
 import { getCustomCSSPropertiesFromConfig } from '../../util/style';
 import { useIntl, intlShape } from '../../util/reactIntl';
 import { metaTagProps } from '../../util/seo';
@@ -38,13 +40,33 @@ const getFaviconVariants = config => {
   // We add favicon through hosted configs
   // NOTE: There's no favicon.ico file. This is an imageAsset object which is used together with <meta> tags.
   const favicon = config.branding.favicon;
-  return favicon?.type === 'imageAsset' ? Object.values(favicon.attributes.variants) : [];
+
+  if (favicon?.type === 'imageAsset') {
+    return Object.values(favicon.attributes.variants);
+  }
+
+  // Multi-tenant support: tenant favicon override provides a single URL.
+  // We create a standard 32x32 variant so the <link> tag renders correctly.
+  if (favicon?.type === 'url' && favicon.url) {
+    return [{ url: favicon.url, width: 32, height: 32 }];
+  }
+
+  return [];
 };
 
 const getAppleTouchIconURL = config => {
   // The appIcon is used to pick apple-touch-icon
   // We use 180x180. I.e. we follow the example set by realfavicongenerator
   const appIcon = config.branding.appIcon;
+
+  // Multi-tenant support: if a tenant provides a favicon URL override,
+  // use it as the apple-touch-icon as well (since tenants typically
+  // provide a single icon that serves both purposes).
+  const favicon = config.branding.favicon;
+  if (favicon?.type === 'url' && favicon.url) {
+    return favicon.url;
+  }
+
   const appIconVariants =
     appIcon?.type === 'imageAsset' ? Object.values(appIcon.attributes.variants) : [];
   const appleTouchIconVariant = appIconVariants.find(variant => {
@@ -333,10 +355,15 @@ class PageComponent extends Component {
  * @returns {JSX.Element} Page component that handles SEO and social sharing
  */
 const Page = props => {
-  const config = useConfiguration();
+  const baseConfig = useConfiguration();
+  const tenant = useTenant();
   const routeConfiguration = useRouteConfiguration();
   const location = useLocation();
   const intl = useIntl();
+
+  // Merge tenant branding overrides into the config.
+  // If no tenant is active (tenant === null), the original config is returned unchanged.
+  const config = mergeConfigWithTenantBranding(baseConfig, tenant);
 
   return (
     <PageComponent

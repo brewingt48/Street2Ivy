@@ -3,16 +3,51 @@ import classNames from 'classnames';
 
 import { useIntl } from '../../util/reactIntl';
 import { propTypes } from '../../util/types';
+import { decodeStructuredReview, getReviewCategories } from '../../util/structuredReview';
 
 import { Avatar, ReviewRating, UserDisplayName } from '../../components';
 
 import css from './Reviews.module.css';
+
+/**
+ * Renders the per-category rating breakdown for a structured review.
+ */
+const CategoryBreakdown = ({ structuredData, intl }) => {
+  if (!structuredData || !structuredData.categories) return null;
+
+  const reviewerRole = structuredData.reviewerRole || 'customer';
+  const categories = getReviewCategories(reviewerRole);
+
+  return (
+    <div className={css.categoryBreakdown}>
+      {categories.map(cat => {
+        const rating = structuredData.categories[cat.key];
+        if (!rating) return null;
+        return (
+          <div key={cat.key} className={css.categoryRow}>
+            <span className={css.categoryLabel}>
+              {intl.formatMessage({ id: cat.labelId })}
+            </span>
+            <ReviewRating
+              rating={Number(rating)}
+              className={css.categoryStars}
+              reviewStarClassName={css.categoryRatingStar}
+            />
+          </div>
+        );
+      })}
+    </div>
+  );
+};
 
 const Review = props => {
   const { review, intl } = props;
 
   const date = review.attributes.createdAt;
   const dateString = intl.formatDate(date, { month: 'long', year: 'numeric' });
+
+  // Decode structured review data if present
+  const { textContent, structuredData } = decodeStructuredReview(review.attributes.content);
 
   return (
     <div className={css.review}>
@@ -23,7 +58,10 @@ const Review = props => {
           className={css.mobileReviewRating}
           reviewStarClassName={css.reviewRatingStar}
         />
-        <p className={css.reviewContent}>{review.attributes.content}</p>
+        {structuredData ? (
+          <CategoryBreakdown structuredData={structuredData} intl={intl} />
+        ) : null}
+        <p className={css.reviewContent}>{textContent}</p>
         <p className={css.reviewInfo}>
           <UserDisplayName user={review.author} intl={intl} />
           <span className={css.separator}>•</span>

@@ -1,0 +1,80 @@
+@import '../../../styles/customMediaQueries.css';
+
+.root {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: var(--s2i-inbox-detail-bg);
+  overflow: hidden;
+}
+
+/* Loading state fills the conversation area */
+.loadingContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  padding: var(--s2i-space-8);
+  color: var(--s2i-text-tertiary);
+}
+
+.loadingSpinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid var(--s2i-border-light);
+  border-top-color: var(--s2i-primary);
+  border-radius: var(--s2i-radius-full);
+  animation: spin 0.8s linear infinite;
+  margin-bottom: var(--s2i-space-3);
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.loadingText {
+  font-size: var(--s2i-text-sm);
+  color: var(--s2i-text-tertiary);
+}
+
+/* Error state */
+.errorContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  padding: var(--s2i-space-8);
+  text-align: center;
+}
+
+.errorIcon {
+  font-size: 2rem;
+  margin-bottom: var(--s2i-space-3);
+}
+
+.errorText {
+  font-size: var(--s2i-text-base);
+  color: var(--s2i-text-secondary);
+  margin-bottom: var(--s2i-space-4);
+}
+
+.retryButton {
+  font-size: var(--s2i-text-sm);
+  font-weight: var(--s2i-font-medium);
+  color: var(--s2i-text-link);
+  background: var(--s2i-white);
+  border: 1px solid var(--s2i-border-light);
+  border-radius: var(--s2i-radius-md);
+  padding: var(--s2i-space-2) var(--s2i-space-4);
+  cursor: pointer;
+  transition: var(--s2i-transition-colors);
+}
+
+.retryButton:hover {
+  background: var(--s2i-slate-50);
+  border-color: var(--s2i-border-default);
+}

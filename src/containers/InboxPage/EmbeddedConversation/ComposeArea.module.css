@@ -1,0 +1,98 @@
+@import '../../../styles/customMediaQueries.css';
+
+.root {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--s2i-space-3);
+  padding: var(--s2i-compose-padding-y) var(--s2i-compose-padding-x);
+  background: var(--s2i-compose-bg);
+  border-top: 1px solid var(--s2i-compose-border);
+  flex-shrink: 0;
+}
+
+.inputWrapper {
+  flex: 1;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.textarea {
+  width: 100%;
+  font-family: var(--s2i-font-sans);
+  font-size: var(--s2i-compose-font-size);
+  line-height: var(--s2i-leading-normal);
+  color: var(--s2i-text-primary);
+  background: var(--s2i-slate-50);
+  border: 1px solid transparent;
+  border-radius: var(--s2i-compose-radius);
+  padding: var(--s2i-space-3) var(--s2i-space-4);
+  min-height: var(--s2i-compose-min-height);
+  max-height: var(--s2i-compose-max-height);
+  resize: none;
+  overflow-y: auto;
+  transition: var(--s2i-transition-colors);
+}
+
+.textarea::placeholder {
+  color: var(--s2i-text-tertiary);
+}
+
+.textarea:focus {
+  outline: none;
+  background: var(--s2i-white);
+  border-color: var(--s2i-compose-focus-border);
+  box-shadow: 0 0 0 3px var(--s2i-compose-focus-ring);
+}
+
+/* Character count */
+.charCount {
+  font-size: var(--s2i-text-xs);
+  color: var(--s2i-text-tertiary);
+  text-align: right;
+  margin-top: var(--s2i-space-1);
+  transition: var(--s2i-transition-colors);
+}
+
+.charCountWarning {
+  composes: charCount;
+  color: var(--s2i-amber-600);
+}
+
+.charCountError {
+  composes: charCount;
+  color: var(--s2i-error);
+}
+
+/* Send button */
+.sendButton {
+  width: var(--s2i-compose-send-size);
+  height: var(--s2i-compose-send-size);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--s2i-compose-send-bg);
+  color: var(--s2i-compose-send-color);
+  border: none;
+  border-radius: var(--s2i-compose-send-radius);
+  cursor: pointer;
+  transition: var(--s2i-transition-colors);
+  flex-shrink: 0;
+  padding: 0;
+}
+
+.sendButton:hover:not(:disabled) {
+  background: var(--s2i-compose-send-hover-bg);
+}
+
+.sendButton:disabled {
+  opacity: var(--s2i-compose-send-disabled-opacity);
+  cursor: not-allowed;
+}
+
+/* Error message */
+.errorMessage {
+  font-size: var(--s2i-text-sm);
+  color: var(--s2i-error);
+  margin-top: var(--s2i-space-1);
+}

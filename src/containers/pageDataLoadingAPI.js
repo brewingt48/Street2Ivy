@@ -2,6 +2,8 @@
  * Export loadData calls from ducks modules of different containers
  */
 import { loadData as AdminDashboardPageLoader } from './AdminDashboardPage/AdminDashboardPage.duck';
+import { loadData as AlumniDashboardPageLoader } from './AlumniDashboardPage/AlumniDashboardPage.duck';
+import { loadData as AlumniJoinPageLoader } from './AlumniJoinPage/AlumniJoinPage.duck';
 import { loadData as AuthenticationPageLoader } from './AuthenticationPage/AuthenticationPage.duck';
 import { loadData as LandingPageLoader } from './LandingPage/LandingPage.duck';
 import { setInitialValues as CheckoutPageInitialValues } from './CheckoutPage/CheckoutPage.duck';
@@ -18,7 +20,6 @@ import { loadData as ManageListingsPageLoader } from './ManageListingsPage/Manag
 import { loadData as PaymentMethodsPageLoader } from './PaymentMethodsPage/PaymentMethodsPage.duck';
 import { loadData as PrivacyPolicyPageLoader } from './PrivacyPolicyPage/PrivacyPolicyPage.duck';
 import { loadData as ProfilePageLoader } from './ProfilePage/ProfilePage.duck';
-import { loadData as ProjectWorkspacePageLoader } from './ProjectWorkspacePage/ProjectWorkspacePage.duck';
 import { loadData as RequestQuotePageLoader } from './RequestQuotePage/RequestQuotePage.duck';
 import { loadData as SearchCompaniesPageLoader } from './SearchCompaniesPage/SearchCompaniesPage.duck';
 import { loadData as SearchPageLoader } from './SearchPage/SearchPage.duck';
@@ -34,6 +35,12 @@ const getPageDataLoadingAPI = () => {
   return {
     AdminDashboardPage: {
       loadData: AdminDashboardPageLoader,
+    },
+    AlumniDashboardPage: {
+      loadData: AlumniDashboardPageLoader,
+    },
+    AlumniJoinPage: {
+      loadData: AlumniJoinPageLoader,
     },
     AuthenticationPage: {
       loadData: AuthenticationPageLoader,
@@ -82,9 +89,6 @@ const getPageDataLoadingAPI = () => {
     },
     ProfilePage: {
       loadData: ProfilePageLoader,
-    },
-    ProjectWorkspacePage: {
-      loadData: ProjectWorkspacePageLoader,
     },
     RequestQuotePage: {
       loadData: RequestQuotePageLoader,

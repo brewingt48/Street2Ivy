@@ -877,3 +877,71 @@
   width: 100%;
   height: 100%;
 }
+
+/* ================ How It Works Section ================ */
+
+.sectionHowItWorks {
+  padding: 0 24px;
+  margin-bottom: 35px;
+  scroll-margin-top: calc(var(--topbarHeightDesktop) + 24px);
+
+  @media (--viewportMedium) {
+    padding: 0;
+  }
+}
+
+.howItWorksSteps {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s2i-space-4);
+  margin-top: var(--s2i-space-4);
+}
+
+.howItWorksStep {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--s2i-space-4);
+  padding: var(--s2i-space-4);
+  background: white;
+  border-radius: var(--s2i-radius-lg);
+  border: 1px solid var(--s2i-slate-200);
+  transition: var(--s2i-transition-all);
+}
+
+.howItWorksStep:hover {
+  border-color: var(--s2i-teal-200);
+  box-shadow: var(--s2i-shadow-sm);
+}
+
+.howItWorksStepNumber {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--s2i-teal-500), var(--s2i-teal-600));
+  color: white;
+  font-size: 14px;
+  font-weight: var(--s2i-font-semibold);
+}
+
+.howItWorksStepContent {
+  flex: 1;
+}
+
+.howItWorksStepTitle {
+  margin: 0 0 4px 0;
+  font-size: 15px;
+  font-weight: var(--s2i-font-semibold);
+  color: var(--s2i-navy-900);
+  line-height: 1.4;
+}
+
+.howItWorksStepDescription {
+  margin: 0;
+  font-size: 13px;
+  color: var(--s2i-slate-500);
+  line-height: 1.5;
+}

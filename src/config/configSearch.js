@@ -36,13 +36,12 @@ export const categoryFilter = {
   // schemaType, key, and other built-in config values are completely filled in configHelper.js
 };
 
+// Street2Ivy: Date range filter disabled — project listings don't use date-based availability.
+// Projects use application deadlines (custom enum field) instead.
 export const dateRangeFilter = {
   schemaType: 'dates',
-  // Should the entire date range be available, or just part of it
-  // Note: Since we don't enforce location search for dates filtering,
-  //       we don't use API's 'time-full' in actual queries. It would require time zone info.
-  availability: 'time-full', // time-partial
-  // Options: day/night. This affects counting and whether single day picking is possible.
+  enabled: false,
+  availability: 'time-full',
   dateRangeMode: 'day',
 };
 
@@ -50,18 +49,21 @@ export const dateRangeFilter = {
  * Note: the order of default filters is defined in util/configHelpers.js
  * To use this built-in configuration, you need to remove the overwrite from configHelper.js (mergeSearchConfig func)
  */
+// Street2Ivy: Price filter disabled — project listings use compensationType (enum) instead
+// of Sharetribe's built-in price field. CompensationType is a custom listing field filter.
 export const priceFilter = {
   schemaType: 'price',
-  // Note: unlike most prices this is not handled in subunits
+  enabled: false,
   min: 0,
   max: 1000,
   step: 5,
 };
-// // This is not in use by default.
-// export const keywordsFilter = {
-//   key: 'keywords',
-//   schemaType: 'keywords',
-// }
+// Enable keyword search filter for project title/description matching
+export const keywordsFilter = {
+  key: 'keywords',
+  schemaType: 'keywords',
+  enabled: true,
+};
 
 export const sortConfig = {
   // Enable/disable the sorting control in the SearchPage
@@ -81,15 +83,12 @@ export const sortConfig = {
   // Keyword filter is sorting the results by relevance.
   // If keyword filter is active, one might want to disable other sorting options
   // by adding 'keywords' to this list.
-  conflictingFilters: [],
+  conflictingFilters: ['keywords'],
 
   options: [
-    // These are default sort options
+    // Sort by newest first (default for browsing projects)
     { key: 'createdAt', labelTranslationKey: 'SortBy.newest' },
     { key: '-createdAt', labelTranslationKey: 'SortBy.oldest' },
-    { key: '-price', labelTranslationKey: 'SortBy.lowestPrice' },
-    { key: 'price', labelTranslationKey: 'SortBy.highestPrice' },
-    // If you add own sort options, you can also use label key: { key: 'meta_rating', label: 'Highest rated' },
 
     // The relevance is only used for keyword search, but the
     // parameter isn't sent to the Marketplace API. The key is purely

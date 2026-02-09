@@ -33,6 +33,7 @@ import {
   isNegotiationProcess,
   isInquiryProcess,
   isPurchaseProcess,
+  isProjectApplicationProcess,
   resolveLatestProcessName,
 } from '../../transactions/transaction';
 
@@ -56,6 +57,11 @@ const BookingFixedDurationForm = loadable(() =>
 const InquiryWithoutPaymentForm = loadable(() =>
   import(
     /* webpackChunkName: "InquiryWithoutPaymentForm" */ './InquiryWithoutPaymentForm/InquiryWithoutPaymentForm'
+  )
+);
+const ProjectApplicationForm = loadable(() =>
+  import(
+    /* webpackChunkName: "ProjectApplicationForm" */ './ProjectApplicationForm/ProjectApplicationForm'
   )
 );
 const ProductOrderForm = loadable(() =>
@@ -319,6 +325,7 @@ const OrderPanel = props => {
   const isBooking = isBookingProcess(processName);
   const isPurchase = isPurchaseProcess(processName);
   const isNegotiation = isNegotiationProcess(processName);
+  const isProjectApplication = isProjectApplicationProcess(processName);
   const isPaymentProcess = isBooking || isPurchase || isNegotiation;
 
   const showPriceMissing = isPaymentProcess && !isNegotiation && !price;
@@ -351,6 +358,7 @@ const OrderPanel = props => {
     mounted && shouldHavePurchase && !isClosed && typeof currentStock === 'number';
 
   const showInquiryForm = mounted && !isClosed && isInquiry;
+  const showProjectApplicationForm = mounted && !isClosed && isProjectApplication;
   // if listing is a request, we show the negotiation form (reverse negotiation). User (provider) needs to make an offer first.
   const showNegotiationForm = mounted && !isClosed && isNegotiation && unitType === REQUEST;
   // if listing is an offer, we show the "request a quote" form as user needs to ask for a quote first from the provider.
@@ -359,7 +367,8 @@ const OrderPanel = props => {
   const supportedProcessesInfo = getSupportedProcessesInfo();
   const isKnownProcess = supportedProcessesInfo.map(info => info.name).includes(processName);
 
-  const { pickupEnabled, shippingEnabled } = listing?.attributes?.publicData || {};
+  const { pickupEnabled, shippingEnabled, projectVisibility } = listing?.attributes?.publicData || {};
+  const isInviteOnly = projectVisibility === 'invite-only';
 
   const listingTypeConfig = validListingTypes.find(conf => conf.listingType === listingType);
   const displayShipping = displayDeliveryShipping(listingTypeConfig);
@@ -531,6 +540,31 @@ const OrderPanel = props => {
             onContactUser={onContactUser}
             {...sharedProps}
           />
+        ) : showProjectApplicationForm && isInviteOnly && !isOwnListing ? (
+          <div className={css.inviteOnlyMessage}>
+            <p className={css.inviteOnlyTitle}>
+              <FormattedMessage id="OrderPanel.inviteOnlyTitle" />
+            </p>
+            <p className={css.inviteOnlyDescription}>
+              <FormattedMessage id="OrderPanel.inviteOnlyDescription" />
+            </p>
+          </div>
+        ) : showProjectApplicationForm ? (
+          <ProjectApplicationForm
+            formId="OrderPanelProjectApplicationForm"
+            onSubmit={onSubmit}
+            finePrintComponent={SubmitFinePrint}
+            isOwnListing={isOwnListing}
+          />
+        ) : showInquiryForm && isInviteOnly && !isOwnListing ? (
+          <div className={css.inviteOnlyMessage}>
+            <p className={css.inviteOnlyTitle}>
+              <FormattedMessage id="OrderPanel.inviteOnlyTitle" />
+            </p>
+            <p className={css.inviteOnlyDescription}>
+              <FormattedMessage id="OrderPanel.inviteOnlyDescription" />
+            </p>
+          </div>
         ) : showInquiryForm ? (
           <InquiryWithoutPaymentForm
             formId="OrderPanelInquiryForm"
@@ -574,13 +608,17 @@ const OrderPanel = props => {
           <div className={css.closedListingButton}>
             <FormattedMessage id="OrderPanel.closedListingButtonText" />
           </div>
+        ) : isInviteOnly && (isInquiry || isProjectApplication) && !isOwnListing ? (
+          <div className={css.closedListingButton}>
+            <FormattedMessage id="OrderPanel.inviteOnlyButtonText" />
+          </div>
         ) : (
           <PrimaryButton
             id={ORDER_PANEL_SUBMIT_BUTTON_ID}
             onClick={handleSubmit(
               isOwnListing,
               isClosed,
-              showInquiryForm || showNegotiationForm,
+              showInquiryForm || showNegotiationForm || showProjectApplicationForm,
               onSubmit,
               history,
               location
@@ -597,6 +635,8 @@ const OrderPanel = props => {
               <FormattedMessage id="OrderPanel.ctaButtonMessageMakeOffer" />
             ) : showRequestQuoteForm ? (
               <FormattedMessage id="OrderPanel.ctaButtonMessageRequestAQuote" />
+            ) : isProjectApplication ? (
+              <FormattedMessage id="OrderPanel.ctaButtonMessageApply" />
             ) : (
               <FormattedMessage id="OrderPanel.ctaButtonMessageInquiry" />
             )}

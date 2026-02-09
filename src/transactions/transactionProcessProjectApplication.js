@@ -2,7 +2,8 @@
  * Transaction process graph for Street2Ivy project applications:
  *   - default-project-application
  *
- * Flow: Student applies → Corporate partner accepts/declines → Work completed → Reviews
+ * Simplified matching & reputation model:
+ *   Student applies → Corporate partner accepts/declines → Handoff → Work off-platform → Complete → Reviews
  */
 
 /**
@@ -22,7 +23,16 @@ export const transitions = {
   ACCEPT: 'transition/accept',
   DECLINE: 'transition/decline',
 
-  // Corporate partner marks the project as completed
+  // Student can withdraw their application before it's accepted/declined
+  WITHDRAW: 'transition/withdraw',
+
+  // Corporate partner can cancel a project after acceptance
+  CANCEL: 'transition/cancel',
+
+  // After acceptance, provider confirms handoff (introduction made, contact details shared)
+  HAND_OFF: 'transition/hand-off',
+
+  // Either party marks the project as completed (work happened off-platform)
   MARK_COMPLETED: 'transition/mark-completed',
 
   // Reviews are given through transaction transitions. Review 1 can be
@@ -50,7 +60,10 @@ export const states = {
   INITIAL: 'initial',
   APPLIED: 'applied',
   DECLINED: 'declined',
+  WITHDRAWN: 'withdrawn',
   ACCEPTED: 'accepted',
+  CANCELLED: 'cancelled',
+  HANDED_OFF: 'handed-off',
   COMPLETED: 'completed',
   REVIEWED_BY_CUSTOMER: 'reviewed-by-customer',
   REVIEWED_BY_PROVIDER: 'reviewed-by-provider',
@@ -86,12 +99,23 @@ export const graph = {
       on: {
         [transitions.ACCEPT]: states.ACCEPTED,
         [transitions.DECLINE]: states.DECLINED,
+        [transitions.WITHDRAW]: states.WITHDRAWN,
       },
     },
     [states.DECLINED]: { type: 'final' },
+    [states.WITHDRAWN]: { type: 'final' },
     [states.ACCEPTED]: {
       on: {
+        [transitions.HAND_OFF]: states.HANDED_OFF,
         [transitions.MARK_COMPLETED]: states.COMPLETED,
+        [transitions.CANCEL]: states.CANCELLED,
+      },
+    },
+    [states.CANCELLED]: { type: 'final' },
+    [states.HANDED_OFF]: {
+      on: {
+        [transitions.MARK_COMPLETED]: states.COMPLETED,
+        [transitions.CANCEL]: states.CANCELLED,
       },
     },
     [states.COMPLETED]: {
@@ -125,6 +149,9 @@ export const isRelevantPastTransition = transition => {
     transitions.APPLY,
     transitions.ACCEPT,
     transitions.DECLINE,
+    transitions.WITHDRAW,
+    transitions.CANCEL,
+    transitions.HAND_OFF,
     transitions.MARK_COMPLETED,
     transitions.REVIEW_1_BY_PROVIDER,
     transitions.REVIEW_1_BY_CUSTOMER,
@@ -178,7 +205,7 @@ export const isRefunded = transition => {
 };
 
 // States where provider (corporate partner) needs to take action
-export const statesNeedingProviderAttention = [states.APPLIED, states.COMPLETED];
+export const statesNeedingProviderAttention = [states.APPLIED, states.ACCEPTED, states.COMPLETED];
 
 // States where customer (student) needs to take action
-export const statesNeedingCustomerAttention = [states.ACCEPTED, states.COMPLETED];
+export const statesNeedingCustomerAttention = [states.HANDED_OFF, states.COMPLETED];

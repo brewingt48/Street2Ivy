@@ -18,7 +18,6 @@ import css from './MainPanelHeader.module.css';
  * @param {boolean} props.listingsAreLoaded - Whether the listings are loaded
  * @param {number} props.resultsCount - The results count
  * @param {boolean} props.searchInProgress - Whether the search is in progress
- * @param {React.Node} props.noResultsInfo - The no results info
  * @returns {JSX.Element}
  */
 const MainPanelHeader = props => {
@@ -31,7 +30,6 @@ const MainPanelHeader = props => {
     listingsAreLoaded,
     resultsCount,
     searchInProgress = false,
-    noResultsInfo,
   } = props;
 
   const classes = classNames(rootClassName || css.root, className);
@@ -62,8 +60,6 @@ const MainPanelHeader = props => {
       </div>
 
       {children}
-
-      {noResultsInfo ? noResultsInfo : null}
     </div>
   );
 };

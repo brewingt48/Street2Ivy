@@ -13,8 +13,9 @@ import configureStore from './store';
 // utils
 import { RouteConfigurationProvider } from './context/routeConfigurationContext';
 import { ConfigurationProvider } from './context/configurationContext';
+import { TenantProvider } from './context/tenantContext';
 import { difference } from './util/common';
-import { mergeConfig } from './util/configHelpers';
+import { mergeConfig, mergeConfigWithTenantBranding } from './util/configHelpers';
 import { IntlProvider } from './util/reactIntl';
 import { includeCSSProperties } from './util/style';
 import { IncludeScripts } from './util/includeScripts';
@@ -139,15 +140,17 @@ const MomentLocaleLoader = props => {
 };
 
 const Configurations = props => {
-  const { appConfig, children } = props;
+  const { appConfig, tenant, children } = props;
   const routeConfig = routeConfiguration(appConfig.layout, appConfig?.accessControl);
   const locale = isTestEnv ? 'en' : appConfig.localization.locale;
 
   return (
     <ConfigurationProvider value={appConfig}>
-      <MomentLocaleLoader locale={locale}>
-        <RouteConfigurationProvider value={routeConfig}>{children}</RouteConfigurationProvider>
-      </MomentLocaleLoader>
+      <TenantProvider value={tenant || null}>
+        <MomentLocaleLoader locale={locale}>
+          <RouteConfigurationProvider value={routeConfig}>{children}</RouteConfigurationProvider>
+        </MomentLocaleLoader>
+      </TenantProvider>
     </ConfigurationProvider>
   );
 };
@@ -209,7 +212,7 @@ const EnvironmentVariableWarning = props => {
  * @returns {JSX.Element}
  */
 export const ClientApp = props => {
-  const { store, hostedTranslations = {}, hostedConfig = {} } = props;
+  const { store, hostedTranslations = {}, hostedConfig = {}, tenant = null } = props;
   const appConfig = mergeConfig(hostedConfig, defaultConfig);
 
   // Show warning on the localhost:3000, if the environment variable key contains "SECRET"
@@ -236,18 +239,23 @@ export const ClientApp = props => {
     );
   }
 
+  // Merge tenant-specific branding overrides into the config for CSS properties.
+  // This ensures that tenant colors are applied to <html> for modals/portals.
+  // If no tenant is active, the original config is returned unchanged.
+  const tenantAwareConfig = mergeConfigWithTenantBranding(appConfig, tenant);
+
   // Marketplace color and the color for <PrimaryButton> come from configs
   // If set, we need to create CSS Property and set it to DOM (documentElement is selected here)
   // This provides marketplace color for everything under <html> tag (including modals/portals)
   // Note: This is also set on Page component to provide server-side rendering.
   const elem = window.document.documentElement;
-  includeCSSProperties(appConfig.branding, elem);
+  includeCSSProperties(tenantAwareConfig.branding, elem);
 
   // This gives good input for debugging issues on live environments, but with test it's not needed.
   const logLoadDataCalls = appSettings?.env !== 'test';
 
   return (
-    <Configurations appConfig={appConfig}>
+    <Configurations appConfig={appConfig} tenant={tenant}>
       <IntlProvider
         locale={appConfig.localization.locale}
         messages={{ ...localeMessages, ...hostedTranslations }}
@@ -278,7 +286,15 @@ export const ClientApp = props => {
  * @returns {JSX.Element}
  */
 export const ServerApp = props => {
-  const { url, context, helmetContext, store, hostedTranslations = {}, hostedConfig = {} } = props;
+  const {
+    url,
+    context,
+    helmetContext,
+    store,
+    hostedTranslations = {},
+    hostedConfig = {},
+    tenant = null,
+  } = props;
   const appConfig = mergeConfig(hostedConfig, defaultConfig);
   HelmetProvider.canUseDOM = false;
 
@@ -294,7 +310,7 @@ export const ServerApp = props => {
   }
 
   return (
-    <Configurations appConfig={appConfig}>
+    <Configurations appConfig={appConfig} tenant={tenant}>
       <IntlProvider
         locale={appConfig.localization.locale}
         messages={{ ...localeMessages, ...hostedTranslations }}
@@ -329,7 +345,8 @@ export const renderApp = (
   preloadedState,
   hostedTranslations,
   hostedConfig,
-  collectChunks
+  collectChunks,
+  tenant
 ) => {
   // Don't pass an SDK instance since we're only rendering the
   // component tree with the preloaded store state and components
@@ -349,6 +366,7 @@ export const renderApp = (
       store={store}
       hostedTranslations={hostedTranslations}
       hostedConfig={hostedConfig}
+      tenant={tenant}
     />
   );
 

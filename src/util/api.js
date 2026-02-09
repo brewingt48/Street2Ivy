@@ -590,154 +590,6 @@ export const rejectUserProfile = (userId, reason) => {
   });
 };
 
-// ========== Deposit Management (Admin) ==========
-
-// Get list of transactions awaiting deposit confirmation (admin only)
-export const fetchPendingDeposits = (params = {}) => {
-  const queryString = Object.entries(params)
-    .map(([key, value]) => `${key}=${encodeURIComponent(value)}`)
-    .join('&');
-  return request(`/api/admin/deposits${queryString ? `?${queryString}` : ''}`);
-};
-
-// Confirm deposit received for a transaction (admin only)
-export const confirmDeposit = (transactionId, { amount, paymentMethod, notes }) => {
-  return request(`/api/admin/deposits/${transactionId}/confirm`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ amount, paymentMethod, notes }),
-  });
-};
-
-// Revoke deposit confirmation (admin only)
-export const revokeDeposit = (transactionId, reason) => {
-  return request(`/api/admin/deposits/${transactionId}/revoke`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ reason }),
-  });
-};
-
-// Get deposit status for a transaction (admin only)
-export const getDepositStatus = transactionId => {
-  return request(`/api/admin/deposits/${transactionId}`);
-};
-
-// ========== Corporate Partner Deposit Management (Admin) ==========
-
-// Get list of corporate partners with their deposit status (admin only)
-export const fetchCorporateDeposits = (params = {}) => {
-  const queryString = Object.entries(params)
-    .map(([key, value]) => `${key}=${encodeURIComponent(value)}`)
-    .join('&');
-  return request(`/api/admin/corporate-deposits${queryString ? `?${queryString}` : ''}`);
-};
-
-// Get detailed deposits for a specific corporate partner (admin only)
-export const fetchCorporatePartnerDeposits = partnerId => {
-  return request(`/api/admin/corporate-deposits/${partnerId}`);
-};
-
-// Clear work hold for a transaction (admin only)
-// Allows student to proceed with work on the project
-export const clearWorkHold = (transactionId, notes = '') => {
-  return request(`/api/admin/corporate-deposits/${transactionId}/clear-hold`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ notes }),
-  });
-};
-
-// Reinstate work hold for a transaction (admin only)
-// Blocks student from proceeding with work on the project
-export const reinstateWorkHold = (transactionId, reason = '') => {
-  return request(`/api/admin/corporate-deposits/${transactionId}/reinstate-hold`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ reason }),
-  });
-};
-
-// Clear all work holds for a corporate partner (admin only)
-// Bulk operation to allow all hired students to proceed
-export const clearAllHoldsForPartner = (partnerId, notes = '') => {
-  return request(`/api/admin/corporate-deposits/${partnerId}/clear-all-holds`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ notes }),
-  });
-};
-
-// ========== Deposit Status Check (Corporate Partners) ==========
-
-// Check if deposit is confirmed for a transaction (for corporate partners)
-export const checkDepositStatus = transactionId => {
-  return request(`/api/check-deposit-status/${transactionId}`);
-};
-
-// ========== Project Workspace (Secure Portal) ==========
-
-// Get project workspace data (for accepted students with confirmed deposits)
-export const fetchProjectWorkspace = transactionId => {
-  return request(`/api/project-workspace/${transactionId}`, {
-    method: 'GET',
-    headers: { 'Content-Type': 'application/json' },
-  });
-};
-
-// Send a secure message in the project workspace
-// If attachments contain local files, upload them first
-export const sendProjectMessage = async (transactionId, { content, attachments = [] }) => {
-  // Upload any local attachments first
-  const uploadedAttachments = [];
-
-  for (const attachment of attachments) {
-    if (attachment.isLocal && attachment.file) {
-      // Upload the file
-      const uploadResult = await uploadAttachment(attachment.file, 'workspace', transactionId);
-      if (uploadResult.success && uploadResult.attachment) {
-        uploadedAttachments.push({
-          id: uploadResult.attachment.id,
-          name: uploadResult.attachment.name,
-          size: uploadResult.attachment.size,
-          sizeFormatted: uploadResult.attachment.sizeFormatted,
-          fileType: uploadResult.attachment.fileType,
-          url: uploadResult.attachment.url,
-          previewUrl: uploadResult.attachment.previewUrl,
-        });
-      }
-    } else {
-      // Already uploaded attachment
-      uploadedAttachments.push(attachment);
-    }
-  }
-
-  // Now send the message with uploaded attachment references
-  return request(`/api/project-workspace/${transactionId}/messages`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ content, attachments: uploadedAttachments }),
-  });
-};
-
-// Accept NDA for a project
-export const acceptProjectNda = transactionId => {
-  return request(`/api/project-workspace/${transactionId}/accept-nda`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({}),
-  });
-};
-
-// Mark messages as read
-export const markProjectMessagesRead = (transactionId, messageIds) => {
-  return request(`/api/project-workspace/${transactionId}/mark-read`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ messageIds }),
-  });
-};
-
 // ========== Institution Membership Management ==========
 
 // Check if a domain is a member institution (public - for signup validation)
@@ -1286,4 +1138,292 @@ export const getAttachmentDownloadUrl = (attachmentId) => {
  */
 export const getAttachmentPreviewUrl = (attachmentId) => {
   return `${apiBaseUrl()}/api/attachments/${attachmentId}/preview`;
+};
+
+// =====================================================
+// Street2Ivy: Education Tenant Management APIs
+// =====================================================
+
+// Fetch tenant for current educational admin's institution
+export const fetchEducationTenant = () => {
+  return request('/api/education/tenant', {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
+  });
+};
+
+// Update tenant branding (edu admin)
+export const updateEducationTenantBranding = (data) => {
+  return request('/api/education/tenant/branding', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+};
+
+// Update tenant settings/features (edu admin)
+export const updateEducationTenantSettings = (data) => {
+  return request('/api/education/tenant/settings', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+};
+
+// Activate tenant (transition from 'onboarding' to 'active')
+export const activateEducationTenant = () => {
+  return request('/api/education/tenant/activate', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({}),
+  });
+};
+
+// Submit a tenant request (when no tenant exists for the institution)
+export const submitTenantRequest = (data) => {
+  return request('/api/education/tenant-request', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+};
+
+// =====================================================
+// Street2Ivy: Alumni Management APIs (Education Admin)
+// =====================================================
+
+// Invite an alumni
+export const inviteAlumni = (data) => {
+  return request('/api/education/alumni/invite', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+};
+
+// Fetch alumni list for current institution
+export const fetchAlumniList = (params = {}) => {
+  const queryString = new URLSearchParams(params).toString();
+  return request(`/api/education/alumni${queryString ? `?${queryString}` : ''}`, {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
+  });
+};
+
+// =====================================================
+// Street2Ivy: System Admin Tenant Management APIs
+// =====================================================
+
+// Fetch all tenants (system admin)
+export const fetchAdminTenants = (params = {}) => {
+  const queryString = new URLSearchParams(params).toString();
+  return request(`/api/admin/tenants${queryString ? `?${queryString}` : ''}`, {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
+  });
+};
+
+// Create a new tenant (system admin)
+export const createAdminTenant = (data) => {
+  return request('/api/admin/tenants', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+};
+
+// Update an existing tenant (system admin)
+export const updateAdminTenant = (tenantId, data) => {
+  return request(`/api/admin/tenants/${tenantId}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+};
+
+// Delete a tenant (system admin)
+export const deleteAdminTenant = (tenantId) => {
+  return request(`/api/admin/tenants/${tenantId}`, {
+    method: 'DELETE',
+    headers: { 'Content-Type': 'application/json' },
+  });
+};
+
+// Fetch tenant requests (system admin)
+export const fetchAdminTenantRequests = () => {
+  return request('/api/admin/tenant-requests', {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
+  });
+};
+
+// Approve a tenant request (system admin)
+export const approveAdminTenantRequest = (requestId) => {
+  return request(`/api/admin/tenant-requests/${requestId}/approve`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({}),
+  });
+};
+
+// Reject a tenant request (system admin)
+export const rejectAdminTenantRequest = (requestId, reason) => {
+  return request(`/api/admin/tenant-requests/${requestId}/reject`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ reason }),
+  });
+};
+
+// =====================================================
+// Street2Ivy: Education Students API (Edu Admin)
+// =====================================================
+
+export const fetchEducationStudents = (params = {}) => {
+  const queryString = new URLSearchParams(params).toString();
+  return request(`/api/education/students${queryString ? `?${queryString}` : ''}`, {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
+  });
+};
+
+export const fetchEducationStudentStats = () => {
+  return request('/api/education/students/stats', {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
+  });
+};
+
+// =====================================================
+// Street2Ivy: Education Reports API (Edu Admin)
+// =====================================================
+
+export const fetchEducationReportsOverview = (params = {}) => {
+  const queryString = new URLSearchParams(params).toString();
+  return request(`/api/education/reports/overview${queryString ? `?${queryString}` : ''}`, {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
+  });
+};
+
+export const exportEducationReport = (type, format = 'csv') => {
+  const url = `${apiBaseUrl()}/api/education/reports/export?type=${type}&format=${format}`;
+  return fetch(url, {
+    method: 'GET',
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json' },
+  }).then(response => {
+    if (!response.ok) {
+      return response.json().then(err => { throw new Error(err.error || 'Export failed'); });
+    }
+    return response.blob().then(blob => {
+      const contentDisposition = response.headers.get('Content-Disposition');
+      let filename = `education-${type}-report.${format}`;
+      if (contentDisposition) {
+        const match = contentDisposition.match(/filename="(.+?)"/);
+        if (match) filename = match[1];
+      }
+      const downloadUrl = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = downloadUrl;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(downloadUrl);
+      document.body.removeChild(a);
+      return { success: true, filename };
+    });
+  });
+};
+
+// =====================================================
+// Street2Ivy: Tenant Logo Upload (Edu Admin)
+// =====================================================
+
+export const uploadTenantLogo = (logoData, mimeType) => {
+  return request('/api/education/tenant/logo', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ logoData, mimeType }),
+  });
+};
+
+// =====================================================
+// Street2Ivy: Alumni Management Extensions (Edu Admin)
+// =====================================================
+
+export const deleteAlumni = (alumniId) => {
+  return request(`/api/education/alumni/${alumniId}`, {
+    method: 'DELETE',
+    headers: { 'Content-Type': 'application/json' },
+  });
+};
+
+export const resendAlumniInvitation = (alumniId) => {
+  return request(`/api/education/alumni/${alumniId}/resend`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({}),
+  });
+};
+
+// =====================================================
+// Street2Ivy: Alumni Invitation Verification & Acceptance
+// =====================================================
+
+export const verifyAlumniInvitation = (invitationCode) => {
+  return request(`/api/education/alumni/verify-invitation/${invitationCode}`, {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
+  });
+};
+
+export const acceptAlumniInvitation = (data) => {
+  return request('/api/education/alumni/accept-invitation', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+};
+
+// =====================================================
+// Street2Ivy: Alumni Dashboard API
+// =====================================================
+
+export const fetchAlumniDashboardData = () => {
+  return request('/api/alumni/dashboard', {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
+  });
+};
+
+// ================ Alumni Referrals ================ //
+
+export const fetchAlumniReferralLink = () => {
+  return request('/api/alumni/referral-link', {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
+  });
+};
+
+export const fetchAlumniReferrals = () => {
+  return request('/api/alumni/referrals', {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
+  });
+};
+
+export const trackAlumniReferral = ({ referralCode, studentUserId, studentName, studentEmail }) => {
+  return request('/api/alumni/referrals/track', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ referralCode, studentUserId, studentName, studentEmail }),
+  });
+};
+
+export const fetchAlumniReferralStats = () => {
+  return request('/api/alumni/referrals/stats', {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
+  });
 };

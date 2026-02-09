@@ -277,6 +277,32 @@
   }
 }
 
+.emailField {
+  margin-top: 12px;
+
+  @media (--viewportMedium) {
+    margin-top: 16px;
+  }
+}
+
+.emailLabel {
+  composes: h5 from global;
+  font-weight: var(--fontWeightSemiBold);
+  color: var(--colorGrey700);
+  margin-top: 0;
+  margin-bottom: 6px;
+}
+
+.emailValue {
+  composes: marketplaceDefaultFontStyles from global;
+  padding: 10px 12px;
+  background-color: var(--colorGrey50);
+  border: 1px solid var(--colorGrey100);
+  border-radius: var(--borderRadiusMedium, 6px);
+  color: var(--colorGrey700);
+  cursor: not-allowed;
+}
+
 .submitButton {
   margin-top: 24px;
   margin-bottom: 56px;

@@ -180,7 +180,7 @@ describe('ProfilePage', () => {
     const { getByRole } = rendered;
 
     expect(
-      getByRole('heading', { name: 'ProfilePage.reviewsFromMyCustomersTitle' })
+      getByRole('heading', { name: 'ProfilePage.reviewsFromStudents' })
     ).toBeInTheDocument();
 
     expect(screen.getByText('Awesome!')).toBeInTheDocument();

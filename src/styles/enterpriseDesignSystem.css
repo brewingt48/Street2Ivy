@@ -271,6 +271,93 @@
   --s2i-sidebar-collapsed-width: 72px;
   --s2i-topbar-height: 64px;
   --s2i-content-max-width: 1400px;
+
+  /* ================== MESSAGING SYSTEM ================== */
+
+  /* Inbox Split Pane */
+  --s2i-inbox-list-width: 380px;
+  --s2i-inbox-list-max-width: 420px;
+  --s2i-inbox-list-bg: var(--s2i-white);
+  --s2i-inbox-detail-bg: var(--s2i-slate-50);
+  --s2i-inbox-border: var(--s2i-border-light);
+
+  /* Conversation List Item */
+  --s2i-inbox-item-padding: var(--s2i-space-4);
+  --s2i-inbox-item-gap: var(--s2i-space-3);
+  --s2i-inbox-item-hover-bg: var(--s2i-slate-50);
+  --s2i-inbox-item-active-bg: var(--s2i-teal-50);
+  --s2i-inbox-item-active-border: var(--s2i-teal-500);
+  --s2i-inbox-item-radius: var(--s2i-radius-lg);
+
+  /* Unread Indicator */
+  --s2i-inbox-unread-dot-size: 8px;
+  --s2i-inbox-unread-dot-color: var(--s2i-coral-500);
+  --s2i-inbox-unread-name-weight: var(--s2i-font-semibold);
+
+  /* Message Bubbles */
+  --s2i-msg-sent-bg: var(--s2i-teal-600);
+  --s2i-msg-sent-color: var(--s2i-white);
+  --s2i-msg-sent-radius: var(--s2i-radius-xl) var(--s2i-radius-xl) var(--s2i-radius-sm) var(--s2i-radius-xl);
+  --s2i-msg-sent-link-color: var(--s2i-teal-100);
+  --s2i-msg-received-bg: var(--s2i-white);
+  --s2i-msg-received-color: var(--s2i-text-primary);
+  --s2i-msg-received-radius: var(--s2i-radius-xl) var(--s2i-radius-xl) var(--s2i-radius-xl) var(--s2i-radius-sm);
+  --s2i-msg-received-shadow: var(--s2i-shadow-sm);
+  --s2i-msg-system-bg: transparent;
+  --s2i-msg-system-color: var(--s2i-text-tertiary);
+  --s2i-msg-timestamp-color: var(--s2i-text-tertiary);
+  --s2i-msg-timestamp-size: var(--s2i-text-xs);
+  --s2i-msg-bubble-padding-y: var(--s2i-space-3);
+  --s2i-msg-bubble-padding-x: var(--s2i-space-4);
+  --s2i-msg-max-width: 75%;
+  --s2i-msg-gap: var(--s2i-space-3);
+  --s2i-msg-group-gap: var(--s2i-space-5);
+
+  /* Compose Area */
+  --s2i-compose-bg: var(--s2i-white);
+  --s2i-compose-border: var(--s2i-border-default);
+  --s2i-compose-focus-border: var(--s2i-teal-500);
+  --s2i-compose-focus-ring: var(--s2i-teal-100);
+  --s2i-compose-radius: var(--s2i-radius-xl);
+  --s2i-compose-padding-y: var(--s2i-space-3);
+  --s2i-compose-padding-x: var(--s2i-space-4);
+  --s2i-compose-min-height: 40px;
+  --s2i-compose-max-height: 120px;
+  --s2i-compose-font-size: var(--s2i-text-base);
+  --s2i-compose-send-size: 40px;
+  --s2i-compose-send-bg: var(--s2i-teal-500);
+  --s2i-compose-send-hover-bg: var(--s2i-teal-600);
+  --s2i-compose-send-color: var(--s2i-white);
+  --s2i-compose-send-radius: var(--s2i-radius-full);
+  --s2i-compose-send-disabled-opacity: 0.5;
+
+  /* Conversation Header */
+  --s2i-conv-header-bg: var(--s2i-white);
+  --s2i-conv-header-border: var(--s2i-border-light);
+  --s2i-conv-header-shadow: var(--s2i-shadow-sm);
+  --s2i-conv-header-height: 72px;
+  --s2i-conv-header-padding: var(--s2i-space-4) var(--s2i-space-5);
+  --s2i-conv-header-gap: var(--s2i-space-3);
+
+  /* Filter Tabs */
+  --s2i-filter-active-bg: var(--s2i-teal-50);
+  --s2i-filter-active-color: var(--s2i-teal-700);
+  --s2i-filter-active-border: var(--s2i-teal-500);
+  --s2i-filter-inactive-color: var(--s2i-text-secondary);
+  --s2i-filter-inactive-bg: transparent;
+  --s2i-filter-hover-bg: var(--s2i-slate-50);
+  --s2i-filter-radius: var(--s2i-radius-full);
+  --s2i-filter-padding: var(--s2i-space-1) var(--s2i-space-3);
+  --s2i-filter-gap: var(--s2i-space-2);
+  --s2i-filter-font-size: var(--s2i-text-sm);
+
+  /* Notification Badge (override defaults) */
+  --s2i-notif-badge-bg: var(--s2i-coral-500);
+  --s2i-notif-badge-color: var(--s2i-white);
+  --s2i-notif-badge-size: 20px;
+  --s2i-notif-badge-font-size: var(--s2i-text-xs);
+  --s2i-notif-badge-radius: var(--s2i-radius-full);
+  --s2i-notif-badge-font-weight: var(--s2i-font-semibold);
 }
 
 /* ================== GLOBAL RESETS FOR DASHBOARD ================== */

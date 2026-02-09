@@ -1,15 +1,22 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, Suspense, lazy } from 'react';
 import { bool, object } from 'prop-types';
 import { compose } from 'redux';
 import { connect } from 'react-redux';
 
 import { FormattedMessage, useIntl } from '../../util/reactIntl';
-import { LayoutComposer, NamedLink, Page } from '../../components';
+import { LayoutComposer, NamedLink, Page, HomeSkeletonLoader } from '../../components';
 import TopbarContainer from '../TopbarContainer/TopbarContainer';
 import FooterContainer from '../FooterContainer/FooterContainer';
 import { fetchPublicContent, fetchPublicCoachingConfig, apiBaseUrl } from '../../util/api';
+import { useTenant } from '../../context/tenantContext';
+import { fetchHomeDataThunk, clearHomeData } from './LandingPage.duck';
 
 import css from './LandingPage.module.css';
+
+// Lazy-load authenticated home — code-split so anonymous visitors don't download it
+const AuthenticatedHome = lazy(() =>
+  import(/* webpackChunkName: "AuthenticatedHome" */ './AuthenticatedHome/AuthenticatedHome')
+);
 
 // Counter animation hook
 const useCountUp = (end, duration = 2000, startOnView = true) => {
@@ -61,7 +68,7 @@ const useCountUp = (end, duration = 2000, startOnView = true) => {
 
 // Street2Ivy Premium Landing Page
 const LandingPageComponent = props => {
-  const { currentUser } = props;
+  const { currentUser, homeData, homeDataLoading, homeDataError, onFetchHomeData, onClearHomeData } = props;
   const intl = useIntl();
   const [dynamicContent, setDynamicContent] = useState(null);
   const [coachingConfig, setCoachingConfig] = useState(null);
@@ -73,6 +80,18 @@ const LandingPageComponent = props => {
   const isAuthenticated = !!currentUser;
   const userType = currentUser?.attributes?.profile?.publicData?.userType;
   const isStudent = userType === 'student';
+
+  // Fetch role-specific home data for authenticated users
+  useEffect(() => {
+    if (isAuthenticated && userType && onFetchHomeData) {
+      onFetchHomeData({ userType, currentUser });
+    }
+    return () => {
+      if (onClearHomeData) {
+        onClearHomeData();
+      }
+    };
+  }, [isAuthenticated, userType]); // Intentionally limited deps: only re-fetch when auth state or role changes
 
   // Intersection observer for scroll animations
   useEffect(() => {
@@ -167,6 +186,18 @@ const LandingPageComponent = props => {
   const testimonialsContent = dynamicContent?.testimonials || null;
   const ctaContent = dynamicContent?.cta || null;
   const statisticsContent = dynamicContent?.statistics || null;
+  const aiCoachingContent = dynamicContent?.aiCoaching || null;
+
+  // Section visibility — checks both global isActive (System Admin) and tenant-specific visibility (Education Admin)
+  const tenant = useTenant();
+  const isSectionVisible = (sectionKey) => {
+    // If the section doesn't exist in dynamicContent, it was filtered out by the server (isActive: false)
+    // Also check if it's explicitly marked inactive (in case of admin preview)
+    const globalActive = dynamicContent?.[sectionKey]?.isActive !== false;
+    // Tenant-specific override (Education Admin can hide sections for their institution)
+    const tenantVisible = tenant?.sectionVisibility?.[sectionKey] !== false;
+    return globalActive && tenantVisible;
+  };
 
   // Get dynamic stats values or use defaults
   const statsItems = statisticsContent?.items || [];
@@ -196,7 +227,7 @@ const LandingPageComponent = props => {
     {
       icon: '💰',
       title: 'Project-Based — Pay for Results',
-      description: 'No seats to fill, no time to track. You define the project. You get the deliverable. Simple.'
+      description: 'No seats to fill, no time to track. You define the project. You get results. Simple.'
     },
     {
       icon: '🌱',
@@ -293,8 +324,24 @@ const LandingPageComponent = props => {
                 <TopbarContainer currentPage="LandingPage" />
               </Topbar>
               <Main as="main" id="main-content">
+                {/* ============ Authenticated Home vs Marketing Landing ============ */}
+                {isAuthenticated ? (
+                  <Suspense fallback={<HomeSkeletonLoader />}>
+                    <AuthenticatedHome
+                      currentUser={currentUser}
+                      userType={userType}
+                      homeData={homeData}
+                      homeDataLoading={homeDataLoading}
+                      homeDataError={homeDataError}
+                      coachingConfig={coachingConfig}
+                      institutionInfo={institutionInfo}
+                      isLoadingInstitution={isLoadingInstitution}
+                    />
+                  </Suspense>
+                ) : (
+                <>
                 {/* ================ Hero Section ================ */}
-                <section
+                {isSectionVisible('hero') && <section
                   className={css.heroSection}
                   style={heroContent?.backgroundImage ? {
                     backgroundImage: `linear-gradient(135deg, rgba(12, 20, 48, 0.92) 0%, rgba(26, 39, 68, 0.88) 50%, rgba(30, 58, 95, 0.85) 100%), url(${heroContent.backgroundImage.startsWith('/api/') ? apiBaseUrl() + heroContent.backgroundImage : heroContent.backgroundImage})`,
@@ -405,10 +452,10 @@ const LandingPageComponent = props => {
                       </div>
                     </div>
                   </div>
-                </section>
+                </section>}
 
-                {/* ================ Why Street2Ivy Section ================ */}
-                <section className={css.whySection} id="why-section" data-animate>
+                {/* ================ Why Street2Ivy Section (Features) ================ */}
+                {isSectionVisible('features') && <section className={css.whySection} id="why-section" data-animate>
                   <div className={css.sectionContainer}>
                     <span className={css.sectionLabel}>The Opportunity</span>
                     <h2 className={css.sectionTitle}>
@@ -457,10 +504,10 @@ const LandingPageComponent = props => {
                       ))}
                     </div>
                   </div>
-                </section>
+                </section>}
 
                 {/* ================ How It Works Section ================ */}
-                <section className={css.howSection} id="how-section" data-animate>
+                {isSectionVisible('howItWorks') && <section className={css.howSection} id="how-section" data-animate>
                   <div className={css.sectionContainer}>
                     <span className={css.sectionLabel}>The Process</span>
                     <h2 className={css.sectionTitle}>
@@ -497,7 +544,7 @@ const LandingPageComponent = props => {
                             <div className={css.stepNumber}>3</div>
                             <div className={css.stepContent}>
                               <h4>{howItWorksContent?.items?.[2]?.title || 'Get Results'}</h4>
-                              <p>{howItWorksContent?.items?.[2]?.description || 'Collaborate through our platform, receive deliverables, and pay on completion.'}</p>
+                              <p>{howItWorksContent?.items?.[2]?.description || 'Connect with matched talent, collaborate on the project, and hand off directly.'}</p>
                             </div>
                           </div>
                         </div>
@@ -536,10 +583,10 @@ const LandingPageComponent = props => {
                       </div>
                     </div>
                   </div>
-                </section>
+                </section>}
 
                 {/* ================ AI Career Coaching Section ================ */}
-                <section className={css.aiSection} id="ai-section" data-animate>
+                {isSectionVisible('aiCoaching') && <section className={css.aiSection} id="ai-section" data-animate>
                   <div className={css.sectionContainer}>
                     <div className={css.aiGrid}>
                       {/* Left - Text Content */}
@@ -548,35 +595,26 @@ const LandingPageComponent = props => {
                           {coachingConfig?.platformName ? `Powered by ${coachingConfig.platformName}` : 'Powered by AI Career Coaching'}
                         </span>
                         <h2 className={css.sectionTitle} style={{ textAlign: 'left' }}>
-                          Your Personal AI Career Coach, Available 24/7
+                          {aiCoachingContent?.sectionTitle || 'Your Personal AI Career Coach, Available 24/7'}
                         </h2>
                         <p className={css.aiDescription}>
-                          Every Street2Ivy student gets access to AI-powered career coaching that provides
-                          personalized guidance — from resume optimization to interview prep to long-term career strategy.
+                          {aiCoachingContent?.description || 'Every Street2Ivy student gets access to AI-powered career coaching that provides personalized guidance — from resume optimization to interview prep to long-term career strategy.'}
                         </p>
 
                         <div className={css.aiFeatures}>
-                          <div className={css.aiFeature}>
-                            <div className={css.aiFeatureIcon}>📝</div>
-                            <div>
-                              <h4>Resume & Application Review</h4>
-                              <p>Get instant feedback to stand out in any application</p>
+                          {(aiCoachingContent?.features || [
+                            { icon: '📝', title: 'Resume & Application Review', description: 'Get instant feedback to stand out in any application' },
+                            { icon: '🎤', title: 'Interview Preparation', description: 'Practice with AI-simulated career coaching interviews tailored to your target roles' },
+                            { icon: '🗺️', title: 'Career Path Planning', description: 'Map out your trajectory based on skills, interests, and market trends' },
+                          ]).map((feature, idx) => (
+                            <div key={feature.id || idx} className={css.aiFeature}>
+                              <div className={css.aiFeatureIcon}>{feature.icon}</div>
+                              <div>
+                                <h4>{feature.title}</h4>
+                                <p>{feature.description}</p>
+                              </div>
                             </div>
-                          </div>
-                          <div className={css.aiFeature}>
-                            <div className={css.aiFeatureIcon}>🎤</div>
-                            <div>
-                              <h4>Interview Preparation</h4>
-                              <p>Practice with AI-simulated career coaching interviews tailored to your target roles</p>
-                            </div>
-                          </div>
-                          <div className={css.aiFeature}>
-                            <div className={css.aiFeatureIcon}>🗺️</div>
-                            <div>
-                              <h4>Career Path Planning</h4>
-                              <p>Map out your trajectory based on skills, interests, and market trends</p>
-                            </div>
-                          </div>
+                          ))}
                         </div>
 
                         {/* AI Coaching CTA - different behavior based on user state */}
@@ -589,12 +627,12 @@ const LandingPageComponent = props => {
                               rel="noopener noreferrer"
                               className={css.btnPrimary}
                             >
-                              Access AI Career Coaching →
+                              {aiCoachingContent?.ctaLoggedIn || 'Access AI Career Coaching →'}
                             </a>
                           ) : (
                             <div className={css.coachingBlocked}>
                               <span className={css.blockedIcon}>🔒</span>
-                              <p>AI Career Coaching is available when your institution enables this feature. Contact your career services office for more information.</p>
+                              <p>{aiCoachingContent?.ctaBlocked || 'AI Career Coaching is available when your institution enables this feature. Contact your career services office for more information.'}</p>
                             </div>
                           )
                         ) : coachingConfig?.platformUrl && coachingConfig?.platformStatus ? (
@@ -605,12 +643,12 @@ const LandingPageComponent = props => {
                             rel="noopener noreferrer"
                             className={css.btnPrimary}
                           >
-                            Get Started with Coaching →
+                            {aiCoachingContent?.ctaLoggedOut || 'Get Started with Coaching →'}
                           </a>
                         ) : (
                           // Not logged in - show signup CTA
                           <NamedLink name="SignupPage" className={css.btnPrimary}>
-                            Get Started with Career Coaching →
+                            {aiCoachingContent?.ctaLoggedOut || 'Get Started with Career Coaching →'}
                           </NamedLink>
                         )}
                       </div>
@@ -627,25 +665,17 @@ const LandingPageComponent = props => {
                             </div>
                           </div>
                           <div className={css.chatMessages}>
-                            <div className={`${css.chatMessage} ${css.chatBot}`}>
-                              <div className={css.messageBubble}>
-                                Hi Sarah! I reviewed your resume. Your data analysis experience is strong,
-                                but let's highlight your Python skills more prominently for fintech roles.
-                                Want me to suggest some rewrites?
+                            {(aiCoachingContent?.chatMessages || [
+                              { role: 'bot', text: "Hi Sarah! I reviewed your resume. Your data analysis experience is strong, but let's highlight your Python skills more prominently for fintech roles. Want me to suggest some rewrites?" },
+                              { role: 'user', text: "Yes please! I'm applying to FinFlow's project today." },
+                              { role: 'bot', text: "Great choice! Here's a tailored version that emphasizes the exact skills they're looking for. I also noticed they value \"growth mindset\" — let's add a bullet about how you taught yourself SQL in two weeks..." },
+                            ]).map((msg, idx) => (
+                              <div key={idx} className={`${css.chatMessage} ${msg.role === 'bot' ? css.chatBot : css.chatUser}`}>
+                                <div className={css.messageBubble}>
+                                  {msg.text}
+                                </div>
                               </div>
-                            </div>
-                            <div className={`${css.chatMessage} ${css.chatUser}`}>
-                              <div className={css.messageBubble}>
-                                Yes please! I'm applying to FinFlow's project today.
-                              </div>
-                            </div>
-                            <div className={`${css.chatMessage} ${css.chatBot}`}>
-                              <div className={css.messageBubble}>
-                                Great choice! Here's a tailored version that emphasizes the exact skills
-                                they're looking for. I also noticed they value "growth mindset" — let's
-                                add a bullet about how you taught yourself SQL in two weeks...
-                              </div>
-                            </div>
+                            ))}
                           </div>
                           <div className={css.chatInput}>
                             <input type="text" placeholder="Ask anything about your career..." readOnly />
@@ -655,10 +685,10 @@ const LandingPageComponent = props => {
                       </div>
                     </div>
                   </div>
-                </section>
+                </section>}
 
                 {/* ================ Stats Section ================ */}
-                <section className={css.statsSection} id="stats-section" data-animate>
+                {isSectionVisible('statistics') && <section className={css.statsSection} id="stats-section" data-animate>
                   <div className={css.sectionContainer}>
                     <div className={css.statsGrid}>
                       <div className={css.statItem} ref={studentsCount.ref}>
@@ -687,10 +717,10 @@ const LandingPageComponent = props => {
                       </div>
                     </div>
                   </div>
-                </section>
+                </section>}
 
                 {/* ================ Testimonials Section ================ */}
-                <section className={css.testimonialsSection} id="testimonials-section" data-animate>
+                {isSectionVisible('testimonials') && <section className={css.testimonialsSection} id="testimonials-section" data-animate>
                   <div className={css.sectionContainer}>
                     <span className={css.sectionLabel}>Success Stories</span>
                     <h2 className={css.sectionTitle}>
@@ -720,10 +750,10 @@ const LandingPageComponent = props => {
                       ))}
                     </div>
                   </div>
-                </section>
+                </section>}
 
                 {/* ================ Triple CTA Section ================ */}
-                <section className={css.tripleCtaSection}>
+                {isSectionVisible('cta') && <section className={css.tripleCtaSection}>
                   <div className={css.ctaCompanies}>
                     <h2 className={css.ctaTitle}>Ready to Tap Into Fresh Talent?</h2>
                     <ul className={css.ctaList}>
@@ -767,7 +797,9 @@ const LandingPageComponent = props => {
                     </a>
                     <p className={css.ctaUrgency}>🏛️ Special rates for founding partners</p>
                   </div>
-                </section>
+                </section>}
+                </>
+                )}
               </Main>
               <Footer>
                 <FooterContainer />
@@ -786,9 +818,16 @@ LandingPageComponent.propTypes = {
 
 const mapStateToProps = state => {
   const { currentUser } = state.user;
-  return { currentUser };
+  const { homeData, homeDataLoading, homeDataError } = state.LandingPage || {};
+  return { currentUser, homeData, homeDataLoading, homeDataError };
 };
 
-const LandingPage = compose(connect(mapStateToProps))(LandingPageComponent);
+const mapDispatchToProps = dispatch => ({
+  onFetchHomeData: ({ userType, currentUser }) =>
+    dispatch(fetchHomeDataThunk({ userType, currentUser })),
+  onClearHomeData: () => dispatch(clearHomeData()),
+});
+
+const LandingPage = compose(connect(mapStateToProps, mapDispatchToProps))(LandingPageComponent);
 
 export default LandingPage;

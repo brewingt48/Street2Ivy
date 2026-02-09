@@ -33,7 +33,6 @@ const PaymentMethodsPage = loadable(() => import(/* webpackChunkName: "PaymentMe
 const PrivacyPolicyPage = loadable(() => import(/* webpackChunkName: "PrivacyPolicyPage" */ '../containers/PrivacyPolicyPage/PrivacyPolicyPage'));
 const ProfilePage = loadable(() => import(/* webpackChunkName: "ProfilePage" */ '../containers/ProfilePage/ProfilePage'));
 const ProfileSettingsPage = loadable(() => import(/* webpackChunkName: "ProfileSettingsPage" */ '../containers/ProfileSettingsPage/ProfileSettingsPage'));
-const ProjectWorkspacePage = loadable(() => import(/* webpackChunkName: "ProjectWorkspacePage" */ '../containers/ProjectWorkspacePage/ProjectWorkspacePage'));
 const RequestQuotePage = loadable(() => import(/* webpackChunkName: "RequestQuotePage" */ '../containers/RequestQuotePage/RequestQuotePage'));
 const SearchCompaniesPage = loadable(() => import(/* webpackChunkName: "SearchCompaniesPage" */ '../containers/SearchCompaniesPage/SearchCompaniesPage'));
 const SearchPageWithMap = loadable(() => import(/* webpackChunkName: "SearchPageWithMap" */ /* webpackPrefetch: true */  '../containers/SearchPage/SearchPageWithMap'));
@@ -41,6 +40,8 @@ const SearchPageWithGrid = loadable(() => import(/* webpackChunkName: "SearchPag
 const SearchStudentsPage = loadable(() => import(/* webpackChunkName: "SearchStudentsPage" */ '../containers/SearchStudentsPage/SearchStudentsPage'));
 const EducationDashboardPage = loadable(() => import(/* webpackChunkName: "EducationDashboardPage" */ '../containers/EducationDashboardPage/EducationDashboardPage'));
 const EducationalAdminApplicationPage = loadable(() => import(/* webpackChunkName: "EducationalAdminApplicationPage" */ '../containers/EducationalAdminApplicationPage/EducationalAdminApplicationPage'));
+const AlumniDashboardPage = loadable(() => import(/* webpackChunkName: "AlumniDashboardPage" */ '../containers/AlumniDashboardPage/AlumniDashboardPage'));
+const AlumniJoinPage = loadable(() => import(/* webpackChunkName: "AlumniJoinPage" */ '../containers/AlumniJoinPage/AlumniJoinPage'));
 const AdminDashboardPage = loadable(() => import(/* webpackChunkName: "AdminDashboardPage" */ '../containers/AdminDashboardPage/AdminDashboardPage'));
 const ApplicationsPage = loadable(() => import(/* webpackChunkName: "ApplicationsPage" */ '../containers/ApplicationsPage/ApplicationsPage'));
 const StudentDashboardPage = loadable(() => import(/* webpackChunkName: "StudentDashboardPage" */ '../containers/StudentDashboardPage/StudentDashboardPage'));
@@ -317,13 +318,13 @@ const routeConfiguration = (layoutConfig, accessControlConfig) => {
       authPage: 'LoginPage',
       component: props => <NamedRedirect name="SaleDetailsPage" params={{ id: props.params?.id }} />,
     },
+    // Street2Ivy: Old corporate dashboard redirects to personalized home
     {
       path: '/dashboard',
       name: 'CorporateDashboardPage',
       auth: true,
       authPage: 'LoginPage',
-      component: CorporateDashboardPage,
-      loadData: pageDataLoadingAPI.CorporateDashboardPage.loadData,
+      component: RedirectToLandingPage,
     },
     {
       path: '/dashboard/applications',
@@ -331,14 +332,6 @@ const routeConfiguration = (layoutConfig, accessControlConfig) => {
       auth: true,
       authPage: 'LoginPage',
       component: ApplicationsPage,
-    },
-    {
-      path: '/project-workspace/:id',
-      name: 'ProjectWorkspacePage',
-      auth: true,
-      authPage: 'LoginPage',
-      component: ProjectWorkspacePage,
-      loadData: pageDataLoadingAPI.ProjectWorkspacePage.loadData,
     },
     {
       path: '/search/students',
@@ -356,16 +349,25 @@ const routeConfiguration = (layoutConfig, accessControlConfig) => {
       component: SearchCompaniesPage,
       loadData: pageDataLoadingAPI.SearchCompaniesPage.loadData,
     },
+    // Street2Ivy: Old student dashboard redirects to personalized home
     {
       path: '/student/dashboard',
       name: 'StudentDashboardPage',
       auth: true,
       authPage: 'LoginPage',
-      component: StudentDashboardPage,
+      component: RedirectToLandingPage,
     },
+    // Street2Ivy: Old education dashboard redirects to personalized home
     {
       path: '/education/dashboard',
       name: 'EducationDashboardPage',
+      auth: true,
+      authPage: 'LoginPage',
+      component: RedirectToLandingPage,
+    },
+    {
+      path: '/education/dashboard/:tab',
+      name: 'EducationDashboardTabPage',
       auth: true,
       authPage: 'LoginPage',
       component: EducationDashboardPage,
@@ -376,13 +378,36 @@ const routeConfiguration = (layoutConfig, accessControlConfig) => {
       name: 'EducationalAdminApplicationPage',
       component: EducationalAdminApplicationPage,
     },
+    // Street2Ivy: Alumni Join Page (public — invitation acceptance)
+    {
+      path: '/alumni/join/:invitationCode',
+      name: 'AlumniJoinPage',
+      component: AlumniJoinPage,
+      loadData: pageDataLoadingAPI.AlumniJoinPage.loadData,
+    },
+    // Street2Ivy: Old alumni dashboard redirects to personalized home
+    {
+      path: '/alumni/dashboard',
+      name: 'AlumniDashboardPage',
+      auth: true,
+      authPage: 'LoginPage',
+      component: RedirectToLandingPage,
+    },
+    {
+      path: '/alumni/dashboard/:tab',
+      name: 'AlumniDashboardTabPage',
+      auth: true,
+      authPage: 'LoginPage',
+      component: AlumniDashboardPage,
+      loadData: pageDataLoadingAPI.AlumniDashboardPage.loadData,
+    },
+    // Street2Ivy: Old admin dashboard redirects to personalized home
     {
       path: '/admin',
       name: 'AdminDashboardPage',
       auth: true,
       authPage: 'LoginPage',
-      component: AdminDashboardPage,
-      loadData: pageDataLoadingAPI.AdminDashboardPage.loadData,
+      component: RedirectToLandingPage,
     },
     {
       path: '/admin/:tab',

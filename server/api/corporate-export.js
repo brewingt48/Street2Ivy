@@ -200,7 +200,7 @@ async function generateProjectsExport(sdk, userId) {
   return listings.map(listing => ({
     'Project Title': listing.attributes.title || 'Untitled',
     Status: listing.attributes.state,
-    Category: listing.attributes.publicData?.industryCategory || 'N/A',
+    Category: listing.attributes.publicData?.companySector || listing.attributes.publicData?.industryCategory || 'N/A',
     'Est. Hours': listing.attributes.publicData?.estimatedHours || 'N/A',
     'Students Needed': listing.attributes.publicData?.studentsNeeded || 'N/A',
     Created: new Date(listing.attributes.createdAt).toLocaleDateString(),

@@ -6,6 +6,7 @@ import classNames from 'classnames';
 
 import { useConfiguration } from '../../context/configurationContext';
 import { useRouteConfiguration } from '../../context/routeConfigurationContext';
+import { useTenant } from '../../context/tenantContext';
 
 import { omit } from '../../util/common';
 import { useIntl, FormattedMessage } from '../../util/reactIntl';
@@ -36,7 +37,7 @@ import {
 import { getListingsById } from '../../ducks/marketplaceData.duck';
 import { manageDisableScrolling, isScrollingDisabled } from '../../ducks/ui.duck';
 
-import { H3, H5, NamedRedirect, Page } from '../../components';
+import { H3, H5, NamedLink, NamedRedirect, Page } from '../../components';
 import TopbarContainer from '../TopbarContainer/TopbarContainer';
 import FooterContainer from '../FooterContainer/FooterContainer';
 
@@ -98,7 +99,7 @@ export class SearchPageComponent extends Component {
     // Check if there are saved filters and no current filters in URL
     const urlQueryParams = validUrlQueryParamsFromProps(this.props);
     const hasCurrentFilters = isAnyFilterActive(
-      this.props.config?.search?.sortConfig,
+      this.props.config?.search?.sortConfig?.conflictingFilters || [],
       urlQueryParams,
       this.props.config?.listing?.listingFields,
       this.props.config?.search?.defaultFilters
@@ -286,6 +287,8 @@ export class SearchPageComponent extends Component {
       config,
       params: currentPathParams = {},
       currentUser,
+      tenant,
+      homeData,
     } = this.props;
 
     // If the search page variant is of type /s/:listingType, this defines the :listingType
@@ -294,6 +297,17 @@ export class SearchPageComponent extends Component {
     // On a default search page (/s), this constant does not have a value, even when a
     // query parameter ?pub_listingType=[queryParamListingType] is used.
     const { listingType: listingTypePathParam } = currentPathParams;
+
+    // Student-specific data for browse page enhancements
+    const isStudent = currentUser?.attributes?.profile?.publicData?.userType === 'student';
+    const studentAppData = isStudent && homeData?.role === 'student' ? homeData.data : null;
+    const activeAppCount = studentAppData?.applications?.filter(a =>
+      ['accepted', 'handed-off'].includes(a.state)
+    ).length || 0;
+    const pendingAppCount = studentAppData?.applications?.filter(a =>
+      a.state === 'applied'
+    ).length || 0;
+    const totalAppCount = studentAppData?.applicationsCount || 0;
 
     const { listingFields } = config?.listing || {};
     const { defaultFilters: defaultFiltersRaw, sortConfig } = config?.search || {};
@@ -438,6 +452,54 @@ export class SearchPageComponent extends Component {
       >
         <TopbarContainer rootClassName={topbarClasses} currentSearchParams={validQueryParams} />
 
+        {/* Back to Dashboard breadcrumb for authenticated students */}
+        {isStudent && (
+          <div className={css.breadcrumbBar}>
+            <NamedLink name="LandingPage" className={css.breadcrumbLink}>
+              <span className={css.breadcrumbArrow}>&larr;</span>
+              <FormattedMessage id="SearchPage.backToDashboard" defaultMessage="Back to Dashboard" />
+            </NamedLink>
+            {totalAppCount > 0 && (
+              <NamedLink name="InboxPage" params={{ tab: 'orders' }} className={css.breadcrumbStatus}>
+                <span className={css.breadcrumbStatusDot} />
+                <FormattedMessage
+                  id="SearchPage.applicationsSummary"
+                  defaultMessage="{active} active, {pending} pending"
+                  values={{ active: activeAppCount, pending: pendingAppCount }}
+                />
+              </NamedLink>
+            )}
+          </div>
+        )}
+
+        {/* Tenant banner for institution-scoped browsing */}
+        {tenant && (
+          <div className={css.tenantBanner}>
+            {tenant.branding?.logoUrl && (
+              <img src={tenant.branding.logoUrl} alt={tenant.name} className={css.tenantLogo} />
+            )}
+            <span className={css.tenantName}>
+              <FormattedMessage
+                id="SearchPage.tenantBrowsing"
+                defaultMessage="Browsing {tenantName} Projects"
+                values={{ tenantName: tenant.branding?.marketplaceName || tenant.name || 'Institution' }}
+              />
+            </span>
+          </div>
+        )}
+
+        {/* Projects/Companies toggle for students */}
+        {currentUser?.attributes?.profile?.publicData?.userType === 'student' && (
+          <div className={css.searchModeToggle}>
+            <span className={css.searchModeBtn + ' ' + css.searchModeBtnActive}>
+              <FormattedMessage id="SearchPage.modeProjects" defaultMessage="Projects" />
+            </span>
+            <NamedLink className={css.searchModeBtn} name="SearchCompaniesPage">
+              <FormattedMessage id="SearchPage.modeCompanies" defaultMessage="Companies" />
+            </NamedLink>
+          </div>
+        )}
+
         {/* Saved filters prompt */}
         {this.state.showSavedFiltersPrompt && (
           <div className={css.savedFiltersPrompt}>
@@ -492,6 +554,39 @@ export class SearchPageComponent extends Component {
               <button className={css.resetAllButton} onClick={e => this.handleResetAll(e)}>
                 <FormattedMessage id={'SearchFiltersMobile.resetAll'} />
               </button>
+
+              {/* Application status card for students (sidebar) */}
+              {isStudent && totalAppCount > 0 && (
+                <div className={css.sidebarStatusCard}>
+                  <h4 className={css.sidebarStatusTitle}>
+                    <FormattedMessage id="SearchPage.yourApplications" defaultMessage="Your Applications" />
+                  </h4>
+                  <div className={css.sidebarStatusStats}>
+                    <div className={css.sidebarStatusStat}>
+                      <span className={css.sidebarStatusValue}>{activeAppCount}</span>
+                      <span className={css.sidebarStatusLabel}>
+                        <FormattedMessage id="SearchPage.activeLabel" defaultMessage="Active" />
+                      </span>
+                    </div>
+                    <div className={css.sidebarStatusStat}>
+                      <span className={css.sidebarStatusValue}>{pendingAppCount}</span>
+                      <span className={css.sidebarStatusLabel}>
+                        <FormattedMessage id="SearchPage.pendingLabel" defaultMessage="Pending" />
+                      </span>
+                    </div>
+                    <div className={css.sidebarStatusStat}>
+                      <span className={css.sidebarStatusValue}>{totalAppCount}</span>
+                      <span className={css.sidebarStatusLabel}>
+                        <FormattedMessage id="SearchPage.totalLabel" defaultMessage="Total" />
+                      </span>
+                    </div>
+                  </div>
+                  <NamedLink name="InboxPage" params={{ tab: 'orders' }} className={css.sidebarStatusLink}>
+                    <FormattedMessage id="SearchPage.viewApplications" defaultMessage="View All Applications" />
+                    <span>&rarr;</span>
+                  </NamedLink>
+                </div>
+              )}
             </div>
           </aside>
 
@@ -512,7 +607,6 @@ export class SearchPageComponent extends Component {
                 resetAll={this.resetAll}
                 selectedFiltersCount={selectedFiltersCountForMobile}
                 isMapVariant={false}
-                noResultsInfo={noResultsInfo}
                 location={location}
               >
                 {availableFilters.map(filterConfig => {
@@ -547,7 +641,6 @@ export class SearchPageComponent extends Component {
                 resultsCount={totalItems}
                 searchInProgress={searchInProgress}
                 searchListingsError={searchListingsError}
-                noResultsInfo={noResultsInfo}
               />
               <div
                 className={classNames(css.listingsForGridVariant, {
@@ -605,6 +698,7 @@ export class SearchPageComponent extends Component {
 const EnhancedSearchPage = props => {
   const config = useConfiguration();
   const routeConfiguration = useRouteConfiguration();
+  const tenant = useTenant();
   const intl = useIntl();
   const history = useHistory();
   const location = useLocation();
@@ -647,6 +741,7 @@ const EnhancedSearchPage = props => {
     <SearchPageComponent
       config={config}
       routeConfiguration={routeConfiguration}
+      tenant={tenant}
       intl={intl}
       history={history}
       location={location}
@@ -666,6 +761,7 @@ const mapStateToProps = state => {
     searchParams,
   } = state.SearchPage;
   const listings = getListingsById(state, currentPageResultIds);
+  const homeData = state.LandingPage?.homeData || null;
 
   return {
     currentUser,
@@ -675,6 +771,7 @@ const mapStateToProps = state => {
     searchInProgress,
     searchListingsError,
     searchParams,
+    homeData,
   };
 };
 

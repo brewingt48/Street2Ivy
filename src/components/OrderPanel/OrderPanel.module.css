@@ -278,3 +278,31 @@
     padding: 0;
   }
 }
+
+/* Invite-only message */
+.inviteOnlyMessage {
+  padding: 24px;
+  margin: 16px 24px;
+  background: var(--s2i-slate-50, #f8fafc);
+  border: 1px solid var(--s2i-slate-200, #e2e8f0);
+  border-radius: var(--s2i-radius-xl, 16px);
+  text-align: center;
+
+  @media (--viewportMedium) {
+    margin: 16px 0;
+  }
+}
+
+.inviteOnlyTitle {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--s2i-navy-900, #0C1430);
+  margin: 0 0 8px 0;
+}
+
+.inviteOnlyDescription {
+  font-size: 14px;
+  color: var(--s2i-slate-600, #475569);
+  line-height: 1.5;
+  margin: 0;
+}

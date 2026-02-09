@@ -184,6 +184,22 @@ class ProfileSettingsFormComponent extends Component {
             id: 'ProfileSettingsForm.bioPlaceholder',
           });
 
+          // Bio is required for students
+          const userType = currentUser?.attributes?.profile?.publicData?.userType;
+          const isStudent = userType === 'student';
+          const bioValidateMaybe = isStudent
+            ? {
+                validate: validators.required(
+                  intl.formatMessage({
+                    id: 'ProfileSettingsForm.bioRequired',
+                  })
+                ),
+              }
+            : {};
+
+          // Email (read-only display)
+          const userEmail = currentUser?.attributes?.email;
+
           const uploadingOverlay =
             uploadInProgress || this.state.uploadDelay ? (
               <div className={css.uploadingImageOverlay}>
@@ -375,6 +391,23 @@ class ProfileSettingsFormComponent extends Component {
 
               <DisplayNameMaybe userTypeConfig={userTypeConfig} intl={intl} />
 
+              {userEmail ? (
+                <div className={css.sectionContainer}>
+                  <H4 as="h2" className={css.sectionTitle}>
+                    <FormattedMessage id="ProfileSettingsForm.emailHeading" />
+                  </H4>
+                  <div className={css.emailField}>
+                    <label className={css.emailLabel}>
+                      <FormattedMessage id="ProfileSettingsForm.emailLabel" />
+                    </label>
+                    <div className={css.emailValue}>{userEmail}</div>
+                    <p className={css.extraInfo}>
+                      <FormattedMessage id="ProfileSettingsForm.emailInfo" />
+                    </p>
+                  </div>
+                </div>
+              ) : null}
+
               <div className={classNames(css.sectionContainer)}>
                 <H4 as="h2" className={css.sectionTitle}>
                   <FormattedMessage id="ProfileSettingsForm.bioHeading" />
@@ -385,6 +418,7 @@ class ProfileSettingsFormComponent extends Component {
                   name="bio"
                   label={bioLabel}
                   placeholder={bioPlaceholder}
+                  {...bioValidateMaybe}
                 />
                 <p className={css.extraInfo}>
                   <FormattedMessage id="ProfileSettingsForm.bioInfo" values={{ marketplaceName }} />

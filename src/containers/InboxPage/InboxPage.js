@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useLocation, useHistory } from 'react-router-dom';
 import { compose } from 'redux';
-import { connect } from 'react-redux';
+import { connect, useDispatch } from 'react-redux';
 import classNames from 'classnames';
 
 import { useConfiguration } from '../../context/configurationContext';
@@ -47,15 +47,31 @@ import {
   TimeRange,
   UserDisplayName,
   LayoutSideNavigation,
+  Reviews,
+  ReputationDashboard,
 } from '../../components';
 
 import TopbarContainer from '../../containers/TopbarContainer/TopbarContainer';
 import FooterContainer from '../../containers/FooterContainer/FooterContainer';
 import NotFoundPage from '../../containers/NotFoundPage/NotFoundPage';
-import InboxSearchForm from './InboxSearchForm/InboxSearchForm';
 
 import { stateDataShape, getStateData } from './InboxPage.stateData';
+import {
+  setSelectedConversation,
+  setFilter,
+  setSearchQuery,
+  clearInboxSelection,
+  fetchReviewsThunk,
+} from './InboxPage.duck';
+
+import ConversationListItem from './ConversationListItem/ConversationListItem';
+import InboxFilterBar from './InboxFilterBar/InboxFilterBar';
+import InboxEmptyState from './InboxEmptyState/InboxEmptyState';
+import { EmbeddedConversation } from './EmbeddedConversation';
+
 import css from './InboxPage.module.css';
+
+// ================ Helpers ================ //
 
 // Check if the transaction line-items use booking-related units
 const getUnitLineItem = lineItems => {
@@ -65,23 +81,15 @@ const getUnitLineItem = lineItems => {
   return unitLineItem;
 };
 
-// Booking data (start & end) are bit different depending on display times and
-// if "end" refers to last day booked or the first exclusive day
+// Booking data (start & end)
 const bookingData = (tx, lineItemUnitType, timeZone) => {
-  // Attributes: displayStart and displayEnd can be used to differentiate shown time range
-  // from actual start and end times used for availability reservation. It can help in situations
-  // where there are preparation time needed between bookings.
-  // Read more: https://www.sharetribe.com/api-reference/marketplace.html#bookings
   const { start, end, displayStart, displayEnd } = tx.booking.attributes;
   const bookingStart = displayStart || start;
   const bookingEndRaw = displayEnd || end;
-
-  // LINE_ITEM_DAY uses exclusive end day, so we subtract one day from the end date
   const isDayBooking = [LINE_ITEM_DAY].includes(lineItemUnitType);
   const bookingEnd = isDayBooking
     ? subtractTime(bookingEndRaw, 1, 'days', timeZone)
     : bookingEndRaw;
-
   return { bookingStart, bookingEnd };
 };
 
@@ -91,9 +99,7 @@ const BookingTimeInfoMaybe = props => {
   const process = getProcess(processName);
   const isInquiry = process.getState(transaction) === process.states.INQUIRY;
 
-  if (isInquiry) {
-    return null;
-  }
+  if (isInquiry) return null;
 
   const hasLineItems = transaction?.attributes?.lineItems?.length > 0;
   const unitLineItem = hasLineItems
@@ -121,34 +127,54 @@ const BookingTimeInfoMaybe = props => {
   );
 };
 
-// Build and push path string for routing - based on sort selection as selected in InboxSearchForm
+// Build and push path for sort routing
 const handleSortSelect = (tab, routeConfiguration, history) => urlParam => {
-  const pathParams = {
-    tab: tab,
-  };
-  const searchParams = {
-    sort: urlParam,
-  };
-
   const sortPath = createResourceLocatorString(
     'InboxPage',
     routeConfiguration,
-    pathParams,
-    searchParams
+    { tab },
+    { sort: urlParam }
   );
-
   history.push(sortPath);
 };
 
+// Desktop detection (1024px breakpoint)
+const useIsDesktop = () => {
+  const hasMatchMedia =
+    typeof window !== 'undefined' && typeof window.matchMedia === 'function';
+
+  const [isDesktop, setIsDesktop] = useState(
+    hasMatchMedia ? window.matchMedia('(min-width: 1024px)').matches : false
+  );
+
+  useEffect(() => {
+    if (!hasMatchMedia) return;
+    const mql = window.matchMedia('(min-width: 1024px)');
+    const handler = e => setIsDesktop(e.matches);
+    // Modern API
+    if (mql.addEventListener) {
+      mql.addEventListener('change', handler);
+      return () => mql.removeEventListener('change', handler);
+    }
+    // Legacy fallback
+    mql.addListener(handler);
+    return () => mql.removeListener(handler);
+  }, [hasMatchMedia]);
+
+  return isDesktop;
+};
+
+// ================ Legacy InboxItem (exported for test compatibility) ================ //
+
 /**
- * The InboxItem component.
+ * The InboxItem component — preserved for backward compatibility.
  *
  * @component
  * @param {Object} props
- * @param {TX_TRANSITION_ACTOR_CUSTOMER | TX_TRANSITION_ACTOR_PROVIDER} props.transactionRole - The transaction role
- * @param {propTypes.transaction} props.tx - The transaction
- * @param {intlShape} props.intl - The intl object
- * @param {stateDataShape} props.stateData - The state data
+ * @param {TX_TRANSITION_ACTOR_CUSTOMER | TX_TRANSITION_ACTOR_PROVIDER} props.transactionRole
+ * @param {propTypes.transaction} props.tx
+ * @param {intlShape} props.intl
+ * @param {stateDataShape} props.stateData
  * @returns {JSX.Element} inbox item component
  */
 export const InboxItem = props => {
@@ -232,23 +258,13 @@ export const InboxItem = props => {
   );
 };
 
+// ================ InboxPage Component ================ //
+
 /**
- * The InboxPage component.
+ * The InboxPage component — split-pane messaging redesign.
  *
- * @component
- * @param {Object} props
- * @param {Object} props.currentUser - The current user
- * @param {boolean} props.fetchInProgress - Whether the fetch is in progress
- * @param {propTypes.error} props.fetchOrdersOrSalesError - The fetch orders or sales error
- * @param {propTypes.pagination} props.pagination - The pagination object
- * @param {Object} props.params - The params object
- * @param {string} props.params.tab - The tab
- * @param {number} props.providerNotificationCount - The provider notification count
- * @param {number} props.customerNotificationCount - The customer notification count
- * @param {boolean} props.scrollingDisabled - Whether scrolling is disabled
- * @param {Array<propTypes.transaction>} props.transactions - The transactions array
- * @param {Object} props.intl - The intl object
- * @returns {JSX.Element} inbox page component
+ * Desktop (>=1024px): Left pane (conversation list) + Right pane (EmbeddedConversation)
+ * Mobile (<1024px): Full-width conversation list, clicking navigates to TransactionPage
  */
 export const InboxPageComponent = props => {
   const config = useConfiguration();
@@ -256,6 +272,9 @@ export const InboxPageComponent = props => {
   const history = useHistory();
   const intl = useIntl();
   const location = useLocation();
+  const dispatch = useDispatch();
+  const isDesktop = useIsDesktop();
+
   const {
     currentUser,
     fetchInProgress,
@@ -266,7 +285,19 @@ export const InboxPageComponent = props => {
     customerNotificationCount = 0,
     scrollingDisabled,
     transactions,
+    // Messaging redesign state from duck
+    selectedTxId = null,
+    filter = 'all',
+    searchQuery = '',
+    // Reviews tab state
+    reviews = [],
+    reviewsInProgress = false,
+    reviewsError = null,
   } = props;
+
+  // ---- View toggle: Messages vs Reviews (students only) ---- //
+  const [inboxView, setInboxView] = useState('messages'); // 'messages' | 'reviews'
+
   const { tab } = params;
   const validTab = tab === 'orders' || tab === 'sales';
   if (!validTab) {
@@ -278,89 +309,181 @@ export const InboxPageComponent = props => {
     currentUser
   );
 
-  // Check user type for dashboard link
+  // ---- User type detection ---- //
   const userType = currentUser?.attributes?.profile?.publicData?.userType;
-  const isSystemAdmin = userType === 'system-admin';
-  const isEducationalAdmin = userType === 'educational-admin';
   const isStudent = userType === 'student';
   const isCorporatePartner = userType === 'corporate-partner';
-
-  // Determine which dashboard link to show
+  const isEducationalAdmin = userType === 'educational-admin';
+  const hideInboxTabs = isStudent || isCorporatePartner || isEducationalAdmin;
   const getDashboardLink = () => {
-    if (isSystemAdmin) {
-      return { name: 'AdminDashboardPage', label: intl.formatMessage({ id: 'InboxPage.backToAdminDashboard' }) };
-    }
-    if (isEducationalAdmin) {
-      return { name: 'EducationDashboardPage', label: intl.formatMessage({ id: 'InboxPage.backToEducationDashboard' }) };
-    }
-    if (isStudent) {
-      return { name: 'StudentDashboardPage', label: intl.formatMessage({ id: 'InboxPage.backToStudentDashboard' }) };
-    }
-    if (isCorporatePartner) {
-      return { name: 'CorporateDashboardPage', label: intl.formatMessage({ id: 'InboxPage.backToCorporateDashboard' }) };
-    }
-    return null;
+    const dashMap = {
+      'system-admin': { name: 'AdminDashboardPage', labelId: 'InboxPage.backToAdminDashboard' },
+      'educational-admin': { name: 'EducationDashboardPage', labelId: 'InboxPage.backToEducationDashboard' },
+      student: { name: 'StudentDashboardPage', labelId: 'InboxPage.backToStudentDashboard' },
+      'corporate-partner': { name: 'CorporateDashboardPage', labelId: 'InboxPage.backToCorporateDashboard' },
+    };
+    const entry = dashMap[userType];
+    if (!entry) return null;
+    return { name: entry.name, label: intl.formatMessage({ id: entry.labelId }) };
   };
-
   const dashboardLink = getDashboardLink();
 
   const isOrders = tab === 'orders';
-  const hasNoResults = !fetchInProgress && transactions.length === 0 && !fetchOrdersOrSalesError;
-  const ordersTitle = intl.formatMessage({ id: 'InboxPage.ordersTitle' });
-  const salesTitle = intl.formatMessage({ id: 'InboxPage.salesTitle' });
-  const title = isOrders ? ordersTitle : salesTitle;
+  const transactionRole = isOrders ? TX_TRANSITION_ACTOR_CUSTOMER : TX_TRANSITION_ACTOR_PROVIDER;
+  const title = isStudent
+    ? intl.formatMessage({ id: 'InboxPage.title' })
+    : isOrders
+    ? intl.formatMessage({ id: 'InboxPage.ordersTitle' })
+    : intl.formatMessage({ id: 'InboxPage.salesTitle' });
   const search = parse(location.search);
 
+  // ---- Clear selection on tab change ---- //
+  useEffect(() => {
+    dispatch(clearInboxSelection());
+  }, [tab, dispatch]);
+
+  // ---- Fetch reviews when switching to reviews view ---- //
+  useEffect(() => {
+    if (inboxView === 'reviews' && currentUser?.id?.uuid) {
+      dispatch(fetchReviewsThunk({ userId: currentUser.id.uuid }));
+    }
+  }, [inboxView, currentUser?.id?.uuid, dispatch]);
+
+  // ---- Transaction list with stateData ---- //
   const pickType = lt => conf => conf.listingType === lt;
   const findListingTypeConfig = publicData => {
     const listingTypeConfigs = config.listing?.listingTypes;
     const { listingType } = publicData || {};
-    const foundConfig = listingTypeConfigs?.find(pickType(listingType));
-    return foundConfig;
+    return listingTypeConfigs?.find(pickType(listingType));
   };
-  const toTxItem = tx => {
-    const transactionRole = isOrders ? TX_TRANSITION_ACTOR_CUSTOMER : TX_TRANSITION_ACTOR_PROVIDER;
-    let stateData = null;
-    try {
-      stateData = getStateData({ transaction: tx, transactionRole, intl });
-    } catch (error) {
-      // If stateData is missing, omit the transaction from InboxItem list.
+
+  // Compute stateData for each transaction
+  const txWithStateData = useMemo(() => {
+    return transactions.map(tx => {
+      let stateData = null;
+      try {
+        stateData = getStateData({ transaction: tx, transactionRole, intl });
+      } catch (error) {
+        // Skip — stateData not available for this tx
+      }
+      return { tx, stateData };
+    }).filter(item => item.stateData !== null);
+  }, [transactions, transactionRole, intl]);
+
+  // ---- Client-side filtering ---- //
+  const filteredTxList = useMemo(() => {
+    let list = txWithStateData;
+
+    // "Unread" filter
+    if (filter === 'unread') {
+      list = list.filter(({ stateData }) =>
+        stateData.isSaleNotification || stateData.isOrderNotification
+      );
     }
 
-    const publicData = tx?.listing?.attributes?.publicData || {};
-    const foundListingTypeConfig = findListingTypeConfig(publicData);
-    const { transactionType, stockType, availabilityType } = foundListingTypeConfig || {};
-    const process = tx?.attributes?.processName || transactionType?.transactionType;
-    const transactionProcess = resolveLatestProcessName(process);
-    const isBooking = isBookingProcess(transactionProcess);
-    const isPurchase = isPurchaseProcess(transactionProcess);
-    const isNegotiation = isNegotiationProcess(transactionProcess);
+    // Search filter (user name or listing title)
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase().trim();
+      list = list.filter(({ tx }) => {
+        const isCustomer = transactionRole === TX_TRANSITION_ACTOR_CUSTOMER;
+        const otherUser = isCustomer ? tx.provider : tx.customer;
+        const displayName = (otherUser?.attributes?.profile?.displayName || '').toLowerCase();
+        const listingTitle = (tx.listing?.attributes?.title || '').toLowerCase();
+        return displayName.includes(query) || listingTitle.includes(query);
+      });
+    }
 
-    // Render InboxItem only if the latest transition of the transaction is handled in the `txState` function.
-    return stateData ? (
-      <li key={tx.id.uuid} className={css.listItem}>
-        <InboxItem
-          transactionRole={transactionRole}
-          tx={tx}
-          intl={intl}
-          stateData={stateData}
-          stockType={stockType}
-          availabilityType={availabilityType}
-          isBooking={isBooking}
-          isPurchase={isPurchase}
-        />
-      </li>
-    ) : null;
-  };
+    return list;
+  }, [txWithStateData, filter, searchQuery, transactionRole]);
 
-  const hasOrderOrSaleTransactions = (tx, isOrdersTab, user) => {
-    return isOrdersTab
-      ? user?.id && tx && tx.length > 0 && tx[0].customer.id.uuid === user?.id?.uuid
-      : user?.id && tx && tx.length > 0 && tx[0].provider.id.uuid === user?.id?.uuid;
-  };
-  const hasTransactions =
-    !fetchInProgress && hasOrderOrSaleTransactions(transactions, isOrders, currentUser);
+  // ---- Sort handling ---- //
+  const handleSort = useCallback(
+    sortValue => {
+      handleSortSelect(tab, routeConfiguration, history)(sortValue);
+    },
+    [tab, routeConfiguration, history]
+  );
 
+  // ---- Conversation selection ---- //
+  const handleSelectConversation = useCallback(
+    tx => {
+      dispatch(setSelectedConversation(tx.id.uuid));
+    },
+    [dispatch]
+  );
+
+  const handleClearSelection = useCallback(() => {
+    dispatch(clearInboxSelection());
+  }, [dispatch]);
+
+  // ---- Filter / Search handlers ---- //
+  const handleFilterChange = useCallback(
+    value => {
+      dispatch(setFilter(value));
+    },
+    [dispatch]
+  );
+
+  const handleSearchChange = useCallback(
+    value => {
+      dispatch(setSearchQuery(value));
+    },
+    [dispatch]
+  );
+
+  // ---- New Message dropdown (students only) ---- //
+  const [showNewMessageDropdown, setShowNewMessageDropdown] = useState(false);
+
+  // Street2Ivy: Build unique partner list from messageable transactions.
+  // Available to ALL authenticated user types (not just students).
+  // For customers: the partner is the provider (company/alumni).
+  // For providers: the partner is the customer (student).
+  const messageablePartners = useMemo(() => {
+    const isCustomerRole = transactionRole === TX_TRANSITION_ACTOR_CUSTOMER;
+    const partnerMap = new Map();
+    txWithStateData.forEach(({ tx, stateData }) => {
+      const { processState } = stateData;
+      // Allow messaging for all non-terminal transaction states.
+      // This includes 'applied' (so students can ask questions while pending)
+      // as well as all active and post-completion states.
+      const isMessageable = [
+        'applied', 'accepted', 'handed-off', 'completed', 'reviewed',
+        'reviewed-by-customer', 'reviewed-by-provider',
+      ].includes(processState);
+      if (!isMessageable) return;
+
+      const partner = isCustomerRole ? tx.provider : tx.customer;
+      if (!partner || partnerMap.has(partner.id.uuid)) return;
+      partnerMap.set(partner.id.uuid, {
+        user: partner,
+        txId: tx.id.uuid,
+        listingTitle: tx.listing?.attributes?.title,
+      });
+    });
+    return Array.from(partnerMap.values());
+  }, [txWithStateData, transactionRole]);
+
+  const handleNewMessageSelect = useCallback(
+    txId => {
+      setShowNewMessageDropdown(false);
+      setInboxView('messages');
+      dispatch(setSelectedConversation(txId));
+    },
+    [dispatch]
+  );
+
+  // ---- Derived states ---- //
+  const hasNoResults = !fetchInProgress && filteredTxList.length === 0 && !fetchOrdersOrSalesError;
+  const hasTransactions = !fetchInProgress && filteredTxList.length > 0;
+  const emptyVariant = fetchInProgress
+    ? null
+    : transactions.length === 0
+    ? 'noConversations'
+    : filteredTxList.length === 0
+    ? 'noResults'
+    : null;
+
+  // ---- Tab config ---- //
   const ordersTabMaybe = isCustomerUserType
     ? [
         {
@@ -373,10 +496,7 @@ export const InboxPageComponent = props => {
             </span>
           ),
           selected: isOrders,
-          linkProps: {
-            name: 'InboxPage',
-            params: { tab: 'orders' },
-          },
+          linkProps: { name: 'InboxPage', params: { tab: 'orders' } },
         },
       ]
     : [];
@@ -393,96 +513,244 @@ export const InboxPageComponent = props => {
             </span>
           ),
           selected: !isOrders,
-          linkProps: {
-            name: 'InboxPage',
-            params: { tab: 'sales' },
-          },
+          linkProps: { name: 'InboxPage', params: { tab: 'sales' } },
         },
       ]
     : [];
 
-  const tabs = [...ordersTabMaybe, ...salesTabMaybe];
+  // Students, corporate partners, and education admins see a unified inbox — no tab distinction
+  const tabs = hideInboxTabs ? [] : [...ordersTabMaybe, ...salesTabMaybe];
+
+  // ================ Render ================ //
 
   return (
     <Page title={title} scrollingDisabled={scrollingDisabled}>
-      <LayoutSideNavigation
-        sideNavClassName={css.navigation}
-        topbar={
-          <TopbarContainer
-            mobileRootClassName={css.mobileTopbar}
-            desktopClassName={css.desktopTopbar}
-          />
-        }
-        sideNav={
-          <>
-            {dashboardLink && (
+      <TopbarContainer
+        mobileRootClassName={css.mobileTopbar}
+        desktopClassName={css.desktopTopbar}
+      />
+
+      <div className={css.splitPaneContainer}>
+        {/* ---- LEFT PANE: Conversation List ---- */}
+        <div className={css.leftPane}>
+          {/* Header */}
+          <div className={css.leftPaneHeader}>
+            {dashboardLink ? (
               <NamedLink name={dashboardLink.name} className={css.dashboardLink}>
-                ← {dashboardLink.label}
+                &larr; {dashboardLink.label}
               </NamedLink>
-            )}
-            <H2 as="h1" className={css.title}>
-              <FormattedMessage id="InboxPage.title" />
-            </H2>
-            <TabNav
-              rootClassName={css.tabs}
-              tabRootClassName={css.tab}
-              tabs={tabs}
-              ariaLabel={intl.formatMessage({ id: 'InboxPage.screenreader.sidenav' })}
-            />{' '}
-          </>
-        }
-        footer={<FooterContainer />}
-      >
-        <InboxSearchForm
-          onSubmit={() => {}}
-          onSelect={handleSortSelect(tab, routeConfiguration, history)}
-          intl={intl}
-          tab={tab}
-          routeConfiguration={routeConfiguration}
-          history={history}
-        />
-        {fetchOrdersOrSalesError ? (
-          <p className={css.error}>
-            <FormattedMessage id="InboxPage.fetchFailed" />
-          </p>
-        ) : null}
-        <ul className={css.itemList}>
-          {!fetchInProgress ? (
-            transactions.map(toTxItem)
-          ) : (
-            <li className={css.listItemsLoading}>
-              <IconSpinner />
-            </li>
-          )}
-          {hasNoResults ? (
-            <li key="noResults" className={css.noResults}>
-              <FormattedMessage
-                id={isOrders ? 'InboxPage.noOrdersFound' : 'InboxPage.noSalesFound'}
-              />
-            </li>
+            ) : null}
+            <div className={css.titleRow}>
+              <H2 as="h1" className={css.title}>
+                <FormattedMessage id="InboxPage.title" />
+              </H2>
+              {messageablePartners.length > 0 ? (
+                <div className={css.newMessageContainer}>
+                  <button
+                    className={css.newMessageBtn}
+                    onClick={() => setShowNewMessageDropdown(!showNewMessageDropdown)}
+                  >
+                    <FormattedMessage id="InboxPage.newMessage" />
+                  </button>
+                  {showNewMessageDropdown ? (
+                    <div className={css.newMessageDropdown}>
+                      <p className={css.newMessageDropdownTitle}>
+                        <FormattedMessage id="InboxPage.newMessageSelectRecipient" />
+                      </p>
+                      {messageablePartners.map(({ user, txId, listingTitle }) => (
+                        <button
+                          key={txId}
+                          className={css.newMessageDropdownItem}
+                          onClick={() => handleNewMessageSelect(txId)}
+                        >
+                          <Avatar user={user} className={css.newMessageAvatar} disableProfileLink />
+                          <div className={css.newMessageDropdownInfo}>
+                            <span className={css.newMessageDropdownName}>
+                              <UserDisplayName user={user} intl={intl} />
+                            </span>
+                            {listingTitle ? (
+                              <span className={css.newMessageDropdownProject}>
+                                {listingTitle}
+                              </span>
+                            ) : null}
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  ) : null}
+                </div>
+              ) : null}
+            </div>
+          </div>
+
+          {/* Student view toggle: Messages | Reviews */}
+          {isStudent ? (
+            <div className={css.viewToggle}>
+              <button
+                className={classNames(css.viewToggleBtn, {
+                  [css.viewToggleBtnActive]: inboxView === 'messages',
+                })}
+                onClick={() => setInboxView('messages')}
+              >
+                <FormattedMessage id="InboxPage.viewMessages" />
+              </button>
+              <button
+                className={classNames(css.viewToggleBtn, {
+                  [css.viewToggleBtnActive]: inboxView === 'reviews',
+                })}
+                onClick={() => setInboxView('reviews')}
+              >
+                <FormattedMessage id="InboxPage.viewReviews" />
+              </button>
+            </div>
           ) : null}
-        </ul>
-        {hasTransactions && pagination && pagination.totalPages > 1 ? (
-          <PaginationLinks
-            className={css.pagination}
-            pageName="InboxPage"
-            pagePathParams={params}
-            pageSearchParams={search}
-            pagination={pagination}
-          />
-        ) : null}
-      </LayoutSideNavigation>
+
+          {/* Tabs — hidden for students (unified inbox) */}
+          {tabs.length > 0 ? (
+            <div className={css.tabsRow}>
+              <TabNav
+                rootClassName={css.tabs}
+                tabRootClassName={css.tab}
+                tabs={tabs}
+                ariaLabel={intl.formatMessage({ id: 'InboxPage.screenreader.sidenav' })}
+              />
+            </div>
+          ) : null}
+
+          {/* ---- MESSAGES VIEW ---- */}
+          {inboxView === 'messages' ? (
+            <>
+              {/* Filter bar */}
+              <InboxFilterBar
+                filter={filter}
+                onFilterChange={handleFilterChange}
+                searchQuery={searchQuery}
+                onSearchChange={handleSearchChange}
+                sortValue={search.sort || 'createdAt'}
+                onSortChange={handleSort}
+              />
+
+              {/* Error */}
+              {fetchOrdersOrSalesError ? (
+                <p className={css.error}>
+                  <FormattedMessage id="InboxPage.fetchFailed" />
+                </p>
+              ) : null}
+
+              {/* Conversation list */}
+              <ul className={css.conversationList}>
+                {fetchInProgress ? (
+                  <li className={css.listItemsLoading}>
+                    <IconSpinner />
+                  </li>
+                ) : hasTransactions ? (
+                  filteredTxList.map(({ tx, stateData }) => (
+                    <li key={tx.id.uuid} className={css.listItem}>
+                      <ConversationListItem
+                        transactionRole={transactionRole}
+                        tx={tx}
+                        intl={intl}
+                        stateData={stateData}
+                        isActive={selectedTxId === tx.id.uuid}
+                        onClick={handleSelectConversation}
+                        isDesktop={isDesktop}
+                      />
+                    </li>
+                  ))
+                ) : null}
+              </ul>
+
+              {/* Empty state */}
+              {!fetchInProgress && emptyVariant ? (
+                <InboxEmptyState variant={emptyVariant} />
+              ) : null}
+
+              {/* Pagination */}
+              {hasTransactions && pagination && pagination.totalPages > 1 ? (
+                <PaginationLinks
+                  className={css.pagination}
+                  pageName="InboxPage"
+                  pagePathParams={params}
+                  pageSearchParams={search}
+                  pagination={pagination}
+                />
+              ) : null}
+            </>
+          ) : (
+            /* ---- REVIEWS VIEW (students only) ---- */
+            <div className={css.reviewsPane}>
+              {reviewsInProgress ? (
+                <div className={css.listItemsLoading}>
+                  <IconSpinner />
+                </div>
+              ) : reviewsError ? (
+                <p className={css.error}>
+                  <FormattedMessage id="InboxPage.reviewsLoadFailed" />
+                </p>
+              ) : reviews.length > 0 ? (
+                <>
+                  <ReputationDashboard reviews={reviews} />
+                  <Reviews reviews={reviews} />
+                </>
+              ) : (
+                <div className={css.reviewsEmpty}>
+                  <p className={css.reviewsEmptyText}>
+                    <FormattedMessage id="InboxPage.noReviewsYet" />
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* ---- RIGHT PANE: Conversation Detail (desktop only) ---- */}
+        <div className={css.rightPane}>
+          {inboxView === 'reviews' ? (
+            <div className={css.reviewsRightPane}>
+              <p className={css.reviewsRightPaneText}>
+                <FormattedMessage id="InboxPage.reviewsRightPaneInfo" />
+              </p>
+            </div>
+          ) : selectedTxId ? (
+            <EmbeddedConversation
+              txId={selectedTxId}
+              transactionRole={transactionRole}
+              currentUser={currentUser}
+              onBack={handleClearSelection}
+            />
+          ) : (
+            <InboxEmptyState variant="noSelection" />
+          )}
+        </div>
+      </div>
     </Page>
   );
 };
 
+// ================ Redux ================ //
+
 const mapStateToProps = state => {
-  const { fetchInProgress, fetchOrdersOrSalesError, pagination, transactionRefs } = state.InboxPage;
+  const {
+    fetchInProgress,
+    fetchOrdersOrSalesError,
+    pagination,
+    transactionRefs,
+    // Messaging redesign state
+    selectedTxId,
+    filter,
+    searchQuery,
+    // Reviews tab state
+    reviews,
+    reviewsInProgress,
+    reviewsError,
+  } = state.InboxPage;
+
   const {
     currentUser,
     currentUserSaleNotificationCount,
     currentUserOrderNotificationCount,
   } = state.user;
+
   return {
     currentUser,
     fetchInProgress,
@@ -492,6 +760,12 @@ const mapStateToProps = state => {
     customerNotificationCount: currentUserOrderNotificationCount,
     scrollingDisabled: isScrollingDisabled(state),
     transactions: getMarketplaceEntities(state, transactionRefs),
+    selectedTxId,
+    filter,
+    searchQuery,
+    reviews,
+    reviewsInProgress,
+    reviewsError,
   };
 };
 

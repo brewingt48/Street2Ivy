@@ -215,6 +215,44 @@ const defaultContent = {
     updatedAt: new Date().toISOString(),
     updatedBy: null,
   },
+  aiCoaching: {
+    id: 'aiCoaching',
+    section: 'aiCoaching',
+    sectionTitle: 'Your Personal AI Career Coach, Available 24/7',
+    description:
+      'Every Street2Ivy student gets access to AI-powered career coaching that provides personalized guidance — from resume optimization to interview prep to long-term career strategy.',
+    features: [
+      {
+        id: 'ai-feature-1',
+        icon: '📝',
+        title: 'Resume & Application Review',
+        description: 'Get instant feedback to stand out in any application',
+      },
+      {
+        id: 'ai-feature-2',
+        icon: '🎤',
+        title: 'Interview Preparation',
+        description: 'Practice with AI-simulated career coaching interviews tailored to your target roles',
+      },
+      {
+        id: 'ai-feature-3',
+        icon: '🗺️',
+        title: 'Career Path Planning',
+        description: 'Map out your trajectory based on skills, interests, and market trends',
+      },
+    ],
+    chatMessages: [
+      { role: 'bot', text: "Hi! I'm your AI Career Coach. How can I help you today?" },
+      { role: 'user', text: "I have an interview at Goldman Sachs next week. Can you help me prepare?" },
+      { role: 'bot', text: "Absolutely! Let's start with behavioral questions commonly asked at Goldman Sachs. Tell me about a time you demonstrated leadership..." },
+    ],
+    ctaLoggedOut: 'Get Started with Career Coaching →',
+    ctaLoggedIn: 'Access AI Career Coaching →',
+    ctaBlocked: 'AI Career Coaching is available when your institution enables this feature. Contact your career services office for more information.',
+    isActive: true,
+    updatedAt: new Date().toISOString(),
+    updatedBy: null,
+  },
   legalPages: {
     id: 'legalPages',
     section: 'legalPages',
