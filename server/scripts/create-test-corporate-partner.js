@@ -1,9 +1,8 @@
 #!/usr/bin/env node
 
 /**
- * Script to create a test corporate partner account via Integration API.
- * The partner is created with approvalStatus: 'pending' so you can test
- * the approval flow (dashboard gate, admin approve/reject).
+ * Script to create a test corporate partner account via Marketplace SDK + Integration SDK.
+ * Uses Marketplace SDK to create the user (signup), then Integration SDK to set publicData.
  *
  * Usage:
  *   node server/scripts/create-test-corporate-partner.js
@@ -14,32 +13,39 @@
  *   --approved            Create as already approved (default: pending)
  *
  * Prerequisites:
- *   - SHARETRIBE_INTEGRATION_API_CLIENT_ID and SHARETRIBE_INTEGRATION_API_CLIENT_SECRET
+ *   - REACT_APP_SHARETRIBE_SDK_CLIENT_ID and SHARETRIBE_INTEGRATION_API_CLIENT_ID
  *     must be set in your .env file
  */
 
 require('dotenv').config();
 
-const sharetribeSdk = require('sharetribe-flex-integration-sdk');
+const marketplaceSdk = require('sharetribe-flex-sdk');
+const integrationSdkLib = require('sharetribe-flex-integration-sdk');
 
-const clientId =
+const marketplaceClientId = process.env.REACT_APP_SHARETRIBE_SDK_CLIENT_ID;
+const integrationClientId =
   process.env.SHARETRIBE_INTEGRATION_API_CLIENT_ID ||
   process.env.SHARETRIBE_INTEGRATION_CLIENT_ID;
-const clientSecret =
+const integrationClientSecret =
   process.env.SHARETRIBE_INTEGRATION_API_CLIENT_SECRET ||
   process.env.SHARETRIBE_INTEGRATION_CLIENT_SECRET;
 
-if (!clientId || !clientSecret) {
-  console.error('Error: Missing Integration API credentials.');
-  console.error(
-    'Please ensure SHARETRIBE_INTEGRATION_API_CLIENT_ID and SHARETRIBE_INTEGRATION_API_CLIENT_SECRET are set in your .env file.'
-  );
+if (!marketplaceClientId) {
+  console.error('Error: Missing REACT_APP_SHARETRIBE_SDK_CLIENT_ID in .env');
+  process.exit(1);
+}
+if (!integrationClientId || !integrationClientSecret) {
+  console.error('Error: Missing Integration API credentials in .env');
   process.exit(1);
 }
 
-const integrationSdk = sharetribeSdk.createInstance({
-  clientId,
-  clientSecret,
+const sdk = marketplaceSdk.createInstance({
+  clientId: marketplaceClientId,
+});
+
+const integrationSdk = integrationSdkLib.createInstance({
+  clientId: integrationClientId,
+  clientSecret: integrationClientSecret,
 });
 
 // Parse command line arguments
@@ -82,14 +88,15 @@ async function createTestCorporatePartner() {
   console.log('========================================\n');
 
   try {
-    // Check if user already exists
+    // Check if user already exists (exact email match)
     console.log('Checking if user already exists...');
-    const existingUsers = await integrationSdk.users.query({
-      email: email,
-    });
+    const existingUsers = await integrationSdk.users.query({});
+    const exactMatch = existingUsers.data.data.find(
+      u => u.attributes.email === email
+    );
 
-    if (existingUsers.data.data.length > 0) {
-      const existingUser = existingUsers.data.data[0];
+    if (exactMatch) {
+      const existingUser = exactMatch;
       const existingStatus =
         existingUser.attributes.profile.publicData?.approvalStatus || '(none)';
       console.log('\n⚠️  User already exists!');
@@ -101,38 +108,27 @@ async function createTestCorporatePartner() {
       process.exit(0);
     }
 
-    // Create the user
+    // Create the user via Marketplace SDK (signup)
     console.log('Creating new corporate partner user...');
-    const publicData = {
-      userType: 'corporate-partner',
-      emailDomain: emailDomain,
-      companyName: 'Test Company Inc.',
-      industry: 'technology',
-      companySize: '51-200',
-      companyState: 'CA',
-      department: 'Engineering',
-      companyWebsite: 'https://testcompany.com',
-      companyDescription:
-        'A test company for verifying the corporate partner approval flow.',
-      approvalStatus: approvalStatus,
-      onboardingComplete: true,
-    };
-
-    if (approved) {
-      publicData.approvedAt = new Date().toISOString();
-    }
-
-    const createResponse = await integrationSdk.users.create({
+    const createResponse = await sdk.currentUser.create({
       email: email,
       password: password,
       firstName: firstName,
       lastName: lastName,
       displayName: `${firstName} ${lastName}`,
-      publicData,
-      privateData: {},
-      protectedData: {
-        createdByScript: true,
-        createdAt: new Date().toISOString(),
+      publicData: {
+        userType: 'corporate-partner',
+        emailDomain: emailDomain,
+        companyName: 'Test Company Inc.',
+        industry: 'technology',
+        companySize: '51-200',
+        companyState: 'CA',
+        department: 'Engineering',
+        companyWebsite: 'https://testcompany.com',
+        companyDescription:
+          'A test company for verifying the corporate partner approval flow.',
+        approvalStatus: approvalStatus,
+        onboardingComplete: true,
       },
     });
 

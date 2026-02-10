@@ -76,14 +76,15 @@ async function createTestStudent() {
   console.log('========================================\n');
 
   try {
-    // Check if user already exists
+    // Check if user already exists (exact email match)
     console.log('Checking if user already exists...');
-    const existingUsers = await integrationSdk.users.query({
-      email: email,
-    });
+    const existingUsers = await integrationSdk.users.query({});
+    const exactMatch = existingUsers.data.data.find(
+      u => u.attributes.email === email
+    );
 
-    if (existingUsers.data.data.length > 0) {
-      const existingUser = existingUsers.data.data[0];
+    if (exactMatch) {
+      const existingUser = exactMatch;
       console.log('\n⚠️  User already exists!');
       console.log(`   ID: ${existingUser.id.uuid}`);
       console.log(`   Email: ${email}`);

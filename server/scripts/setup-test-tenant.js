@@ -31,27 +31,34 @@
 
 require('dotenv').config();
 
-const sharetribeSdk = require('sharetribe-flex-integration-sdk');
+const marketplaceSdkLib = require('sharetribe-flex-sdk');
+const integrationSdkLib = require('sharetribe-flex-integration-sdk');
 const path = require('path');
 
-const clientId =
+const marketplaceClientId = process.env.REACT_APP_SHARETRIBE_SDK_CLIENT_ID;
+const integrationClientId =
   process.env.SHARETRIBE_INTEGRATION_API_CLIENT_ID ||
   process.env.SHARETRIBE_INTEGRATION_CLIENT_ID;
-const clientSecret =
+const integrationClientSecret =
   process.env.SHARETRIBE_INTEGRATION_API_CLIENT_SECRET ||
   process.env.SHARETRIBE_INTEGRATION_CLIENT_SECRET;
 
-if (!clientId || !clientSecret) {
-  console.error('Error: Missing Integration API credentials.');
-  console.error(
-    'Please ensure SHARETRIBE_INTEGRATION_API_CLIENT_ID and SHARETRIBE_INTEGRATION_API_CLIENT_SECRET are set in your .env file.'
-  );
+if (!marketplaceClientId) {
+  console.error('Error: Missing REACT_APP_SHARETRIBE_SDK_CLIENT_ID in .env');
+  process.exit(1);
+}
+if (!integrationClientId || !integrationClientSecret) {
+  console.error('Error: Missing Integration API credentials in .env');
   process.exit(1);
 }
 
-const integrationSdk = sharetribeSdk.createInstance({
-  clientId,
-  clientSecret,
+const sdk = marketplaceSdkLib.createInstance({
+  clientId: marketplaceClientId,
+});
+
+const integrationSdk = integrationSdkLib.createInstance({
+  clientId: integrationClientId,
+  clientSecret: integrationClientSecret,
 });
 
 // Parse command line arguments
@@ -77,10 +84,13 @@ function parseArgs() {
 }
 
 async function findOrCreateUser(email, password, firstName, lastName, publicData) {
-  const existingUsers = await integrationSdk.users.query({ email });
+  const existingUsers = await integrationSdk.users.query({});
+  const exactMatch = existingUsers.data.data.find(
+    u => u.attributes.email === email
+  );
 
-  if (existingUsers.data.data.length > 0) {
-    const user = existingUsers.data.data[0];
+  if (exactMatch) {
+    const user = exactMatch;
     console.log(`  ⚠️  User already exists: ${email} (ID: ${user.id.uuid})`);
 
     // Update publicData to ensure it's correct
@@ -93,22 +103,22 @@ async function findOrCreateUser(email, password, firstName, lastName, publicData
     return { user, isNew: false, password };
   }
 
-  const createResponse = await integrationSdk.users.create({
+  // Create via Marketplace SDK (signup)
+  const createResponse = await sdk.currentUser.create({
     email,
     password,
     firstName,
     lastName,
     displayName: `${firstName} ${lastName}`,
     publicData,
-    privateData: {},
-    protectedData: {
-      createdByScript: true,
-      createdAt: new Date().toISOString(),
-    },
   });
 
   const user = createResponse.data.data;
   console.log(`  ✅ Created: ${email} (ID: ${user.id.uuid})`);
+
+  // Logout after each create so we can create the next user
+  try { await sdk.logout(); } catch (e) { /* ignore */ }
+
   return { user, isNew: true, password };
 }
 
