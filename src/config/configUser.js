@@ -54,7 +54,7 @@ export const userFields = [
     },
     userTypeConfig: {
       limitToUserTypeIds: true,
-      userTypeIds: ['student'],
+      userTypeIds: ['student', 'alumni'],
     },
   },
   {
@@ -72,7 +72,7 @@ export const userFields = [
     },
     userTypeConfig: {
       limitToUserTypeIds: true,
-      userTypeIds: ['student'],
+      userTypeIds: ['student', 'alumni'],
     },
   },
   {
@@ -99,7 +99,7 @@ export const userFields = [
     },
     userTypeConfig: {
       limitToUserTypeIds: true,
-      userTypeIds: ['student'],
+      userTypeIds: ['student', 'alumni'],
     },
   },
   {
@@ -130,7 +130,45 @@ export const userFields = [
     },
     userTypeConfig: {
       limitToUserTypeIds: true,
-      userTypeIds: ['student'],
+      userTypeIds: ['student', 'alumni'],
+    },
+  },
+  {
+    key: 'sports',
+    scope: 'public',
+    schemaType: 'multi-enum',
+    enumOptions: [
+      { option: 'football', label: 'Football' },
+      { option: 'basketball', label: 'Basketball' },
+      { option: 'baseball', label: 'Baseball' },
+      { option: 'softball', label: 'Softball' },
+      { option: 'soccer', label: 'Soccer' },
+      { option: 'track-field', label: 'Track & Field' },
+      { option: 'cross-country', label: 'Cross Country' },
+      { option: 'swimming', label: 'Swimming & Diving' },
+      { option: 'tennis', label: 'Tennis' },
+      { option: 'volleyball', label: 'Volleyball' },
+      { option: 'lacrosse', label: 'Lacrosse' },
+      { option: 'wrestling', label: 'Wrestling' },
+      { option: 'golf', label: 'Golf' },
+      { option: 'rowing', label: 'Rowing' },
+      { option: 'hockey', label: 'Hockey' },
+      { option: 'gymnastics', label: 'Gymnastics' },
+      { option: 'cheerleading', label: 'Cheerleading' },
+      { option: 'esports', label: 'Esports' },
+      { option: 'other-sport', label: 'Other Sport' },
+    ],
+    showConfig: {
+      label: 'Sports & Athletics',
+    },
+    saveConfig: {
+      label: 'Sports & Athletics',
+      displayInSignUp: true,
+      isRequired: false,
+    },
+    userTypeConfig: {
+      limitToUserTypeIds: true,
+      userTypeIds: ['student', 'alumni'],
     },
   },
 
@@ -202,7 +240,7 @@ export const userFields = [
     },
     userTypeConfig: {
       limitToUserTypeIds: true,
-      userTypeIds: ['student'],
+      userTypeIds: ['student', 'alumni'],
     },
   },
   {
@@ -236,7 +274,7 @@ export const userFields = [
     },
     userTypeConfig: {
       limitToUserTypeIds: true,
-      userTypeIds: ['student'],
+      userTypeIds: ['student', 'alumni'],
     },
   },
   {
@@ -254,7 +292,81 @@ export const userFields = [
     },
     userTypeConfig: {
       limitToUserTypeIds: true,
-      userTypeIds: ['student'],
+      userTypeIds: ['student', 'alumni'],
+    },
+  },
+
+  // ================================
+  // Alumni-specific fields
+  // ================================
+  {
+    key: 'currentCompany',
+    scope: 'public',
+    schemaType: 'text',
+    showConfig: {
+      label: 'Current Company',
+    },
+    saveConfig: {
+      label: 'Current Company',
+      placeholderMessage: 'e.g. Google, Goldman Sachs, etc.',
+      displayInSignUp: true,
+      isRequired: false,
+    },
+    userTypeConfig: {
+      limitToUserTypeIds: true,
+      userTypeIds: ['alumni'],
+    },
+  },
+  {
+    key: 'currentTitle',
+    scope: 'public',
+    schemaType: 'text',
+    showConfig: {
+      label: 'Current Title',
+    },
+    saveConfig: {
+      label: 'Current Title',
+      placeholderMessage: 'e.g. Software Engineer, Financial Analyst',
+      displayInSignUp: true,
+      isRequired: false,
+    },
+    userTypeConfig: {
+      limitToUserTypeIds: true,
+      userTypeIds: ['alumni'],
+    },
+  },
+  {
+    key: 'willingToMentor',
+    scope: 'public',
+    schemaType: 'boolean',
+    showConfig: {
+      label: 'Willing to Mentor',
+    },
+    saveConfig: {
+      label: 'I am willing to mentor current students',
+      displayInSignUp: true,
+      isRequired: false,
+    },
+    userTypeConfig: {
+      limitToUserTypeIds: true,
+      userTypeIds: ['alumni'],
+    },
+  },
+  {
+    key: 'willingToNetwork',
+    scope: 'public',
+    schemaType: 'boolean',
+    showConfig: {
+      label: 'Open to Networking',
+    },
+    saveConfig: {
+      label: 'I am open to networking with current students',
+      displayInSignUp: true,
+      isRequired: false,
+    },
+    userTypeConfig: {
+      limitToUserTypeIds: true,
+      userTypeIds: ['alumni'],
     },
   },
 
@@ -643,6 +755,15 @@ export const userTypes = [
     },
   },
   {
+    userType: 'alumni',
+    label: 'Alumni',
+    // Alumni don't handle payments
+    accountLinksVisibility: {
+      paymentMethods: false,
+      payoutDetails: false,
+    },
+  },
+  {
     userType: 'educational-institution',
     label: 'Educational Institution',
     // Hide payment tabs - institutions are billed offline
@@ -667,6 +788,14 @@ export const allUserTypes = [
   {
     userType: 'corporate-partner',
     label: 'Corporate Partner',
+    accountLinksVisibility: {
+      paymentMethods: false,
+      payoutDetails: false,
+    },
+  },
+  {
+    userType: 'alumni',
+    label: 'Alumni',
     accountLinksVisibility: {
       paymentMethods: false,
       payoutDetails: false,

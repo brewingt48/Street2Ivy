@@ -7,7 +7,7 @@ import { FormattedMessage, useIntl } from '../../util/reactIntl';
 import { LayoutComposer, NamedLink, Page } from '../../components';
 import TopbarContainer from '../TopbarContainer/TopbarContainer';
 import FooterContainer from '../FooterContainer/FooterContainer';
-import { fetchPublicContent, fetchPublicCoachingConfig, apiBaseUrl } from '../../util/api';
+import { fetchPublicContent, fetchPublicCoachingConfig, fetchPublicTenantContent, apiBaseUrl } from '../../util/api';
 
 import css from './LandingPage.module.css';
 
@@ -107,6 +107,7 @@ const LandingPageComponent = props => {
   const [institutionInfo, setInstitutionInfo] = useState(null);
   const [isLoadingInstitution, setIsLoadingInstitution] = useState(true);
   const [tenantInfo, setTenantInfo] = useState(null);
+  const [tenantContent, setTenantContent] = useState(null);
 
   const isAuthenticated = !!currentUser;
   const userType = currentUser?.attributes?.profile?.publicData?.userType;
@@ -125,6 +126,19 @@ const LandingPageComponent = props => {
   useEffect(() => {
     const info = getTenantInfo();
     setTenantInfo(info);
+
+    // Fetch tenant-specific content if on a subdomain
+    if (info?.slug) {
+      fetchPublicTenantContent(info.slug)
+        .then(response => {
+          if (response.data) {
+            setTenantContent(response);
+          }
+        })
+        .catch(err => {
+          console.log('No tenant customization found, using default content:', err);
+        });
+    }
   }, []);
 
   // Fetch dynamic content from API
@@ -200,12 +214,18 @@ const LandingPageComponent = props => {
   const statisticsContent = dynamicContent?.statistics || null;
   const testimonialsContent = dynamicContent?.testimonials || null;
 
-  // Dynamic stats
-  const statsItems = statisticsContent?.items || [];
+  // Tenant content overrides (from educational admin customization)
+  const tc = tenantContent?.data || null;
+  const tcVisibility = tc?.visibility || {};
+  const tcInstitution = tenantContent?.institution || null;
+
+  // Dynamic stats — tenant overrides take priority
+  const tenantStats = tc?.stats?.items || [];
+  const statsItems = tenantStats.length > 0 ? tenantStats : (statisticsContent?.items || []);
   const stat1 = statsItems.find(s => s.id === 'stat-1') || { value: 5000, label: null, suffix: '+' };
   const stat2 = statsItems.find(s => s.id === 'stat-2') || { value: 850, label: null, suffix: '+' };
   const stat3 = statsItems.find(s => s.id === 'stat-3') || { value: 200, label: null, suffix: '+' };
-  const stat4 = statsItems.find(s => s.id === 'stat-4') || { value: 4.9, label: null, suffix: '' };
+  const stat4 = statsItems.find(s => s.id === 'stat-4') || statsItems[3] || { value: 4.9, label: null, suffix: '' };
 
   const studentsCount = useCountUp(stat1.value);
   const projectsCount = useCountUp(stat2.value);
@@ -213,9 +233,13 @@ const LandingPageComponent = props => {
   const ratingCount = useCountUp(stat4.value);
 
   // ─── Tenant-aware heading ─────────────────────────────────────────────────
-  const tenantHeading = tenantInfo
-    ? intl.formatMessage({ id: 'LandingPage.hero.titleTenant' }, { school: tenantInfo.slug.replace(/-/g, ' ') })
-    : null;
+  const tenantHeroTitle = tc?.hero?.title || null;
+  const tenantHeroSubtitle = tc?.hero?.subtitle || null;
+  const tenantHeading = tenantHeroTitle
+    ? tenantHeroTitle
+    : tenantInfo
+      ? intl.formatMessage({ id: 'LandingPage.hero.titleTenant' }, { school: tcInstitution?.name || tenantInfo.slug.replace(/-/g, ' ') })
+      : null;
 
   // ─── How It Works steps per audience ──────────────────────────────────────
   const howItWorksSteps = {
@@ -361,10 +385,19 @@ const LandingPageComponent = props => {
                   <div className={css.heroGrid}>
                     {/* Left — Copy */}
                     <div className={css.heroContent}>
+                      {tc?.branding?.logoUrl && (
+                        <div className={css.tenantLogo}>
+                          <img
+                            src={tc.branding.logoUrl}
+                            alt={tc.branding.institutionName || 'Institution'}
+                            className={css.tenantLogoImg}
+                          />
+                        </div>
+                      )}
                       <div className={css.heroBadge}>
                         <span className={css.badgeDot} aria-hidden="true" />
                         <span>
-                          {intl.formatMessage({ id: 'LandingPage.hero.badge' })}
+                          {tc?.branding?.tagline || intl.formatMessage({ id: 'LandingPage.hero.badge' })}
                         </span>
                       </div>
 
@@ -380,7 +413,7 @@ const LandingPageComponent = props => {
                       </h1>
 
                       <p className={css.heroSubtitle}>
-                        {intl.formatMessage({ id: 'LandingPage.hero.subtitle' })}
+                        {tenantHeroSubtitle || intl.formatMessage({ id: 'LandingPage.hero.subtitle' })}
                       </p>
 
                       <div className={css.heroButtons}>
@@ -443,6 +476,7 @@ const LandingPageComponent = props => {
                 {/* ════════════════════════════════════════════════════════════
                     SECTION 2: HOW IT WORKS — Tabbed, 3 audiences × 5 steps
                     ════════════════════════════════════════════════════════════ */}
+                {(tcVisibility.showHowItWorks !== false) && (
                 <section className={css.howSection} id="how-section" ref={howVis.ref}>
                   <div className={css.sectionContainer}>
                     <span className={css.sectionLabel}>
@@ -489,6 +523,7 @@ const LandingPageComponent = props => {
                     </div>
                   </div>
                 </section>
+                )}
 
                 {/* ════════════════════════════════════════════════════════════
                     SECTION 3: TRUST & DIFFERENTIATION — "Your Work Stays Yours"
@@ -589,6 +624,7 @@ const LandingPageComponent = props => {
                 {/* ════════════════════════════════════════════════════════════
                     SECTION 5: SOCIAL PROOF — Stats + Testimonials
                     ════════════════════════════════════════════════════════════ */}
+                {(tcVisibility.showStats !== false && tcVisibility.showTestimonials !== false) && (
                 <section className={css.socialSection} ref={statsVis.ref}>
                   <div className={css.sectionContainer}>
                     {/* Stats Row */}
@@ -672,10 +708,12 @@ const LandingPageComponent = props => {
                     </div>
                   </div>
                 </section>
+                )}
 
                 {/* ════════════════════════════════════════════════════════════
                     SECTION 6: AI COACHING TEASER
                     ════════════════════════════════════════════════════════════ */}
+                {(tcVisibility.showAICoaching !== false) && (
                 <section className={css.aiSection} ref={aiVis.ref}>
                   <div className={css.sectionContainer}>
                     <div className={css.aiGrid}>
@@ -799,10 +837,12 @@ const LandingPageComponent = props => {
                     </div>
                   </div>
                 </section>
+                )}
 
                 {/* ════════════════════════════════════════════════════════════
                     SECTION 7: CLOSING CTA — Triple path
                     ════════════════════════════════════════════════════════════ */}
+                {(tcVisibility.showCTA !== false) && (
                 <section className={css.tripleCtaSection} ref={ctaVis.ref}>
                   {/* Company CTA */}
                   <div className={css.ctaCompanies}>
@@ -866,6 +906,7 @@ const LandingPageComponent = props => {
                     </p>
                   </div>
                 </section>
+                )}
 
               </Main>
               <Footer>

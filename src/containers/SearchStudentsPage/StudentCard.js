@@ -91,7 +91,7 @@ const StudentCard = props => {
 
   const [showStats, setShowStats] = useState(false);
 
-  const { university, major, graduationYear, skills = [], studentState } = publicData;
+  const { university, major, graduationYear, skills = [], sports = [], studentState } = publicData;
 
   // Load stats when the stats section is expanded
   useEffect(() => {
@@ -174,6 +174,16 @@ const StudentCard = props => {
             </span>
           ))}
           {skills.length > 5 && <span className={css.skillPill}>+{skills.length - 5}</span>}
+        </div>
+      )}
+
+      {sports.length > 0 && (
+        <div className={css.skillsContainer}>
+          {sports.map(sport => (
+            <span key={sport} className={css.sportPill}>
+              {sport.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+            </span>
+          ))}
         </div>
       )}
 

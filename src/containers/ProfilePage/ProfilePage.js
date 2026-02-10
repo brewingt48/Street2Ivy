@@ -48,6 +48,7 @@ import {
   LayoutSideNavigation,
   NamedRedirect,
   VerificationBadge,
+  StarRating,
 } from '../../components';
 
 import TopbarContainer from '../../containers/TopbarContainer/TopbarContainer';
@@ -427,6 +428,26 @@ export const MainContent = props => {
       <H2 as="h1" className={css.desktopHeading}>
         <FormattedMessage id="ProfilePage.desktopHeading" values={{ name: headingName }} />
       </H2>
+      {/* Average Rating Display */}
+      {(() => {
+        const allRatings = reviews
+          .filter(r => r.attributes?.rating)
+          .map(r => r.attributes.rating);
+        const avgRating = allRatings.length > 0
+          ? allRatings.reduce((sum, r) => sum + r, 0) / allRatings.length
+          : 0;
+        return (
+          <div className={css.averageRatingSection}>
+            <StarRating
+              rating={avgRating}
+              showEmpty
+              showNumeric={allRatings.length > 0}
+              reviewCount={allRatings.length}
+              size="md"
+            />
+          </div>
+        );
+      })()}
       {isCorporatePartner && companyWebsite ? (
         <a
           href={companyWebsite.startsWith('http') ? companyWebsite : `https://${companyWebsite}`}

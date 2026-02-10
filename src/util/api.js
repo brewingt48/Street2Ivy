@@ -1164,6 +1164,69 @@ export const fetchPublicCoachingConfig = () => {
   });
 };
 
+// ================ Tenant Content Customization API ================ //
+
+// Fetch the educational admin's own institution landing page content
+export const fetchMyTenantContent = () => {
+  return request('/api/tenant-content/my-institution', {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
+  });
+};
+
+// Update the educational admin's institution landing page content
+export const updateMyTenantContent = (data) => {
+  return request('/api/tenant-content/my-institution', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+};
+
+// Reset institution landing page to defaults
+export const resetMyTenantContent = () => {
+  return request('/api/tenant-content/my-institution/reset', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+  });
+};
+
+// Fetch public tenant content by subdomain slug (for landing page)
+export const fetchPublicTenantContent = (slug) => {
+  return request(`/api/tenant-content/public/${encodeURIComponent(slug)}`, {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
+  });
+};
+
+// ================ Alumni Network API Functions ================ //
+
+// Search alumni directory
+export const searchAlumni = (params = {}) => {
+  const queryString = new URLSearchParams(params).toString();
+  return request(`/api/alumni/search?${queryString}`, {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
+  });
+};
+
+// Invite alumni to the platform (educational admin only)
+export const inviteAlumni = (data) => {
+  return request('/api/alumni/invite', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+};
+
+// Get alumni profile
+export const getAlumniProfile = (userId) => {
+  return request(`/api/alumni/${encodeURIComponent(userId)}`, {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
+  });
+};
+
 // ================ Student Waitlist API Functions ================ //
 
 // Add student to waitlist (public)

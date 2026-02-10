@@ -250,6 +250,17 @@
   }
 }
 
+/* Tenant Logo (subdomain customization) */
+.tenantLogo {
+  margin-bottom: 16px;
+}
+
+.tenantLogoImg {
+  max-height: 60px;
+  max-width: 200px;
+  object-fit: contain;
+}
+
 /* Hero Badge */
 .heroBadge {
   display: inline-flex;

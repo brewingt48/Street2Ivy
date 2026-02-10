@@ -4,7 +4,7 @@ import { compose } from 'redux';
 import { useHistory, useLocation } from 'react-router-dom';
 import { FormattedMessage, useIntl } from '../../util/reactIntl';
 import { isScrollingDisabled, manageDisableScrolling } from '../../ducks/ui.duck';
-import { fetchAllCompaniesSpending } from '../../util/api';
+import { fetchAllCompaniesSpending, fetchMyTenantContent, updateMyTenantContent, resetMyTenantContent, searchAlumni, inviteAlumni } from '../../util/api';
 
 import { Page, LayoutSingleColumn, PaginationLinks, AvatarMedium, Modal, NamedLink } from '../../components';
 import TopbarContainer from '../../containers/TopbarContainer/TopbarContainer';
@@ -584,6 +584,719 @@ const MessagesPanel = props => {
   );
 };
 
+// ================ Customize Landing Page Panel ================ //
+
+const CustomizeLandingPanel = ({ institutionDomain }) => {
+  const intl = useIntl();
+  const [tenantContent, setTenantContent] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [successMsg, setSuccessMsg] = useState('');
+  const [errorMsg, setErrorMsg] = useState('');
+  const [activeSection, setActiveSection] = useState('branding');
+  const [hasChanges, setHasChanges] = useState(false);
+
+  // Editable form state
+  const [formState, setFormState] = useState({
+    branding: { institutionName: '', tagline: '', logoUrl: '', primaryColor: '#1a1a2e', accentColor: '#e94560' },
+    hero: { title: '', subtitle: '', backgroundImageUrl: '' },
+    stats: { items: [
+      { id: 'stat-1', value: 0, label: 'Students Matched', suffix: '+' },
+      { id: 'stat-2', value: 0, label: 'Partner Companies', suffix: '+' },
+      { id: 'stat-3', value: 0, label: 'Projects Completed', suffix: '+' },
+    ]},
+    testimonials: { items: [] },
+    cta: { title: '', subtitle: '', buttonText: '', buttonUrl: '' },
+    visibility: { showStats: true, showTestimonials: true, showHowItWorks: true, showAICoaching: true, showCTA: true },
+  });
+
+  useEffect(() => {
+    setIsLoading(true);
+    fetchMyTenantContent()
+      .then(response => {
+        const data = response.data;
+        if (data) {
+          setTenantContent(data);
+          setFormState(prev => ({
+            branding: { ...prev.branding, ...(data.branding || {}) },
+            hero: { ...prev.hero, ...(data.hero || {}) },
+            stats: data.stats || prev.stats,
+            testimonials: data.testimonials || prev.testimonials,
+            cta: { ...prev.cta, ...(data.cta || {}) },
+            visibility: { ...prev.visibility, ...(data.visibility || {}) },
+          }));
+        }
+      })
+      .catch(err => {
+        console.error('Failed to fetch tenant content:', err);
+        setErrorMsg('Failed to load customization data. You may not have permission yet.');
+      })
+      .finally(() => setIsLoading(false));
+  }, []);
+
+  const updateField = (section, field, value) => {
+    setFormState(prev => ({
+      ...prev,
+      [section]: { ...prev[section], [field]: value },
+    }));
+    setHasChanges(true);
+  };
+
+  const updateStatItem = (index, field, value) => {
+    setFormState(prev => {
+      const newItems = [...prev.stats.items];
+      newItems[index] = { ...newItems[index], [field]: field === 'value' ? Number(value) || 0 : value };
+      return { ...prev, stats: { items: newItems } };
+    });
+    setHasChanges(true);
+  };
+
+  const addTestimonial = () => {
+    setFormState(prev => ({
+      ...prev,
+      testimonials: {
+        items: [
+          ...prev.testimonials.items,
+          { id: `testimonial-${Date.now()}`, quote: '', author: '', role: '' },
+        ],
+      },
+    }));
+    setHasChanges(true);
+  };
+
+  const updateTestimonial = (index, field, value) => {
+    setFormState(prev => {
+      const newItems = [...prev.testimonials.items];
+      newItems[index] = { ...newItems[index], [field]: value };
+      return { ...prev, testimonials: { items: newItems } };
+    });
+    setHasChanges(true);
+  };
+
+  const removeTestimonial = (index) => {
+    setFormState(prev => ({
+      ...prev,
+      testimonials: { items: prev.testimonials.items.filter((_, i) => i !== index) },
+    }));
+    setHasChanges(true);
+  };
+
+  const toggleVisibility = (field) => {
+    setFormState(prev => ({
+      ...prev,
+      visibility: { ...prev.visibility, [field]: !prev.visibility[field] },
+    }));
+    setHasChanges(true);
+  };
+
+  const handleSave = async () => {
+    setIsSaving(true);
+    setErrorMsg('');
+    setSuccessMsg('');
+    try {
+      const response = await updateMyTenantContent(formState);
+      setTenantContent(response.data);
+      setSuccessMsg('Landing page customization saved successfully!');
+      setHasChanges(false);
+      setTimeout(() => setSuccessMsg(''), 4000);
+    } catch (err) {
+      setErrorMsg('Failed to save. Please try again.');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleReset = async () => {
+    if (!window.confirm('Are you sure you want to reset all customizations to defaults?')) return;
+    try {
+      await resetMyTenantContent();
+      setFormState({
+        branding: { institutionName: '', tagline: '', logoUrl: '', primaryColor: '#1a1a2e', accentColor: '#e94560' },
+        hero: { title: '', subtitle: '', backgroundImageUrl: '' },
+        stats: { items: [
+          { id: 'stat-1', value: 0, label: 'Students Matched', suffix: '+' },
+          { id: 'stat-2', value: 0, label: 'Partner Companies', suffix: '+' },
+          { id: 'stat-3', value: 0, label: 'Projects Completed', suffix: '+' },
+        ]},
+        testimonials: { items: [] },
+        cta: { title: '', subtitle: '', buttonText: '', buttonUrl: '' },
+        visibility: { showStats: true, showTestimonials: true, showHowItWorks: true, showAICoaching: true, showCTA: true },
+      });
+      setTenantContent(null);
+      setHasChanges(false);
+      setSuccessMsg('Customizations reset to defaults.');
+      setTimeout(() => setSuccessMsg(''), 4000);
+    } catch (err) {
+      setErrorMsg('Failed to reset customizations.');
+    }
+  };
+
+  const subdomainPreview = institutionDomain ? institutionDomain.split('.')[0] : 'your-school';
+
+  if (isLoading) {
+    return <div className={css.loading}>Loading customization data...</div>;
+  }
+
+  const sections = [
+    { key: 'branding', label: 'Branding' },
+    { key: 'hero', label: 'Hero Section' },
+    { key: 'stats', label: 'Statistics' },
+    { key: 'testimonials', label: 'Testimonials' },
+    { key: 'cta', label: 'Call to Action' },
+    { key: 'visibility', label: 'Section Visibility' },
+  ];
+
+  return (
+    <div className={css.customizePanel}>
+      <div className={css.customizeHeader}>
+        <div>
+          <h2 className={css.customizeTitle}>
+            {intl.formatMessage({ id: 'EducationDashboardPage.customizeTitle' })}
+          </h2>
+          <p className={css.customizeDescription}>
+            {intl.formatMessage(
+              { id: 'EducationDashboardPage.customizeDescription' },
+              { subdomain: `${subdomainPreview}.street2ivy.com` }
+            )}
+          </p>
+        </div>
+        <div className={css.customizeActions}>
+          <button className={css.resetButton} onClick={handleReset} disabled={isSaving}>
+            {intl.formatMessage({ id: 'EducationDashboardPage.customizeReset' })}
+          </button>
+          <button
+            className={css.saveButton}
+            onClick={handleSave}
+            disabled={isSaving || !hasChanges}
+          >
+            {isSaving ? 'Saving...' : intl.formatMessage({ id: 'EducationDashboardPage.customizeSave' })}
+          </button>
+        </div>
+      </div>
+
+      {successMsg && <div className={css.successMessage}>{successMsg}</div>}
+      {errorMsg && <div className={css.errorMessage}>{errorMsg}</div>}
+
+      <div className={css.customizeLayout}>
+        {/* Section Navigation */}
+        <div className={css.customizeSidebar}>
+          {sections.map(s => (
+            <button
+              key={s.key}
+              className={`${css.customizeSidebarItem} ${activeSection === s.key ? css.customizeSidebarActive : ''}`}
+              onClick={() => setActiveSection(s.key)}
+            >
+              {s.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Section Content */}
+        <div className={css.customizeContent}>
+
+          {/* Branding Section */}
+          {activeSection === 'branding' && (
+            <div className={css.customizeSection}>
+              <h3 className={css.customizeSectionTitle}>Branding</h3>
+              <p className={css.customizeSectionDesc}>
+                Set your institution name, tagline, logo, and brand colors for the landing page.
+              </p>
+              <div className={css.formField}>
+                <label>Institution Display Name</label>
+                <input
+                  type="text"
+                  value={formState.branding.institutionName}
+                  onChange={e => updateField('branding', 'institutionName', e.target.value)}
+                  placeholder="e.g. Howard University"
+                />
+              </div>
+              <div className={css.formField}>
+                <label>Tagline</label>
+                <input
+                  type="text"
+                  value={formState.branding.tagline}
+                  onChange={e => updateField('branding', 'tagline', e.target.value)}
+                  placeholder="e.g. Empowering Bison talent through industry connections"
+                />
+              </div>
+              <div className={css.formField}>
+                <label>Logo URL</label>
+                <input
+                  type="url"
+                  value={formState.branding.logoUrl}
+                  onChange={e => updateField('branding', 'logoUrl', e.target.value)}
+                  placeholder="https://your-school.edu/logo.png"
+                />
+                <span className={css.fieldHint}>Paste a URL to your institution logo (recommended: 200x60px PNG)</span>
+              </div>
+              <div className={css.formRow}>
+                <div className={css.formField}>
+                  <label>Primary Color</label>
+                  <div className={css.colorInputWrapper}>
+                    <input
+                      type="color"
+                      value={formState.branding.primaryColor}
+                      onChange={e => updateField('branding', 'primaryColor', e.target.value)}
+                      className={css.colorInput}
+                    />
+                    <input
+                      type="text"
+                      value={formState.branding.primaryColor}
+                      onChange={e => updateField('branding', 'primaryColor', e.target.value)}
+                      className={css.colorTextInput}
+                      placeholder="#1a1a2e"
+                    />
+                  </div>
+                </div>
+                <div className={css.formField}>
+                  <label>Accent Color</label>
+                  <div className={css.colorInputWrapper}>
+                    <input
+                      type="color"
+                      value={formState.branding.accentColor}
+                      onChange={e => updateField('branding', 'accentColor', e.target.value)}
+                      className={css.colorInput}
+                    />
+                    <input
+                      type="text"
+                      value={formState.branding.accentColor}
+                      onChange={e => updateField('branding', 'accentColor', e.target.value)}
+                      className={css.colorTextInput}
+                      placeholder="#e94560"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Hero Section */}
+          {activeSection === 'hero' && (
+            <div className={css.customizeSection}>
+              <h3 className={css.customizeSectionTitle}>Hero Section</h3>
+              <p className={css.customizeSectionDesc}>
+                Customize the main headline and banner seen at the top of your landing page.
+              </p>
+              <div className={css.formField}>
+                <label>Hero Title</label>
+                <input
+                  type="text"
+                  value={formState.hero.title}
+                  onChange={e => updateField('hero', 'title', e.target.value)}
+                  placeholder="e.g. Howard University x Street2Ivy"
+                />
+                <span className={css.fieldHint}>Leave blank to use the default Street2Ivy headline</span>
+              </div>
+              <div className={css.formField}>
+                <label>Hero Subtitle</label>
+                <textarea
+                  value={formState.hero.subtitle}
+                  onChange={e => updateField('hero', 'subtitle', e.target.value)}
+                  placeholder="e.g. Connecting Bison talent with Fortune 500 opportunities"
+                  rows={3}
+                />
+              </div>
+              <div className={css.formField}>
+                <label>Background Image URL</label>
+                <input
+                  type="url"
+                  value={formState.hero.backgroundImageUrl}
+                  onChange={e => updateField('hero', 'backgroundImageUrl', e.target.value)}
+                  placeholder="https://your-school.edu/campus-hero.jpg"
+                />
+                <span className={css.fieldHint}>Recommended: 1920x800px landscape image</span>
+              </div>
+            </div>
+          )}
+
+          {/* Statistics Section */}
+          {activeSection === 'stats' && (
+            <div className={css.customizeSection}>
+              <h3 className={css.customizeSectionTitle}>Statistics</h3>
+              <p className={css.customizeSectionDesc}>
+                Show your institution's impact with custom statistics that appear on the landing page.
+              </p>
+              {formState.stats.items.map((stat, idx) => (
+                <div key={stat.id} className={css.statEditRow}>
+                  <div className={css.formField}>
+                    <label>Stat {idx + 1} Label</label>
+                    <input
+                      type="text"
+                      value={stat.label}
+                      onChange={e => updateStatItem(idx, 'label', e.target.value)}
+                      placeholder="e.g. Students Matched"
+                    />
+                  </div>
+                  <div className={css.formRow}>
+                    <div className={css.formField}>
+                      <label>Value</label>
+                      <input
+                        type="number"
+                        value={stat.value}
+                        onChange={e => updateStatItem(idx, 'value', e.target.value)}
+                        placeholder="0"
+                      />
+                    </div>
+                    <div className={css.formField}>
+                      <label>Suffix</label>
+                      <input
+                        type="text"
+                        value={stat.suffix}
+                        onChange={e => updateStatItem(idx, 'suffix', e.target.value)}
+                        placeholder="+"
+                      />
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Testimonials Section */}
+          {activeSection === 'testimonials' && (
+            <div className={css.customizeSection}>
+              <h3 className={css.customizeSectionTitle}>Testimonials</h3>
+              <p className={css.customizeSectionDesc}>
+                Add student or partner testimonials to showcase on your landing page.
+              </p>
+              {formState.testimonials.items.map((t, idx) => (
+                <div key={t.id} className={css.testimonialEditCard}>
+                  <div className={css.testimonialEditHeader}>
+                    <span>Testimonial {idx + 1}</span>
+                    <button className={css.removeButton} onClick={() => removeTestimonial(idx)}>Remove</button>
+                  </div>
+                  <div className={css.formField}>
+                    <label>Quote</label>
+                    <textarea
+                      value={t.quote}
+                      onChange={e => updateTestimonial(idx, 'quote', e.target.value)}
+                      placeholder="What did they say about the program?"
+                      rows={3}
+                    />
+                  </div>
+                  <div className={css.formRow}>
+                    <div className={css.formField}>
+                      <label>Author Name</label>
+                      <input
+                        type="text"
+                        value={t.author}
+                        onChange={e => updateTestimonial(idx, 'author', e.target.value)}
+                        placeholder="Jane Doe"
+                      />
+                    </div>
+                    <div className={css.formField}>
+                      <label>Role / Title</label>
+                      <input
+                        type="text"
+                        value={t.role}
+                        onChange={e => updateTestimonial(idx, 'role', e.target.value)}
+                        placeholder="Senior, Finance Major"
+                      />
+                    </div>
+                  </div>
+                </div>
+              ))}
+              <button className={css.addButton} onClick={addTestimonial}>
+                + Add Testimonial
+              </button>
+            </div>
+          )}
+
+          {/* CTA Section */}
+          {activeSection === 'cta' && (
+            <div className={css.customizeSection}>
+              <h3 className={css.customizeSectionTitle}>Call to Action</h3>
+              <p className={css.customizeSectionDesc}>
+                Customize the closing call-to-action section on your landing page.
+              </p>
+              <div className={css.formField}>
+                <label>CTA Title</label>
+                <input
+                  type="text"
+                  value={formState.cta.title}
+                  onChange={e => updateField('cta', 'title', e.target.value)}
+                  placeholder="e.g. Ready to launch your career?"
+                />
+              </div>
+              <div className={css.formField}>
+                <label>CTA Subtitle</label>
+                <textarea
+                  value={formState.cta.subtitle}
+                  onChange={e => updateField('cta', 'subtitle', e.target.value)}
+                  placeholder="e.g. Join hundreds of Howard students who found their path"
+                  rows={2}
+                />
+              </div>
+              <div className={css.formRow}>
+                <div className={css.formField}>
+                  <label>Button Text</label>
+                  <input
+                    type="text"
+                    value={formState.cta.buttonText}
+                    onChange={e => updateField('cta', 'buttonText', e.target.value)}
+                    placeholder="e.g. Get Started"
+                  />
+                </div>
+                <div className={css.formField}>
+                  <label>Button URL (optional)</label>
+                  <input
+                    type="url"
+                    value={formState.cta.buttonUrl}
+                    onChange={e => updateField('cta', 'buttonUrl', e.target.value)}
+                    placeholder="https://..."
+                  />
+                  <span className={css.fieldHint}>Leave blank to link to the signup page</span>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Visibility Section */}
+          {activeSection === 'visibility' && (
+            <div className={css.customizeSection}>
+              <h3 className={css.customizeSectionTitle}>Section Visibility</h3>
+              <p className={css.customizeSectionDesc}>
+                Toggle which sections appear on your institution's landing page.
+              </p>
+              {[
+                { key: 'showStats', label: 'Statistics Section', desc: 'Show impact numbers (students matched, companies, etc.)' },
+                { key: 'showTestimonials', label: 'Testimonials Section', desc: 'Show student and partner testimonials' },
+                { key: 'showHowItWorks', label: 'How It Works Section', desc: 'Show the step-by-step process' },
+                { key: 'showAICoaching', label: 'AI Coaching Section', desc: 'Show the AI career coaching feature' },
+                { key: 'showCTA', label: 'Call to Action Section', desc: 'Show the closing call to action' },
+              ].map(item => (
+                <div key={item.key} className={css.visibilityToggle}>
+                  <div className={css.visibilityInfo}>
+                    <span className={css.visibilityLabel}>{item.label}</span>
+                    <span className={css.visibilityDesc}>{item.desc}</span>
+                  </div>
+                  <button
+                    className={`${css.toggleButton} ${formState.visibility[item.key] ? css.toggleOn : css.toggleOff}`}
+                    onClick={() => toggleVisibility(item.key)}
+                  >
+                    {formState.visibility[item.key] ? 'Visible' : 'Hidden'}
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ================ Alumni Network Panel ================ //
+
+const AlumniNetworkPanel = ({ institutionDomain }) => {
+  const intl = useIntl();
+  const [alumniList, setAlumniList] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [inviteEmails, setInviteEmails] = useState('');
+  const [inviteMessage, setInviteMessage] = useState('');
+  const [inviteInProgress, setInviteInProgress] = useState(false);
+  const [successMsg, setSuccessMsg] = useState('');
+  const [errorMsg, setErrorMsg] = useState('');
+  const [searchFilters, setSearchFilters] = useState({ major: '', sport: '', willingToMentor: '', willingToNetwork: '' });
+
+  useEffect(() => {
+    loadAlumni();
+  }, []);
+
+  const loadAlumni = async (filters = {}) => {
+    setIsLoading(true);
+    try {
+      const params = { ...filters };
+      if (institutionDomain) {
+        // Filter by institution domain university
+      }
+      const response = await searchAlumni(params);
+      setAlumniList(response.data || []);
+    } catch (err) {
+      console.error('Failed to fetch alumni:', err);
+      setAlumniList([]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleSearch = () => {
+    const filters = {};
+    if (searchFilters.major) filters.major = searchFilters.major;
+    if (searchFilters.sport) filters.sport = searchFilters.sport;
+    if (searchFilters.willingToMentor) filters.willingToMentor = searchFilters.willingToMentor;
+    if (searchFilters.willingToNetwork) filters.willingToNetwork = searchFilters.willingToNetwork;
+    loadAlumni(filters);
+  };
+
+  const handleInvite = async () => {
+    const emails = inviteEmails
+      .split(/[,\n;]+/)
+      .map(e => e.trim())
+      .filter(e => e.length > 0);
+
+    if (emails.length === 0) {
+      setErrorMsg('Please enter at least one email address.');
+      return;
+    }
+
+    setInviteInProgress(true);
+    setErrorMsg('');
+    setSuccessMsg('');
+    try {
+      const response = await inviteAlumni({ emails, personalMessage: inviteMessage });
+      setSuccessMsg(response.message || `${emails.length} invitation(s) sent!`);
+      setInviteEmails('');
+      setInviteMessage('');
+      setTimeout(() => setSuccessMsg(''), 5000);
+    } catch (err) {
+      setErrorMsg('Failed to send invitations. Please try again.');
+    } finally {
+      setInviteInProgress(false);
+    }
+  };
+
+  return (
+    <div className={css.alumniPanel}>
+      {/* Invite Alumni Section */}
+      <div className={css.alumniInviteSection}>
+        <h3 className={css.alumniSectionTitle}>
+          {intl.formatMessage({ id: 'EducationDashboardPage.alumniInviteTitle' })}
+        </h3>
+        <p className={css.alumniSectionDesc}>
+          {intl.formatMessage({ id: 'EducationDashboardPage.alumniInviteDescription' })}
+        </p>
+
+        {successMsg && <div className={css.successMessage}>{successMsg}</div>}
+        {errorMsg && <div className={css.errorMessage}>{errorMsg}</div>}
+
+        <div className={css.formField}>
+          <label>{intl.formatMessage({ id: 'EducationDashboardPage.alumniEmailsLabel' })}</label>
+          <textarea
+            value={inviteEmails}
+            onChange={e => setInviteEmails(e.target.value)}
+            placeholder="alumni1@email.com, alumni2@email.com"
+            rows={3}
+          />
+          <span className={css.fieldHint}>Separate multiple emails with commas or new lines</span>
+        </div>
+        <div className={css.formField}>
+          <label>{intl.formatMessage({ id: 'EducationDashboardPage.alumniMessageLabel' })}</label>
+          <textarea
+            value={inviteMessage}
+            onChange={e => setInviteMessage(e.target.value)}
+            placeholder="Join our alumni network on Street2Ivy and connect with current students..."
+            rows={2}
+          />
+        </div>
+        <button
+          className={css.saveButton}
+          onClick={handleInvite}
+          disabled={inviteInProgress || !inviteEmails.trim()}
+        >
+          {inviteInProgress ? 'Sending...' : intl.formatMessage({ id: 'EducationDashboardPage.alumniSendInvites' })}
+        </button>
+      </div>
+
+      {/* Alumni Directory */}
+      <div className={css.alumniDirectorySection}>
+        <h3 className={css.alumniSectionTitle}>
+          {intl.formatMessage({ id: 'EducationDashboardPage.alumniDirectoryTitle' })}
+        </h3>
+
+        {/* Search Filters */}
+        <div className={css.alumniFilters}>
+          <div className={css.formField}>
+            <label>Major</label>
+            <input
+              type="text"
+              value={searchFilters.major}
+              onChange={e => setSearchFilters(prev => ({ ...prev, major: e.target.value }))}
+              placeholder="e.g. Computer Science"
+            />
+          </div>
+          <div className={css.formField}>
+            <label>Sport</label>
+            <input
+              type="text"
+              value={searchFilters.sport}
+              onChange={e => setSearchFilters(prev => ({ ...prev, sport: e.target.value }))}
+              placeholder="e.g. basketball"
+            />
+          </div>
+          <div className={css.formField}>
+            <label>
+              <input
+                type="checkbox"
+                checked={searchFilters.willingToMentor === 'true'}
+                onChange={e => setSearchFilters(prev => ({ ...prev, willingToMentor: e.target.checked ? 'true' : '' }))}
+              />
+              {' '}Willing to Mentor
+            </label>
+          </div>
+          <div className={css.formField}>
+            <label>
+              <input
+                type="checkbox"
+                checked={searchFilters.willingToNetwork === 'true'}
+                onChange={e => setSearchFilters(prev => ({ ...prev, willingToNetwork: e.target.checked ? 'true' : '' }))}
+              />
+              {' '}Open to Networking
+            </label>
+          </div>
+          <button className={css.addButton} onClick={handleSearch}>Search Alumni</button>
+        </div>
+
+        {/* Alumni List */}
+        {isLoading ? (
+          <div className={css.loading}>Loading alumni directory...</div>
+        ) : alumniList.length === 0 ? (
+          <div className={css.emptyState}>
+            <p>{intl.formatMessage({ id: 'EducationDashboardPage.alumniEmptyState' })}</p>
+          </div>
+        ) : (
+          <div className={css.alumniGrid}>
+            {alumniList.map(alum => (
+              <div key={alum.id} className={css.alumniCard}>
+                <div className={css.alumniCardHeader}>
+                  <div className={css.alumniAvatar}>
+                    {alum.abbreviatedName || alum.displayName?.charAt(0) || '?'}
+                  </div>
+                  <div>
+                    <h4 className={css.alumniName}>{alum.displayName}</h4>
+                    <p className={css.alumniDetail}>
+                      {alum.publicData?.university} {alum.publicData?.graduationYear ? `'${String(alum.publicData.graduationYear).slice(-2)}` : ''}
+                    </p>
+                  </div>
+                </div>
+                {alum.publicData?.major && (
+                  <p className={css.alumniDetail}>{alum.publicData.major}</p>
+                )}
+                {alum.publicData?.currentCompany && (
+                  <p className={css.alumniDetail}>{alum.publicData.currentTitle || ''} at {alum.publicData.currentCompany}</p>
+                )}
+                <div className={css.alumniTags}>
+                  {alum.publicData?.willingToMentor && (
+                    <span className={css.alumniTag}>Mentor</span>
+                  )}
+                  {alum.publicData?.willingToNetwork && (
+                    <span className={css.alumniTag}>Networking</span>
+                  )}
+                  {(alum.publicData?.sports || []).slice(0, 3).map(sport => (
+                    <span key={sport} className={css.alumniTagSport}>
+                      {sport.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
 // ================ Main Component ================ //
 
 const EducationDashboardPageComponent = props => {
@@ -780,6 +1493,18 @@ const EducationDashboardPageComponent = props => {
               onClick={() => setActiveTab('messages')}
             >
               <FormattedMessage id="EducationDashboardPage.tabMessages" />
+            </button>
+            <button
+              className={`${css.tab} ${activeTab === 'customize' ? css.activeTab : ''}`}
+              onClick={() => setActiveTab('customize')}
+            >
+              <FormattedMessage id="EducationDashboardPage.tabCustomize" />
+            </button>
+            <button
+              className={`${css.tab} ${activeTab === 'alumni' ? css.activeTab : ''}`}
+              onClick={() => setActiveTab('alumni')}
+            >
+              <FormattedMessage id="EducationDashboardPage.tabAlumni" />
             </button>
           </div>
 
@@ -1513,6 +2238,16 @@ const EducationDashboardPageComponent = props => {
               onFetchMessages={onFetchMessages}
               onClearMessageState={onClearMessageState}
             />
+          )}
+
+          {/* Customize Landing Page Tab */}
+          {activeTab === 'customize' && (
+            <CustomizeLandingPanel institutionDomain={institutionDomain} />
+          )}
+
+          {/* Alumni Network Tab */}
+          {activeTab === 'alumni' && (
+            <AlumniNetworkPanel institutionDomain={institutionDomain} />
           )}
         </div>
 

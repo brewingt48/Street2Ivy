@@ -276,6 +276,15 @@
   white-space: nowrap;
 }
 
+.sportPill {
+  font-size: 12px;
+  color: #065f46;
+  background-color: #d1fae5;
+  padding: 3px 10px;
+  border-radius: 12px;
+  white-space: nowrap;
+}
+
 /* ─── Project Stats Section ─── */
 
 .statsSection {

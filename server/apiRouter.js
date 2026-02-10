@@ -60,6 +60,8 @@ const adminBlog = require('./api/admin/blog');
 const adminCoachingConfig = require('./api/admin/coaching-config');
 const adminStudentCoachingAccess = require('./api/admin/student-coaching-access');
 const studentWaitlist = require('./api/admin/student-waitlist');
+const tenantContent = require('./api/tenant-content');
+const alumni = require('./api/alumni');
 
 // File upload middleware
 const fileUpload = require('express-fileupload');
@@ -323,6 +325,17 @@ router.post('/admin/student-coaching-access/unblock', adminStudentCoachingAccess
 router.get('/admin/student-coaching-access/check/:userId', adminStudentCoachingAccess.checkAccess);
 router.get('/admin/institutions-coaching-summary', adminStudentCoachingAccess.getInstitutionsSummary);
 router.get('/admin/institution/:domain/students', adminStudentCoachingAccess.getInstitutionStudents);
+
+// Street2Ivy: Tenant Landing Page Customization
+router.get('/tenant-content/my-institution', tenantContent.getMyContent);
+router.put('/tenant-content/my-institution', tenantContent.updateMyContent);
+router.post('/tenant-content/my-institution/reset', tenantContent.resetMyContent);
+router.get('/tenant-content/public/:slug', tenantContent.getPublicContent);
+
+// Street2Ivy: Alumni Network
+router.get('/alumni/search', alumni.search);
+router.post('/alumni/invite', alumni.invite);
+router.get('/alumni/:userId', alumni.getProfile);
 
 // Street2Ivy: Student Waitlist Management
 router.post('/student-waitlist', studentWaitlist.addToWaitlist);
