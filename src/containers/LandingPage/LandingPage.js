@@ -216,8 +216,21 @@ const LandingPageComponent = props => {
 
   // Tenant content overrides (from educational admin customization)
   const tc = tenantContent?.data || null;
-  const tcVisibility = tc?.visibility || {};
   const tcInstitution = tenantContent?.institution || null;
+
+  // Section visibility: system admin isActive flags are the global defaults,
+  // tenant visibility overrides on subdomains
+  const sectionVisible = (sectionKey, tcKey) => {
+    // If on a tenant subdomain, tenant visibility takes priority
+    if (tc?.visibility && tc.visibility[tcKey] !== undefined) {
+      return tc.visibility[tcKey] !== false;
+    }
+    // Otherwise, check the global admin content isActive flag
+    if (dynamicContent?.[sectionKey]?.isActive !== undefined) {
+      return dynamicContent[sectionKey].isActive !== false;
+    }
+    return true; // Default visible
+  };
 
   // Dynamic stats — tenant overrides take priority
   const tenantStats = tc?.stats?.items || [];
@@ -476,7 +489,7 @@ const LandingPageComponent = props => {
                 {/* ════════════════════════════════════════════════════════════
                     SECTION 2: HOW IT WORKS — Tabbed, 3 audiences × 5 steps
                     ════════════════════════════════════════════════════════════ */}
-                {(tcVisibility.showHowItWorks !== false) && (
+                {sectionVisible('howItWorks', 'showHowItWorks') && (
                 <section className={css.howSection} id="how-section" ref={howVis.ref}>
                   <div className={css.sectionContainer}>
                     <span className={css.sectionLabel}>
@@ -624,7 +637,7 @@ const LandingPageComponent = props => {
                 {/* ════════════════════════════════════════════════════════════
                     SECTION 5: SOCIAL PROOF — Stats + Testimonials
                     ════════════════════════════════════════════════════════════ */}
-                {(tcVisibility.showStats !== false && tcVisibility.showTestimonials !== false) && (
+                {(sectionVisible('statistics', 'showStats') && sectionVisible('testimonials', 'showTestimonials')) && (
                 <section className={css.socialSection} ref={statsVis.ref}>
                   <div className={css.sectionContainer}>
                     {/* Stats Row */}
@@ -713,7 +726,10 @@ const LandingPageComponent = props => {
                 {/* ════════════════════════════════════════════════════════════
                     SECTION 6: AI COACHING TEASER
                     ════════════════════════════════════════════════════════════ */}
-                {(tcVisibility.showAICoaching !== false) && (
+                {(tc?.visibility?.showAICoaching !== undefined
+                  ? tc.visibility.showAICoaching !== false
+                  : coachingConfig?.platformStatus !== false
+                ) && (
                 <section className={css.aiSection} ref={aiVis.ref}>
                   <div className={css.sectionContainer}>
                     <div className={css.aiGrid}>
@@ -842,7 +858,7 @@ const LandingPageComponent = props => {
                 {/* ════════════════════════════════════════════════════════════
                     SECTION 7: CLOSING CTA — Triple path
                     ════════════════════════════════════════════════════════════ */}
-                {(tcVisibility.showCTA !== false) && (
+                {sectionVisible('cta', 'showCTA') && (
                 <section className={css.tripleCtaSection} ref={ctaVis.ref}>
                   {/* Company CTA */}
                   <div className={css.ctaCompanies}>

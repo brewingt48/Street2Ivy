@@ -4222,3 +4222,48 @@
 .formRow .formGroup {
   flex: 1;
 }
+
+/* ─── Section Visibility Panel ─── */
+.visibilityList {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  border: 1px solid var(--s2i-slate-200, #e5e7eb);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.visibilityRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--s2i-slate-100, #f1f5f9);
+  background: #fff;
+  transition: background 0.1s ease;
+}
+
+.visibilityRow:last-child {
+  border-bottom: none;
+}
+
+.visibilityRow:hover {
+  background: var(--s2i-slate-50, #f8fafc);
+}
+
+.visibilityInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.visibilityLabel {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--s2i-slate-800, #1e293b);
+}
+
+.visibilityDesc {
+  font-size: 13px;
+  color: var(--s2i-slate-500, #64748b);
+}

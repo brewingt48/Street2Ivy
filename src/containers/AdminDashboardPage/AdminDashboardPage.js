@@ -3531,9 +3531,13 @@ const AICoachingConfigPanel = () => {
         if (response.ok) {
           const data = await response.json();
           setInstitutions(data.data || []);
+        } else {
+          console.error('Institutions fetch failed:', response.status);
+          setError(`Failed to load institutions (${response.status}). Please refresh.`);
         }
       } catch (err) {
         console.error('Error fetching institutions:', err);
+        setError('Failed to load institutions. Please check your connection.');
       } finally {
         setLoadingInstitutions(false);
       }
@@ -3551,6 +3555,8 @@ const AICoachingConfigPanel = () => {
         if (response.ok) {
           const data = await response.json();
           setBlockedStudents(data.data || []);
+        } else {
+          console.error('Blocked students fetch failed:', response.status);
         }
       } catch (err) {
         console.error('Error fetching blocked students:', err);
@@ -3571,9 +3577,13 @@ const AICoachingConfigPanel = () => {
       if (response.ok) {
         const data = await response.json();
         setInstitutionStudents(data.data || []);
+      } else {
+        console.error('Students fetch failed:', response.status);
+        setError(`Failed to load students for ${domain}.`);
       }
     } catch (err) {
       console.error('Error fetching students:', err);
+      setError('Failed to load students. Please check your connection.');
     } finally {
       setLoadingStudents(false);
     }
@@ -4698,6 +4708,7 @@ const ContentManagementPanel = props => {
   }, [updateSuccess, onClearContentState, onFetchContent, content, activeSection]);
 
   const sections = [
+    { key: 'visibility', label: 'Section Visibility', icon: '👁️' },
     { key: 'branding', label: 'Logo & Branding', icon: '🎨' },
     { key: 'hero', label: 'Hero Section', icon: '🏠' },
     { key: 'statistics', label: 'Statistics', icon: '📊' },
@@ -4843,18 +4854,66 @@ const ContentManagementPanel = props => {
     }
   };
 
-  const renderSectionEditor = () => {
-    const sectionData = content?.[activeSection];
-    if (!sectionData) return <p>No content data available.</p>;
+  // Handle section visibility toggle
+  const handleVisibilityToggle = (sectionKey) => {
+    const sectionData = content?.[sectionKey];
+    if (!sectionData) return;
+    const newIsActive = !sectionData.isActive;
+    onUpdateContent(sectionKey, { ...sectionData, isActive: newIsActive });
+  };
 
-    // Debug logging for form state
-    if (activeSection === 'branding') {
-      console.log('=== Branding Form Debug ===');
-      console.log('sectionData.tagline:', sectionData?.tagline);
-      console.log('formData.tagline:', formData.tagline);
-      console.log('formData.tagline !== undefined:', formData.tagline !== undefined);
-      console.log('Displayed value:', formData.tagline !== undefined ? formData.tagline : (sectionData?.tagline || ''));
+  const renderSectionEditor = () => {
+    // Visibility editor doesn't need sectionData
+    if (activeSection === 'visibility') {
+      const toggleableSections = [
+        { key: 'hero', label: 'Hero Section', desc: 'The main banner with headline, subtitle, and call-to-action buttons' },
+        { key: 'statistics', label: 'Statistics', desc: 'Impact numbers (students matched, companies, etc.)' },
+        { key: 'features', label: 'Features', desc: 'The "Why Street2Ivy" value proposition cards' },
+        { key: 'howItWorks', label: 'How It Works', desc: 'Step-by-step process for companies, students, and schools' },
+        { key: 'videoTestimonial', label: 'Video Testimonial', desc: 'Video testimonial section' },
+        { key: 'testimonials', label: 'Written Testimonials', desc: 'Written quotes from students and partners' },
+        { key: 'cta', label: 'Call to Action', desc: 'The closing triple-path CTA section' },
+      ];
+      return (
+        <div className={css.contentForm}>
+          <h4 className={css.subSectionTitle}>Section Visibility</h4>
+          <p className={css.formHint}>
+            Toggle which sections are visible on the landing page. Disabled sections will be hidden from visitors.
+          </p>
+          <div className={css.visibilityList}>
+            {toggleableSections.map(section => {
+              const data = content?.[section.key];
+              const isActive = data?.isActive !== false; // Default to true if undefined
+              return (
+                <div key={section.key} className={css.visibilityRow}>
+                  <div className={css.visibilityInfo}>
+                    <span className={css.visibilityLabel}>{section.label}</span>
+                    <span className={css.visibilityDesc}>{section.desc}</span>
+                  </div>
+                  <div className={css.toggleWrapper}>
+                    <label className={css.toggleSwitch}>
+                      <input
+                        type="checkbox"
+                        checked={isActive}
+                        onChange={() => handleVisibilityToggle(section.key)}
+                        disabled={updateInProgress}
+                      />
+                      <span className={css.toggleSlider}></span>
+                    </label>
+                    <span className={css.toggleLabel}>
+                      {isActive ? 'Visible' : 'Hidden'}
+                    </span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      );
     }
+
+    const sectionData = content?.[activeSection];
+    if (!sectionData) return <p>No content data available. Please check your connection and try again.</p>;
 
     switch (activeSection) {
       case 'branding':
