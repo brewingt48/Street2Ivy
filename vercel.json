@@ -1,15 +1,18 @@
 {
   "version": 2,
-  "buildCommand": "CI=false yarn build",
+  "buildCommand": "CI=false yarn build && node scripts/generate-static-index.js",
+  "outputDirectory": "build",
   "installCommand": "yarn install",
-  "functions": {
-    "api/server.js": {
-      "maxDuration": 30,
-      "includeFiles": "server/**,build/**"
-    }
-  },
+  "framework": null,
   "rewrites": [
-    { "source": "/static/(.*)", "destination": "/build/static/$1" },
-    { "source": "/(.*)", "destination": "/api/server" }
+    { "source": "/(.*)", "destination": "/index.html" }
+  ],
+  "headers": [
+    {
+      "source": "/static/(.*)",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
+      ]
+    }
   ]
 }
