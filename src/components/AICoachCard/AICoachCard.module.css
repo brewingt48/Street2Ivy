@@ -1,0 +1,199 @@
+/* ============================================================
+ * AICoachCard.module.css
+ *
+ * Premium promotional card for AI career coaching.
+ * Used on the student dashboard to highlight the AI Coach
+ * feature. Dark gradient background with teal glow effect.
+ * ============================================================ */
+
+/* ---- Base card ---- */
+
+.root {
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(135deg, var(--s2i-navy-800), var(--s2i-teal-800));
+  border-radius: var(--s2i-radius-xl);
+  padding: var(--s2i-space-6);
+  position: relative;
+  overflow: hidden;
+  transition: var(--s2i-transition-all);
+
+  /* Subtle teal glow */
+  box-shadow:
+    0 4px 24px rgba(0, 200, 190, 0.15),
+    0 8px 32px rgba(0, 107, 99, 0.1);
+}
+
+.root:hover {
+  box-shadow:
+    0 4px 28px rgba(0, 200, 190, 0.25),
+    0 12px 40px rgba(0, 107, 99, 0.15);
+  transform: translateY(-2px);
+}
+
+/* Subtle noise / shimmer overlay for depth */
+.root::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse at 30% 20%,
+    rgba(0, 200, 190, 0.08) 0%,
+    transparent 60%
+  );
+  pointer-events: none;
+}
+
+/* ---- Icon ---- */
+
+.icon {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.75rem;
+  line-height: 1;
+  margin-bottom: var(--s2i-space-4);
+  position: relative;
+}
+
+/* ---- Title ---- */
+
+.title {
+  font-family: var(--s2i-font-sans);
+  font-size: var(--s2i-text-xl);
+  font-weight: var(--s2i-font-bold);
+  color: var(--s2i-white);
+  line-height: var(--s2i-leading-tight);
+  margin: 0 0 var(--s2i-space-2) 0;
+  position: relative;
+}
+
+/* ---- Description ---- */
+
+.description {
+  font-family: var(--s2i-font-sans);
+  font-size: var(--s2i-text-base);
+  font-weight: var(--s2i-font-normal);
+  color: rgba(255, 255, 255, 0.8);
+  line-height: var(--s2i-leading-relaxed);
+  margin: 0 0 var(--s2i-space-5) 0;
+  position: relative;
+}
+
+/* ---- Feature list ---- */
+
+.featureList {
+  list-style: none;
+  margin: 0 0 var(--s2i-space-6) 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s2i-space-3);
+  position: relative;
+}
+
+.featureItem {
+  display: flex;
+  align-items: center;
+  gap: var(--s2i-space-3);
+  font-family: var(--s2i-font-sans);
+  font-size: var(--s2i-text-sm);
+  font-weight: var(--s2i-font-medium);
+  color: rgba(255, 255, 255, 0.9);
+  line-height: var(--s2i-leading-normal);
+}
+
+.featureIcon {
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(255, 255, 255, 0.15);
+  border-radius: var(--s2i-radius-sm);
+  flex-shrink: 0;
+  font-size: 0.7rem;
+  line-height: 1;
+  color: var(--s2i-teal-300);
+}
+
+/* ---- CTA button ---- */
+
+.ctaButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s2i-space-2);
+  padding: var(--s2i-space-3) var(--s2i-space-5);
+  font-family: var(--s2i-font-sans);
+  font-size: var(--s2i-text-base);
+  font-weight: var(--s2i-font-semibold);
+  line-height: var(--s2i-leading-none);
+  border: none;
+  border-radius: var(--s2i-radius-md);
+  text-decoration: none;
+  text-align: center;
+  cursor: pointer;
+  transition: var(--s2i-transition-all);
+  white-space: nowrap;
+  margin-top: auto;
+  align-self: flex-start;
+  position: relative;
+}
+
+/* Enabled / active CTA -- bright amber style */
+
+.ctaEnabled {
+  background-color: var(--s2i-cta);
+  color: var(--s2i-navy-900);
+}
+
+.ctaEnabled:hover {
+  background-color: var(--s2i-cta-hover);
+  box-shadow: var(--s2i-shadow-cta);
+  text-decoration: none;
+}
+
+.ctaEnabled:active {
+  background-color: var(--s2i-cta-active);
+}
+
+.ctaEnabled:focus-visible {
+  outline: 2px solid var(--s2i-amber-300);
+  outline-offset: 2px;
+}
+
+/* Disabled / coming-soon CTA -- muted style */
+
+.ctaDisabled {
+  background-color: rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.5);
+  cursor: not-allowed;
+}
+
+.ctaDisabled:hover {
+  background-color: rgba(255, 255, 255, 0.12);
+  box-shadow: none;
+}
+
+/* ---- Lock icon for disabled state ---- */
+
+.lockIcon {
+  font-size: 0.85rem;
+  line-height: 1;
+  opacity: 0.7;
+}
+
+/* ---- Arrow icon for enabled state ---- */
+
+.ctaArrow {
+  transition: transform 200ms ease;
+  font-size: 0.85rem;
+  line-height: 1;
+}
+
+.ctaEnabled:hover .ctaArrow {
+  transform: translateX(2px);
+}

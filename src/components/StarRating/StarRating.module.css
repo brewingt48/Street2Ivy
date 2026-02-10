@@ -1,0 +1,91 @@
+.root {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s2i-space-2);
+  line-height: 1;
+}
+
+.starsContainer {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.starWrapper {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.starSvg {
+  display: block;
+}
+
+/* Size variants */
+.sizeSm {
+  width: 14px;
+  height: 14px;
+}
+
+.sizeSm .starSvg {
+  width: 14px;
+  height: 14px;
+}
+
+.sizeMd {
+  width: 18px;
+  height: 18px;
+}
+
+.sizeMd .starSvg {
+  width: 18px;
+  height: 18px;
+}
+
+.sizeLg {
+  width: 24px;
+  height: 24px;
+}
+
+.sizeLg .starSvg {
+  width: 24px;
+  height: 24px;
+}
+
+/* Star fill colors via SVG gradient stops */
+.starFillActive {
+  stop-color: var(--s2i-star-filled);
+}
+
+.starFillEmpty {
+  stop-color: var(--s2i-star-empty);
+}
+
+/* Numeric rating text */
+.numericRating {
+  font-family: var(--s2i-font-sans);
+  font-size: var(--s2i-text-sm);
+  font-weight: var(--s2i-font-semibold);
+  color: var(--s2i-text-primary);
+  margin-left: var(--s2i-space-1);
+}
+
+/* No rating placeholder */
+.noRatingText {
+  font-family: var(--s2i-font-sans);
+  font-size: var(--s2i-text-sm);
+  font-weight: var(--s2i-font-medium);
+  color: var(--s2i-text-tertiary);
+  font-style: italic;
+  margin-left: var(--s2i-space-1);
+}
+
+/* Review count */
+.reviewCount {
+  font-family: var(--s2i-font-sans);
+  font-size: var(--s2i-text-sm);
+  font-weight: var(--s2i-font-medium);
+  color: var(--s2i-text-secondary);
+  margin-left: var(--s2i-space-1);
+}

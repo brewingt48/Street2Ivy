@@ -702,13 +702,13 @@ export const listingFields = [
       listingTypeIds: ['project'],
     },
     showConfig: {
-      label: 'Detailed Deliverables',
+      label: 'Detailed Requirements',
       isDetail: false,
     },
     saveConfig: {
-      label: 'Detailed Deliverables (Confidential)',
+      label: 'Detailed Requirements (Confidential)',
       placeholderMessage:
-        'Specific deliverables and requirements that will only be visible to accepted students...',
+        'Specific project requirements and expectations that will only be visible to accepted students...',
       isRequired: false,
     },
   },

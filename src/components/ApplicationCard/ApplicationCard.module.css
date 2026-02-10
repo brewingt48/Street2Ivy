@@ -1,0 +1,159 @@
+@import '../../styles/customMediaQueries.css';
+
+/* ================ ApplicationCard ================ */
+
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s2i-space-3);
+  background: var(--s2i-bg-white);
+  border: 1px solid var(--s2i-border-light);
+  border-radius: var(--s2i-radius-lg);
+  padding: var(--s2i-space-4);
+  transition: var(--s2i-transition-all);
+
+  @media (--viewportMedium) {
+    flex-direction: row;
+    align-items: center;
+    gap: var(--s2i-space-4);
+  }
+}
+
+.root:hover {
+  border-color: var(--s2i-border-default);
+  box-shadow: var(--s2i-shadow-sm);
+}
+
+/* ---- Project info (left section) ---- */
+
+.projectInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.projectTitle {
+  font-family: var(--s2i-font-sans);
+  font-size: var(--s2i-text-base);
+  font-weight: var(--s2i-font-semibold);
+  color: var(--s2i-text-primary);
+  line-height: var(--s2i-leading-snug);
+  margin: 0 0 var(--s2i-space-1) 0;
+
+  /* Truncate to single line on desktop */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.companyLink {
+  font-family: var(--s2i-font-sans);
+  font-size: var(--s2i-text-sm);
+  font-weight: var(--s2i-font-medium);
+  color: var(--s2i-text-link);
+  text-decoration: none;
+  transition: color var(--s2i-transition-fast);
+}
+
+.companyLink:hover {
+  color: var(--s2i-text-link-hover);
+  text-decoration: underline;
+}
+
+.companyName {
+  font-family: var(--s2i-font-sans);
+  font-size: var(--s2i-text-sm);
+  font-weight: var(--s2i-font-medium);
+  color: var(--s2i-text-link);
+}
+
+/* ---- Date applied (center-right) ---- */
+
+.dateApplied {
+  font-family: var(--s2i-font-sans);
+  font-size: var(--s2i-text-sm);
+  color: var(--s2i-text-secondary);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* ---- Right section: status + action ---- */
+
+.rightSection {
+  display: flex;
+  align-items: center;
+  gap: var(--s2i-space-3);
+  flex-shrink: 0;
+}
+
+/* ---- Status badge ---- */
+
+.statusBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--s2i-space-1) var(--s2i-space-3);
+  font-family: var(--s2i-font-sans);
+  font-size: var(--s2i-text-xs);
+  font-weight: var(--s2i-font-medium);
+  line-height: var(--s2i-leading-none);
+  border-radius: var(--s2i-radius-full);
+  white-space: nowrap;
+}
+
+.statusPending {
+  background-color: var(--s2i-status-pending-bg);
+  color: var(--s2i-status-pending-text);
+}
+
+.statusAccepted {
+  background-color: var(--s2i-status-accepted-bg);
+  color: var(--s2i-status-accepted-text);
+}
+
+.statusDeclined {
+  background-color: var(--s2i-status-declined-bg);
+  color: var(--s2i-status-declined-text);
+}
+
+.statusInProgress {
+  background-color: var(--s2i-status-inprogress-bg);
+  color: var(--s2i-status-inprogress-text);
+}
+
+.statusCompleted {
+  background-color: var(--s2i-status-completed-bg);
+  color: var(--s2i-status-completed-text);
+}
+
+.statusWithdrawn {
+  background-color: var(--s2i-status-withdrawn-bg);
+  color: var(--s2i-status-withdrawn-text);
+}
+
+/* ---- Action button ---- */
+
+.actionButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--s2i-space-2) var(--s2i-space-3);
+  font-family: var(--s2i-font-sans);
+  font-size: var(--s2i-text-sm);
+  font-weight: var(--s2i-font-medium);
+  line-height: var(--s2i-leading-none);
+  color: var(--s2i-text-primary);
+  background-color: transparent;
+  border: 1px solid var(--s2i-border-default);
+  border-radius: var(--s2i-radius-md);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: var(--s2i-transition-all);
+}
+
+.actionButton:hover {
+  background-color: var(--s2i-slate-50);
+  border-color: var(--s2i-border-dark);
+}
+
+.actionButton:active {
+  background-color: var(--s2i-slate-100);
+}

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { bool, object } from 'prop-types';
 import { compose } from 'redux';
 import { connect } from 'react-redux';
@@ -11,7 +11,7 @@ import { fetchPublicContent, fetchPublicCoachingConfig, apiBaseUrl } from '../..
 
 import css from './LandingPage.module.css';
 
-// Counter animation hook
+// ─── Counter animation hook ────────────────────────────────────────────────────
 const useCountUp = (end, duration = 2000, startOnView = true) => {
   const [count, setCount] = useState(0);
   const [hasStarted, setHasStarted] = useState(false);
@@ -59,42 +59,71 @@ const useCountUp = (end, duration = 2000, startOnView = true) => {
   return { count, ref };
 };
 
-// Street2Ivy Premium Landing Page
+// ─── Scroll visibility hook ─────────────────────────────────────────────────────
+const useScrollVisibility = (threshold = 0.15) => {
+  const [isVisible, setIsVisible] = useState(false);
+  const ref = useRef(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+        }
+      },
+      { threshold, rootMargin: '0px 0px -40px 0px' }
+    );
+
+    if (ref.current) {
+      observer.observe(ref.current);
+    }
+
+    return () => observer.disconnect();
+  }, [threshold]);
+
+  return { isVisible, ref };
+};
+
+// ─── Tenant detection helper ────────────────────────────────────────────────────
+const getTenantInfo = () => {
+  if (typeof window === 'undefined') return null;
+  const hostname = window.location.hostname;
+  // Match school subdomains: e.g., howard.street2ivy.com
+  const match = hostname.match(/^([a-z0-9-]+)\.street2ivy\.com$/);
+  if (match && match[1] !== 'www' && match[1] !== 'app') {
+    return { slug: match[1] };
+  }
+  return null;
+};
+
+// ─── Main Landing Page Component ────────────────────────────────────────────────
 const LandingPageComponent = props => {
   const { currentUser } = props;
   const intl = useIntl();
   const [dynamicContent, setDynamicContent] = useState(null);
   const [coachingConfig, setCoachingConfig] = useState(null);
-  const [activeTab, setActiveTab] = useState('companies');
-  const [visibleElements, setVisibleElements] = useState({});
+  const [activeHowTab, setActiveHowTab] = useState('companies');
   const [institutionInfo, setInstitutionInfo] = useState(null);
   const [isLoadingInstitution, setIsLoadingInstitution] = useState(true);
+  const [tenantInfo, setTenantInfo] = useState(null);
 
   const isAuthenticated = !!currentUser;
   const userType = currentUser?.attributes?.profile?.publicData?.userType;
   const isStudent = userType === 'student';
 
-  // Intersection observer for scroll animations
+  // Scroll visibility refs for each section
+  const heroVis = useScrollVisibility(0.1);
+  const howVis = useScrollVisibility(0.15);
+  const trustVis = useScrollVisibility(0.15);
+  const valueVis = useScrollVisibility(0.15);
+  const statsVis = useScrollVisibility(0.15);
+  const aiVis = useScrollVisibility(0.15);
+  const ctaVis = useScrollVisibility(0.15);
+
+  // Detect tenant
   useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach(entry => {
-          if (entry.isIntersecting) {
-            setVisibleElements(prev => ({
-              ...prev,
-              [entry.target.id]: true
-            }));
-          }
-        });
-      },
-      { threshold: 0.2, rootMargin: '0px 0px -50px 0px' }
-    );
-
-    // Observe all animatable sections
-    const sections = document.querySelectorAll('[data-animate]');
-    sections.forEach(section => observer.observe(section));
-
-    return () => observer.disconnect();
+    const info = getTenantInfo();
+    setTenantInfo(info);
   }, []);
 
   // Fetch dynamic content from API
@@ -119,9 +148,9 @@ const LandingPageComponent = props => {
       });
   }, []);
 
-  // Fetch institution info for logged-in students to check AI coaching access
+  // Fetch institution info for logged-in students
   useEffect(() => {
-    const fetchInstitutionInfo = async () => {
+    const fetchInstitutionInfoFn = async () => {
       if (!isStudent) {
         setIsLoadingInstitution(false);
         return;
@@ -143,15 +172,12 @@ const LandingPageComponent = props => {
     };
 
     if (currentUser && isStudent) {
-      fetchInstitutionInfo();
+      fetchInstitutionInfoFn();
     } else {
       setIsLoadingInstitution(false);
     }
   }, [currentUser, isStudent]);
 
-  // Determine if AI coaching should be accessible
-  // For logged-in students: only if their institution has approved it
-  // For non-students or logged-out users: show the marketing content with signup CTA
   const canAccessAICoaching = isStudent
     ? institutionInfo?.aiCoachingEnabled && institutionInfo?.aiCoachingUrl
     : true;
@@ -161,120 +187,126 @@ const LandingPageComponent = props => {
 
   // Get content from dynamic data or use static fallback
   const heroContent = dynamicContent?.hero || null;
-  const brandingContent = dynamicContent?.branding || null;
-  const featuresContent = dynamicContent?.features || null;
-  const howItWorksContent = dynamicContent?.howItWorks || null;
-  const testimonialsContent = dynamicContent?.testimonials || null;
-  const ctaContent = dynamicContent?.cta || null;
   const statisticsContent = dynamicContent?.statistics || null;
+  const testimonialsContent = dynamicContent?.testimonials || null;
 
-  // Get dynamic stats values or use defaults
+  // Dynamic stats
   const statsItems = statisticsContent?.items || [];
-  const stat1 = statsItems.find(s => s.id === 'stat-1') || { value: 5000, label: 'Students', suffix: '+' };
-  const stat2 = statsItems.find(s => s.id === 'stat-2') || { value: 850, label: 'Projects Completed', suffix: '+' };
-  const stat3 = statsItems.find(s => s.id === 'stat-3') || { value: 200, label: 'Partner Companies', suffix: '+' };
-  const stat4 = statsItems.find(s => s.id === 'stat-4') || { value: 4.9, label: 'Average Rating', suffix: '★' };
+  const stat1 = statsItems.find(s => s.id === 'stat-1') || { value: 5000, label: null, suffix: '+' };
+  const stat2 = statsItems.find(s => s.id === 'stat-2') || { value: 850, label: null, suffix: '+' };
+  const stat3 = statsItems.find(s => s.id === 'stat-3') || { value: 200, label: null, suffix: '+' };
+  const stat4 = statsItems.find(s => s.id === 'stat-4') || { value: 4.9, label: null, suffix: '' };
 
-  // Stats counter hooks - use dynamic values
   const studentsCount = useCountUp(stat1.value);
   const projectsCount = useCountUp(stat2.value);
   const companiesCount = useCountUp(stat3.value);
   const ratingCount = useCountUp(stat4.value);
 
-  // Benefits for Companies
-  const companyBenefits = [
-    {
-      icon: '⚡',
-      title: 'Flexible Talent, Zero Overhead',
-      description: 'Scale your workforce on demand. No benefits packages, no office space, no long-term commitments.'
-    },
-    {
-      icon: '💡',
-      title: 'Fresh Thinking from Emerging Pros',
-      description: 'Get perspectives unfiltered by corporate groupthink. Students bring current skills and hungry energy.'
-    },
-    {
-      icon: '💰',
-      title: 'Project-Based — Pay for Results',
-      description: 'No seats to fill, no time to track. You define the project. You get the deliverable. Simple.'
-    },
-    {
-      icon: '🌱',
-      title: 'Build Your Future Pipeline',
-      description: 'Work with talent before you hire them. Convert top performers into full-time hires when you\'re ready.'
-    }
+  // ─── Tenant-aware heading ─────────────────────────────────────────────────
+  const tenantHeading = tenantInfo
+    ? intl.formatMessage({ id: 'LandingPage.hero.titleTenant' }, { school: tenantInfo.slug.replace(/-/g, ' ') })
+    : null;
+
+  // ─── How It Works steps per audience ──────────────────────────────────────
+  const howItWorksSteps = {
+    companies: [
+      { num: '1', titleId: 'LandingPage.how.companies.step1Title', descId: 'LandingPage.how.companies.step1Desc' },
+      { num: '2', titleId: 'LandingPage.how.companies.step2Title', descId: 'LandingPage.how.companies.step2Desc' },
+      { num: '3', titleId: 'LandingPage.how.companies.step3Title', descId: 'LandingPage.how.companies.step3Desc' },
+      { num: '4', titleId: 'LandingPage.how.companies.step4Title', descId: 'LandingPage.how.companies.step4Desc' },
+      { num: '5', titleId: 'LandingPage.how.companies.step5Title', descId: 'LandingPage.how.companies.step5Desc' },
+    ],
+    students: [
+      { num: '1', titleId: 'LandingPage.how.students.step1Title', descId: 'LandingPage.how.students.step1Desc' },
+      { num: '2', titleId: 'LandingPage.how.students.step2Title', descId: 'LandingPage.how.students.step2Desc' },
+      { num: '3', titleId: 'LandingPage.how.students.step3Title', descId: 'LandingPage.how.students.step3Desc' },
+      { num: '4', titleId: 'LandingPage.how.students.step4Title', descId: 'LandingPage.how.students.step4Desc' },
+      { num: '5', titleId: 'LandingPage.how.students.step5Title', descId: 'LandingPage.how.students.step5Desc' },
+    ],
+    universities: [
+      { num: '1', titleId: 'LandingPage.how.universities.step1Title', descId: 'LandingPage.how.universities.step1Desc' },
+      { num: '2', titleId: 'LandingPage.how.universities.step2Title', descId: 'LandingPage.how.universities.step2Desc' },
+      { num: '3', titleId: 'LandingPage.how.universities.step3Title', descId: 'LandingPage.how.universities.step3Desc' },
+      { num: '4', titleId: 'LandingPage.how.universities.step4Title', descId: 'LandingPage.how.universities.step4Desc' },
+      { num: '5', titleId: 'LandingPage.how.universities.step5Title', descId: 'LandingPage.how.universities.step5Desc' },
+    ],
+  };
+
+  // ─── Trust differentiators ────────────────────────────────────────────────
+  const trustItems = [
+    { icon: '🔒', titleId: 'LandingPage.trust.item1Title', descId: 'LandingPage.trust.item1Desc' },
+    { icon: '⭐', titleId: 'LandingPage.trust.item2Title', descId: 'LandingPage.trust.item2Desc' },
+    { icon: '🤝', titleId: 'LandingPage.trust.item3Title', descId: 'LandingPage.trust.item3Desc' },
+    { icon: '📊', titleId: 'LandingPage.trust.item4Title', descId: 'LandingPage.trust.item4Desc' },
   ];
 
-  // Benefits for Students
-  const studentBenefits = [
+  // ─── Value propositions per audience ──────────────────────────────────────
+  const valueProps = [
     {
-      icon: '🎯',
-      title: 'Get Hired for What You Can Do',
-      description: 'Your school\'s name doesn\'t matter here. Your skills, your work, your results — that\'s what opens doors.'
+      audienceId: 'LandingPage.value.companies.audience',
+      titleId: 'LandingPage.value.companies.title',
+      descId: 'LandingPage.value.companies.desc',
+      features: [
+        'LandingPage.value.companies.feature1',
+        'LandingPage.value.companies.feature2',
+        'LandingPage.value.companies.feature3',
+        'LandingPage.value.companies.feature4',
+      ],
+      ctaId: 'LandingPage.value.companies.cta',
+      ctaLink: 'SignupPage',
+      theme: 'navy',
     },
     {
-      icon: '🤖',
-      title: 'AI Career Coach, 24/7',
-      description: 'Personalized guidance for resumes, interviews, and career strategy — whenever you need it.'
+      audienceId: 'LandingPage.value.students.audience',
+      titleId: 'LandingPage.value.students.title',
+      descId: 'LandingPage.value.students.desc',
+      features: [
+        'LandingPage.value.students.feature1',
+        'LandingPage.value.students.feature2',
+        'LandingPage.value.students.feature3',
+        'LandingPage.value.students.feature4',
+      ],
+      ctaId: 'LandingPage.value.students.cta',
+      ctaLink: 'SignupPage',
+      theme: 'teal',
     },
     {
-      icon: '📁',
-      title: 'Build a Portfolio That Opens Doors',
-      description: 'Real projects, real companies, real results. Show what you\'ve done, not just what you\'ve studied.'
+      audienceId: 'LandingPage.value.universities.audience',
+      titleId: 'LandingPage.value.universities.title',
+      descId: 'LandingPage.value.universities.desc',
+      features: [
+        'LandingPage.value.universities.feature1',
+        'LandingPage.value.universities.feature2',
+        'LandingPage.value.universities.feature3',
+        'LandingPage.value.universities.feature4',
+      ],
+      ctaId: 'LandingPage.value.universities.cta',
+      ctaLink: null, // external link
+      theme: 'amber',
     },
-    {
-      icon: '💵',
-      title: 'Earn While You Learn',
-      description: 'Get paid for meaningful work that builds your career — not coffee runs or filing papers.'
-    }
   ];
 
-  // Benefits for Educational Institutions
-  const institutionBenefits = [
-    {
-      icon: '📈',
-      title: 'Boost Graduate Outcomes',
-      description: 'Improve placement rates and career readiness metrics without building new infrastructure or hiring more staff.'
-    },
-    {
-      icon: '🔗',
-      title: 'Corporate Partnership Pipeline',
-      description: 'Connect your institution directly with companies actively seeking student talent for real projects.'
-    },
-    {
-      icon: '🤖',
-      title: 'AI-Powered Career Services',
-      description: 'Give every student access to 24/7 personalized career coaching — resume help, interview prep, and career pathing.'
-    },
-    {
-      icon: '📊',
-      title: 'Real-Time Analytics Dashboard',
-      description: 'Track student engagement, project completions, and placement outcomes with comprehensive reporting tools.'
-    }
-  ];
-
-  // Testimonials - use dynamic or static
+  // ─── Testimonials ─────────────────────────────────────────────────────────
   const staticTestimonials = [
     {
-      quote: 'We needed a competitive analysis done fast, and hiring a consultant would have cost 10x more. The student we worked with delivered insights our strategy team is still referencing six months later.',
-      author: 'Michael Chen',
-      role: 'VP of Strategy, Growth Ventures LLC',
-      avatar: '👨‍💼'
+      quoteId: 'LandingPage.testimonial1.quote',
+      authorId: 'LandingPage.testimonial1.author',
+      roleId: 'LandingPage.testimonial1.role',
+      avatar: '👨‍💼',
     },
     {
-      quote: 'I go to a state school nobody\'s heard of. Before Street2Ivy, I couldn\'t even get interviews. Now I have three completed projects on my resume and a standing offer from a Series B startup.',
-      author: 'Jasmine Rodriguez',
-      role: 'Junior, Marketing Major',
-      avatar: '👩‍🎓'
-    }
+      quoteId: 'LandingPage.testimonial2.quote',
+      authorId: 'LandingPage.testimonial2.author',
+      roleId: 'LandingPage.testimonial2.role',
+      avatar: '👩‍🎓',
+    },
+    {
+      quoteId: 'LandingPage.testimonial3.quote',
+      authorId: 'LandingPage.testimonial3.author',
+      roleId: 'LandingPage.testimonial3.role',
+      avatar: '🏛️',
+    },
   ];
-
-  const testimonials = testimonialsContent?.items?.slice(0, 2).map(t => ({
-    quote: t.quote,
-    author: t.author,
-    role: t.role,
-    avatar: t.initials?.charAt(0) === 'S' ? '👩‍🎓' : '👨‍💼'
-  })) || staticTestimonials;
 
   const layoutAreas = `
     topbar
@@ -293,18 +325,16 @@ const LandingPageComponent = props => {
                 <TopbarContainer currentPage="LandingPage" />
               </Topbar>
               <Main as="main" id="main-content">
-                {/* ================ Hero Section ================ */}
-                <section
-                  className={css.heroSection}
-                  style={heroContent?.backgroundImage ? {
-                    backgroundImage: `linear-gradient(135deg, rgba(12, 20, 48, 0.92) 0%, rgba(26, 39, 68, 0.88) 50%, rgba(30, 58, 95, 0.85) 100%), url(${heroContent.backgroundImage.startsWith('/api/') ? apiBaseUrl() + heroContent.backgroundImage : heroContent.backgroundImage})`,
-                    backgroundSize: 'cover',
-                    backgroundPosition: 'center',
-                  } : undefined}
-                >
-                  {/* Animated particles */}
-                  <div className={css.heroParticles}>
-                    {[...Array(20)].map((_, i) => (
+
+                {/* ════════════════════════════════════════════════════════════
+                    SECTION 1: HERO
+                    ════════════════════════════════════════════════════════════ */}
+                <section className={css.heroSection} ref={heroVis.ref}>
+                  <div className={css.heroOverlay} />
+
+                  {/* Subtle animated particles */}
+                  <div className={css.heroParticles} aria-hidden="true">
+                    {[...Array(12)].map((_, i) => (
                       <div
                         key={i}
                         className={css.particle}
@@ -312,87 +342,80 @@ const LandingPageComponent = props => {
                           left: `${Math.random() * 100}%`,
                           top: `${Math.random() * 100}%`,
                           animationDelay: `${Math.random() * 20}s`,
-                          animationDuration: `${15 + Math.random() * 10}s`
+                          animationDuration: `${18 + Math.random() * 12}s`,
                         }}
                       />
                     ))}
                   </div>
 
-                  {/* Background Video (if set) */}
-                  {heroContent?.backgroundType === 'video' && heroContent?.backgroundVideo && (
-                    <video
-                      className={css.heroBackgroundVideo}
-                      autoPlay
-                      muted
-                      loop
-                      playsInline
-                    >
-                      <source src={heroContent.backgroundVideo} type="video/mp4" />
-                    </video>
-                  )}
-
                   <div className={css.heroGrid}>
-                    {/* Left side - Content */}
+                    {/* Left — Copy */}
                     <div className={css.heroContent}>
                       <div className={css.heroBadge}>
-                        <span className={css.badgeDot} />
-                        Now Accepting Early Access Applications
+                        <span className={css.badgeDot} aria-hidden="true" />
+                        <span>
+                          {intl.formatMessage({ id: 'LandingPage.hero.badge' })}
+                        </span>
                       </div>
+
                       <h1 className={css.heroTitle}>
-                        {heroContent?.title ? (
+                        {tenantHeading || (
                           <>
-                            {heroContent.title.split(' ').slice(0, -2).join(' ')}{' '}
+                            {intl.formatMessage({ id: 'LandingPage.hero.titleLine1' })}{' '}
                             <span className={css.heroTitleGradient}>
-                              {heroContent.title.split(' ').slice(-2).join(' ')}
+                              {intl.formatMessage({ id: 'LandingPage.hero.titleHighlight' })}
                             </span>
-                          </>
-                        ) : (
-                          <>
-                            The Best Talent Isn't Always{' '}
-                            <span className={css.heroTitleGradient}>Where You're Looking</span>
                           </>
                         )}
                       </h1>
+
                       <p className={css.heroSubtitle}>
-                        {heroContent?.subtitle ||
-                          'Street2Ivy connects ambitious companies with high-performing college students for real project work. No legacy recruiting. No overhead. Just results.'}
+                        {intl.formatMessage({ id: 'LandingPage.hero.subtitle' })}
                       </p>
+
                       <div className={css.heroButtons}>
                         {!isAuthenticated ? (
                           <>
                             <NamedLink name="SignupPage" className={css.btnPrimary}>
-                              {heroContent?.primaryButtonText || 'Get Started'} →
+                              {intl.formatMessage({ id: 'LandingPage.hero.ctaPrimary' })}
+                              <span aria-hidden="true"> →</span>
                             </NamedLink>
-                            <NamedLink name="LoginPage" className={css.btnSecondary}>
-                              {heroContent?.secondaryButtonText || 'Sign In'} →
+                            <NamedLink name="SignupPage" className={css.btnSecondary}>
+                              {intl.formatMessage({ id: 'LandingPage.hero.ctaSecondary' })}
+                              <span aria-hidden="true"> →</span>
                             </NamedLink>
                           </>
                         ) : (
                           <NamedLink name="SearchPage" className={css.btnPrimary}>
-                            Browse Projects →
+                            {intl.formatMessage({ id: 'LandingPage.hero.ctaBrowse' })}
+                            <span aria-hidden="true"> →</span>
                           </NamedLink>
                         )}
                       </div>
 
-                      {/* User Type Quick Links */}
+                      {/* "I am a…" quick links */}
                       {!isAuthenticated && (
                         <div className={css.userTypeLinks}>
-                          <span className={css.userTypeLinkLabel}>I am a:</span>
-                          <a href="#why-section" className={css.userTypeLink} onClick={() => setActiveTab('companies')}>
-                            Company
+                          <span className={css.userTypeLabel}>
+                            {intl.formatMessage({ id: 'LandingPage.hero.iAmA' })}
+                          </span>
+                          <a href="#how-section" className={css.userTypeLink} onClick={() => setActiveHowTab('companies')}>
+                            {intl.formatMessage({ id: 'LandingPage.hero.linkCompany' })}
                           </a>
-                          <a href="#why-section" className={css.userTypeLink} onClick={() => setActiveTab('students')}>
-                            Student
+                          <span className={css.userTypeDivider} aria-hidden="true">·</span>
+                          <a href="#how-section" className={css.userTypeLink} onClick={() => setActiveHowTab('students')}>
+                            {intl.formatMessage({ id: 'LandingPage.hero.linkStudent' })}
                           </a>
-                          <a href="#why-section" className={css.userTypeLink} onClick={() => setActiveTab('institutions')}>
-                            Institution
+                          <span className={css.userTypeDivider} aria-hidden="true">·</span>
+                          <a href="#how-section" className={css.userTypeLink} onClick={() => setActiveHowTab('universities')}>
+                            {intl.formatMessage({ id: 'LandingPage.hero.linkUniversity' })}
                           </a>
                         </div>
                       )}
                     </div>
 
-                    {/* Right side - Visual */}
-                    <div className={css.heroVisual}>
+                    {/* Right — Visual: Connection Graph */}
+                    <div className={css.heroVisual} aria-hidden="true">
                       <div className={css.connectionGraphic}>
                         <div className={css.orbitRing} />
                         <div className={css.orbitRing2} />
@@ -407,181 +430,285 @@ const LandingPageComponent = props => {
                   </div>
                 </section>
 
-                {/* ================ Why Street2Ivy Section ================ */}
-                <section className={css.whySection} id="why-section" data-animate>
+                {/* ════════════════════════════════════════════════════════════
+                    SECTION 2: HOW IT WORKS — Tabbed, 3 audiences × 5 steps
+                    ════════════════════════════════════════════════════════════ */}
+                <section className={css.howSection} id="how-section" ref={howVis.ref}>
                   <div className={css.sectionContainer}>
-                    <span className={css.sectionLabel}>The Opportunity</span>
+                    <span className={css.sectionLabel}>
+                      {intl.formatMessage({ id: 'LandingPage.how.label' })}
+                    </span>
                     <h2 className={css.sectionTitle}>
-                      {featuresContent?.sectionTitle || 'Why Street2Ivy?'}
+                      {intl.formatMessage({ id: 'LandingPage.how.title' })}
                     </h2>
                     <p className={css.sectionSubtitle}>
-                      A talent marketplace built on mutual value. Everyone wins when potential meets opportunity.
+                      {intl.formatMessage({ id: 'LandingPage.how.subtitle' })}
                     </p>
 
-                    {/* Toggle Tabs */}
-                    <div className={css.toggleTabs}>
-                      <button
-                        className={`${css.toggleTab} ${activeTab === 'companies' ? css.toggleTabActive : ''}`}
-                        onClick={() => setActiveTab('companies')}
-                      >
-                        For Companies
-                      </button>
-                      <button
-                        className={`${css.toggleTab} ${activeTab === 'students' ? css.toggleTabActive : ''}`}
-                        onClick={() => setActiveTab('students')}
-                      >
-                        For Students
-                      </button>
-                      <button
-                        className={`${css.toggleTab} ${activeTab === 'institutions' ? css.toggleTabActive : ''}`}
-                        onClick={() => setActiveTab('institutions')}
-                      >
-                        For Institutions
-                      </button>
+                    {/* Audience Tabs */}
+                    <div className={css.toggleTabs} role="tablist">
+                      {['companies', 'students', 'universities'].map(tab => (
+                        <button
+                          key={tab}
+                          role="tab"
+                          aria-selected={activeHowTab === tab}
+                          className={`${css.toggleTab} ${activeHowTab === tab ? css.toggleTabActive : ''}`}
+                          onClick={() => setActiveHowTab(tab)}
+                        >
+                          {intl.formatMessage({ id: `LandingPage.how.tab.${tab}` })}
+                        </button>
+                      ))}
                     </div>
 
-                    {/* Benefits Grid */}
-                    <div className={`${css.benefitsGrid} ${visibleElements['why-section'] ? css.visible : ''}`}>
-                      {(activeTab === 'companies' ? companyBenefits :
-                        activeTab === 'students' ? studentBenefits :
-                        institutionBenefits).map((benefit, index) => (
+                    {/* Steps */}
+                    <div className={css.stepsContainer}>
+                      <div className={css.stepsLine} aria-hidden="true" />
+                      {howItWorksSteps[activeHowTab].map((step, idx) => (
                         <div
-                          key={index}
-                          className={css.benefitCard}
-                          style={{ animationDelay: `${index * 0.1}s` }}
+                          key={`${activeHowTab}-${step.num}`}
+                          className={`${css.howStep} ${howVis.isVisible ? css.visible : ''}`}
+                          style={{ transitionDelay: `${idx * 0.1}s` }}
                         >
-                          <div className={css.benefitIcon}>{benefit.icon}</div>
-                          <h3 className={css.benefitTitle}>{benefit.title}</h3>
-                          <p className={css.benefitDescription}>{benefit.description}</p>
+                          <div className={css.stepNumber}>{step.num}</div>
+                          <div className={css.stepContent}>
+                            <h4>{intl.formatMessage({ id: step.titleId })}</h4>
+                            <p>{intl.formatMessage({ id: step.descId })}</p>
+                          </div>
                         </div>
                       ))}
                     </div>
                   </div>
                 </section>
 
-                {/* ================ How It Works Section ================ */}
-                <section className={css.howSection} id="how-section" data-animate>
+                {/* ════════════════════════════════════════════════════════════
+                    SECTION 3: TRUST & DIFFERENTIATION — "Your Work Stays Yours"
+                    ════════════════════════════════════════════════════════════ */}
+                <section className={css.trustSection} ref={trustVis.ref}>
                   <div className={css.sectionContainer}>
-                    <span className={css.sectionLabel}>The Process</span>
-                    <h2 className={css.sectionTitle}>
-                      {howItWorksContent?.sectionTitle || 'How It Works'}
+                    <span className={css.sectionLabelLight}>
+                      {intl.formatMessage({ id: 'LandingPage.trust.label' })}
+                    </span>
+                    <h2 className={css.sectionTitleLight}>
+                      {intl.formatMessage({ id: 'LandingPage.trust.title' })}
                     </h2>
-                    <p className={css.sectionSubtitle}>
-                      Simple, streamlined, and built for results.
+                    <p className={css.sectionSubtitleLight}>
+                      {intl.formatMessage({ id: 'LandingPage.trust.subtitle' })}
                     </p>
 
-                    <div className={css.howGrid}>
-                      {/* Companies Column */}
-                      <div className={css.howColumn}>
-                        <h3 className={css.howColumnTitle}>
-                          <span className={css.howColumnIcon}>🏢</span>
-                          For Companies
-                        </h3>
-                        <div className={css.howSteps}>
-                          <div className={css.stepsLine} />
-                          <div className={`${css.howStep} ${visibleElements['how-section'] ? css.visible : ''}`}>
-                            <div className={css.stepNumber}>1</div>
-                            <div className={css.stepContent}>
-                              <h4>{howItWorksContent?.items?.[0]?.title || 'Post Your Project'}</h4>
-                              <p>{howItWorksContent?.items?.[0]?.description || 'Define the scope, timeline, and budget. We\'ll match you with qualified candidates.'}</p>
-                            </div>
-                          </div>
-                          <div className={`${css.howStep} ${visibleElements['how-section'] ? css.visible : ''}`} style={{ animationDelay: '0.2s' }}>
-                            <div className={css.stepNumber}>2</div>
-                            <div className={css.stepContent}>
-                              <h4>{howItWorksContent?.items?.[1]?.title || 'Review Matched Talent'}</h4>
-                              <p>{howItWorksContent?.items?.[1]?.description || 'Browse applications, review portfolios, and interview your top picks.'}</p>
-                            </div>
-                          </div>
-                          <div className={`${css.howStep} ${visibleElements['how-section'] ? css.visible : ''}`} style={{ animationDelay: '0.4s' }}>
-                            <div className={css.stepNumber}>3</div>
-                            <div className={css.stepContent}>
-                              <h4>{howItWorksContent?.items?.[2]?.title || 'Get Results'}</h4>
-                              <p>{howItWorksContent?.items?.[2]?.description || 'Collaborate through our platform, receive deliverables, and pay on completion.'}</p>
-                            </div>
-                          </div>
+                    <div className={css.trustGrid}>
+                      {trustItems.map((item, idx) => (
+                        <div
+                          key={idx}
+                          className={`${css.trustCard} ${trustVis.isVisible ? css.visible : ''}`}
+                          style={{ transitionDelay: `${idx * 0.1}s` }}
+                        >
+                          <div className={css.trustIcon} aria-hidden="true">{item.icon}</div>
+                          <h3 className={css.trustCardTitle}>
+                            {intl.formatMessage({ id: item.titleId })}
+                          </h3>
+                          <p className={css.trustCardDesc}>
+                            {intl.formatMessage({ id: item.descId })}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </section>
+
+                {/* ════════════════════════════════════════════════════════════
+                    SECTION 4: VALUE PROPOSITIONS — One card per audience
+                    ════════════════════════════════════════════════════════════ */}
+                <section className={css.valueSection} ref={valueVis.ref}>
+                  <div className={css.sectionContainer}>
+                    <span className={css.sectionLabel}>
+                      {intl.formatMessage({ id: 'LandingPage.value.label' })}
+                    </span>
+                    <h2 className={css.sectionTitle}>
+                      {intl.formatMessage({ id: 'LandingPage.value.title' })}
+                    </h2>
+                    <p className={css.sectionSubtitle}>
+                      {intl.formatMessage({ id: 'LandingPage.value.subtitle' })}
+                    </p>
+
+                    <div className={css.valueGrid}>
+                      {valueProps.map((vp, idx) => (
+                        <div
+                          key={idx}
+                          className={`${css.valueCard} ${css[`valueCard${vp.theme.charAt(0).toUpperCase() + vp.theme.slice(1)}`]} ${valueVis.isVisible ? css.visible : ''}`}
+                          style={{ transitionDelay: `${idx * 0.15}s` }}
+                        >
+                          <span className={css.valueAudience}>
+                            {intl.formatMessage({ id: vp.audienceId })}
+                          </span>
+                          <h3 className={css.valueCardTitle}>
+                            {intl.formatMessage({ id: vp.titleId })}
+                          </h3>
+                          <p className={css.valueCardDesc}>
+                            {intl.formatMessage({ id: vp.descId })}
+                          </p>
+                          <ul className={css.valueFeatures}>
+                            {vp.features.map((fId, fIdx) => (
+                              <li key={fIdx}>
+                                <span className={css.valueCheck} aria-hidden="true">✓</span>
+                                {intl.formatMessage({ id: fId })}
+                              </li>
+                            ))}
+                          </ul>
+                          {vp.ctaLink ? (
+                            <NamedLink name={vp.ctaLink} className={css.valueBtn}>
+                              {intl.formatMessage({ id: vp.ctaId })}
+                              <span aria-hidden="true"> →</span>
+                            </NamedLink>
+                          ) : (
+                            <a
+                              href="https://calendly.com/tavares-brewington-street2ivy/demo"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className={css.valueBtn}
+                            >
+                              {intl.formatMessage({ id: vp.ctaId })}
+                              <span aria-hidden="true"> →</span>
+                            </a>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </section>
+
+                {/* ════════════════════════════════════════════════════════════
+                    SECTION 5: SOCIAL PROOF — Stats + Testimonials
+                    ════════════════════════════════════════════════════════════ */}
+                <section className={css.socialSection} ref={statsVis.ref}>
+                  <div className={css.sectionContainer}>
+                    {/* Stats Row */}
+                    <div className={css.statsGrid}>
+                      <div className={css.statItem} ref={studentsCount.ref}>
+                        <div className={css.statNumber}>
+                          <span className={css.statNumberGradient}>
+                            {studentsCount.count.toLocaleString()}
+                          </span>
+                          {stat1.suffix}
+                        </div>
+                        <div className={css.statLabel}>
+                          {stat1.label || intl.formatMessage({ id: 'LandingPage.stats.students' })}
                         </div>
                       </div>
-
-                      {/* Students Column */}
-                      <div className={css.howColumn}>
-                        <h3 className={css.howColumnTitle}>
-                          <span className={css.howColumnIcon}>🎓</span>
-                          For Students
-                        </h3>
-                        <div className={css.howSteps}>
-                          <div className={css.stepsLine} />
-                          <div className={`${css.howStep} ${visibleElements['how-section'] ? css.visible : ''}`} style={{ animationDelay: '0.1s' }}>
-                            <div className={css.stepNumber}>1</div>
-                            <div className={css.stepContent}>
-                              <h4>Create Your Profile</h4>
-                              <p>Showcase your skills, experience, and portfolio. Let your work speak for itself.</p>
-                            </div>
-                          </div>
-                          <div className={`${css.howStep} ${visibleElements['how-section'] ? css.visible : ''}`} style={{ animationDelay: '0.3s' }}>
-                            <div className={css.stepNumber}>2</div>
-                            <div className={css.stepContent}>
-                              <h4>Apply to Projects</h4>
-                              <p>Browse opportunities that match your skills and interests. Apply with one click.</p>
-                            </div>
-                          </div>
-                          <div className={`${css.howStep} ${visibleElements['how-section'] ? css.visible : ''}`} style={{ animationDelay: '0.5s' }}>
-                            <div className={css.stepNumber}>3</div>
-                            <div className={css.stepContent}>
-                              <h4>Build Your Career</h4>
-                              <p>Complete projects, earn money, and grow your professional portfolio.</p>
-                            </div>
-                          </div>
+                      <div className={css.statItem} ref={projectsCount.ref}>
+                        <div className={css.statNumber}>
+                          <span className={css.statNumberGradient}>
+                            {projectsCount.count.toLocaleString()}
+                          </span>
+                          {stat2.suffix}
                         </div>
+                        <div className={css.statLabel}>
+                          {stat2.label || intl.formatMessage({ id: 'LandingPage.stats.matches' })}
+                        </div>
+                      </div>
+                      <div className={css.statItem} ref={companiesCount.ref}>
+                        <div className={css.statNumber}>
+                          <span className={css.statNumberGradient}>
+                            {companiesCount.count.toLocaleString()}
+                          </span>
+                          {stat3.suffix}
+                        </div>
+                        <div className={css.statLabel}>
+                          {stat3.label || intl.formatMessage({ id: 'LandingPage.stats.companies' })}
+                        </div>
+                      </div>
+                      <div className={css.statItem} ref={ratingCount.ref}>
+                        <div className={css.statNumber}>
+                          <span className={css.statNumberGradient}>
+                            {ratingCount.count}
+                          </span>
+                          <span className={css.statStar} aria-hidden="true">★</span>
+                        </div>
+                        <div className={css.statLabel}>
+                          {stat4.label || intl.formatMessage({ id: 'LandingPage.stats.rating' })}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Testimonials */}
+                    <div className={css.testimonialsBlock}>
+                      <h3 className={css.testimonialsHeading}>
+                        {intl.formatMessage({ id: 'LandingPage.testimonials.title' })}
+                      </h3>
+                      <div className={css.testimonialsGrid}>
+                        {staticTestimonials.map((t, idx) => (
+                          <div
+                            key={idx}
+                            className={`${css.testimonialCard} ${statsVis.isVisible ? css.visible : ''}`}
+                            style={{ transitionDelay: `${idx * 0.15}s` }}
+                          >
+                            <div className={css.testimonialQuoteMark} aria-hidden="true">"</div>
+                            <p className={css.testimonialQuote}>
+                              {intl.formatMessage({ id: t.quoteId })}
+                            </p>
+                            <div className={css.testimonialAuthor}>
+                              <div className={css.authorAvatar} aria-hidden="true">{t.avatar}</div>
+                              <div className={css.authorInfo}>
+                                <h5 className={css.authorName}>
+                                  {intl.formatMessage({ id: t.authorId })}
+                                </h5>
+                                <span className={css.authorRole}>
+                                  {intl.formatMessage({ id: t.roleId })}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
                       </div>
                     </div>
                   </div>
                 </section>
 
-                {/* ================ AI Career Coaching Section ================ */}
-                <section className={css.aiSection} id="ai-section" data-animate>
+                {/* ════════════════════════════════════════════════════════════
+                    SECTION 6: AI COACHING TEASER
+                    ════════════════════════════════════════════════════════════ */}
+                <section className={css.aiSection} ref={aiVis.ref}>
                   <div className={css.sectionContainer}>
                     <div className={css.aiGrid}>
-                      {/* Left - Text Content */}
+                      {/* Left — Text */}
                       <div className={css.aiText}>
-                        <span className={css.sectionLabel}>
-                          {coachingConfig?.platformName ? `Powered by ${coachingConfig.platformName}` : 'Powered by AI Career Coaching'}
+                        <span className={css.sectionLabel} style={{ textAlign: 'left', display: 'block' }}>
+                          {coachingConfig?.platformName
+                            ? intl.formatMessage({ id: 'LandingPage.ai.labelDynamic' }, { platform: coachingConfig.platformName })
+                            : intl.formatMessage({ id: 'LandingPage.ai.label' })}
                         </span>
                         <h2 className={css.sectionTitle} style={{ textAlign: 'left' }}>
-                          Your Personal AI Career Coach, Available 24/7
+                          {intl.formatMessage({ id: 'LandingPage.ai.title' })}
                         </h2>
                         <p className={css.aiDescription}>
-                          Every Street2Ivy student gets access to AI-powered career coaching that provides
-                          personalized guidance — from resume optimization to interview prep to long-term career strategy.
+                          {intl.formatMessage({ id: 'LandingPage.ai.desc' })}
                         </p>
 
                         <div className={css.aiFeatures}>
                           <div className={css.aiFeature}>
-                            <div className={css.aiFeatureIcon}>📝</div>
+                            <div className={css.aiFeatureIcon} aria-hidden="true">📝</div>
                             <div>
-                              <h4>Resume & Application Review</h4>
-                              <p>Get instant feedback to stand out in any application</p>
+                              <h4>{intl.formatMessage({ id: 'LandingPage.ai.feature1Title' })}</h4>
+                              <p>{intl.formatMessage({ id: 'LandingPage.ai.feature1Desc' })}</p>
                             </div>
                           </div>
                           <div className={css.aiFeature}>
-                            <div className={css.aiFeatureIcon}>🎤</div>
+                            <div className={css.aiFeatureIcon} aria-hidden="true">🎤</div>
                             <div>
-                              <h4>Interview Preparation</h4>
-                              <p>Practice with AI-simulated career coaching interviews tailored to your target roles</p>
+                              <h4>{intl.formatMessage({ id: 'LandingPage.ai.feature2Title' })}</h4>
+                              <p>{intl.formatMessage({ id: 'LandingPage.ai.feature2Desc' })}</p>
                             </div>
                           </div>
                           <div className={css.aiFeature}>
-                            <div className={css.aiFeatureIcon}>🗺️</div>
+                            <div className={css.aiFeatureIcon} aria-hidden="true">🗺️</div>
                             <div>
-                              <h4>Career Path Planning</h4>
-                              <p>Map out your trajectory based on skills, interests, and market trends</p>
+                              <h4>{intl.formatMessage({ id: 'LandingPage.ai.feature3Title' })}</h4>
+                              <p>{intl.formatMessage({ id: 'LandingPage.ai.feature3Desc' })}</p>
                             </div>
                           </div>
                         </div>
 
-                        {/* AI Coaching CTA - different behavior based on user state */}
+                        {/* AI Coaching CTA — context-dependent */}
                         {isStudent && !isLoadingInstitution ? (
-                          // Logged-in student: check institution approval
                           canAccessAICoaching ? (
                             <a
                               href={institutionInfo?.aiCoachingUrl}
@@ -589,67 +716,69 @@ const LandingPageComponent = props => {
                               rel="noopener noreferrer"
                               className={css.btnPrimary}
                             >
-                              Access AI Career Coaching →
+                              {intl.formatMessage({ id: 'LandingPage.ai.ctaAccess' })}
+                              <span aria-hidden="true"> →</span>
                             </a>
                           ) : (
                             <div className={css.coachingBlocked}>
-                              <span className={css.blockedIcon}>🔒</span>
-                              <p>AI Career Coaching is available when your institution enables this feature. Contact your career services office for more information.</p>
+                              <span className={css.blockedIcon} aria-hidden="true">🔒</span>
+                              <p>{intl.formatMessage({ id: 'LandingPage.ai.ctaBlocked' })}</p>
                             </div>
                           )
                         ) : coachingConfig?.platformUrl && coachingConfig?.platformStatus ? (
-                          // Non-student with coaching configured
                           <a
                             href={coachingConfig.platformUrl}
                             target="_blank"
                             rel="noopener noreferrer"
                             className={css.btnPrimary}
                           >
-                            Get Started with Coaching →
+                            {intl.formatMessage({ id: 'LandingPage.ai.ctaStart' })}
+                            <span aria-hidden="true"> →</span>
                           </a>
                         ) : (
-                          // Not logged in - show signup CTA
                           <NamedLink name="SignupPage" className={css.btnPrimary}>
-                            Get Started with Career Coaching →
+                            {intl.formatMessage({ id: 'LandingPage.ai.ctaSignup' })}
+                            <span aria-hidden="true"> →</span>
                           </NamedLink>
                         )}
                       </div>
 
-                      {/* Right - Chat Mockup */}
-                      <div className={css.aiVisual}>
+                      {/* Right — Chat mockup */}
+                      <div className={css.aiVisual} aria-hidden="true">
                         <div className={css.chatMockup}>
                           <div className={css.chatGlow} />
                           <div className={css.chatHeader}>
                             <div className={css.chatAvatar}>🤖</div>
                             <div className={css.chatHeaderText}>
-                              <h4>{coachingConfig?.platformName || 'AI Career Coach'}</h4>
-                              <span>● Online</span>
+                              <h4>{coachingConfig?.platformName || intl.formatMessage({ id: 'LandingPage.ai.chatTitle' })}</h4>
+                              <span>● {intl.formatMessage({ id: 'LandingPage.ai.chatOnline' })}</span>
                             </div>
                           </div>
                           <div className={css.chatMessages}>
                             <div className={`${css.chatMessage} ${css.chatBot}`}>
                               <div className={css.messageBubble}>
-                                Hi Sarah! I reviewed your resume. Your data analysis experience is strong,
-                                but let's highlight your Python skills more prominently for fintech roles.
-                                Want me to suggest some rewrites?
+                                {intl.formatMessage({ id: 'LandingPage.ai.chatMsg1' })}
                               </div>
                             </div>
                             <div className={`${css.chatMessage} ${css.chatUser}`}>
                               <div className={css.messageBubble}>
-                                Yes please! I'm applying to FinFlow's project today.
+                                {intl.formatMessage({ id: 'LandingPage.ai.chatMsg2' })}
                               </div>
                             </div>
                             <div className={`${css.chatMessage} ${css.chatBot}`}>
                               <div className={css.messageBubble}>
-                                Great choice! Here's a tailored version that emphasizes the exact skills
-                                they're looking for. I also noticed they value "growth mindset" — let's
-                                add a bullet about how you taught yourself SQL in two weeks...
+                                {intl.formatMessage({ id: 'LandingPage.ai.chatMsg3' })}
                               </div>
                             </div>
                           </div>
                           <div className={css.chatInput}>
-                            <input type="text" placeholder="Ask anything about your career..." readOnly />
-                            <button>→</button>
+                            <input
+                              type="text"
+                              placeholder={intl.formatMessage({ id: 'LandingPage.ai.chatPlaceholder' })}
+                              readOnly
+                              tabIndex={-1}
+                            />
+                            <button tabIndex={-1} aria-label="Send">→</button>
                           </div>
                         </div>
                       </div>
@@ -657,105 +786,57 @@ const LandingPageComponent = props => {
                   </div>
                 </section>
 
-                {/* ================ Stats Section ================ */}
-                <section className={css.statsSection} id="stats-section" data-animate>
-                  <div className={css.sectionContainer}>
-                    <div className={css.statsGrid}>
-                      <div className={css.statItem} ref={studentsCount.ref}>
-                        <div className={css.statNumber}>
-                          <span className={css.statNumberGradient}>{studentsCount.count.toLocaleString()}</span>{stat1.suffix}
-                        </div>
-                        <div className={css.statLabel}>{stat1.label}</div>
-                      </div>
-                      <div className={css.statItem} ref={projectsCount.ref}>
-                        <div className={css.statNumber}>
-                          <span className={css.statNumberGradient}>{projectsCount.count.toLocaleString()}</span>{stat2.suffix}
-                        </div>
-                        <div className={css.statLabel}>{stat2.label}</div>
-                      </div>
-                      <div className={css.statItem} ref={companiesCount.ref}>
-                        <div className={css.statNumber}>
-                          <span className={css.statNumberGradient}>{companiesCount.count.toLocaleString()}</span>{stat3.suffix}
-                        </div>
-                        <div className={css.statLabel}>{stat3.label}</div>
-                      </div>
-                      <div className={css.statItem} ref={ratingCount.ref}>
-                        <div className={css.statNumber}>
-                          <span className={css.statNumberGradient}>{ratingCount.count}</span>{stat4.suffix}
-                        </div>
-                        <div className={css.statLabel}>{stat4.label}</div>
-                      </div>
-                    </div>
-                  </div>
-                </section>
-
-                {/* ================ Testimonials Section ================ */}
-                <section className={css.testimonialsSection} id="testimonials-section" data-animate>
-                  <div className={css.sectionContainer}>
-                    <span className={css.sectionLabel}>Success Stories</span>
-                    <h2 className={css.sectionTitle}>
-                      {testimonialsContent?.sectionTitle || 'What They\'re Saying'}
-                    </h2>
-                    <p className={css.sectionSubtitle}>
-                      Real results from real people on both sides of the marketplace.
-                    </p>
-
-                    <div className={css.testimonialsGrid}>
-                      {testimonials.map((testimonial, index) => (
-                        <div
-                          key={index}
-                          className={`${css.testimonialCard} ${visibleElements['testimonials-section'] ? css.visible : ''}`}
-                          style={{ animationDelay: `${index * 0.2}s` }}
-                        >
-                          <div className={css.testimonialQuoteMark}>"</div>
-                          <p className={css.testimonialQuote}>{testimonial.quote}</p>
-                          <div className={css.testimonialAuthor}>
-                            <div className={css.authorAvatar}>{testimonial.avatar}</div>
-                            <div className={css.authorInfo}>
-                              <h5 className={css.authorName}>{testimonial.author}</h5>
-                              <span className={css.authorRole}>{testimonial.role}</span>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </section>
-
-                {/* ================ Triple CTA Section ================ */}
-                <section className={css.tripleCtaSection}>
+                {/* ════════════════════════════════════════════════════════════
+                    SECTION 7: CLOSING CTA — Triple path
+                    ════════════════════════════════════════════════════════════ */}
+                <section className={css.tripleCtaSection} ref={ctaVis.ref}>
+                  {/* Company CTA */}
                   <div className={css.ctaCompanies}>
-                    <h2 className={css.ctaTitle}>Ready to Tap Into Fresh Talent?</h2>
+                    <h2 className={css.ctaTitle}>
+                      {intl.formatMessage({ id: 'LandingPage.cta.companiesTitle' })}
+                    </h2>
                     <ul className={css.ctaList}>
-                      <li>Post your first project in under 5 minutes</li>
-                      <li>Get matched with pre-vetted candidates</li>
-                      <li>Pay only when work is delivered</li>
+                      <li>{intl.formatMessage({ id: 'LandingPage.cta.companiesItem1' })}</li>
+                      <li>{intl.formatMessage({ id: 'LandingPage.cta.companiesItem2' })}</li>
+                      <li>{intl.formatMessage({ id: 'LandingPage.cta.companiesItem3' })}</li>
                     </ul>
                     <NamedLink name="SignupPage" className={css.ctaBtn}>
-                      Start Posting Projects →
+                      {intl.formatMessage({ id: 'LandingPage.cta.companiesBtn' })}
+                      <span aria-hidden="true"> →</span>
                     </NamedLink>
-                    <p className={css.ctaUrgency}>🔥 Limited spots for launch cohort partners</p>
+                    <p className={css.ctaUrgency}>
+                      {intl.formatMessage({ id: 'LandingPage.cta.companiesUrgency' })}
+                    </p>
                   </div>
 
+                  {/* Student CTA */}
                   <div className={css.ctaStudents}>
-                    <h2 className={css.ctaTitle}>Ready to Prove What You Can Do?</h2>
+                    <h2 className={css.ctaTitle}>
+                      {intl.formatMessage({ id: 'LandingPage.cta.studentsTitle' })}
+                    </h2>
                     <ul className={css.ctaList}>
-                      <li>Create your profile and showcase your skills</li>
-                      <li>Get access to AI-powered career coaching</li>
-                      <li>Start building your professional portfolio</li>
+                      <li>{intl.formatMessage({ id: 'LandingPage.cta.studentsItem1' })}</li>
+                      <li>{intl.formatMessage({ id: 'LandingPage.cta.studentsItem2' })}</li>
+                      <li>{intl.formatMessage({ id: 'LandingPage.cta.studentsItem3' })}</li>
                     </ul>
                     <NamedLink name="SignupPage" className={css.ctaBtnAlt}>
-                      Join the Talent Network →
+                      {intl.formatMessage({ id: 'LandingPage.cta.studentsBtn' })}
+                      <span aria-hidden="true"> →</span>
                     </NamedLink>
-                    <p className={css.ctaUrgency}>🚀 Early access — applications closing soon</p>
+                    <p className={css.ctaUrgency}>
+                      {intl.formatMessage({ id: 'LandingPage.cta.studentsUrgency' })}
+                    </p>
                   </div>
 
+                  {/* University CTA */}
                   <div className={css.ctaInstitutions}>
-                    <h2 className={css.ctaTitle}>Ready to Elevate Your Career Services?</h2>
+                    <h2 className={css.ctaTitle}>
+                      {intl.formatMessage({ id: 'LandingPage.cta.universitiesTitle' })}
+                    </h2>
                     <ul className={css.ctaList}>
-                      <li>Enterprise licensing for your institution</li>
-                      <li>AI career coaching for all students</li>
-                      <li>Real-time analytics and reporting</li>
+                      <li>{intl.formatMessage({ id: 'LandingPage.cta.universitiesItem1' })}</li>
+                      <li>{intl.formatMessage({ id: 'LandingPage.cta.universitiesItem2' })}</li>
+                      <li>{intl.formatMessage({ id: 'LandingPage.cta.universitiesItem3' })}</li>
                     </ul>
                     <a
                       href="https://calendly.com/tavares-brewington-street2ivy/demo"
@@ -763,11 +844,15 @@ const LandingPageComponent = props => {
                       rel="noopener noreferrer"
                       className={css.ctaBtnInstitution}
                     >
-                      Schedule a Demo →
+                      {intl.formatMessage({ id: 'LandingPage.cta.universitiesBtn' })}
+                      <span aria-hidden="true"> →</span>
                     </a>
-                    <p className={css.ctaUrgency}>🏛️ Special rates for founding partners</p>
+                    <p className={css.ctaUrgency}>
+                      {intl.formatMessage({ id: 'LandingPage.cta.universitiesUrgency' })}
+                    </p>
                   </div>
                 </section>
+
               </Main>
               <Footer>
                 <FooterContainer />

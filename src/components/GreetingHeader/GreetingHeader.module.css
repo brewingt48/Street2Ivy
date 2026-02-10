@@ -1,0 +1,82 @@
+@import '../../styles/customMediaQueries.css';
+
+/* ================ GreetingHeader ================ */
+
+.root {
+  font-family: var(--s2i-font-sans);
+  padding: var(--s2i-space-6) 0;
+}
+
+/* Greeting line: small, uppercase, tertiary color */
+.greeting {
+  font-family: var(--s2i-font-sans);
+  font-size: var(--s2i-text-sm);
+  font-weight: var(--s2i-font-medium);
+  color: var(--s2i-text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: var(--s2i-tracking-wide);
+  margin: 0 0 var(--s2i-space-1) 0;
+  line-height: var(--s2i-leading-normal);
+}
+
+/* Main title: large, bold, primary color */
+.title {
+  font-family: var(--s2i-font-sans);
+  font-size: var(--s2i-text-3xl);
+  font-weight: var(--s2i-font-bold);
+  color: var(--s2i-text-primary);
+  margin: 0 0 var(--s2i-space-2) 0;
+  line-height: var(--s2i-leading-tight);
+}
+
+/* Subtitle: medium size, secondary color */
+.subtitle {
+  font-family: var(--s2i-font-sans);
+  font-size: var(--s2i-text-md);
+  font-weight: var(--s2i-font-medium);
+  color: var(--s2i-text-secondary);
+  margin: 0;
+  line-height: var(--s2i-leading-normal);
+}
+
+/* ================ Loading Skeleton Placeholders ================ */
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.skeletonGreeting,
+.skeletonTitle,
+.skeletonSubtitle {
+  border-radius: var(--s2i-space-1);
+  background: linear-gradient(
+    90deg,
+    var(--s2i-slate-100) 25%,
+    var(--s2i-slate-200) 50%,
+    var(--s2i-slate-100) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+}
+
+.skeletonGreeting {
+  width: 120px;
+  height: 14px;
+  margin-bottom: var(--s2i-space-2);
+}
+
+.skeletonTitle {
+  width: 280px;
+  height: 32px;
+  margin-bottom: var(--s2i-space-2);
+}
+
+.skeletonSubtitle {
+  width: 220px;
+  height: 18px;
+}

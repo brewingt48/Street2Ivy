@@ -1,0 +1,170 @@
+/* ============================================================
+ * CompanyCard.module.css
+ *
+ * Vertical card displaying a company/corporate partner in
+ * search results. Features logo with initial fallback, industry
+ * tag, open project count, and star rating.
+ * ============================================================ */
+
+/* ---- Base card ---- */
+
+.root {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  background: var(--s2i-bg-white);
+  border: 1px solid var(--s2i-border-light);
+  border-radius: var(--s2i-radius-xl);
+  box-shadow: var(--s2i-shadow-card);
+  padding: var(--s2i-space-6);
+  transition: var(--s2i-transition-all);
+  text-decoration: none;
+  color: inherit;
+  cursor: default;
+}
+
+.root:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--s2i-shadow-card-hover);
+}
+
+.root:focus-within {
+  outline: 2px solid var(--s2i-border-focus);
+  outline-offset: 2px;
+}
+
+/* ---- Clickable variant (when href is provided) ---- */
+
+.clickable {
+  cursor: pointer;
+  text-decoration: none;
+  color: inherit;
+}
+
+.clickable:hover {
+  text-decoration: none;
+}
+
+/* ---- Logo ---- */
+
+.logo {
+  width: 64px;
+  height: 64px;
+  border-radius: var(--s2i-radius-lg);
+  overflow: hidden;
+  flex-shrink: 0;
+  margin-bottom: var(--s2i-space-4);
+}
+
+.logoImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.logoFallback {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--s2i-teal-100);
+  color: var(--s2i-teal-600);
+  font-family: var(--s2i-font-sans);
+  font-size: var(--s2i-text-2xl);
+  font-weight: var(--s2i-font-bold);
+  line-height: var(--s2i-leading-none);
+  user-select: none;
+}
+
+/* ---- Company name ---- */
+
+.companyName {
+  font-family: var(--s2i-font-sans);
+  font-size: var(--s2i-text-md);
+  font-weight: var(--s2i-font-bold);
+  color: var(--s2i-text-primary);
+  line-height: var(--s2i-leading-snug);
+  margin: 0 0 var(--s2i-space-2) 0;
+
+  /* Limit to 2 lines */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* ---- Industry tag ---- */
+
+.industryTag {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--s2i-space-1) var(--s2i-space-3);
+  font-family: var(--s2i-font-sans);
+  font-size: var(--s2i-text-xs);
+  font-weight: var(--s2i-font-medium);
+  color: var(--s2i-text-secondary);
+  background-color: var(--s2i-slate-100);
+  border-radius: var(--s2i-radius-full);
+  margin-bottom: var(--s2i-space-4);
+  white-space: nowrap;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ---- Stats row ---- */
+
+.statsRow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s2i-space-3);
+  width: 100%;
+  padding-top: var(--s2i-space-4);
+  border-top: 1px solid var(--s2i-border-light);
+  margin-top: auto;
+}
+
+.projectCount {
+  font-family: var(--s2i-font-sans);
+  font-size: var(--s2i-text-sm);
+  font-weight: var(--s2i-font-medium);
+  color: var(--s2i-text-secondary);
+  white-space: nowrap;
+}
+
+/* ---- Star rating row ---- */
+
+.starsRow {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  line-height: 1;
+}
+
+.star {
+  display: inline-block;
+  font-size: var(--s2i-text-base);
+  line-height: 1;
+}
+
+.starFilled {
+  color: var(--s2i-star-filled);
+}
+
+.starEmpty {
+  color: var(--s2i-star-empty);
+}
+
+/* ---- Divider dot between stats ---- */
+
+.statsDivider {
+  width: 4px;
+  height: 4px;
+  border-radius: var(--s2i-radius-full);
+  background-color: var(--s2i-slate-300);
+  flex-shrink: 0;
+}

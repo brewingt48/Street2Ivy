@@ -1,0 +1,206 @@
+/* ================ Enterprise Design System - Review Card ================ */
+
+.root {
+  background: var(--s2i-white);
+  border: 1px solid var(--s2i-border-light);
+  border-radius: var(--s2i-radius-xl);
+  padding: var(--s2i-space-5);
+  box-shadow: var(--s2i-shadow-xs);
+  display: flex;
+  flex-direction: column;
+  gap: var(--s2i-space-3);
+}
+
+/* ---- Header Row ---- */
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--s2i-space-3);
+}
+
+.reviewerInfo {
+  display: flex;
+  align-items: center;
+  gap: var(--s2i-space-3);
+  min-width: 0;
+}
+
+/* ---- Avatar ---- */
+
+.avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--s2i-radius-full);
+  overflow: hidden;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(
+    135deg,
+    var(--s2i-teal-400) 0%,
+    var(--s2i-navy-500) 100%
+  );
+  color: var(--s2i-white);
+}
+
+.avatarImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.avatarInitial {
+  font-family: var(--s2i-font-sans);
+  font-size: var(--s2i-text-base);
+  font-weight: var(--s2i-font-semibold);
+  line-height: 1;
+  user-select: none;
+}
+
+/* ---- Name & Role ---- */
+
+.nameBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.reviewerName {
+  font-family: var(--s2i-font-sans);
+  font-size: var(--s2i-text-base);
+  font-weight: var(--s2i-font-semibold);
+  color: var(--s2i-text-primary);
+  line-height: var(--s2i-leading-tight);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.reviewerRole {
+  font-family: var(--s2i-font-sans);
+  font-size: var(--s2i-text-sm);
+  font-weight: var(--s2i-font-normal);
+  color: var(--s2i-text-secondary);
+  line-height: var(--s2i-leading-tight);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ---- Date ---- */
+
+.date {
+  font-family: var(--s2i-font-sans);
+  font-size: var(--s2i-text-xs);
+  font-weight: var(--s2i-font-normal);
+  color: var(--s2i-text-tertiary);
+  line-height: var(--s2i-leading-normal);
+  white-space: nowrap;
+  flex-shrink: 0;
+  /* Align baseline with the first line of the name */
+  padding-top: 2px;
+}
+
+/* ---- Star Rating ---- */
+
+.starRating {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.starWrapper {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+.starSvg {
+  display: block;
+  width: 16px;
+  height: 16px;
+}
+
+.starFillActive {
+  stop-color: var(--s2i-star-filled);
+}
+
+.starFillEmpty {
+  stop-color: var(--s2i-star-empty);
+}
+
+/* ---- Review Content ---- */
+
+.contentWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s2i-space-1);
+}
+
+.content {
+  font-family: var(--s2i-font-sans);
+  font-size: var(--s2i-text-sm);
+  font-weight: var(--s2i-font-normal);
+  color: var(--s2i-text-primary);
+  line-height: var(--s2i-leading-relaxed);
+  margin: 0;
+  word-break: break-word;
+}
+
+.contentClamped {
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.readMoreButton {
+  align-self: flex-start;
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+  font-family: var(--s2i-font-sans);
+  font-size: var(--s2i-text-xs);
+  font-weight: var(--s2i-font-medium);
+  color: var(--s2i-text-link);
+  transition: color var(--s2i-transition-fast);
+}
+
+.readMoreButton:hover {
+  color: var(--s2i-text-link-hover);
+  text-decoration: underline;
+}
+
+/* ---- Project Title Tag ---- */
+
+.projectTagWrapper {
+  padding-top: var(--s2i-space-1);
+}
+
+.projectTag {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--s2i-space-1) var(--s2i-space-2);
+  font-family: var(--s2i-font-sans);
+  font-size: var(--s2i-text-xs);
+  font-weight: var(--s2i-font-medium);
+  color: var(--s2i-slate-600);
+  background-color: var(--s2i-slate-100);
+  border-radius: var(--s2i-radius-md);
+  border: 1px solid var(--s2i-slate-200);
+  line-height: var(--s2i-leading-none);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}

@@ -33,19 +33,19 @@ const AccessDeniedView = ({ reason, depositConfirmed, transactionState }) => {
       icon = '';
       title = 'Awaiting Acceptance';
       message =
-        'You have not been accepted for this project yet. The corporate partner is reviewing your application. You will gain access to the project workspace once you are accepted.';
+        'You have not been accepted for this project yet. The corporate partner is reviewing your application. You will gain access to the project details once you are accepted.';
       break;
     case 'deposit_pending':
       icon = '';
-      title = 'Deposit Pending';
+      title = 'Confirmation Pending';
       message =
-        "Great news - you've been accepted for this project! However, access to the project workspace is pending until the corporate partner's deposit is confirmed by Street2Ivy. You will receive a notification once you have full access.";
+        "Great news — you've been accepted for this project! However, access to the project details is pending until the corporate partner's confirmation is complete. You will receive a notification once you have full access.";
       break;
     case 'unauthorized':
     default:
       icon = '';
       title = 'Access Restricted';
-      message = 'You do not have permission to access this project workspace.';
+      message = 'You do not have permission to access this project.';
       break;
   }
 
@@ -610,8 +610,8 @@ const ProjectWorkspacePageComponent = props => {
       <Page title={title} scrollingDisabled={scrollingDisabled}>
         <LayoutSingleColumn topbar={<TopbarContainer />} footer={<FooterContainer />}>
           <div className={css.accessDenied}>
-            <h2>Unable to Load Workspace</h2>
-            <p>There was an error loading the project workspace. Please try again later.</p>
+            <h2>Unable to Load Project Details</h2>
+            <p>There was an error loading the project details. Please try again later.</p>
             <NamedLink name="InboxPage" params={{ tab: 'orders' }} className={css.backButton}>
               <FormattedMessage id="ProjectWorkspacePage.backToInbox" />
             </NamedLink>
@@ -637,7 +637,7 @@ const ProjectWorkspacePageComponent = props => {
       <LayoutSingleColumn topbar={<TopbarContainer />} footer={<FooterContainer />}>
         <div className={css.pageContent}>
           <div className={css.pageHeader}>
-            <h1 className={css.pageTitle}>{listing?.title || 'Project Workspace'}</h1>
+            <h1 className={css.pageTitle}>{listing?.title || 'Project Details'}</h1>
             <p className={css.pageSubtitle}>
               <FormattedMessage
                 id="ProjectWorkspacePage.subtitle"
@@ -703,10 +703,10 @@ const ProjectWorkspacePageComponent = props => {
                       </div>
                     )}
 
-                    {/* Deliverables */}
+                    {/* Project Requirements */}
                     {confidential.deliverables && (
                       <div className={css.briefSection}>
-                        <p className={css.briefLabel}>Deliverables</p>
+                        <p className={css.briefLabel}>Project Requirements</p>
                         <p className={css.briefText}>{confidential.deliverables}</p>
                       </div>
                     )}
