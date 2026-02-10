@@ -102,6 +102,7 @@ const LandingPageComponent = props => {
   const intl = useIntl();
   const [dynamicContent, setDynamicContent] = useState(null);
   const [coachingConfig, setCoachingConfig] = useState(null);
+  const [isLoadingCoaching, setIsLoadingCoaching] = useState(true);
   const [activeHowTab, setActiveHowTab] = useState('companies');
   const [institutionInfo, setInstitutionInfo] = useState(null);
   const [isLoadingInstitution, setIsLoadingInstitution] = useState(true);
@@ -145,6 +146,15 @@ const LandingPageComponent = props => {
       })
       .catch(err => {
         console.log('Using default coaching config:', err);
+        // Set default config so the section renders with sensible defaults
+        setCoachingConfig({
+          platformName: 'AI Career Coach',
+          platformStatus: false,
+          platformUrl: '',
+        });
+      })
+      .finally(() => {
+        setIsLoadingCoaching(false);
       });
   }, []);
 
@@ -725,6 +735,10 @@ const LandingPageComponent = props => {
                               <p>{intl.formatMessage({ id: 'LandingPage.ai.ctaBlocked' })}</p>
                             </div>
                           )
+                        ) : isLoadingCoaching ? (
+                          <div className={css.btnPrimary} style={{ opacity: 0.5, pointerEvents: 'none' }}>
+                            {intl.formatMessage({ id: 'LandingPage.ai.ctaLoading' })}
+                          </div>
                         ) : coachingConfig?.platformUrl && coachingConfig?.platformStatus ? (
                           <a
                             href={coachingConfig.platformUrl}

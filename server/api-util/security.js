@@ -23,7 +23,7 @@ const { getSdk } = require('./sdk');
 const SECURITY_CONFIG = {
   // Rate limiting
   rateLimitWindowMs: 15 * 60 * 1000, // 15 minutes
-  rateLimitMaxRequests: 200,
+  rateLimitMaxRequests: 1000,
   strictRateLimitWindowMs: 60 * 1000, // 1 minute
   strictRateLimitMaxRequests: 10,
 

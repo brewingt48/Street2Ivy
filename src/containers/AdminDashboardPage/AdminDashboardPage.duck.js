@@ -13,9 +13,6 @@ import {
   fetchPendingApprovals as fetchPendingApprovalsApi,
   approveUserProfile as approveUserProfileApi,
   rejectUserProfile as rejectUserProfileApi,
-  fetchPendingDeposits as fetchPendingDepositsApi,
-  confirmDeposit as confirmDepositApi,
-  revokeDeposit as revokeDepositApi,
   fetchLandingContent as fetchLandingContentApi,
   updateContentSection as updateContentSectionApi,
   addContentItem as addContentItemApi,
@@ -29,12 +26,6 @@ import {
   rejectEducationalAdminApplication as rejectApplicationApi,
   fetchEducationalAdmins as fetchEducationalAdminsApi,
   updateEducationalAdminSubscription as updateSubscriptionApi,
-  // Corporate partner deposit management
-  fetchCorporateDeposits as fetchCorporateDepositsApi,
-  fetchCorporatePartnerDeposits as fetchCorporatePartnerDepositsApi,
-  clearWorkHold as clearWorkHoldApi,
-  reinstateWorkHold as reinstateWorkHoldApi,
-  clearAllHoldsForPartner as clearAllHoldsForPartnerApi,
   // Blog management
   fetchBlogPosts as fetchBlogPostsApi,
   fetchBlogPost as fetchBlogPostApi,
@@ -214,48 +205,6 @@ export const rejectUserThunk = createAsyncThunk(
 
 export const rejectUserAction = (userId, reason) => dispatch =>
   dispatch(rejectUserThunk({ userId, reason })).unwrap();
-
-// Deposit management thunks
-export const fetchDepositsThunk = createAsyncThunk(
-  'app/AdminDashboardPage/fetchDeposits',
-  async (params, { rejectWithValue }) => {
-    try {
-      return await fetchPendingDepositsApi(params);
-    } catch (e) {
-      return rejectWithValue(storableError(e));
-    }
-  }
-);
-
-export const fetchDeposits = params => dispatch => dispatch(fetchDepositsThunk(params)).unwrap();
-
-export const confirmDepositThunk = createAsyncThunk(
-  'app/AdminDashboardPage/confirmDeposit',
-  async ({ transactionId, amount, paymentMethod, notes }, { rejectWithValue }) => {
-    try {
-      return await confirmDepositApi(transactionId, { amount, paymentMethod, notes });
-    } catch (e) {
-      return rejectWithValue(storableError(e));
-    }
-  }
-);
-
-export const confirmDepositAction = (transactionId, { amount, paymentMethod, notes }) => dispatch =>
-  dispatch(confirmDepositThunk({ transactionId, amount, paymentMethod, notes })).unwrap();
-
-export const revokeDepositThunk = createAsyncThunk(
-  'app/AdminDashboardPage/revokeDeposit',
-  async ({ transactionId, reason }, { rejectWithValue }) => {
-    try {
-      return await revokeDepositApi(transactionId, reason);
-    } catch (e) {
-      return rejectWithValue(storableError(e));
-    }
-  }
-);
-
-export const revokeDepositAction = (transactionId, reason) => dispatch =>
-  dispatch(revokeDepositThunk({ transactionId, reason })).unwrap();
 
 // Content management thunks
 export const fetchContentThunk = createAsyncThunk(
@@ -442,77 +391,6 @@ export const updateSubscriptionThunk = createAsyncThunk(
 export const updateSubscriptionAction = (userId, data) => dispatch =>
   dispatch(updateSubscriptionThunk({ userId, data })).unwrap();
 
-// Corporate partner deposit management thunks
-export const fetchCorporateDepositsThunk = createAsyncThunk(
-  'app/AdminDashboardPage/fetchCorporateDeposits',
-  async (params, { rejectWithValue }) => {
-    try {
-      return await fetchCorporateDepositsApi(params);
-    } catch (e) {
-      return rejectWithValue(storableError(e));
-    }
-  }
-);
-
-export const fetchCorporateDeposits = params => dispatch =>
-  dispatch(fetchCorporateDepositsThunk(params)).unwrap();
-
-export const fetchCorporatePartnerDepositsThunk = createAsyncThunk(
-  'app/AdminDashboardPage/fetchCorporatePartnerDeposits',
-  async (partnerId, { rejectWithValue }) => {
-    try {
-      return await fetchCorporatePartnerDepositsApi(partnerId);
-    } catch (e) {
-      return rejectWithValue(storableError(e));
-    }
-  }
-);
-
-export const fetchCorporatePartnerDepositsAction = partnerId => dispatch =>
-  dispatch(fetchCorporatePartnerDepositsThunk(partnerId)).unwrap();
-
-export const clearWorkHoldThunk = createAsyncThunk(
-  'app/AdminDashboardPage/clearWorkHold',
-  async ({ transactionId, notes }, { rejectWithValue }) => {
-    try {
-      return await clearWorkHoldApi(transactionId, notes);
-    } catch (e) {
-      return rejectWithValue(storableError(e));
-    }
-  }
-);
-
-export const clearWorkHoldAction = (transactionId, notes) => dispatch =>
-  dispatch(clearWorkHoldThunk({ transactionId, notes })).unwrap();
-
-export const reinstateWorkHoldThunk = createAsyncThunk(
-  'app/AdminDashboardPage/reinstateWorkHold',
-  async ({ transactionId, reason }, { rejectWithValue }) => {
-    try {
-      return await reinstateWorkHoldApi(transactionId, reason);
-    } catch (e) {
-      return rejectWithValue(storableError(e));
-    }
-  }
-);
-
-export const reinstateWorkHoldAction = (transactionId, reason) => dispatch =>
-  dispatch(reinstateWorkHoldThunk({ transactionId, reason })).unwrap();
-
-export const clearAllHoldsForPartnerThunk = createAsyncThunk(
-  'app/AdminDashboardPage/clearAllHoldsForPartner',
-  async ({ partnerId, notes }, { rejectWithValue }) => {
-    try {
-      return await clearAllHoldsForPartnerApi(partnerId, notes);
-    } catch (e) {
-      return rejectWithValue(storableError(e));
-    }
-  }
-);
-
-export const clearAllHoldsForPartnerAction = (partnerId, notes) => dispatch =>
-  dispatch(clearAllHoldsForPartnerThunk({ partnerId, notes })).unwrap();
-
 // ================ Blog Thunks ================ //
 
 export const fetchBlogPostsThunk = createAsyncThunk(
@@ -644,14 +522,6 @@ const adminDashboardPageSlice = createSlice({
     approveInProgress: null,
     rejectInProgress: null,
 
-    // Deposits
-    deposits: [],
-    depositsPagination: null,
-    fetchDepositsInProgress: false,
-    fetchDepositsError: null,
-    confirmDepositInProgress: null,
-    revokeDepositInProgress: null,
-
     // Messages
     messages: [],
     messagesPagination: null,
@@ -692,19 +562,6 @@ const adminDashboardPageSlice = createSlice({
     updateSubscriptionInProgress: null,
     updateSubscriptionSuccess: false,
 
-    // Corporate Partner Deposits
-    corporatePartners: [],
-    corporatePartnersPagination: null,
-    fetchCorporateDepositsInProgress: false,
-    fetchCorporateDepositsError: null,
-    selectedPartner: null,
-    selectedPartnerDeposits: [],
-    fetchPartnerDepositsInProgress: false,
-    fetchPartnerDepositsError: null,
-    clearHoldInProgress: null,
-    reinstateHoldInProgress: null,
-    clearAllHoldsInProgress: null,
-
     // Blog Management
     blogPosts: [],
     blogPostsPagination: null,
@@ -742,11 +599,6 @@ const adminDashboardPageSlice = createSlice({
     clearSubscriptionState: state => {
       state.updateSubscriptionInProgress = null;
       state.updateSubscriptionSuccess = false;
-    },
-    clearSelectedPartner: state => {
-      state.selectedPartner = null;
-      state.selectedPartnerDeposits = [];
-      state.fetchPartnerDepositsError = null;
     },
     clearBlogPostState: state => {
       state.saveBlogPostInProgress = false;
@@ -916,43 +768,6 @@ const adminDashboardPageSlice = createSlice({
       .addCase(rejectUserThunk.rejected, state => {
         state.rejectInProgress = null;
       })
-      // Fetch deposits
-      .addCase(fetchDepositsThunk.pending, state => {
-        state.fetchDepositsInProgress = true;
-        state.fetchDepositsError = null;
-      })
-      .addCase(fetchDepositsThunk.fulfilled, (state, action) => {
-        state.fetchDepositsInProgress = false;
-        state.deposits = action.payload.deposits || [];
-        state.depositsPagination = action.payload.pagination;
-      })
-      .addCase(fetchDepositsThunk.rejected, (state, action) => {
-        state.fetchDepositsInProgress = false;
-        state.fetchDepositsError = action.payload;
-      })
-      // Confirm deposit
-      .addCase(confirmDepositThunk.pending, (state, action) => {
-        state.confirmDepositInProgress = action.meta.arg.transactionId;
-      })
-      .addCase(confirmDepositThunk.fulfilled, (state, action) => {
-        state.confirmDepositInProgress = null;
-        // Remove confirmed deposit from pending list
-        const transactionId = action.payload.transactionId;
-        state.deposits = state.deposits.filter(d => d.id !== transactionId);
-      })
-      .addCase(confirmDepositThunk.rejected, state => {
-        state.confirmDepositInProgress = null;
-      })
-      // Revoke deposit
-      .addCase(revokeDepositThunk.pending, (state, action) => {
-        state.revokeDepositInProgress = action.meta.arg.transactionId;
-      })
-      .addCase(revokeDepositThunk.fulfilled, state => {
-        state.revokeDepositInProgress = null;
-      })
-      .addCase(revokeDepositThunk.rejected, state => {
-        state.revokeDepositInProgress = null;
-      })
       // Fetch content
       .addCase(fetchContentThunk.pending, state => {
         state.fetchContentInProgress = true;
@@ -1119,96 +934,6 @@ const adminDashboardPageSlice = createSlice({
         state.updateSubscriptionInProgress = null;
         state.updateSubscriptionSuccess = false;
       })
-      // Fetch corporate partners deposits
-      .addCase(fetchCorporateDepositsThunk.pending, state => {
-        state.fetchCorporateDepositsInProgress = true;
-        state.fetchCorporateDepositsError = null;
-      })
-      .addCase(fetchCorporateDepositsThunk.fulfilled, (state, action) => {
-        state.fetchCorporateDepositsInProgress = false;
-        state.corporatePartners = action.payload.partners || [];
-        state.corporatePartnersPagination = action.payload.pagination;
-      })
-      .addCase(fetchCorporateDepositsThunk.rejected, (state, action) => {
-        state.fetchCorporateDepositsInProgress = false;
-        state.fetchCorporateDepositsError = action.payload;
-      })
-      // Fetch single partner deposits
-      .addCase(fetchCorporatePartnerDepositsThunk.pending, state => {
-        state.fetchPartnerDepositsInProgress = true;
-        state.fetchPartnerDepositsError = null;
-      })
-      .addCase(fetchCorporatePartnerDepositsThunk.fulfilled, (state, action) => {
-        state.fetchPartnerDepositsInProgress = false;
-        state.selectedPartner = action.payload.partner;
-        state.selectedPartnerDeposits = action.payload.transactions || [];
-      })
-      .addCase(fetchCorporatePartnerDepositsThunk.rejected, (state, action) => {
-        state.fetchPartnerDepositsInProgress = false;
-        state.fetchPartnerDepositsError = action.payload;
-      })
-      // Clear work hold
-      .addCase(clearWorkHoldThunk.pending, (state, action) => {
-        state.clearHoldInProgress = action.meta.arg.transactionId;
-      })
-      .addCase(clearWorkHoldThunk.fulfilled, (state, action) => {
-        state.clearHoldInProgress = null;
-        // Update the transaction in the list
-        const transactionId = action.payload.transactionId;
-        const txIndex = state.selectedPartnerDeposits.findIndex(t => t.id === transactionId);
-        if (txIndex !== -1) {
-          state.selectedPartnerDeposits[txIndex] = {
-            ...state.selectedPartnerDeposits[txIndex],
-            workHoldCleared: true,
-          };
-        }
-      })
-      .addCase(clearWorkHoldThunk.rejected, state => {
-        state.clearHoldInProgress = null;
-      })
-      // Reinstate work hold
-      .addCase(reinstateWorkHoldThunk.pending, (state, action) => {
-        state.reinstateHoldInProgress = action.meta.arg.transactionId;
-      })
-      .addCase(reinstateWorkHoldThunk.fulfilled, (state, action) => {
-        state.reinstateHoldInProgress = null;
-        // Update the transaction in the list
-        const transactionId = action.payload.transactionId;
-        const txIndex = state.selectedPartnerDeposits.findIndex(t => t.id === transactionId);
-        if (txIndex !== -1) {
-          state.selectedPartnerDeposits[txIndex] = {
-            ...state.selectedPartnerDeposits[txIndex],
-            workHoldCleared: false,
-          };
-        }
-      })
-      .addCase(reinstateWorkHoldThunk.rejected, state => {
-        state.reinstateHoldInProgress = null;
-      })
-      // Clear all holds for partner
-      .addCase(clearAllHoldsForPartnerThunk.pending, (state, action) => {
-        state.clearAllHoldsInProgress = action.meta.arg.partnerId;
-      })
-      .addCase(clearAllHoldsForPartnerThunk.fulfilled, (state, action) => {
-        state.clearAllHoldsInProgress = null;
-        // Update all transactions to have workHoldCleared
-        state.selectedPartnerDeposits = state.selectedPartnerDeposits.map(tx => ({
-          ...tx,
-          workHoldCleared: true,
-        }));
-        // Update partner in the list too
-        const partnerId = action.payload.partnerId;
-        const partnerIndex = state.corporatePartners.findIndex(p => p.id === partnerId);
-        if (partnerIndex !== -1) {
-          state.corporatePartners[partnerIndex] = {
-            ...state.corporatePartners[partnerIndex],
-            pendingHolds: 0,
-          };
-        }
-      })
-      .addCase(clearAllHoldsForPartnerThunk.rejected, state => {
-        state.clearAllHoldsInProgress = null;
-      })
       // Blog posts
       .addCase(fetchBlogPostsThunk.pending, state => {
         state.fetchBlogPostsInProgress = true;
@@ -1296,7 +1021,6 @@ export const {
   clearContentState,
   clearUserStats,
   clearSubscriptionState,
-  clearSelectedPartner,
   clearBlogPostState,
   setSelectedBlogPost,
   clearSelectedBlogPost,
@@ -1316,10 +1040,6 @@ export const loadData = (params, search) => dispatch => {
     promises.push(dispatch(fetchReportsThunk('overview')));
   } else if (tab === 'approvals') {
     promises.push(dispatch(fetchPendingApprovalsThunk({})));
-  } else if (tab === 'deposits') {
-    // Load both corporate partner deposits and regular deposits
-    promises.push(dispatch(fetchCorporateDepositsThunk({})));
-    promises.push(dispatch(fetchDepositsThunk({})));
   } else if (tab === 'content') {
     promises.push(dispatch(fetchContentThunk()));
   } else if (tab === 'institutions') {
