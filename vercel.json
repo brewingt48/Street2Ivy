@@ -1,49 +1,15 @@
 {
-  "$schema": "https://openapi.vercel.sh/vercel.json",
   "version": 2,
-  "name": "street2ivy",
   "buildCommand": "yarn build",
-  "outputDirectory": "build",
   "installCommand": "yarn install",
-  "framework": null,
-  "regions": ["iad1"],
   "functions": {
-    "server/**/*.js": {
-      "memory": 1024,
-      "maxDuration": 30
+    "api/server.js": {
+      "maxDuration": 30,
+      "includeFiles": "server/**,build/**"
     }
   },
   "rewrites": [
-    {
-      "source": "/api/:path*",
-      "destination": "/api/:path*"
-    },
-    {
-      "source": "/((?!api|static|_next|favicon.ico|robots.txt|sitemap.xml).*)",
-      "destination": "/index.html"
-    }
-  ],
-  "headers": [
-    {
-      "source": "/api/(.*)",
-      "headers": [
-        { "key": "Cache-Control", "value": "no-store, max-age=0" }
-      ]
-    },
-    {
-      "source": "/static/(.*)",
-      "headers": [
-        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
-      ]
-    }
-  ],
-  "env": {
-    "NODE_ENV": "production"
-  },
-  "git": {
-    "deploymentEnabled": {
-      "main": true,
-      "dev": false
-    }
-  }
+    { "source": "/static/(.*)", "destination": "/build/static/$1" },
+    { "source": "/(.*)", "destination": "/api/server" }
+  ]
 }
