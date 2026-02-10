@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "buildCommand": "yarn build",
+  "buildCommand": "CI=false yarn build",
   "installCommand": "yarn install",
   "functions": {
     "api/server.js": {
