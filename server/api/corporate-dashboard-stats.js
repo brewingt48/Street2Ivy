@@ -1,5 +1,6 @@
-const { getIntegrationSdk } = require('../api-util/integrationSdk');
+const { getIntegrationSdkForTenant } = require('../api-util/integrationSdk');
 const { getSdk, handleError } = require('../api-util/sdk');
+const { verifyCorporatePartnerApproved } = require('../api-util/corporateApproval');
 
 /**
  * GET /api/corporate/dashboard-stats
@@ -28,20 +29,17 @@ const { getSdk, handleError } = require('../api-util/sdk');
  */
 module.exports = async (req, res) => {
   try {
-    // Step 1: Get current user and verify they are a corporate partner
-    const sdk = getSdk(req, res);
-    const currentUserResponse = await sdk.currentUser.show();
-    const currentUser = currentUserResponse.data.data;
-    const publicData = currentUser.attributes.profile.publicData || {};
-    const userType = publicData.userType;
-
-    if (userType !== 'corporate-partner') {
+    // Step 1: Verify the user is an approved corporate partner
+    const approvalResult = await verifyCorporatePartnerApproved(req, res);
+    if (!approvalResult) {
       return res.status(403).json({
-        error: 'Access denied. Only corporate partners can access this dashboard.',
+        error: 'Your corporate partner account requires approval before accessing this feature.',
+        approvalStatus: 'pending',
       });
     }
-
+    const currentUser = approvalResult.user;
     const currentUserId = currentUser.id.uuid;
+    const sdk = getSdk(req, res);
 
     // Step 2: Query all listings owned by this user
     const listingsResponse = await sdk.ownListings.query({
@@ -83,7 +81,7 @@ module.exports = async (req, res) => {
     });
 
     // Step 4: Query transactions for these listings
-    const integrationSdk = getIntegrationSdk();
+    const integrationSdk = getIntegrationSdkForTenant(req.tenant);
 
     let applicationStats = {
       total: 0,

@@ -1,5 +1,5 @@
 const { getTrustedSdk, getSdk, handleError, serialize } = require('../api-util/sdk');
-const { getIntegrationSdk } = require('../api-util/integrationSdk');
+const { getIntegrationSdkForTenant } = require('../api-util/integrationSdk');
 const { notifyInviteToApply } = require('../api-util/notifications');
 const { storeInvite } = require('./corporate-invites');
 
@@ -93,7 +93,7 @@ module.exports = (req, res) => {
               })
               .then(async () => {
                 // Get student info for notification and invite tracking
-                const integrationSdk = getIntegrationSdk();
+                const integrationSdk = getIntegrationSdkForTenant(req.tenant);
                 let studentName = 'Student';
                 let studentEmail = '';
                 let studentUniversity = '';

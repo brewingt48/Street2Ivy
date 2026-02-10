@@ -1,5 +1,6 @@
-const { getIntegrationSdk } = require('../../api-util/integrationSdk');
+const { getIntegrationSdkForTenant } = require('../../api-util/integrationSdk');
 const { getSdk, handleError } = require('../../api-util/sdk');
+const { getTenantById, updateTenant } = require('../../api-util/tenantRegistry');
 
 // Security: UUID validation regex
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -44,7 +45,7 @@ async function listUsers(req, res) {
       });
     }
 
-    const integrationSdk = getIntegrationSdk();
+    const integrationSdk = getIntegrationSdkForTenant(req.tenant);
 
     // Build query params
     const queryParams = {
@@ -188,7 +189,7 @@ async function blockUser(req, res) {
       });
     }
 
-    const integrationSdk = getIntegrationSdk();
+    const integrationSdk = getIntegrationSdkForTenant(req.tenant);
 
     // Update user to set banned: true
     const updateResponse = await integrationSdk.users.updateProfile({
@@ -235,7 +236,7 @@ async function unblockUser(req, res) {
       });
     }
 
-    const integrationSdk = getIntegrationSdk();
+    const integrationSdk = getIntegrationSdkForTenant(req.tenant);
 
     // Update user to set banned: false
     const updateResponse = await integrationSdk.users.updateProfile({
@@ -292,7 +293,7 @@ async function deleteUser(req, res) {
       });
     }
 
-    const integrationSdk = getIntegrationSdk();
+    const integrationSdk = getIntegrationSdkForTenant(req.tenant);
 
     // Sharetribe doesn't have a users.delete endpoint.
     // Instead, we ban the user to prevent login and mark them as deleted in their profile.
@@ -354,7 +355,7 @@ async function approveUser(req, res) {
       });
     }
 
-    const integrationSdk = getIntegrationSdk();
+    const integrationSdk = getIntegrationSdkForTenant(req.tenant);
 
     // First get the user to verify they need approval
     const userResponse = await integrationSdk.users.show({ id: userId });
@@ -376,6 +377,15 @@ async function approveUser(req, res) {
         approvedBy: admin.id.uuid,
       },
     });
+
+    // Auto-add approved corporate partners to tenant's corporatePartnerIds
+    if (userType === 'corporate-partner' && req.tenant && req.tenant.id !== 'default') {
+      const tenant = getTenantById(req.tenant.id);
+      if (tenant && !tenant.corporatePartnerIds.includes(userId)) {
+        const updatedPartners = [...tenant.corporatePartnerIds, userId];
+        updateTenant(req.tenant.id, { corporatePartnerIds: updatedPartners });
+      }
+    }
 
     res.status(200).json({
       success: true,
@@ -417,7 +427,7 @@ async function rejectUser(req, res) {
       });
     }
 
-    const integrationSdk = getIntegrationSdk();
+    const integrationSdk = getIntegrationSdkForTenant(req.tenant);
 
     // First get the user to verify they need approval
     const userResponse = await integrationSdk.users.show({ id: userId });
@@ -440,6 +450,15 @@ async function rejectUser(req, res) {
         rejectionReason: reason || null,
       },
     });
+
+    // Auto-remove rejected corporate partners from tenant's corporatePartnerIds
+    if (userType === 'corporate-partner' && req.tenant && req.tenant.id !== 'default') {
+      const tenant = getTenantById(req.tenant.id);
+      if (tenant && tenant.corporatePartnerIds.includes(userId)) {
+        const updatedPartners = tenant.corporatePartnerIds.filter(p => p !== userId);
+        updateTenant(req.tenant.id, { corporatePartnerIds: updatedPartners });
+      }
+    }
 
     res.status(200).json({
       success: true,
@@ -471,7 +490,7 @@ async function getPendingApprovals(req, res) {
       });
     }
 
-    const integrationSdk = getIntegrationSdk();
+    const integrationSdk = getIntegrationSdkForTenant(req.tenant);
 
     // Query corporate partners and educational admins
     const [corporateResponse, eduAdminResponse] = await Promise.all([
@@ -616,7 +635,7 @@ async function getUser(req, res) {
       });
     }
 
-    const integrationSdk = getIntegrationSdk();
+    const integrationSdk = getIntegrationSdkForTenant(req.tenant);
 
     const userResponse = await integrationSdk.users.show({
       id: userId,
@@ -700,7 +719,7 @@ async function createAdmin(req, res) {
       });
     }
 
-    const integrationSdk = getIntegrationSdk();
+    const integrationSdk = getIntegrationSdkForTenant(req.tenant);
 
     // Find the user by email
     const usersResponse = await integrationSdk.users.query({

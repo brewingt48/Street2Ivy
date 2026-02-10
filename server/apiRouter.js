@@ -62,6 +62,7 @@ const adminStudentCoachingAccess = require('./api/admin/student-coaching-access'
 const studentWaitlist = require('./api/admin/student-waitlist');
 const tenantContent = require('./api/tenant-content');
 const alumni = require('./api/alumni');
+const adminTenants = require('./api/admin/tenants');
 
 // File upload middleware
 const fileUpload = require('express-fileupload');
@@ -200,6 +201,13 @@ router.get('/education/students/:studentId/transactions', educationStudentTransa
 router.post('/education/messages', educationMessages.send);
 router.get('/education/messages', educationMessages.list);
 
+// Street2Ivy: Educational Admin — Corporate Partner Management
+const educationPartnerManagement = require('./api/education-partner-management');
+router.get('/education/partners', educationPartnerManagement.list);
+router.post('/education/partners/:userId/approve', educationPartnerManagement.approve);
+router.post('/education/partners/:userId/reject', educationPartnerManagement.reject);
+router.delete('/education/partners/:userId', educationPartnerManagement.remove);
+
 // Street2Ivy: Educational Admin Application (public endpoint)
 router.post('/educational-admin/apply', standardRateLimit, educationalAdminApplication.submit);
 
@@ -281,6 +289,17 @@ router.delete('/admin/institutions/:domain', adminInstitutions.delete);
 // Public institution check (for signup and students)
 router.get('/institutions/check/:domain', adminInstitutions.checkMembership);
 router.get('/institutions/my-institution', adminInstitutions.getMyInstitution);
+
+// Street2Ivy: Tenant management (multi-tenancy)
+router.get('/admin/tenants', adminTenants.list);
+router.get('/admin/tenants/:id', adminTenants.get);
+router.post('/admin/tenants', strictRateLimit, adminTenants.create);
+router.put('/admin/tenants/:id', adminTenants.update);
+router.delete('/admin/tenants/:id', strictRateLimit, adminTenants.remove);
+router.post('/admin/tenants/:id/partners', adminTenants.addPartner);
+router.delete('/admin/tenants/:id/partners/:partnerId', adminTenants.removePartner);
+router.post('/admin/tenants/:id/activate', adminTenants.activate);
+router.post('/admin/tenants/:id/deactivate', adminTenants.deactivate);
 
 // Street2Ivy: Content Management System (CMS) endpoints
 router.get('/admin/content', adminContent.getContent);
@@ -385,6 +404,47 @@ router.get('/attachments/:id', messageAttachments.getAttachmentInfo);
 router.get('/attachments/:id/download', messageAttachments.downloadAttachment);
 router.get('/attachments/:id/preview', messageAttachments.previewAttachment);
 router.delete('/attachments/:id', messageAttachments.deleteAttachment);
+
+// Street2Ivy: Validate signup email against tenant's institution domain
+router.post('/auth/validate-signup-email', (req, res) => {
+  const { email, userType } = req.body || {};
+
+  // Only enforce domain matching for students
+  if (userType !== 'student') {
+    return res.status(200).json({ allowed: true });
+  }
+
+  const tenantDomain = req.tenant?.institutionDomain;
+
+  // If the tenant has no institutionDomain configured, allow signup (default tenant)
+  if (!tenantDomain) {
+    return res.status(200).json({ allowed: true });
+  }
+
+  if (!email || typeof email !== 'string') {
+    return res.status(400).json({ allowed: false, error: 'Email is required.' });
+  }
+
+  const emailDomain = email.split('@')[1]?.toLowerCase();
+  if (!emailDomain) {
+    return res.status(400).json({ allowed: false, error: 'Invalid email format.' });
+  }
+
+  // Check if the email domain matches the tenant's institution domain
+  // Support subdomains (e.g., cs.harvard.edu matches harvard.edu)
+  const matches =
+    emailDomain === tenantDomain || emailDomain.endsWith('.' + tenantDomain);
+
+  if (!matches) {
+    return res.status(403).json({
+      allowed: false,
+      error: `This marketplace is for ${req.tenant.name || tenantDomain} students only. Please use your ${tenantDomain} email address to sign up.`,
+      tenantDomain,
+    });
+  }
+
+  return res.status(200).json({ allowed: true, emailDomain });
+});
 
 // Create user with identity provider (e.g. Facebook or Google)
 // This endpoint is called to create a new user after user has confirmed

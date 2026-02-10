@@ -51,8 +51,9 @@ const memoryStore = token => {
 
 // Read the user token from the request cookie
 const getUserToken = req => {
+  const clientId = req.tenant?.sharetribe?.clientId || CLIENT_ID;
   const cookieTokenStore = sharetribeSdk.tokenStore.expressCookieStore({
-    clientId: CLIENT_ID,
+    clientId,
     req,
     secure: USING_SSL,
   });
@@ -120,14 +121,16 @@ exports.handleError = (res, error, options = {}) => {
 
 // The access token is read from cookie (request) and potentially saved into the cookie (response).
 // This keeps session updated between server and browser even if the token is re-issued.
+// Uses tenant-specific credentials from req.tenant when available (multi-tenancy).
 exports.getSdk = (req, res) => {
+  const clientId = req.tenant?.sharetribe?.clientId || CLIENT_ID;
   return sharetribeSdk.createInstance({
     transitVerbose: TRANSIT_VERBOSE,
-    clientId: CLIENT_ID,
+    clientId,
     httpAgent,
     httpsAgent,
     tokenStore: sharetribeSdk.tokenStore.expressCookieStore({
-      clientId: CLIENT_ID,
+      clientId,
       req,
       res,
       secure: USING_SSL,
@@ -139,14 +142,17 @@ exports.getSdk = (req, res) => {
 };
 
 // Trusted token is powerful, it should not be passed away from the server.
+// Uses tenant-specific credentials from req.tenant when available (multi-tenancy).
 exports.getTrustedSdk = req => {
+  const clientId = req.tenant?.sharetribe?.clientId || CLIENT_ID;
+  const clientSecret = req.tenant?.sharetribe?.clientSecret || CLIENT_SECRET;
   const userToken = getUserToken(req);
 
   // Initiate an SDK instance for token exchange
   const sdk = sharetribeSdk.createInstance({
     transitVerbose: TRANSIT_VERBOSE,
-    clientId: CLIENT_ID,
-    clientSecret: CLIENT_SECRET,
+    clientId,
+    clientSecret,
     httpAgent,
     httpsAgent,
     tokenStore: memoryStore(userToken),
@@ -162,8 +168,8 @@ exports.getTrustedSdk = req => {
     return sharetribeSdk.createInstance({
       transitVerbose: TRANSIT_VERBOSE,
 
-      // We don't need CLIENT_SECRET here anymore
-      clientId: CLIENT_ID,
+      // We don't need clientSecret here anymore
+      clientId,
 
       // Important! Do not use a cookieTokenStore here but a memoryStore
       // instead so that we don't leak the token back to browser client.

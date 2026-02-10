@@ -31,6 +31,10 @@ app.use(
 );
 app.use(cookieParser());
 
+// Multi-tenancy: resolve tenant from subdomain (or dev fallback via header/query)
+const { tenantResolver } = require('./middleware/tenantResolver');
+app.use(tenantResolver);
+
 // Serve uploaded files in development mode
 // This makes /static/uploads/... work on the API server
 const uploadsDir = path.join(__dirname, 'uploads');

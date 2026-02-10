@@ -15,8 +15,8 @@ const {
   handleError,
   serialize,
   fetchCommission,
-  getIntegrationSdk,
 } = require('../api-util/sdk');
+const { getIntegrationSdkForTenant } = require('../api-util/integrationSdk');
 const { notifyTransactionStateChange } = require('../api-util/notifications');
 
 const { Money } = sharetribeSdk.types;
@@ -160,7 +160,7 @@ module.exports = (req, res) => {
       // Only send for non-speculative transitions
       if (!isSpeculative && data?.data) {
         try {
-          const integrationSdk = getIntegrationSdk();
+          const integrationSdk = getIntegrationSdkForTenant(req.tenant);
           const transactionId = data.data.id;
 
           // Fetch full transaction data with relationships

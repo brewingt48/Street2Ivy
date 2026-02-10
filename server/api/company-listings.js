@@ -1,4 +1,4 @@
-const { getIntegrationSdk } = require('../api-util/integrationSdk');
+const { getIntegrationSdkForTenant } = require('../api-util/integrationSdk');
 const { handleError, getSdk } = require('../api-util/sdk');
 const { sanitizeString, validatePagination } = require('../api-util/security');
 
@@ -31,7 +31,16 @@ module.exports = async (req, res) => {
   const pagination = validatePagination(page, perPage, 50); // max 50 per page
 
   try {
-    const integrationSdk = getIntegrationSdk();
+    // Multi-tenancy: verify corporate partner is associated with this tenant
+    const tenantPartners = req.tenant?.corporatePartnerIds;
+    if (tenantPartners?.length > 0 && !tenantPartners.includes(sanitizedAuthorId)) {
+      return res.status(404).json({
+        error: 'Corporate partner not found for this institution.',
+        code: 'PARTNER_NOT_FOUND',
+      });
+    }
+
+    const integrationSdk = getIntegrationSdkForTenant(req.tenant);
 
     // Query open/published listings by this author
     const response = await integrationSdk.listings.query({

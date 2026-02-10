@@ -308,6 +308,44 @@ export const fetchEducationalAdminMessages = () => {
 };
 
 // =====================================================
+// Street2Ivy: Education Admin — Corporate Partner Management
+// =====================================================
+
+// Fetch corporate partners for education admin's tenant
+export const fetchEducationPartners = () => {
+  return request('/api/education/partners', {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
+  });
+};
+
+// Approve a corporate partner (education admin)
+export const approveEducationPartner = userId => {
+  return request(`/api/education/partners/${userId}/approve`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({}),
+  });
+};
+
+// Reject a corporate partner (education admin)
+export const rejectEducationPartner = (userId, reason) => {
+  return request(`/api/education/partners/${userId}/reject`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ reason }),
+  });
+};
+
+// Remove a corporate partner (education admin)
+export const removeEducationPartner = userId => {
+  return request(`/api/education/partners/${userId}`, {
+    method: 'DELETE',
+    headers: { 'Content-Type': 'application/json' },
+  });
+};
+
+// =====================================================
 // Street2Ivy: Enhanced Corporate Dashboard APIs
 // =====================================================
 

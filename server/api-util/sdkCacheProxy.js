@@ -55,37 +55,41 @@ const deserializeAssetResponse = cacheString => JSON.parse(cacheString);
  * Those API entities might be fetched as a relationship with another call.
  * That could lead to strange behaviour where listing information changes to older one etc.
  */
-const sdkEndpointCacheConfig = {
-  // Pages (like landing-page.json) uses assetByVersion
-  'sdk.assetByVersion': args => {
-    // If the key is null, the call is not cached.
-    // Therefore, it's possible to filter asset caching by checking args?.[0]?.path === content/pages/landing-page.json etc.
-    const argsStr = args?.[0] ? JSON.stringify(args[0]) : null;
-    const cacheKey = argsStr ? `${MARKETPLACE_ROOT_URL}#sdk.assetByVersion(${argsStr})` : null;
-    return {
-      key: cacheKey,
-      ttl: TTL_ASSETS_BY_VERSION,
-      serialize: serializeAssetResponse,
-      deserialize: deserializeAssetResponse,
-    };
-  },
+// Build cache config with optional tenant namespace to prevent cross-tenant cache pollution
+const buildSdkEndpointCacheConfig = (tenantId) => {
+  const prefix = tenantId ? `[${tenantId}]#` : '';
+  return {
+    // Pages (like landing-page.json) uses assetByVersion
+    'sdk.assetByVersion': args => {
+      // If the key is null, the call is not cached.
+      // Therefore, it's possible to filter asset caching by checking args?.[0]?.path === content/pages/landing-page.json etc.
+      const argsStr = args?.[0] ? JSON.stringify(args[0]) : null;
+      const cacheKey = argsStr ? `${prefix}${MARKETPLACE_ROOT_URL}#sdk.assetByVersion(${argsStr})` : null;
+      return {
+        key: cacheKey,
+        ttl: TTL_ASSETS_BY_VERSION,
+        serialize: serializeAssetResponse,
+        deserialize: deserializeAssetResponse,
+      };
+    },
 
-  // By default, sdk.assetsByAlias is only called for app-wide assets
-  'sdk.assetsByAlias': args => {
-    // NOTE: we shorten the appCdnAssets, which are a collection of app-wide configs
-    //       If you have multiple calls that fetch multiple assets, you need to change this.
-    const { paths, alias } = args[0] || {};
-    const isAboutAppCdnAssets = paths?.length > 1;
-    const argsModified = isAboutAppCdnAssets ? { paths: ['<appCdnAssets>'], alias } : args[0];
-    const argsStr = JSON.stringify(argsModified);
-    const cacheKey = args?.[0] ? `${MARKETPLACE_ROOT_URL}#sdk.assetsByAlias(${argsStr})` : null;
-    return {
-      key: cacheKey,
-      ttl: TTL,
-      serialize: serializeAssetResponse,
-      deserialize: deserializeAssetResponse,
-    };
-  },
+    // By default, sdk.assetsByAlias is only called for app-wide assets
+    'sdk.assetsByAlias': args => {
+      // NOTE: we shorten the appCdnAssets, which are a collection of app-wide configs
+      //       If you have multiple calls that fetch multiple assets, you need to change this.
+      const { paths, alias } = args[0] || {};
+      const isAboutAppCdnAssets = paths?.length > 1;
+      const argsModified = isAboutAppCdnAssets ? { paths: ['<appCdnAssets>'], alias } : args[0];
+      const argsStr = JSON.stringify(argsModified);
+      const cacheKey = args?.[0] ? `${prefix}${MARKETPLACE_ROOT_URL}#sdk.assetsByAlias(${argsStr})` : null;
+      return {
+        key: cacheKey,
+        ttl: TTL,
+        serialize: serializeAssetResponse,
+        deserialize: deserializeAssetResponse,
+      };
+    },
+  };
 };
 
 /**
@@ -98,9 +102,12 @@ const sdkEndpointCacheConfig = {
  * @param {number} [maxBytes] - Maximum bytes to store in cache (overrides the default value 10485760).
  * @returns {Proxy|SharetribeSDK} - Proxied SharetribeSDK instance if ttl is given or set through environment variables, otherwise the original SDK instance
  */
-exports.getSDKProxy = (sdk, maxBytes = MAX_BYTES) => {
+exports.getSDKProxy = (sdk, maxBytes = MAX_BYTES, tenantId) => {
   // Note, memoryStore is defined on this file scope
   const cache = createLRUCache({ memoryStore, maxBytes, defaultTTL: TTL });
+
+  // Build tenant-namespaced cache config to prevent cross-tenant cache pollution
+  const sdkEndpointCacheConfig = buildSdkEndpointCacheConfig(tenantId);
 
   // Return proxied SDK instance that uses LRU cache for given endpoints (sdkEndpointCacheConfig)
   const createProxy = (sdkPartial, path) => {

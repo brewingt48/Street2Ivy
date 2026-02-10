@@ -91,8 +91,20 @@ const replacer = (key = null, value) => {
   return types.replacer(key, cleanedValue);
 };
 
-exports.render = function(requestUrl, context, data, renderApp, webExtractor, nonce) {
+exports.render = function(requestUrl, context, data, renderApp, webExtractor, nonce, tenantConfig) {
   const { preloadedState, translations, hostedConfig } = data;
+
+  // Inject safe tenant config into preloaded state (never include secrets)
+  if (tenantConfig) {
+    preloadedState.tenant = {
+      id: tenantConfig.id,
+      subdomain: tenantConfig.subdomain,
+      name: tenantConfig.name,
+      displayName: tenantConfig.displayName,
+      branding: tenantConfig.branding,
+      features: tenantConfig.features,
+    };
+  }
 
   // Bind webExtractor as "this" for collectChunks call.
   const collectWebChunks = webExtractor.collectChunks.bind(webExtractor);

@@ -7,6 +7,7 @@ import classNames from 'classnames';
 
 import { useConfiguration } from '../../context/configurationContext';
 import { useRouteConfiguration } from '../../context/routeConfigurationContext';
+import { useTenant } from '../../context/tenantContext';
 import { isEmpty } from '../../util/common';
 import { camelize } from '../../util/string';
 import { pathByRouteName } from '../../util/routes';
@@ -189,6 +190,7 @@ export const AuthenticationForms = props => {
   } = props;
   const config = useConfiguration();
   const intl = useIntl();
+  const tenant = useTenant();
   const [eduEmailError, setEduEmailError] = useState(null);
   const [showInstitutionModal, setShowInstitutionModal] = useState(false);
   const [pendingSignupData, setPendingSignupData] = useState(null);
@@ -269,6 +271,20 @@ export const AuthenticationForms = props => {
     // For students, check if their institution is a member
     if (userType === 'student') {
       const emailDomain = email.split('@')[1]?.toLowerCase();
+
+      // If on a tenant-specific marketplace, validate email domain matches the tenant
+      if (tenant?.institutionDomain) {
+        const tenantDomain = tenant.institutionDomain;
+        const domainMatches =
+          emailDomain === tenantDomain || emailDomain.endsWith('.' + tenantDomain);
+        if (!domainMatches) {
+          setEduEmailError(
+            `This marketplace is for ${tenant.name || tenantDomain} students only. Please use your ${tenantDomain} email address to sign up.`
+          );
+          return;
+        }
+      }
+
       try {
         const baseUrl = apiBaseUrl();
         const response = await fetch(`${baseUrl}/api/institutions/check/${encodeURIComponent(emailDomain)}`);
@@ -576,6 +592,8 @@ const ConfirmIdProviderInfoForm = props => {
     termsAndConditions,
   } = props;
   const config = useConfiguration();
+  const tenant = useTenant();
+  const [tenantDomainError, setTenantDomainError] = useState(null);
   const { userFields, userTypes } = config.user;
   const preselectedUserType = userTypes.find(conf => conf.userType === userType)?.userType || null;
 
@@ -592,6 +610,24 @@ const ConfirmIdProviderInfoForm = props => {
       displayName,
       ...rest
     } = values;
+
+    // The effective email is either the one edited by the user or the one from the IDP
+    const effectiveEmail = newEmail || email;
+
+    // Validate tenant domain for student signups via IDP
+    if (userType === 'student' && tenant?.institutionDomain) {
+      const emailDomain = effectiveEmail?.split('@')[1]?.toLowerCase();
+      const tenantDomain = tenant.institutionDomain;
+      const domainMatches =
+        emailDomain === tenantDomain || (emailDomain && emailDomain.endsWith('.' + tenantDomain));
+      if (!domainMatches) {
+        setTenantDomainError(
+          `This marketplace is for ${tenant.name || tenantDomain} students only. Please use your ${tenantDomain} email address to sign up.`
+        );
+        return;
+      }
+      setTenantDomainError(null);
+    }
 
     const displayNameMaybe = displayName ? { displayName: displayName.trim() } : {};
 
@@ -631,9 +667,11 @@ const ConfirmIdProviderInfoForm = props => {
     });
   };
 
-  const confirmErrorMessage = confirmError ? (
+  const confirmErrorMessage = (confirmError || tenantDomainError) ? (
     <div className={css.error}>
-      {isSignupEmailTakenError(confirmError) ? (
+      {tenantDomainError ? (
+        tenantDomainError
+      ) : isSignupEmailTakenError(confirmError) ? (
         <FormattedMessage id="AuthenticationPage.signupFailedEmailAlreadyTaken" />
       ) : (
         <FormattedMessage id="AuthenticationPage.signupFailed" />

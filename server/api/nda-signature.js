@@ -15,7 +15,7 @@
  * - DROPBOX_SIGN_CLIENT_ID: Client ID for embedded signing
  */
 
-const { getIntegrationSdk } = require('../api-util/integrationSdk');
+const { getIntegrationSdkForTenant } = require('../api-util/integrationSdk');
 const { getSdk, handleError } = require('../api-util/sdk');
 
 // For production, use the actual Dropbox Sign SDK:
@@ -116,7 +116,7 @@ async function uploadNdaDocument(req, res) {
     ndaDocuments.set(listingId, ndaDocument);
 
     // Also update the listing's privateData with NDA info
-    const integrationSdk = getIntegrationSdk();
+    const integrationSdk = getIntegrationSdkForTenant(req.tenant);
     await integrationSdk.listings.update({
       id: listingId,
       privateData: {
@@ -160,7 +160,7 @@ async function getNdaDocument(req, res) {
 
     if (!ndaDocument) {
       // Try to get from listing privateData
-      const integrationSdk = getIntegrationSdk();
+      const integrationSdk = getIntegrationSdkForTenant(req.tenant);
       const listingResponse = await integrationSdk.listings.show({ id: listingId });
       const listing = listingResponse.data.data;
       const privateData = listing.attributes.privateData || {};
@@ -213,7 +213,7 @@ async function requestSignature(req, res) {
       return res.status(401).json({ error: 'Authentication required.' });
     }
 
-    const integrationSdk = getIntegrationSdk();
+    const integrationSdk = getIntegrationSdkForTenant(req.tenant);
 
     // Get transaction details
     const txResponse = await integrationSdk.transactions.show({
@@ -403,7 +403,7 @@ async function getSignatureStatus(req, res) {
 
     if (!signatureRequest) {
       // Check transaction metadata
-      const integrationSdk = getIntegrationSdk();
+      const integrationSdk = getIntegrationSdkForTenant(req.tenant);
       const txResponse = await integrationSdk.transactions.show({ id: transactionId });
       const metadata = txResponse.data.data.attributes.metadata || {};
 
@@ -474,7 +474,7 @@ async function signNda(req, res) {
 
     // If no signature request exists, create one first
     if (!signatureRequest) {
-      const integrationSdk = getIntegrationSdk();
+      const integrationSdk = getIntegrationSdkForTenant(req.tenant);
       const txResponse = await integrationSdk.transactions.show({
         id: transactionId,
         include: ['provider', 'customer', 'listing'],
@@ -587,7 +587,7 @@ async function signNda(req, res) {
     signatureRequests.set(transactionId, signatureRequest);
 
     // Update transaction metadata
-    const integrationSdk = getIntegrationSdk();
+    const integrationSdk = getIntegrationSdkForTenant(req.tenant);
     const txResponse = await integrationSdk.transactions.show({ id: transactionId });
     const currentMetadata = txResponse.data.data.attributes.metadata || {};
 

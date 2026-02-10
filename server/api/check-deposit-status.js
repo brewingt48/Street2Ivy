@@ -1,4 +1,4 @@
-const { getIntegrationSdk } = require('../api-util/integrationSdk');
+const { getIntegrationSdkForTenant } = require('../api-util/integrationSdk');
 const { getSdk, handleError } = require('../api-util/sdk');
 
 /**
@@ -30,7 +30,7 @@ async function checkDepositStatus(req, res) {
       return res.status(401).json({ error: 'Authentication required.' });
     }
 
-    const integrationSdk = getIntegrationSdk();
+    const integrationSdk = getIntegrationSdkForTenant(req.tenant);
 
     // Get the transaction
     const txResponse = await integrationSdk.transactions.show({

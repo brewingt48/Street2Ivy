@@ -1,4 +1,4 @@
-const { getIntegrationSdk } = require('../../api-util/integrationSdk');
+const { getIntegrationSdkForTenant } = require('../../api-util/integrationSdk');
 const { getSdk, handleError } = require('../../api-util/sdk');
 
 /**
@@ -46,7 +46,7 @@ async function getReport(req, res) {
       });
     }
 
-    const integrationSdk = getIntegrationSdk();
+    const integrationSdk = getIntegrationSdkForTenant(req.tenant);
 
     let report;
 

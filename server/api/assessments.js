@@ -1,4 +1,6 @@
-const { getIntegrationSdk } = require('../api-util/integrationSdk');
+const fs = require('fs');
+const path = require('path');
+const { getIntegrationSdkForTenant } = require('../api-util/integrationSdk');
 const { getSdk, handleError } = require('../api-util/sdk');
 
 /**
@@ -98,9 +100,47 @@ const ASSESSMENT_CRITERIA = {
   },
 };
 
-// In-memory storage (use database in production)
+// File-based persistence for assessments
+const ASSESSMENTS_FILE = path.join(__dirname, '../data/assessments.json');
 let assessments = [];
 let assessmentIdCounter = 1;
+
+function loadAssessments() {
+  try {
+    if (fs.existsSync(ASSESSMENTS_FILE)) {
+      const data = JSON.parse(fs.readFileSync(ASSESSMENTS_FILE, 'utf8'));
+      assessments = data.assessments || [];
+      assessmentIdCounter = data.nextId || (assessments.length + 1);
+      console.log(`Loaded ${assessments.length} assessments from file`);
+      return;
+    }
+  } catch (error) {
+    console.error('Error loading assessments:', error);
+  }
+  assessments = [];
+  assessmentIdCounter = 1;
+}
+
+function saveAssessments() {
+  try {
+    const dataDir = path.dirname(ASSESSMENTS_FILE);
+    if (!fs.existsSync(dataDir)) {
+      fs.mkdirSync(dataDir, { recursive: true });
+    }
+    fs.writeFileSync(
+      ASSESSMENTS_FILE,
+      JSON.stringify({ assessments, nextId: assessmentIdCounter }, null, 2),
+      'utf8'
+    );
+    return true;
+  } catch (error) {
+    console.error('Error saving assessments:', error);
+    return false;
+  }
+}
+
+// Load assessments on startup
+loadAssessments();
 
 /**
  * GET /api/assessments/criteria
@@ -151,7 +191,7 @@ async function submitAssessment(req, res) {
 
   try {
     const sdk = getSdk(req, res);
-    const integrationSdk = getIntegrationSdk();
+    const integrationSdk = getIntegrationSdkForTenant(req.tenant);
 
     // Verify the current user is a corporate partner
     const currentUserResponse = await sdk.currentUser.show();
@@ -236,6 +276,7 @@ async function submitAssessment(req, res) {
 
     // Store the assessment
     assessments.push(assessment);
+    saveAssessments();
 
     // Update the student's profile with the assessment (add to their track record)
     try {
@@ -360,7 +401,7 @@ async function getStudentAssessments(req, res) {
 async function getPendingAssessments(req, res) {
   try {
     const sdk = getSdk(req, res);
-    const integrationSdk = getIntegrationSdk();
+    const integrationSdk = getIntegrationSdkForTenant(req.tenant);
 
     const currentUserResponse = await sdk.currentUser.show();
     const currentUser = currentUserResponse.data.data;

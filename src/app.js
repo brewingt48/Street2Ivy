@@ -13,6 +13,7 @@ import configureStore from './store';
 // utils
 import { RouteConfigurationProvider } from './context/routeConfigurationContext';
 import { ConfigurationProvider } from './context/configurationContext';
+import { TenantProvider } from './context/tenantContext';
 import { difference } from './util/common';
 import { mergeConfig } from './util/configHelpers';
 import { IntlProvider } from './util/reactIntl';
@@ -246,23 +247,27 @@ export const ClientApp = props => {
   // This gives good input for debugging issues on live environments, but with test it's not needed.
   const logLoadDataCalls = appSettings?.env !== 'test';
 
+  const tenantConfig = store.getState().tenant || null;
+
   return (
-    <Configurations appConfig={appConfig}>
-      <IntlProvider
-        locale={appConfig.localization.locale}
-        messages={{ ...localeMessages, ...hostedTranslations }}
-        textComponent="span"
-      >
-        <Provider store={store}>
-          <HelmetProvider>
-            <IncludeScripts config={appConfig} initialPathname={window.location.pathname} />
-            <BrowserRouter>
-              <Routes logLoadDataCalls={logLoadDataCalls} />
-            </BrowserRouter>
-          </HelmetProvider>
-        </Provider>
-      </IntlProvider>
-    </Configurations>
+    <TenantProvider value={tenantConfig}>
+      <Configurations appConfig={appConfig}>
+        <IntlProvider
+          locale={appConfig.localization.locale}
+          messages={{ ...localeMessages, ...hostedTranslations }}
+          textComponent="span"
+        >
+          <Provider store={store}>
+            <HelmetProvider>
+              <IncludeScripts config={appConfig} initialPathname={window.location.pathname} />
+              <BrowserRouter>
+                <Routes logLoadDataCalls={logLoadDataCalls} />
+              </BrowserRouter>
+            </HelmetProvider>
+          </Provider>
+        </IntlProvider>
+      </Configurations>
+    </TenantProvider>
   );
 };
 
@@ -293,23 +298,27 @@ export const ServerApp = props => {
     );
   }
 
+  const tenantConfig = store.getState().tenant || null;
+
   return (
-    <Configurations appConfig={appConfig}>
-      <IntlProvider
-        locale={appConfig.localization.locale}
-        messages={{ ...localeMessages, ...hostedTranslations }}
-        textComponent="span"
-      >
-        <Provider store={store}>
-          <HelmetProvider context={helmetContext}>
-            <IncludeScripts config={appConfig} initialPathname={url} />
-            <StaticRouter location={url} context={context}>
-              <Routes />
-            </StaticRouter>
-          </HelmetProvider>
-        </Provider>
-      </IntlProvider>
-    </Configurations>
+    <TenantProvider value={tenantConfig}>
+      <Configurations appConfig={appConfig}>
+        <IntlProvider
+          locale={appConfig.localization.locale}
+          messages={{ ...localeMessages, ...hostedTranslations }}
+          textComponent="span"
+        >
+          <Provider store={store}>
+            <HelmetProvider context={helmetContext}>
+              <IncludeScripts config={appConfig} initialPathname={url} />
+              <StaticRouter location={url} context={context}>
+                <Routes />
+              </StaticRouter>
+            </HelmetProvider>
+          </Provider>
+        </IntlProvider>
+      </Configurations>
+    </TenantProvider>
   );
 };
 

@@ -34,4 +34,58 @@ const getIntegrationSdk = () => {
   });
 };
 
-module.exports = { getIntegrationSdk };
+/**
+ * Cache for tenant-specific Integration SDK instances.
+ * Integration SDK does not hold per-user state, so instances can be reused per tenant.
+ */
+const integrationSdkCache = new Map();
+
+/**
+ * Create a tenant-aware Integration API SDK instance.
+ * Uses cached instances per tenant to avoid creating new SDK instances on every request.
+ * Falls back to env var credentials when tenant is null or has no credentials.
+ */
+const getIntegrationSdkForTenant = (tenant) => {
+  const tenantId = tenant?.id || 'default';
+
+  if (integrationSdkCache.has(tenantId)) {
+    return integrationSdkCache.get(tenantId);
+  }
+
+  const clientId = tenant?.sharetribe?.integrationClientId
+    || tenant?.sharetribe?.clientId
+    || CLIENT_ID;
+  const clientSecret = tenant?.sharetribe?.integrationClientSecret
+    || tenant?.sharetribe?.clientSecret
+    || CLIENT_SECRET;
+
+  if (!clientSecret) {
+    throw new Error(
+      `Integration SDK requires client secret for tenant "${tenantId}". ` +
+        'Get it from Sharetribe Console → Build → Applications.'
+    );
+  }
+
+  const sdk = sharetribeIntegrationSdk.createInstance({
+    clientId,
+    clientSecret,
+    transitVerbose: TRANSIT_VERBOSE,
+    ...baseUrlMaybe,
+  });
+
+  integrationSdkCache.set(tenantId, sdk);
+  return sdk;
+};
+
+/**
+ * Clear a cached Integration SDK instance (e.g., when tenant credentials are updated).
+ */
+const clearIntegrationSdkCache = (tenantId) => {
+  if (tenantId) {
+    integrationSdkCache.delete(tenantId);
+  } else {
+    integrationSdkCache.clear();
+  }
+};
+
+module.exports = { getIntegrationSdk, getIntegrationSdkForTenant, clearIntegrationSdkCache };

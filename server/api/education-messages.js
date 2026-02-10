@@ -11,11 +11,45 @@
  * - Students
  */
 
+const fs = require('fs');
+const path = require('path');
 const { getSdk, handleError } = require('../api-util/sdk');
-const { getIntegrationSdk } = require('../api-util/integrationSdk');
+const { getIntegrationSdkForTenant } = require('../api-util/integrationSdk');
 
-// In-memory message storage (in production, use a database)
+// File-based persistence for education messages
+const MESSAGES_FILE = path.join(__dirname, '../data/education-messages.json');
 let educationMessages = [];
+
+function loadMessages() {
+  try {
+    if (fs.existsSync(MESSAGES_FILE)) {
+      const data = fs.readFileSync(MESSAGES_FILE, 'utf8');
+      educationMessages = JSON.parse(data);
+      console.log(`Loaded ${educationMessages.length} education messages from file`);
+      return;
+    }
+  } catch (error) {
+    console.error('Error loading education messages:', error);
+  }
+  educationMessages = [];
+}
+
+function saveMessages() {
+  try {
+    const dataDir = path.dirname(MESSAGES_FILE);
+    if (!fs.existsSync(dataDir)) {
+      fs.mkdirSync(dataDir, { recursive: true });
+    }
+    fs.writeFileSync(MESSAGES_FILE, JSON.stringify(educationMessages, null, 2), 'utf8');
+    return true;
+  } catch (error) {
+    console.error('Error saving education messages:', error);
+    return false;
+  }
+}
+
+// Load messages on startup
+loadMessages();
 
 /**
  * Verify the current user is an educational admin and get their info
@@ -81,7 +115,7 @@ async function sendMessage(req, res) {
       actualRecipientId = recipientType.replace('student-', '');
       // Fetch student name
       try {
-        const integrationSdk = getIntegrationSdk();
+        const integrationSdk = getIntegrationSdkForTenant(req.tenant);
         const studentResponse = await integrationSdk.users.show({ id: actualRecipientId });
         recipientName = studentResponse.data.data.attributes.profile.displayName;
       } catch {
@@ -106,6 +140,7 @@ async function sendMessage(req, res) {
     };
 
     educationMessages.push(message);
+    saveMessages();
 
     console.log('Educational admin message sent:', {
       id: message.id,
@@ -207,6 +242,7 @@ function addReceivedMessage(toUserId, fromUserId, fromName, fromType, subject, c
     read: false,
   };
   educationMessages.push(message);
+  saveMessages();
   return message;
 }
 

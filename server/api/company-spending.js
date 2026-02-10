@@ -1,4 +1,4 @@
-const { getIntegrationSdk } = require('../api-util/integrationSdk');
+const { getIntegrationSdkForTenant } = require('../api-util/integrationSdk');
 const { getSdk, handleError } = require('../api-util/sdk');
 
 /**
@@ -45,7 +45,7 @@ module.exports = async (req, res) => {
     }
 
     // Use integration SDK to query company data
-    const integrationSdk = getIntegrationSdk();
+    const integrationSdk = getIntegrationSdkForTenant(req.tenant);
 
     // Get the company user profile
     const companyResponse = await integrationSdk.users.show({
@@ -171,7 +171,7 @@ module.exports.allCompanies = async (req, res) => {
       });
     }
 
-    const integrationSdk = getIntegrationSdk();
+    const integrationSdk = getIntegrationSdkForTenant(req.tenant);
 
     // Query all corporate users
     const usersResponse = await integrationSdk.users.query({

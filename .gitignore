@@ -15,3 +15,12 @@ build
 npm-debug.log
 yarn-error.log
 .vercel
+
+# Multi-tenancy data (contains secrets)
+server/data/tenants.json
+
+# Server-side persisted data (auto-generated)
+server/data/educational-admin-applications.json
+server/data/education-messages.json
+server/data/assessments.json
+server/data/tenants/

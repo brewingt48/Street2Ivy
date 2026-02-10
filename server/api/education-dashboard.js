@@ -1,4 +1,4 @@
-const { getIntegrationSdk } = require('../api-util/integrationSdk');
+const { getIntegrationSdkForTenant } = require('../api-util/integrationSdk');
 const { getSdk, handleError } = require('../api-util/sdk');
 
 /**
@@ -64,7 +64,7 @@ module.exports = async (req, res) => {
     }
 
     // Step 3: Query students from this institution using Integration API
-    const integrationSdk = getIntegrationSdk();
+    const integrationSdk = getIntegrationSdkForTenant(req.tenant);
 
     const studentsResponse = await integrationSdk.users.query({
       pub_userType: 'student',

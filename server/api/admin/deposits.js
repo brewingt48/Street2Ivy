@@ -1,4 +1,4 @@
-const { getIntegrationSdk } = require('../../api-util/integrationSdk');
+const { getIntegrationSdkForTenant } = require('../../api-util/integrationSdk');
 const { getSdk, handleError } = require('../../api-util/sdk');
 
 // Security: UUID validation regex
@@ -49,7 +49,7 @@ async function listPendingDeposits(req, res) {
       });
     }
 
-    const integrationSdk = getIntegrationSdk();
+    const integrationSdk = getIntegrationSdkForTenant(req.tenant);
 
     // Query transactions that are in 'applied' state (awaiting acceptance)
     // and don't have deposit confirmed yet
@@ -160,7 +160,7 @@ async function confirmDeposit(req, res) {
       });
     }
 
-    const integrationSdk = getIntegrationSdk();
+    const integrationSdk = getIntegrationSdkForTenant(req.tenant);
 
     // Get the transaction
     const txResponse = await integrationSdk.transactions.show({
@@ -221,7 +221,7 @@ async function revokeDeposit(req, res) {
       });
     }
 
-    const integrationSdk = getIntegrationSdk();
+    const integrationSdk = getIntegrationSdkForTenant(req.tenant);
 
     // Get the transaction
     const txResponse = await integrationSdk.transactions.show({
@@ -279,7 +279,7 @@ async function getDepositStatus(req, res) {
       });
     }
 
-    const integrationSdk = getIntegrationSdk();
+    const integrationSdk = getIntegrationSdkForTenant(req.tenant);
 
     const txResponse = await integrationSdk.transactions.show({
       id: transactionId,

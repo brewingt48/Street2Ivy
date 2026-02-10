@@ -1,4 +1,4 @@
-const { getIntegrationSdk } = require('../api-util/integrationSdk');
+const { getIntegrationSdkForTenant } = require('../api-util/integrationSdk');
 const { handleError, getSdk } = require('../api-util/sdk');
 const { sanitizeString } = require('../api-util/security');
 
@@ -41,7 +41,7 @@ module.exports = async (req, res) => {
     }
 
     const sanitizedUserId = sanitizeString(userId, { maxLength: 50 });
-    const integrationSdk = getIntegrationSdk();
+    const integrationSdk = getIntegrationSdkForTenant(req.tenant);
 
     // First, get the user to determine their type
     const userResponse = await integrationSdk.users.show({ id: sanitizedUserId });

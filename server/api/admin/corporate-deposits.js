@@ -1,4 +1,4 @@
-const { getIntegrationSdk } = require('../../api-util/integrationSdk');
+const { getIntegrationSdkForTenant } = require('../../api-util/integrationSdk');
 const { getSdk, handleError } = require('../../api-util/sdk');
 
 // Security: UUID validation regex
@@ -53,7 +53,7 @@ async function listCorporateDeposits(req, res) {
       });
     }
 
-    const integrationSdk = getIntegrationSdk();
+    const integrationSdk = getIntegrationSdkForTenant(req.tenant);
 
     // Transitions that indicate deposit tracking is relevant
     const acceptedTransitions = [
@@ -262,7 +262,7 @@ async function getCorporatePartnerDeposits(req, res) {
       });
     }
 
-    const integrationSdk = getIntegrationSdk();
+    const integrationSdk = getIntegrationSdkForTenant(req.tenant);
 
     // Get the corporate partner
     const userResponse = await integrationSdk.users.show({
@@ -381,7 +381,7 @@ async function clearWorkHold(req, res) {
       });
     }
 
-    const integrationSdk = getIntegrationSdk();
+    const integrationSdk = getIntegrationSdkForTenant(req.tenant);
 
     // Get the transaction
     const txResponse = await integrationSdk.transactions.show({
@@ -470,7 +470,7 @@ async function reinstateWorkHold(req, res) {
       });
     }
 
-    const integrationSdk = getIntegrationSdk();
+    const integrationSdk = getIntegrationSdkForTenant(req.tenant);
 
     // Get the transaction
     const txResponse = await integrationSdk.transactions.show({
@@ -530,7 +530,7 @@ async function clearAllHoldsForPartner(req, res) {
       });
     }
 
-    const integrationSdk = getIntegrationSdk();
+    const integrationSdk = getIntegrationSdkForTenant(req.tenant);
 
     // Get all transactions for this partner
     const txResponse = await integrationSdk.transactions.query({

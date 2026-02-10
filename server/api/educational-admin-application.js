@@ -5,11 +5,45 @@
  * who want to become educational administrators on Street2Ivy.
  */
 
-const { getIntegrationSdk } = require('../api-util/integrationSdk');
+const fs = require('fs');
+const path = require('path');
+const { getIntegrationSdkForTenant } = require('../api-util/integrationSdk');
 const { handleError } = require('../api-util/sdk');
 
-// In-memory store for applications (in production, use a database)
+// File-based persistence for educational admin applications
+const APPLICATIONS_FILE = path.join(__dirname, '../data/educational-admin-applications.json');
 let applications = [];
+
+function loadApplications() {
+  try {
+    if (fs.existsSync(APPLICATIONS_FILE)) {
+      const data = fs.readFileSync(APPLICATIONS_FILE, 'utf8');
+      applications = JSON.parse(data);
+      console.log(`Loaded ${applications.length} educational admin applications from file`);
+      return;
+    }
+  } catch (error) {
+    console.error('Error loading educational admin applications:', error);
+  }
+  applications = [];
+}
+
+function saveApplications() {
+  try {
+    const dataDir = path.dirname(APPLICATIONS_FILE);
+    if (!fs.existsSync(dataDir)) {
+      fs.mkdirSync(dataDir, { recursive: true });
+    }
+    fs.writeFileSync(APPLICATIONS_FILE, JSON.stringify(applications, null, 2), 'utf8');
+    return true;
+  } catch (error) {
+    console.error('Error saving educational admin applications:', error);
+    return false;
+  }
+}
+
+// Load applications on startup
+loadApplications();
 
 /**
  * POST /api/educational-admin/apply
@@ -63,7 +97,7 @@ async function submitApplication(req, res) {
 
   try {
     // Check if user already exists in the system
-    const integrationSdk = getIntegrationSdk();
+    const integrationSdk = getIntegrationSdkForTenant(req.tenant);
     const usersResponse = await integrationSdk.users.query({
       email: email.toLowerCase(),
     });
@@ -106,6 +140,7 @@ async function submitApplication(req, res) {
     };
 
     applications.push(application);
+    saveApplications();
 
     console.log('Educational Admin Application received:', {
       id: application.id,
@@ -184,7 +219,7 @@ async function approveApplication(req, res) {
       return res.status(400).json({ error: `Application has already been ${application.status}.` });
     }
 
-    const integrationSdk = getIntegrationSdk();
+    const integrationSdk = getIntegrationSdkForTenant(req.tenant);
 
     // Find the user by email
     const usersResponse = await integrationSdk.users.query({
@@ -197,6 +232,7 @@ async function approveApplication(req, res) {
       // User hasn't signed up yet - mark as approved pending signup
       application.status = 'approved-pending-signup';
       application.reviewedAt = new Date().toISOString();
+      saveApplications();
 
       return res.status(200).json({
         success: true,
@@ -234,6 +270,7 @@ async function approveApplication(req, res) {
     // Update application status
     application.status = 'approved';
     application.reviewedAt = new Date().toISOString();
+    saveApplications();
 
     res.status(200).json({
       success: true,
@@ -275,6 +312,7 @@ async function rejectApplication(req, res) {
     application.status = 'rejected';
     application.reviewedAt = new Date().toISOString();
     application.notes = reason || null;
+    saveApplications();
 
     res.status(200).json({
       success: true,
@@ -323,7 +361,7 @@ async function updateSubscription(req, res) {
   const { depositPaid, aiCoachingApproved } = req.body;
 
   try {
-    const integrationSdk = getIntegrationSdk();
+    const integrationSdk = getIntegrationSdkForTenant(req.tenant);
 
     // Get current user data
     const userResponse = await integrationSdk.users.show({ id: userId });
@@ -396,7 +434,7 @@ async function listEducationalAdmins(req, res) {
   const { page = '1', perPage = '20' } = req.query;
 
   try {
-    const integrationSdk = getIntegrationSdk();
+    const integrationSdk = getIntegrationSdkForTenant(req.tenant);
 
     const usersResponse = await integrationSdk.users.query({
       pub_userType: 'educational-admin',

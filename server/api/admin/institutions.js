@@ -9,7 +9,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const { getIntegrationSdk } = require('../../api-util/integrationSdk');
+const { getIntegrationSdkForTenant } = require('../../api-util/integrationSdk');
 const { handleError, serialize } = require('../../api-util/sdk');
 
 // In-memory store for institutions (in production, use a database)
@@ -111,7 +111,7 @@ async function verifySystemAdmin(sdk) {
  */
 async function listInstitutions(req, res) {
   try {
-    const sdk = await getIntegrationSdk(req);
+    const sdk = getIntegrationSdkForTenant(req.tenant);
     await verifySystemAdmin(sdk);
 
     const institutions = Array.from(institutionMemberships.values());
@@ -134,7 +134,7 @@ async function listInstitutions(req, res) {
  */
 async function getInstitution(req, res) {
   try {
-    const sdk = await getIntegrationSdk(req);
+    const sdk = getIntegrationSdkForTenant(req.tenant);
     await verifySystemAdmin(sdk);
 
     const { domain } = req.params;
@@ -168,7 +168,7 @@ async function getInstitution(req, res) {
  */
 async function createOrUpdateInstitution(req, res) {
   try {
-    const sdk = await getIntegrationSdk(req);
+    const sdk = getIntegrationSdkForTenant(req.tenant);
     await verifySystemAdmin(sdk);
 
     const {
@@ -228,7 +228,7 @@ async function createOrUpdateInstitution(req, res) {
  */
 async function updateInstitutionStatus(req, res) {
   try {
-    const sdk = await getIntegrationSdk(req);
+    const sdk = getIntegrationSdkForTenant(req.tenant);
     await verifySystemAdmin(sdk);
 
     const { domain } = req.params;
@@ -268,7 +268,7 @@ async function updateInstitutionStatus(req, res) {
  */
 async function updateCoachingSettings(req, res) {
   try {
-    const sdk = await getIntegrationSdk(req);
+    const sdk = getIntegrationSdkForTenant(req.tenant);
     await verifySystemAdmin(sdk);
 
     const { domain } = req.params;
@@ -307,7 +307,7 @@ async function updateCoachingSettings(req, res) {
  */
 async function deleteInstitution(req, res) {
   try {
-    const sdk = await getIntegrationSdk(req);
+    const sdk = getIntegrationSdkForTenant(req.tenant);
     await verifySystemAdmin(sdk);
 
     const { domain } = req.params;
@@ -380,7 +380,7 @@ async function checkInstitutionMembership(req, res) {
  */
 async function getMyInstitution(req, res) {
   try {
-    const sdk = await getIntegrationSdk(req);
+    const sdk = getIntegrationSdkForTenant(req.tenant);
     const currentUserRes = await sdk.currentUser.show();
     const currentUser = currentUserRes.data.data;
     const publicData = currentUser.attributes.profile.publicData || {};

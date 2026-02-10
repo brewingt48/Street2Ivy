@@ -5,6 +5,10 @@ import {
   fetchStudentTransactions as fetchStudentTransactionsApi,
   sendEducationalAdminMessage as sendMessageApi,
   fetchEducationalAdminMessages as fetchMessagesApi,
+  fetchEducationPartners as fetchPartnersApi,
+  approveEducationPartner as approvePartnerApi,
+  rejectEducationPartner as rejectPartnerApi,
+  removeEducationPartner as removePartnerApi,
 } from '../../util/api';
 import { fetchCurrentUser } from '../../ducks/user.duck';
 
@@ -87,6 +91,51 @@ export const fetchEducationalAdminMessages = () => dispatch => {
   return dispatch(fetchMessagesThunk()).unwrap();
 };
 
+// Fetch partners thunk
+const fetchPartnersPayloadCreator = async (_, { rejectWithValue }) => {
+  try {
+    const response = await fetchPartnersApi();
+    return response;
+  } catch (e) {
+    return rejectWithValue(storableError(e));
+  }
+};
+
+export const fetchPartnersThunk = createAsyncThunk(
+  'app/EducationDashboardPage/fetchPartners',
+  fetchPartnersPayloadCreator
+);
+
+export const fetchPartners = () => dispatch => {
+  return dispatch(fetchPartnersThunk()).unwrap();
+};
+
+// Partner action thunk (approve, reject, remove)
+const partnerActionPayloadCreator = async ({ action, userId, reason }, { rejectWithValue }) => {
+  try {
+    let response;
+    if (action === 'approve') {
+      response = await approvePartnerApi(userId);
+    } else if (action === 'reject') {
+      response = await rejectPartnerApi(userId, reason);
+    } else if (action === 'remove') {
+      response = await removePartnerApi(userId);
+    }
+    return { action, userId, response };
+  } catch (e) {
+    return rejectWithValue(storableError(e));
+  }
+};
+
+export const partnerActionThunk = createAsyncThunk(
+  'app/EducationDashboardPage/partnerAction',
+  partnerActionPayloadCreator
+);
+
+export const partnerAction = (action, userId, reason) => dispatch => {
+  return dispatch(partnerActionThunk({ action, userId, reason })).unwrap();
+};
+
 // ================ Slice ================ //
 
 const educationDashboardPageSlice = createSlice({
@@ -117,6 +166,13 @@ const educationDashboardPageSlice = createSlice({
     sendInProgress: false,
     sendSuccess: false,
     sendError: null,
+
+    // Partners
+    partners: [],
+    partnersInProgress: false,
+    partnersError: null,
+    partnerActionInProgress: false,
+    partnerActionError: null,
   },
   reducers: {
     clearStudentTransactions: state => {
@@ -192,11 +248,46 @@ const educationDashboardPageSlice = createSlice({
       .addCase(fetchMessagesThunk.rejected, (state, action) => {
         state.messagesInProgress = false;
         state.messagesError = action.payload;
+      })
+      // Fetch partners
+      .addCase(fetchPartnersThunk.pending, state => {
+        state.partnersInProgress = true;
+        state.partnersError = null;
+      })
+      .addCase(fetchPartnersThunk.fulfilled, (state, action) => {
+        state.partnersInProgress = false;
+        state.partners = action.payload.partners || [];
+      })
+      .addCase(fetchPartnersThunk.rejected, (state, action) => {
+        state.partnersInProgress = false;
+        state.partnersError = action.payload;
+      })
+      // Partner action (approve/reject/remove)
+      .addCase(partnerActionThunk.pending, state => {
+        state.partnerActionInProgress = true;
+        state.partnerActionError = null;
+      })
+      .addCase(partnerActionThunk.fulfilled, (state, action) => {
+        state.partnerActionInProgress = false;
+        const { action: act, userId } = action.payload;
+        // Update partner in list
+        state.partners = state.partners.map(p => {
+          if (p.id !== userId) return p;
+          if (act === 'approve') return { ...p, approvalStatus: 'approved', isAssociated: true };
+          if (act === 'reject') return { ...p, approvalStatus: 'rejected', isAssociated: false };
+          if (act === 'remove') return { ...p, approvalStatus: 'pending', isAssociated: false };
+          return p;
+        });
+      })
+      .addCase(partnerActionThunk.rejected, (state, action) => {
+        state.partnerActionInProgress = false;
+        state.partnerActionError = action.payload;
       });
   },
 });
 
-export const { clearStudentTransactions, clearMessageState } = educationDashboardPageSlice.actions;
+export const { clearStudentTransactions, clearMessageState } =
+  educationDashboardPageSlice.actions;
 
 // ================ loadData ================ //
 

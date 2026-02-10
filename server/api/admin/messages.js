@@ -1,6 +1,6 @@
 const fs = require('fs');
 const path = require('path');
-const { getIntegrationSdk } = require('../../api-util/integrationSdk');
+const { getIntegrationSdkForTenant } = require('../../api-util/integrationSdk');
 const { getSdk, handleError } = require('../../api-util/sdk');
 
 // Persistent storage for admin messages
@@ -97,7 +97,7 @@ async function sendMessage(req, res) {
       });
     }
 
-    const integrationSdk = getIntegrationSdk();
+    const integrationSdk = getIntegrationSdkForTenant(req.tenant);
 
     // Get recipient info
     const recipientResponse = await integrationSdk.users.show({

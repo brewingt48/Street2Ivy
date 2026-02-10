@@ -1,4 +1,4 @@
-const { getIntegrationSdk } = require('../api-util/integrationSdk');
+const { getIntegrationSdkForTenant } = require('../api-util/integrationSdk');
 const { getSdk, handleError } = require('../api-util/sdk');
 
 // Security: UUID validation regex
@@ -60,7 +60,7 @@ module.exports = async (req, res) => {
     }
 
     // Step 3: Get the student and verify they belong to this institution
-    const integrationSdk = getIntegrationSdk();
+    const integrationSdk = getIntegrationSdkForTenant(req.tenant);
 
     const studentResponse = await integrationSdk.users.show({
       id: studentId,

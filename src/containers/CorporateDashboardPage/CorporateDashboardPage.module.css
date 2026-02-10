@@ -371,6 +371,72 @@
   line-height: 1.6;
 }
 
+/* ================ Approval Gate ================ */
+
+.approvalGate {
+  text-align: center;
+  padding: 80px 32px;
+  background: white;
+  border-radius: var(--s2i-radius-xl);
+  box-shadow: var(--s2i-shadow-sm);
+  border: 1px solid var(--s2i-slate-200);
+}
+
+.approvalIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 72px;
+  height: 72px;
+  background: var(--s2i-amber-50);
+  border-radius: var(--s2i-radius-full);
+  font-size: 36px;
+  margin-bottom: 24px;
+}
+
+.approvalTitle {
+  font-family: var(--s2i-font-display);
+  font-size: 26px;
+  font-weight: var(--s2i-font-bold);
+  color: var(--s2i-navy-900);
+  margin: 0 0 16px 0;
+}
+
+.approvalText {
+  font-size: 16px;
+  color: var(--s2i-slate-500);
+  line-height: 1.7;
+  max-width: 560px;
+  margin: 0 auto 24px auto;
+}
+
+.approvalStatusBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background: var(--s2i-amber-50);
+  border: 1px solid var(--s2i-amber-300);
+  border-radius: var(--s2i-radius-full);
+  font-size: 14px;
+  font-weight: var(--s2i-font-semibold);
+  color: var(--s2i-amber-700);
+}
+
+.approvalStatusDot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  background: var(--s2i-amber-500);
+  border-radius: var(--s2i-radius-full);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
 /* ================ Enhanced Stats Sections ================ */
 
 .enhancedStatsSection {

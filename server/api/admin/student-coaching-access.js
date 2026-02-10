@@ -7,7 +7,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const { getIntegrationSdk } = require('../../api-util/integrationSdk');
+const { getIntegrationSdkForTenant } = require('../../api-util/integrationSdk');
 const { handleError } = require('../../api-util/sdk');
 
 // Data file for blocked students
@@ -68,7 +68,7 @@ async function verifySystemAdmin(sdk) {
  */
 async function listBlockedStudents(req, res) {
   try {
-    const sdk = await getIntegrationSdk(req);
+    const sdk = getIntegrationSdkForTenant(req.tenant);
     await verifySystemAdmin(sdk);
 
     const data = loadBlockedStudents();
@@ -119,7 +119,7 @@ async function listBlockedStudents(req, res) {
  */
 async function blockStudent(req, res) {
   try {
-    const sdk = await getIntegrationSdk(req);
+    const sdk = getIntegrationSdkForTenant(req.tenant);
     const adminUser = await verifySystemAdmin(sdk);
 
     const { userId, reason } = req.body;
@@ -178,7 +178,7 @@ async function blockStudent(req, res) {
  */
 async function unblockStudent(req, res) {
   try {
-    const sdk = await getIntegrationSdk(req);
+    const sdk = getIntegrationSdkForTenant(req.tenant);
     await verifySystemAdmin(sdk);
 
     const { userId } = req.body;
@@ -216,7 +216,7 @@ async function unblockStudent(req, res) {
  */
 async function checkStudentAccess(req, res) {
   try {
-    const sdk = await getIntegrationSdk(req);
+    const sdk = getIntegrationSdkForTenant(req.tenant);
     await verifySystemAdmin(sdk);
 
     const { userId } = req.params;
@@ -241,7 +241,7 @@ async function checkStudentAccess(req, res) {
  */
 async function getInstitutionsCoachingSummary(req, res) {
   try {
-    const sdk = await getIntegrationSdk(req);
+    const sdk = getIntegrationSdkForTenant(req.tenant);
     await verifySystemAdmin(sdk);
 
     // Get institutions from the institutions module
@@ -319,7 +319,7 @@ async function getInstitutionsCoachingSummary(req, res) {
  */
 async function getInstitutionStudents(req, res) {
   try {
-    const sdk = await getIntegrationSdk(req);
+    const sdk = getIntegrationSdkForTenant(req.tenant);
     await verifySystemAdmin(sdk);
 
     const { domain } = req.params;

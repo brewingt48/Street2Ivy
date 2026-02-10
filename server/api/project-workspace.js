@@ -1,5 +1,5 @@
 const crypto = require('crypto');
-const { getIntegrationSdk } = require('../api-util/integrationSdk');
+const { getIntegrationSdkForTenant } = require('../api-util/integrationSdk');
 const { getSdk, handleError } = require('../api-util/sdk');
 
 /**
@@ -34,7 +34,7 @@ async function getProjectWorkspace(req, res) {
       return res.status(401).json({ error: 'Authentication required.' });
     }
 
-    const integrationSdk = getIntegrationSdk();
+    const integrationSdk = getIntegrationSdkForTenant(req.tenant);
 
     // Get the transaction with all related data
     const txResponse = await integrationSdk.transactions.show({
@@ -235,7 +235,7 @@ async function sendProjectMessage(req, res) {
       return res.status(401).json({ error: 'Authentication required.' });
     }
 
-    const integrationSdk = getIntegrationSdk();
+    const integrationSdk = getIntegrationSdkForTenant(req.tenant);
 
     // Get the transaction
     const txResponse = await integrationSdk.transactions.show({
@@ -324,7 +324,7 @@ async function acceptNda(req, res) {
       return res.status(401).json({ error: 'Authentication required.' });
     }
 
-    const integrationSdk = getIntegrationSdk();
+    const integrationSdk = getIntegrationSdkForTenant(req.tenant);
 
     // Get the transaction
     const txResponse = await integrationSdk.transactions.show({
@@ -385,7 +385,7 @@ async function markMessagesRead(req, res) {
       return res.status(401).json({ error: 'Authentication required.' });
     }
 
-    const integrationSdk = getIntegrationSdk();
+    const integrationSdk = getIntegrationSdkForTenant(req.tenant);
 
     const txResponse = await integrationSdk.transactions.show({
       id: transactionId,

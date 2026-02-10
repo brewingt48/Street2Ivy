@@ -616,6 +616,43 @@ export const CorporateDashboardPageComponent = props => {
     );
   }
 
+  // Check corporate partner approval status
+  const approvalStatus = publicData?.approvalStatus;
+  const isPending = approvalStatus === 'pending';
+  const isRejected = approvalStatus === 'rejected';
+
+  if (isCorporatePartner && (isPending || isRejected)) {
+    return (
+      <Page title={title} scrollingDisabled={scrollingDisabled}>
+        <LayoutSingleColumn topbar={<TopbarContainer />} footer={<FooterContainer />}>
+          <div className={css.content}>
+            <div className={css.approvalGate}>
+              <div className={css.approvalIcon}>
+                {isPending ? '⏳' : '✗'}
+              </div>
+              <h2 className={css.approvalTitle}>
+                {isPending
+                  ? 'Account Pending Approval'
+                  : 'Account Not Approved'}
+              </h2>
+              <p className={css.approvalText}>
+                {isPending
+                  ? 'Your corporate partner account is currently under review. An administrator will review your application and approve your access. You will be able to post projects and connect with students once approved.'
+                  : 'Your corporate partner account application was not approved. If you believe this is an error, please contact support or the institution administrator for more information.'}
+              </p>
+              {isPending && (
+                <div className={css.approvalStatusBadge}>
+                  <span className={css.approvalStatusDot} />
+                  Under Review
+                </div>
+              )}
+            </div>
+          </div>
+        </LayoutSingleColumn>
+      </Page>
+    );
+  }
+
   return (
     <Page title={title} scrollingDisabled={scrollingDisabled}>
       <LayoutSingleColumn topbar={<TopbarContainer />} footer={<FooterContainer />}>

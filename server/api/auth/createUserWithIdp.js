@@ -45,6 +45,27 @@ module.exports = (req, res) => {
 
   const { idpToken, idpId, ...rest } = req.body || {};
 
+  // Enforce tenant email domain for student signups
+  const tenantDomain = req.tenant?.institutionDomain;
+  const userType = rest?.publicData?.userType;
+  const email = rest?.email;
+
+  if (userType === 'student' && tenantDomain && email) {
+    const emailDomain = email.split('@')[1]?.toLowerCase();
+    const domainMatches =
+      emailDomain === tenantDomain || (emailDomain && emailDomain.endsWith('.' + tenantDomain));
+    if (!domainMatches) {
+      return res.status(403).json({
+        error: `This marketplace is for ${req.tenant.name || tenantDomain} students only. Please use your ${tenantDomain} email address to sign up.`,
+      });
+    }
+  }
+
+  // Ensure emailDomain is stored in publicData for IDP signups
+  if (email && rest.publicData && !rest.publicData.emailDomain) {
+    rest.publicData.emailDomain = email.split('@')[1]?.toLowerCase() || null;
+  }
+
   // Choose the idpClientId based on which authentication method is used.
   const idpClientId =
     idpId === FACEBOOK_IDP_ID ? FACBOOK_APP_ID : idpId === GOOGLE_IDP_ID ? GOOGLE_CLIENT_ID : null;

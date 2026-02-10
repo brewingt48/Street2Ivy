@@ -1,5 +1,6 @@
-const { getIntegrationSdk } = require('../api-util/integrationSdk');
+const { getIntegrationSdkForTenant } = require('../api-util/integrationSdk');
 const { handleError, getSdk } = require('../api-util/sdk');
+const { verifyCorporatePartnerApproved } = require('../api-util/corporateApproval');
 const {
   sanitizeString,
   validatePagination,
@@ -73,6 +74,17 @@ module.exports = async (req, res) => {
       error: authResult.error,
       code: authResult.status === 401 ? 'AUTH_REQUIRED' : 'FORBIDDEN',
     });
+  }
+
+  // Corporate partners must be approved to search users
+  if (authResult.userType === 'corporate-partner') {
+    const approvalResult = await verifyCorporatePartnerApproved(req, res);
+    if (!approvalResult) {
+      return res.status(403).json({
+        error: 'Your corporate partner account requires approval before searching users.',
+        approvalStatus: 'pending',
+      });
+    }
   }
 
   const {
@@ -153,7 +165,7 @@ module.exports = async (req, res) => {
   }
 
   try {
-    const integrationSdk = getIntegrationSdk();
+    const integrationSdk = getIntegrationSdkForTenant(req.tenant);
 
     // Audit log the search
     auditLog('USER_SEARCH', {
@@ -229,10 +241,16 @@ module.exports = async (req, res) => {
           };
         });
 
+        // Multi-tenancy: filter corporate partners to only those associated with this tenant
+        const tenantPartners = req.tenant?.corporatePartnerIds;
+        const filteredUsers = (tenantPartners?.length > 0 && userType === 'corporate-partner')
+          ? users.filter(u => tenantPartners.includes(u.id))
+          : users;
+
         const paginationMeta = response.data.meta;
 
         res.status(200).json({
-          users,
+          users: filteredUsers,
           pagination: {
             totalItems: paginationMeta.totalItems,
             totalPages: paginationMeta.totalPages,
@@ -246,7 +264,7 @@ module.exports = async (req, res) => {
         handleError(res, e);
       });
   } catch (e) {
-    // Handle getIntegrationSdk() errors (e.g., missing CLIENT_SECRET)
+    // Handle getIntegrationSdkForTenant(req.tenant) errors (e.g., missing CLIENT_SECRET)
     console.error('search-users setup error:', e.message);
     res.status(500).json({ error: 'Internal server error' });
   }

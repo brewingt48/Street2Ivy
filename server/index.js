@@ -47,6 +47,9 @@ const { generateCSPNonce, csp } = require('./csp');
 const sdkUtils = require('./api-util/sdk');
 const { getSDKProxy } = require('./api-util/sdkCacheProxy');
 
+// Load tenant registry on startup (multi-tenancy support)
+require('./api-util/tenantRegistry');
+
 const buildPath = path.resolve(__dirname, '..', 'build');
 const dev = process.env.REACT_APP_ENV === 'development';
 const PORT = parseInt(process.env.PORT, 10);
@@ -179,6 +182,10 @@ app.use(
 );
 app.use(cookieParser());
 
+// Multi-tenancy: resolve tenant from subdomain (or dev fallback)
+const { tenantResolver } = require('./middleware/tenantResolver');
+app.use(tenantResolver);
+
 // We don't serve favicon.ico from root. PNG images are used instead for icons through link elements.
 app.get('/favicon.ico', (req, res) => {
   res.status(404).send('favicon.ico not found.');
@@ -262,7 +269,8 @@ app.get('/{*splat}', async (req, res) => {
   // Note: Check ttl (time-to-live) and maxBytes (10MB by default for cached data) from sdkCacheProxy.js
   // You could also define maxBytes based on free memory: const maxBytes = os.freemem() * 0.5;
   const sharetribeSDK = sdkUtils.getSdk(req, res);
-  const sdk = getSDKProxy(sharetribeSDK);
+  const tenantId = req.tenant?.id || 'default';
+  const sdk = getSDKProxy(sharetribeSDK, undefined, tenantId);
 
   res.locals.beforeLoadDataTimestamp = Date.now();
 
@@ -272,7 +280,7 @@ app.get('/{*splat}', async (req, res) => {
       res.locals.timestampAfterLoadData = Date.now();
       const cspNonce = cspEnabled ? res.locals.cspNonce : null;
 
-      return renderer.render(req.url, context, data, renderApp, webExtractor, cspNonce);
+      return renderer.render(req.url, context, data, renderApp, webExtractor, cspNonce, req.tenant);
     })
     .then(html => {
       res.locals.timestampAfterRender = Date.now();

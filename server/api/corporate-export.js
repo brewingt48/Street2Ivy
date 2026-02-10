@@ -1,5 +1,6 @@
-const { getIntegrationSdk } = require('../api-util/integrationSdk');
+const { getIntegrationSdkForTenant } = require('../api-util/integrationSdk');
 const { getSdk, handleError } = require('../api-util/sdk');
+const { verifyCorporatePartnerApproved } = require('../api-util/corporateApproval');
 
 /**
  * Verify the current user is a corporate partner
@@ -119,12 +120,14 @@ async function exportCorporateReport(req, res) {
   }
 
   try {
-    const corporatePartner = await verifyCorporatePartner(req, res);
-    if (!corporatePartner) {
+    const approvalResult = await verifyCorporatePartnerApproved(req, res);
+    if (!approvalResult) {
       return res.status(403).json({
-        error: 'Access denied. Corporate partner privileges required.',
+        error: 'Your corporate partner account requires approval before accessing this feature.',
+        approvalStatus: 'pending',
       });
     }
+    const corporatePartner = approvalResult.user;
 
     const userId = corporatePartner.id.uuid;
     const companyName =

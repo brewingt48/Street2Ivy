@@ -17,6 +17,8 @@ import {
   sendEducationalAdminMessage,
   fetchEducationalAdminMessages,
   clearMessageState,
+  fetchPartners,
+  partnerAction,
 } from './EducationDashboardPage.duck';
 
 import css from './EducationDashboardPage.module.css';
@@ -1297,6 +1299,204 @@ const AlumniNetworkPanel = ({ institutionDomain }) => {
   );
 };
 
+// ================ Corporate Partners Panel ================ //
+
+const PartnersPanel = ({
+  partners,
+  partnersInProgress,
+  partnerActionInProgress,
+  onFetchPartners,
+  onPartnerAction,
+}) => {
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [rejectReason, setRejectReason] = useState('');
+  const [rejectingId, setRejectingId] = useState(null);
+
+  useEffect(() => {
+    onFetchPartners();
+  }, [onFetchPartners]);
+
+  const filteredPartners = statusFilter === 'all'
+    ? partners
+    : partners.filter(p => {
+        if (statusFilter === 'approved') return p.approvalStatus === 'approved';
+        if (statusFilter === 'pending') return !p.approvalStatus || p.approvalStatus === 'pending';
+        if (statusFilter === 'rejected') return p.approvalStatus === 'rejected';
+        return true;
+      });
+
+  const getStatusBadgeClass = status => {
+    if (status === 'approved') return css.partnerStatusApproved;
+    if (status === 'rejected') return css.partnerStatusRejected;
+    return css.partnerStatusPending;
+  };
+
+  const handleReject = (userId) => {
+    onPartnerAction('reject', userId, rejectReason);
+    setRejectingId(null);
+    setRejectReason('');
+  };
+
+  if (partnersInProgress) {
+    return <div className={css.loading}>Loading corporate partners...</div>;
+  }
+
+  const pendingCount = partners.filter(p => !p.approvalStatus || p.approvalStatus === 'pending').length;
+  const approvedCount = partners.filter(p => p.approvalStatus === 'approved').length;
+  const rejectedCount = partners.filter(p => p.approvalStatus === 'rejected').length;
+
+  return (
+    <div className={css.partnersContainer}>
+      {/* Partner Stats */}
+      <div className={css.partnerStatsRow}>
+        <div className={css.partnerStatCard}>
+          <span className={css.partnerStatValue}>{partners.length}</span>
+          <span className={css.partnerStatLabel}>Total Partners</span>
+        </div>
+        <div className={css.partnerStatCard}>
+          <span className={`${css.partnerStatValue} ${css.partnerStatPending}`}>{pendingCount}</span>
+          <span className={css.partnerStatLabel}>Pending</span>
+        </div>
+        <div className={css.partnerStatCard}>
+          <span className={`${css.partnerStatValue} ${css.partnerStatApproved}`}>{approvedCount}</span>
+          <span className={css.partnerStatLabel}>Approved</span>
+        </div>
+        <div className={css.partnerStatCard}>
+          <span className={`${css.partnerStatValue} ${css.partnerStatRejected}`}>{rejectedCount}</span>
+          <span className={css.partnerStatLabel}>Rejected</span>
+        </div>
+      </div>
+
+      {/* Filter */}
+      <div className={css.partnerFilterRow}>
+        <select
+          className={css.partnerFilterSelect}
+          value={statusFilter}
+          onChange={e => setStatusFilter(e.target.value)}
+        >
+          <option value="all">All Partners ({partners.length})</option>
+          <option value="pending">Pending ({pendingCount})</option>
+          <option value="approved">Approved ({approvedCount})</option>
+          <option value="rejected">Rejected ({rejectedCount})</option>
+        </select>
+      </div>
+
+      {/* Partners Table */}
+      {filteredPartners.length === 0 ? (
+        <div className={css.noPartners}>
+          {statusFilter === 'all'
+            ? 'No corporate partners found for your institution.'
+            : `No ${statusFilter} corporate partners.`}
+        </div>
+      ) : (
+        <div className={css.partnersTableWrapper}>
+          <table className={css.partnersTable}>
+            <thead>
+              <tr>
+                <th>Company</th>
+                <th>Industry</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredPartners.map(partner => (
+                <tr key={partner.id} className={css.partnerRow}>
+                  <td>
+                    <div className={css.partnerCompanyInfo}>
+                      <NamedLink
+                        name="ProfilePage"
+                        params={{ id: partner.id }}
+                        className={css.partnerCompanyName}
+                      >
+                        {partner.companyName || partner.displayName || 'Unknown Company'}
+                      </NamedLink>
+                      {partner.companySize && (
+                        <span className={css.partnerCompanySize}>{partner.companySize}</span>
+                      )}
+                    </div>
+                  </td>
+                  <td className={css.partnerIndustry}>
+                    {partner.industry || '-'}
+                  </td>
+                  <td>
+                    <span className={`${css.partnerStatusBadge} ${getStatusBadgeClass(partner.approvalStatus)}`}>
+                      {partner.approvalStatus || 'pending'}
+                    </span>
+                  </td>
+                  <td className={css.partnerActions}>
+                    {(!partner.approvalStatus || partner.approvalStatus === 'pending') && (
+                      <>
+                        <button
+                          className={css.partnerApproveBtn}
+                          onClick={() => onPartnerAction('approve', partner.id)}
+                          disabled={partnerActionInProgress}
+                        >
+                          Approve
+                        </button>
+                        {rejectingId === partner.id ? (
+                          <div className={css.rejectForm}>
+                            <input
+                              type="text"
+                              className={css.rejectReasonInput}
+                              placeholder="Reason (optional)"
+                              value={rejectReason}
+                              onChange={e => setRejectReason(e.target.value)}
+                            />
+                            <button
+                              className={css.partnerRejectConfirmBtn}
+                              onClick={() => handleReject(partner.id)}
+                              disabled={partnerActionInProgress}
+                            >
+                              Confirm
+                            </button>
+                            <button
+                              className={css.partnerCancelBtn}
+                              onClick={() => { setRejectingId(null); setRejectReason(''); }}
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        ) : (
+                          <button
+                            className={css.partnerRejectBtn}
+                            onClick={() => setRejectingId(partner.id)}
+                            disabled={partnerActionInProgress}
+                          >
+                            Reject
+                          </button>
+                        )}
+                      </>
+                    )}
+                    {partner.approvalStatus === 'approved' && (
+                      <button
+                        className={css.partnerRemoveBtn}
+                        onClick={() => onPartnerAction('remove', partner.id)}
+                        disabled={partnerActionInProgress}
+                      >
+                        Remove
+                      </button>
+                    )}
+                    {partner.approvalStatus === 'rejected' && (
+                      <button
+                        className={css.partnerApproveBtn}
+                        onClick={() => onPartnerAction('approve', partner.id)}
+                        disabled={partnerActionInProgress}
+                      >
+                        Re-approve
+                      </button>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  );
+};
+
 // ================ Main Component ================ //
 
 const EducationDashboardPageComponent = props => {
@@ -1327,6 +1527,11 @@ const EducationDashboardPageComponent = props => {
     onFetchMessages,
     onClearMessageState,
     onManageDisableScrolling,
+    partners,
+    partnersInProgress,
+    partnerActionInProgress,
+    onFetchPartners,
+    onPartnerAction,
   } = props;
 
   const intl = useIntl();
@@ -1505,6 +1710,12 @@ const EducationDashboardPageComponent = props => {
               onClick={() => setActiveTab('alumni')}
             >
               <FormattedMessage id="EducationDashboardPage.tabAlumni" />
+            </button>
+            <button
+              className={`${css.tab} ${activeTab === 'partners' ? css.activeTab : ''}`}
+              onClick={() => setActiveTab('partners')}
+            >
+              Corporate Partners
             </button>
           </div>
 
@@ -2249,6 +2460,17 @@ const EducationDashboardPageComponent = props => {
           {activeTab === 'alumni' && (
             <AlumniNetworkPanel institutionDomain={institutionDomain} />
           )}
+
+          {/* Partners Tab */}
+          {activeTab === 'partners' && (
+            <PartnersPanel
+              partners={partners}
+              partnersInProgress={partnersInProgress}
+              partnerActionInProgress={partnerActionInProgress}
+              onFetchPartners={onFetchPartners}
+              onPartnerAction={onPartnerAction}
+            />
+          )}
         </div>
 
         {/* Student Transactions Modal */}
@@ -2357,6 +2579,9 @@ const mapStateToProps = state => {
     sendInProgress,
     sendSuccess,
     sendError,
+    partners,
+    partnersInProgress,
+    partnerActionInProgress,
   } = state.EducationDashboardPage;
 
   return {
@@ -2379,6 +2604,9 @@ const mapStateToProps = state => {
     sendInProgress: sendInProgress || false,
     sendSuccess: sendSuccess || false,
     sendError: sendError || null,
+    partners: partners || [],
+    partnersInProgress: partnersInProgress || false,
+    partnerActionInProgress: partnerActionInProgress || false,
   };
 };
 
@@ -2392,6 +2620,8 @@ const mapDispatchToProps = dispatch => ({
   onClearMessageState: () => dispatch(clearMessageState()),
   onManageDisableScrolling: (componentId, disableScrolling) =>
     dispatch(manageDisableScrolling(componentId, disableScrolling)),
+  onFetchPartners: () => dispatch(fetchPartners()),
+  onPartnerAction: (action, userId, reason) => dispatch(partnerAction(action, userId, reason)),
 });
 
 const EducationDashboardPage = compose(

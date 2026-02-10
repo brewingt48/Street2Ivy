@@ -1,5 +1,6 @@
 const { getSdk, handleError, serialize } = require('../api-util/sdk');
-const { getIntegrationSdk } = require('../api-util/integrationSdk');
+const { getIntegrationSdkForTenant } = require('../api-util/integrationSdk');
+const { verifyCorporatePartnerApproved } = require('../api-util/corporateApproval');
 
 /**
  * In-memory invite store for tracking sent invitations
@@ -105,58 +106,53 @@ function getInvites(corporatePartnerId, { status, limit = 50 } = {}) {
  *   status - Filter by invite status (pending, accepted, declined, expired)
  *   limit - Max number of invites to return (default: 50)
  */
-const listInvites = (req, res) => {
-  const { status, limit = 50 } = req.query;
-  const sdk = getSdk(req, res);
-
-  sdk.currentUser
-    .show()
-    .then(response => {
-      const currentUser = response.data.data;
-      const currentUserId = currentUser.id.uuid;
-      const userType = currentUser.attributes?.profile?.publicData?.userType;
-
-      // Only corporate partners can access this endpoint
-      if (userType !== 'corporate-partner') {
-        return res.status(403).json({
-          error: 'Only corporate partners can access sent invites.',
-        });
-      }
-
-      const invites = getInvites(currentUserId, {
-        status,
-        limit: parseInt(limit, 10)
+const listInvites = async (req, res) => {
+  try {
+    const approvalResult = await verifyCorporatePartnerApproved(req, res);
+    if (!approvalResult) {
+      return res.status(403).json({
+        error: 'Your corporate partner account requires approval before accessing this feature.',
+        approvalStatus: 'pending',
       });
+    }
+    const currentUser = approvalResult.user;
+    const currentUserId = currentUser.id.uuid;
 
-      // Calculate summary stats
-      const allInvites = getInvites(currentUserId, {});
-      const stats = {
-        total: allInvites.length,
-        pending: allInvites.filter(i => i.status === 'pending').length,
-        accepted: allInvites.filter(i => i.status === 'accepted').length,
-        declined: allInvites.filter(i => i.status === 'declined').length,
-        expired: allInvites.filter(i => i.status === 'expired').length,
-      };
+    const { status, limit = 50 } = req.query;
 
-      res
-        .status(200)
-        .set('Content-Type', 'application/transit+json')
-        .send(
-          serialize({
-            status: 200,
-            statusText: 'OK',
-            data: {
-              invites,
-              stats,
-            },
-          })
-        )
-        .end();
-    })
-    .catch(e => {
-      console.error('Error fetching corporate invites:', e);
-      handleError(res, e);
+    const invites = getInvites(currentUserId, {
+      status,
+      limit: parseInt(limit, 10),
     });
+
+    // Calculate summary stats
+    const allInvites = getInvites(currentUserId, {});
+    const stats = {
+      total: allInvites.length,
+      pending: allInvites.filter(i => i.status === 'pending').length,
+      accepted: allInvites.filter(i => i.status === 'accepted').length,
+      declined: allInvites.filter(i => i.status === 'declined').length,
+      expired: allInvites.filter(i => i.status === 'expired').length,
+    };
+
+    res
+      .status(200)
+      .set('Content-Type', 'application/transit+json')
+      .send(
+        serialize({
+          status: 200,
+          statusText: 'OK',
+          data: {
+            invites,
+            stats,
+          },
+        })
+      )
+      .end();
+  } catch (e) {
+    console.error('Error fetching corporate invites:', e);
+    handleError(res, e);
+  }
 };
 
 /**
@@ -164,48 +160,43 @@ const listInvites = (req, res) => {
  *
  * Get details of a specific invite
  */
-const getInviteDetails = (req, res) => {
-  const { inviteId } = req.params;
-  const sdk = getSdk(req, res);
+const getInviteDetails = async (req, res) => {
+  try {
+    const approvalResult = await verifyCorporatePartnerApproved(req, res);
+    if (!approvalResult) {
+      return res.status(403).json({
+        error: 'Your corporate partner account requires approval before accessing this feature.',
+        approvalStatus: 'pending',
+      });
+    }
+    const currentUser = approvalResult.user;
+    const currentUserId = currentUser.id.uuid;
 
-  sdk.currentUser
-    .show()
-    .then(response => {
-      const currentUser = response.data.data;
-      const currentUserId = currentUser.id.uuid;
-      const userType = currentUser.attributes?.profile?.publicData?.userType;
+    const { inviteId } = req.params;
+    const invites = getInvites(currentUserId, {});
+    const invite = invites.find(i => i.id === inviteId);
 
-      if (userType !== 'corporate-partner') {
-        return res.status(403).json({
-          error: 'Only corporate partners can access invite details.',
-        });
-      }
+    if (!invite) {
+      return res.status(404).json({
+        error: 'Invite not found.',
+      });
+    }
 
-      const invites = getInvites(currentUserId, {});
-      const invite = invites.find(i => i.id === inviteId);
-
-      if (!invite) {
-        return res.status(404).json({
-          error: 'Invite not found.',
-        });
-      }
-
-      res
-        .status(200)
-        .set('Content-Type', 'application/transit+json')
-        .send(
-          serialize({
-            status: 200,
-            statusText: 'OK',
-            data: invite,
-          })
-        )
-        .end();
-    })
-    .catch(e => {
-      console.error('Error fetching invite details:', e);
-      handleError(res, e);
-    });
+    res
+      .status(200)
+      .set('Content-Type', 'application/transit+json')
+      .send(
+        serialize({
+          status: 200,
+          statusText: 'OK',
+          data: invite,
+        })
+      )
+      .end();
+  } catch (e) {
+    console.error('Error fetching invite details:', e);
+    handleError(res, e);
+  }
 };
 
 /**
