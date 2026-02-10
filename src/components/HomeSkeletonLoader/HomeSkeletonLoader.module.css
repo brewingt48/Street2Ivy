@@ -1,0 +1,691 @@
+@import '../../styles/customMediaQueries.css';
+
+/* ================ Shimmer Animation ================ */
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+/* ================ Base Skeleton Element ================ */
+
+.bone {
+  background: linear-gradient(
+    90deg,
+    var(--s2i-slate-200) 0%,
+    var(--s2i-slate-100) 40%,
+    var(--s2i-slate-200) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+  border-radius: var(--s2i-radius-md);
+}
+
+.boneCircle {
+  border-radius: var(--s2i-radius-full);
+}
+
+/* ================ Root Container ================ */
+
+.root {
+  width: 100%;
+}
+
+/* ================ Card Wrapper ================ */
+
+.card {
+  background: var(--s2i-white);
+  border: 1px solid var(--s2i-border-light);
+  border-radius: var(--s2i-radius-xl);
+  padding: var(--s2i-space-6);
+}
+
+/* ================ Dashboard Variant ================ */
+
+.dashboard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s2i-space-8);
+}
+
+/* Greeting header skeleton */
+.dashboardHeader {
+  composes: card;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s2i-space-3);
+  padding: var(--s2i-space-6) var(--s2i-space-8);
+}
+
+.greetingLine {
+  composes: bone;
+  height: 32px;
+  width: 280px;
+  max-width: 60%;
+}
+
+.subtitleLine {
+  composes: bone;
+  height: 16px;
+  width: 200px;
+  max-width: 45%;
+}
+
+/* Stat cards row */
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: var(--s2i-space-4);
+
+  @media (--viewportMedium) {
+    gap: var(--s2i-space-6);
+  }
+}
+
+.statCard {
+  composes: card;
+  display: flex;
+  align-items: center;
+  gap: var(--s2i-space-4);
+}
+
+.statIconBone {
+  composes: bone;
+  width: 56px;
+  height: 56px;
+  border-radius: var(--s2i-radius-lg);
+  flex-shrink: 0;
+}
+
+.statContent {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s2i-space-2);
+  flex: 1;
+}
+
+.statValueBone {
+  composes: bone;
+  height: 28px;
+  width: 64px;
+}
+
+.statLabelBone {
+  composes: bone;
+  height: 14px;
+  width: 100px;
+}
+
+/* Section title skeleton */
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.sectionTitleBone {
+  composes: bone;
+  height: 20px;
+  width: 160px;
+}
+
+.sectionActionBone {
+  composes: bone;
+  height: 16px;
+  width: 80px;
+}
+
+/* Project cards */
+.projectsGrid {
+  display: grid;
+  gap: var(--s2i-space-6);
+
+  @media (--viewportMedium) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  @media (--viewportLarge) {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.projectCard {
+  composes: card;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s2i-space-4);
+}
+
+.projectHeaderRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--s2i-space-3);
+}
+
+.projectTitleBone {
+  composes: bone;
+  height: 18px;
+  width: 75%;
+}
+
+.projectBadgeBone {
+  composes: bone;
+  height: 24px;
+  width: 72px;
+  border-radius: var(--s2i-radius-full);
+  flex-shrink: 0;
+}
+
+.projectCompanyBone {
+  composes: bone;
+  height: 14px;
+  width: 140px;
+}
+
+.projectDescriptionBone {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s2i-space-2);
+}
+
+.projectDescLine {
+  composes: bone;
+  height: 14px;
+  width: 100%;
+}
+
+.projectDescLineShort {
+  composes: bone;
+  height: 14px;
+  width: 70%;
+}
+
+.projectMetaRow {
+  display: flex;
+  gap: var(--s2i-space-4);
+  flex-wrap: wrap;
+}
+
+.projectMetaBone {
+  composes: bone;
+  height: 14px;
+  width: 80px;
+}
+
+.projectActionsBone {
+  display: flex;
+  gap: var(--s2i-space-3);
+  margin-top: auto;
+}
+
+.projectButtonBone {
+  composes: bone;
+  height: 44px;
+  flex: 1;
+  border-radius: var(--s2i-radius-lg);
+}
+
+/* ================ Profile Variant ================ */
+
+.profile {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s2i-space-8);
+}
+
+.profileHeader {
+  composes: card;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--s2i-space-4);
+  padding: var(--s2i-space-8);
+}
+
+.avatarBone {
+  composes: bone;
+  composes: boneCircle;
+  width: 96px;
+  height: 96px;
+}
+
+.profileNameBone {
+  composes: bone;
+  height: 24px;
+  width: 180px;
+}
+
+.profileBioBone {
+  composes: bone;
+  height: 14px;
+  width: 260px;
+  max-width: 80%;
+}
+
+.profileBioShortBone {
+  composes: bone;
+  height: 14px;
+  width: 200px;
+  max-width: 60%;
+}
+
+.profileStatsRow {
+  display: flex;
+  gap: var(--s2i-space-6);
+  justify-content: center;
+  width: 100%;
+  max-width: 400px;
+}
+
+.profileStatItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--s2i-space-2);
+  flex: 1;
+}
+
+.profileStatValueBone {
+  composes: bone;
+  height: 24px;
+  width: 48px;
+}
+
+.profileStatLabelBone {
+  composes: bone;
+  height: 12px;
+  width: 64px;
+}
+
+/* Review cards for profile */
+.reviewsSection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s2i-space-4);
+}
+
+.reviewCard {
+  composes: card;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s2i-space-3);
+}
+
+.reviewHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--s2i-space-3);
+}
+
+.reviewAvatarBone {
+  composes: bone;
+  composes: boneCircle;
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+}
+
+.reviewAuthorInfo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s2i-space-1);
+  flex: 1;
+}
+
+.reviewAuthorBone {
+  composes: bone;
+  height: 14px;
+  width: 120px;
+}
+
+.reviewDateBone {
+  composes: bone;
+  height: 12px;
+  width: 80px;
+}
+
+.reviewStarsBone {
+  composes: bone;
+  height: 16px;
+  width: 100px;
+}
+
+.reviewTextBone {
+  composes: bone;
+  height: 14px;
+  width: 100%;
+}
+
+.reviewTextShortBone {
+  composes: bone;
+  height: 14px;
+  width: 85%;
+}
+
+/* ================ Search Variant ================ */
+
+.search {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s2i-space-6);
+
+  @media (--viewportMedium) {
+    flex-direction: row;
+  }
+}
+
+/* Filter sidebar */
+.filterSidebar {
+  composes: card;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s2i-space-5);
+  width: 100%;
+
+  @media (--viewportMedium) {
+    width: 260px;
+    flex-shrink: 0;
+  }
+}
+
+.filterTitleBone {
+  composes: bone;
+  height: 18px;
+  width: 100px;
+}
+
+.filterGroup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s2i-space-3);
+}
+
+.filterLabelBone {
+  composes: bone;
+  height: 14px;
+  width: 80px;
+}
+
+.filterInputBone {
+  composes: bone;
+  height: 40px;
+  width: 100%;
+  border-radius: var(--s2i-radius-md);
+}
+
+.filterCheckboxRow {
+  display: flex;
+  align-items: center;
+  gap: var(--s2i-space-2);
+}
+
+.filterCheckboxBone {
+  composes: bone;
+  width: 18px;
+  height: 18px;
+  border-radius: var(--s2i-radius-sm);
+  flex-shrink: 0;
+}
+
+.filterCheckboxLabelBone {
+  composes: bone;
+  height: 14px;
+  width: 100px;
+}
+
+/* Listing cards for search */
+.listingsGrid {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s2i-space-4);
+  flex: 1;
+}
+
+.listingCard {
+  composes: card;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s2i-space-4);
+
+  @media (--viewportMedium) {
+    flex-direction: row;
+  }
+}
+
+.listingImageBone {
+  composes: bone;
+  width: 100%;
+  height: 180px;
+  border-radius: var(--s2i-radius-lg);
+
+  @media (--viewportMedium) {
+    width: 200px;
+    height: 140px;
+    flex-shrink: 0;
+  }
+}
+
+.listingContent {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s2i-space-2);
+  flex: 1;
+}
+
+.listingTitleBone {
+  composes: bone;
+  height: 18px;
+  width: 70%;
+}
+
+.listingSubtitleBone {
+  composes: bone;
+  height: 14px;
+  width: 50%;
+}
+
+.listingDescBone {
+  composes: bone;
+  height: 14px;
+  width: 100%;
+}
+
+.listingDescShortBone {
+  composes: bone;
+  height: 14px;
+  width: 60%;
+}
+
+.listingTagsRow {
+  display: flex;
+  gap: var(--s2i-space-2);
+  margin-top: var(--s2i-space-1);
+}
+
+.listingTagBone {
+  composes: bone;
+  height: 26px;
+  width: 64px;
+  border-radius: var(--s2i-radius-full);
+}
+
+/* ================ Detail Variant ================ */
+
+.detail {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s2i-space-6);
+
+  @media (--viewportMedium) {
+    flex-direction: row;
+  }
+}
+
+.detailMain {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s2i-space-6);
+  flex: 1;
+  min-width: 0;
+}
+
+/* Detail header */
+.detailHeader {
+  composes: card;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s2i-space-4);
+}
+
+.detailTitleBone {
+  composes: bone;
+  height: 28px;
+  width: 65%;
+}
+
+.detailMetaRow {
+  display: flex;
+  gap: var(--s2i-space-4);
+  flex-wrap: wrap;
+}
+
+.detailMetaBone {
+  composes: bone;
+  height: 14px;
+  width: 100px;
+}
+
+.detailBadgeRow {
+  display: flex;
+  gap: var(--s2i-space-2);
+}
+
+.detailBadgeBone {
+  composes: bone;
+  height: 26px;
+  width: 80px;
+  border-radius: var(--s2i-radius-full);
+}
+
+/* Detail description block */
+.detailDescription {
+  composes: card;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s2i-space-3);
+}
+
+.detailDescTitleBone {
+  composes: bone;
+  height: 20px;
+  width: 140px;
+  margin-bottom: var(--s2i-space-2);
+}
+
+.detailDescLineBone {
+  composes: bone;
+  height: 14px;
+  width: 100%;
+}
+
+.detailDescLineShortBone {
+  composes: bone;
+  height: 14px;
+  width: 90%;
+}
+
+.detailDescLineShorterBone {
+  composes: bone;
+  height: 14px;
+  width: 75%;
+}
+
+/* Detail sidebar */
+.detailSidebar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s2i-space-6);
+  width: 100%;
+
+  @media (--viewportMedium) {
+    width: 320px;
+    flex-shrink: 0;
+  }
+}
+
+.sidebarCard {
+  composes: card;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s2i-space-4);
+}
+
+.sidebarTitleBone {
+  composes: bone;
+  height: 18px;
+  width: 120px;
+}
+
+.sidebarRowBone {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.sidebarLabelBone {
+  composes: bone;
+  height: 14px;
+  width: 80px;
+}
+
+.sidebarValueBone {
+  composes: bone;
+  height: 14px;
+  width: 60px;
+}
+
+.sidebarButtonBone {
+  composes: bone;
+  height: 48px;
+  width: 100%;
+  border-radius: var(--s2i-radius-lg);
+}
+
+.sidebarAvatarRow {
+  display: flex;
+  align-items: center;
+  gap: var(--s2i-space-3);
+}
+
+.sidebarAvatarBone {
+  composes: bone;
+  composes: boneCircle;
+  width: 48px;
+  height: 48px;
+  flex-shrink: 0;
+}
+
+.sidebarAvatarNameBone {
+  composes: bone;
+  height: 16px;
+  width: 100px;
+}
+
+.sidebarAvatarSubBone {
+  composes: bone;
+  height: 12px;
+  width: 70px;
+}
+
+/* ================ Accessibility: Reduced Motion ================ */
+
+@media (prefers-reduced-motion: reduce) {
+  .bone {
+    animation: none;
+  }
+}

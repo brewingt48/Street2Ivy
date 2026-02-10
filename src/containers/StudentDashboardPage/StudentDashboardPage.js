@@ -249,7 +249,7 @@ const ProjectCard = ({ project, type, onAccept, onDecline }) => {
         )}
         {type === 'active' && (
           <button className={css.viewButton} onClick={handleViewProject}>
-            View Project Workspace
+            View Project Details
           </button>
         )}
         {type === 'history' && (
@@ -871,7 +871,7 @@ const StudentDashboardPageComponent = props => {
           invites: prev.invites.filter(p => p.id !== project.id),
           active: [...prev.active, { ...project, status: 'active' }],
         }));
-        // Redirect to project workspace
+        // Redirect to project details
         history.push(`/project-workspace/${project.transactionId}`);
       }
     } catch (error) {

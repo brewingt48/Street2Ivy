@@ -481,7 +481,7 @@ export const CorporateDashboardPageComponent = props => {
     {
       id: 'accept-student',
       label: 'Accept a student for a project',
-      description: 'Start collaborating with talented students',
+      description: 'Connect with talented students for real project work',
       completed: hasAcceptedStudent,
       link: hasAcceptedStudent ? undefined : { name: 'ApplicationsPage' },
     },

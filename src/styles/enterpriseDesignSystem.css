@@ -118,21 +118,42 @@
   --s2i-info-light: var(--s2i-teal-50);
   --s2i-info-dark: var(--s2i-teal-700);
 
-  /* Text Colors */
-  --s2i-text-primary: var(--s2i-slate-900);
-  --s2i-text-secondary: var(--s2i-slate-600);
-  --s2i-text-tertiary: var(--s2i-slate-500);
+  /* Text Colors — warm charcoal (not pure black) */
+  --s2i-text-primary: #2D3436;
+  --s2i-text-secondary: #636E72;
+  --s2i-text-tertiary: #94A3B8;
   --s2i-text-disabled: var(--s2i-slate-400);
   --s2i-text-inverse: var(--s2i-white);
   --s2i-text-link: var(--s2i-teal-600);
   --s2i-text-link-hover: var(--s2i-teal-700);
 
-  /* Background Colors */
-  --s2i-bg-primary: var(--s2i-white);
-  --s2i-bg-secondary: var(--s2i-slate-50);
-  --s2i-bg-tertiary: var(--s2i-slate-100);
+  /* Star Rating Colors */
+  --s2i-star-filled: #F5A623;
+  --s2i-star-empty: var(--s2i-slate-200);
+  --s2i-star-hover: #F7B84E;
+
+  /* Status Badge Colors */
+  --s2i-status-pending-bg: var(--s2i-amber-100);
+  --s2i-status-pending-text: var(--s2i-amber-800);
+  --s2i-status-accepted-bg: var(--s2i-emerald-100);
+  --s2i-status-accepted-text: var(--s2i-emerald-800);
+  --s2i-status-declined-bg: var(--s2i-coral-100);
+  --s2i-status-declined-text: var(--s2i-coral-800);
+  --s2i-status-inprogress-bg: var(--s2i-teal-100);
+  --s2i-status-inprogress-text: var(--s2i-teal-800);
+  --s2i-status-completed-bg: var(--s2i-slate-100);
+  --s2i-status-completed-text: var(--s2i-slate-700);
+  --s2i-status-withdrawn-bg: var(--s2i-slate-100);
+  --s2i-status-withdrawn-text: var(--s2i-slate-500);
+
+  /* Background Colors — warm palette (2026 design: approachable, not sterile) */
+  --s2i-bg-primary: #FAFAF8;
+  --s2i-bg-secondary: #F5F3EF;
+  --s2i-bg-tertiary: #EDEAE4;
+  --s2i-bg-white: #FFFFFF;
   --s2i-bg-dark: var(--s2i-navy-900);
   --s2i-bg-overlay: rgba(15, 23, 42, 0.6);
+  --s2i-bg-card: #FFFFFF;
 
   /* Border Colors */
   --s2i-border-light: var(--s2i-slate-200);

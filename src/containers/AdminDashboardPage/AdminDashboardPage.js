@@ -1960,7 +1960,7 @@ const WorkHoldsSubPanel = props => {
         <div className={css.partnerStatsRow}>
           <div className={css.miniStatCard}>
             <span className={css.miniStatValue}>{selectedPartnerDeposits.length}</span>
-            <span className={css.miniStatLabel}>Total Hired</span>
+            <span className={css.miniStatLabel}>Total Matched</span>
           </div>
           <div className={css.miniStatCard}>
             <span className={classNames(css.miniStatValue, css.warningValue)}>
@@ -1988,7 +1988,7 @@ const WorkHoldsSubPanel = props => {
               <tr>
                 <th>Project</th>
                 <th>Student</th>
-                <th>Hired Date</th>
+                <th>Match Date</th>
                 <th>Work Status</th>
                 <th>Actions</th>
               </tr>
@@ -2064,7 +2064,7 @@ const WorkHoldsSubPanel = props => {
                 <strong>{clearHoldModal.listingTitle}</strong>?
               </p>
               <p className={css.modalWarning}>
-                This will allow the student to access the project workspace and begin working.
+                This will allow the student to access the project details and begin working.
               </p>
 
               <div className={css.formField}>
@@ -2102,7 +2102,7 @@ const WorkHoldsSubPanel = props => {
                 <strong>{reinstateModal.listingTitle}</strong>?
               </p>
               <p className={css.modalWarning}>
-                Warning: This will prevent the student from accessing the project workspace.
+                Warning: This will prevent the student from accessing the project details.
               </p>
 
               <div className={css.formField}>
@@ -2141,7 +2141,7 @@ const WorkHoldsSubPanel = props => {
                 <strong>{clearAllModal.displayName || clearAllModal.companyName}</strong>?
               </p>
               <p className={css.modalWarning}>
-                This will allow all {pendingHolds.length} hired students to proceed with their work.
+                This will allow all {pendingHolds.length} matched students to proceed with their projects.
               </p>
 
               <div className={css.formField}>
@@ -2178,7 +2178,7 @@ const WorkHoldsSubPanel = props => {
       <div className={css.subPanelHeader}>
         <p className={css.subPanelDescription}>
           Track deposits by corporate partner and control when students can begin working on
-          projects. Students cannot access project workspaces until the work hold is cleared.
+          projects. Students cannot access project details until the work hold is cleared.
         </p>
         <button
           className={css.refreshButton}
@@ -2194,13 +2194,13 @@ const WorkHoldsSubPanel = props => {
           <FormattedMessage id="AdminDashboardPage.loading" />
         </div>
       ) : corporatePartners.length === 0 ? (
-        <div className={css.emptyState}>No corporate partners with hired students found.</div>
+        <div className={css.emptyState}>No corporate partners with matched students found.</div>
       ) : (
         <table className={css.depositsTable}>
           <thead>
             <tr>
               <th>Corporate Partner</th>
-              <th>Total Hired</th>
+              <th>Total Matched</th>
               <th>Pending Holds</th>
               <th>Cleared</th>
               <th>Actions</th>
@@ -2487,7 +2487,7 @@ const PaymentConfirmationsSubPanel = props => {
               <textarea
                 value={confirmData.notes}
                 onChange={e => setConfirmData(prev => ({ ...prev, notes: e.target.value }))}
-                placeholder="Optional notes about this deposit..."
+                placeholder="Optional notes about this confirmation..."
               />
             </div>
 
@@ -2528,7 +2528,7 @@ const PaymentConfirmationsSubPanel = props => {
               <textarea
                 value={revokeReason}
                 onChange={e => setRevokeReason(e.target.value)}
-                placeholder="Reason for revoking deposit confirmation..."
+                placeholder="Reason for revoking confirmation..."
               />
             </div>
 
@@ -2786,7 +2786,7 @@ const DepositsPanel = props => {
               <textarea
                 value={confirmData.notes}
                 onChange={e => setConfirmData(prev => ({ ...prev, notes: e.target.value }))}
-                placeholder="Optional notes about this deposit..."
+                placeholder="Optional notes about this confirmation..."
               />
             </div>
 
@@ -2827,7 +2827,7 @@ const DepositsPanel = props => {
               <textarea
                 value={revokeReason}
                 onChange={e => setRevokeReason(e.target.value)}
-                placeholder="Reason for revoking deposit confirmation..."
+                placeholder="Reason for revoking confirmation..."
               />
             </div>
 
@@ -2959,7 +2959,7 @@ const CorporateDepositsPanel = props => {
         <div className={css.partnerStatsRow}>
           <div className={css.statCard}>
             <span className={css.statValue}>{selectedPartnerDeposits.length}</span>
-            <span className={css.statLabel}>Total Hired</span>
+            <span className={css.statLabel}>Total Matched</span>
           </div>
           <div className={css.statCard}>
             <span className={classNames(css.statValue, css.warningValue)}>{pendingHolds.length}</span>
@@ -2987,7 +2987,7 @@ const CorporateDepositsPanel = props => {
               <tr>
                 <th>Project</th>
                 <th>Student</th>
-                <th>Hired Date</th>
+                <th>Match Date</th>
                 <th>Deposit Status</th>
                 <th>Work Status</th>
                 <th>Actions</th>
@@ -3079,7 +3079,7 @@ const CorporateDepositsPanel = props => {
                 <strong>{clearHoldModal.listingTitle}</strong>?
               </p>
               <p className={css.modalWarning}>
-                This will allow the student to access the project workspace and begin working.
+                This will allow the student to access the project details and begin working.
               </p>
 
               <div className={css.formField}>
@@ -3117,7 +3117,7 @@ const CorporateDepositsPanel = props => {
                 <strong>{reinstateModal.listingTitle}</strong>?
               </p>
               <p className={css.modalWarning}>
-                Warning: This will prevent the student from accessing the project workspace.
+                Warning: This will prevent the student from accessing the project details.
               </p>
 
               <div className={css.formField}>
@@ -3155,7 +3155,7 @@ const CorporateDepositsPanel = props => {
                 Clear all work holds for <strong>{clearAllModal.displayName || clearAllModal.companyName}</strong>?
               </p>
               <p className={css.modalWarning}>
-                This will allow all {pendingHolds.length} hired students to proceed with their work.
+                This will allow all {pendingHolds.length} matched students to proceed with their projects.
               </p>
 
               <div className={css.formField}>
@@ -3204,7 +3204,7 @@ const CorporateDepositsPanel = props => {
 
       <p className={css.depositsDescription}>
         Track deposits by corporate partner and control when students can begin working on projects.
-        Students cannot access project workspaces until the work hold is cleared.
+        Students cannot access project details until the work hold is cleared.
       </p>
 
       {fetchInProgress ? (
@@ -3213,14 +3213,14 @@ const CorporateDepositsPanel = props => {
         </div>
       ) : corporatePartners.length === 0 ? (
         <div className={css.emptyState}>
-          No corporate partners with hired students found.
+          No corporate partners with matched students found.
         </div>
       ) : (
         <table className={css.depositsTable}>
           <thead>
             <tr>
               <th>Corporate Partner</th>
-              <th>Total Hired</th>
+              <th>Total Matched</th>
               <th>Pending Holds</th>
               <th>Deposits Confirmed</th>
               <th>Projects Completed</th>

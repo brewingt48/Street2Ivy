@@ -5,8 +5,8 @@ import { NamedLink } from '../../../components';
 import css from './TransactionPanel.module.css';
 
 /**
- * Renders a link to the secure project workspace if the student has been accepted.
- * The workspace link is only shown when showWorkspaceLink is true in the state data.
+ * Renders a link to the project details page if the student has been accepted.
+ * The link is only shown when showWorkspaceLink is true in the state data.
  */
 const WorkspaceLinkMaybe = props => {
   const { showWorkspaceLink, transactionId } = props;

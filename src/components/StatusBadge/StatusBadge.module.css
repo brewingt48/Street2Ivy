@@ -1,0 +1,76 @@
+.root {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s2i-space-1);
+  font-family: var(--s2i-font-sans);
+  font-weight: var(--s2i-font-medium);
+  line-height: var(--s2i-leading-none);
+  border-radius: var(--s2i-radius-full);
+  white-space: nowrap;
+  transition: var(--s2i-transition-colors);
+}
+
+/* Size variants */
+.sizeSm {
+  padding: 2px var(--s2i-space-2);
+  font-size: 11px;
+}
+
+.sizeMd {
+  padding: var(--s2i-space-1) var(--s2i-space-3);
+  font-size: var(--s2i-text-xs);
+}
+
+/* Status dot */
+.dot {
+  width: 6px;
+  height: 6px;
+  border-radius: var(--s2i-radius-full);
+  flex-shrink: 0;
+  background-color: currentColor;
+}
+
+.label {
+  line-height: 1.4;
+}
+
+/* Status variants */
+.statusPending {
+  background-color: var(--s2i-status-pending-bg);
+  color: var(--s2i-status-pending-text);
+}
+
+.statusAccepted {
+  background-color: var(--s2i-status-accepted-bg);
+  color: var(--s2i-status-accepted-text);
+}
+
+.statusDeclined {
+  background-color: var(--s2i-status-declined-bg);
+  color: var(--s2i-status-declined-text);
+}
+
+.statusInProgress {
+  background-color: var(--s2i-status-inprogress-bg);
+  color: var(--s2i-status-inprogress-text);
+}
+
+.statusCompleted {
+  background-color: var(--s2i-status-completed-bg);
+  color: var(--s2i-status-completed-text);
+}
+
+.statusWithdrawn {
+  background-color: var(--s2i-status-withdrawn-bg);
+  color: var(--s2i-status-withdrawn-text);
+}
+
+.statusNew {
+  background-color: var(--s2i-teal-100);
+  color: var(--s2i-teal-800);
+}
+
+.statusActive {
+  background-color: var(--s2i-emerald-100);
+  color: var(--s2i-emerald-800);
+}

@@ -1,0 +1,140 @@
+/* ============================================================
+ * ActionCard.module.css
+ *
+ * Generic CTA card component.  Shows an icon/visual, title,
+ * description, and a primary action button.  Used on dashboards
+ * for CTAs like "Post a Project", "Complete Your Profile", etc.
+ * ============================================================ */
+
+/* ---- Base card ---- */
+
+.root {
+  display: flex;
+  flex-direction: column;
+  background: var(--s2i-bg-card);
+  border: 1px solid var(--s2i-border-light);
+  border-radius: var(--s2i-radius-xl);
+  box-shadow: var(--s2i-shadow-card);
+  padding: var(--s2i-space-6);
+  transition: var(--s2i-transition-all);
+}
+
+.root:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--s2i-shadow-card-hover);
+}
+
+.root:focus-within {
+  outline: 2px solid var(--s2i-border-focus);
+  outline-offset: 2px;
+}
+
+/* ---- Variant: highlight ---- */
+
+.highlight {
+  border-left: 4px solid transparent;
+  border-image: linear-gradient(
+    to bottom,
+    var(--s2i-teal-500),
+    var(--s2i-emerald-500)
+  ) 1;
+}
+
+/* ---- Variant: subtle ---- */
+
+.subtle {
+  background: var(--s2i-bg-secondary);
+  box-shadow: none;
+  border-color: transparent;
+}
+
+.subtle:hover {
+  box-shadow: var(--s2i-shadow-card);
+  border-color: var(--s2i-border-light);
+}
+
+/* ---- Icon area ---- */
+
+.iconWrapper {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--s2i-radius-lg);
+  background-color: var(--s2i-teal-50);
+  margin-bottom: var(--s2i-space-4);
+  font-size: 1.5rem;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+/* ---- Text content ---- */
+
+.title {
+  font-family: var(--s2i-font-sans);
+  font-size: var(--s2i-text-md);
+  font-weight: var(--s2i-font-semibold);
+  color: var(--s2i-text-primary);
+  line-height: var(--s2i-leading-snug);
+  margin: 0 0 var(--s2i-space-2) 0;
+}
+
+.description {
+  font-family: var(--s2i-font-sans);
+  font-size: var(--s2i-text-sm);
+  font-weight: var(--s2i-font-normal);
+  color: var(--s2i-text-secondary);
+  line-height: var(--s2i-leading-relaxed);
+  margin: 0 0 var(--s2i-space-5) 0;
+}
+
+/* ---- Action button / link ---- */
+
+.action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s2i-space-2);
+  padding: var(--s2i-space-3) var(--s2i-space-5);
+  font-family: var(--s2i-font-sans);
+  font-size: var(--s2i-text-base);
+  font-weight: var(--s2i-font-medium);
+  line-height: var(--s2i-leading-none);
+  color: var(--s2i-white, #FFFFFF);
+  background-color: var(--s2i-primary);
+  border: none;
+  border-radius: var(--s2i-radius-md);
+  text-decoration: none;
+  text-align: center;
+  cursor: pointer;
+  transition: var(--s2i-transition-all);
+  white-space: nowrap;
+  margin-top: auto;
+  align-self: flex-start;
+}
+
+.action:hover {
+  background-color: var(--s2i-primary-hover);
+  box-shadow: var(--s2i-shadow-primary);
+  text-decoration: none;
+}
+
+.action:active {
+  background-color: var(--s2i-primary-active);
+}
+
+.action:focus-visible {
+  outline: 2px solid var(--s2i-border-focus);
+  outline-offset: 2px;
+}
+
+/* ---- Arrow icon inside action ---- */
+
+.actionArrow {
+  transition: transform 200ms ease;
+}
+
+.action:hover .actionArrow {
+  transform: translateX(2px);
+}
