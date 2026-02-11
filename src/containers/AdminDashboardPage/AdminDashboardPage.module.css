@@ -3758,6 +3758,12 @@
   max-width: 700px;
 }
 
+/* Wider variant for sub-tabs that contain tables */
+.formSectionWide {
+  max-width: none;
+  overflow-x: auto;
+}
+
 .formHint {
   font-size: 12px;
   color: var(--colorGrey500);
@@ -4141,6 +4147,58 @@
 .noneBlocked {
   color: var(--colorGrey500);
   font-size: 14px;
+}
+
+/* Data Table (used in AI Coaching panel) */
+.dataTable {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  border: 1px solid var(--colorGrey200);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.dataTable th {
+  text-align: left;
+  padding: 12px 16px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--colorGrey600);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  background: var(--colorGrey50);
+  border-bottom: 1px solid var(--colorGrey200);
+  white-space: nowrap;
+}
+
+.dataTable td {
+  padding: 12px 16px;
+  font-size: 14px;
+  color: var(--colorGrey700);
+  border-bottom: 1px solid var(--colorGrey100);
+  vertical-align: middle;
+}
+
+.dataTable tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.dataTable tbody tr:hover {
+  background: var(--colorGrey50);
+}
+
+/* Action buttons within data table cells */
+.dataTable .actionButtons {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  white-space: nowrap;
+}
+
+/* Toggle wrappers within table cells shouldn't wrap */
+.dataTable .toggleWrapper {
+  white-space: nowrap;
 }
 
 /* Action buttons */

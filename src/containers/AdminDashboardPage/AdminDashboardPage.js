@@ -3989,7 +3989,7 @@ const AICoachingConfigPanel = () => {
 
       {/* Institutions Tab */}
       {activeSubTab === 'institutions' && (
-        <div className={css.formSection}>
+        <div className={css.formSectionWide}>
           {selectedInstitution ? (
             // Institution detail view with students
             <div>
@@ -4197,7 +4197,7 @@ const AICoachingConfigPanel = () => {
 
       {/* Blocked Students Tab */}
       {activeSubTab === 'blocked' && (
-        <div className={css.formSection}>
+        <div className={css.formSectionWide}>
           <p style={{ marginBottom: '16px' }}>
             Students blocked from AI coaching access. These students cannot access AI coaching even if their institution has it enabled.
           </p>
