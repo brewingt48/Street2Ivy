@@ -1299,6 +1299,19 @@ const AlumniNetworkPanel = ({ institutionDomain }) => {
   );
 };
 
+// ================ Tenant Detection Helper ================ //
+
+const getIsOnTenantSubdomain = () => {
+  if (typeof window === 'undefined') return false;
+  const hostname = window.location.hostname;
+  // Match school subdomains: e.g., howard.campus2career.com or howard.street2ivy.com
+  const match = hostname.match(/^([a-z0-9-]+)\.(campus2career|street2ivy)\.com$/);
+  if (match && match[1] !== 'www' && match[1] !== 'app') {
+    return true;
+  }
+  return false;
+};
+
 // ================ Corporate Partners Panel ================ //
 
 const PartnersPanel = ({
@@ -1308,6 +1321,8 @@ const PartnersPanel = ({
   partnerActionError,
   onFetchPartners,
   onPartnerAction,
+  isOnTenant,
+  institutionDomain,
 }) => {
   const [statusFilter, setStatusFilter] = useState('all');
   const [rejectReason, setRejectReason] = useState('');
@@ -1429,6 +1444,22 @@ const PartnersPanel = ({
         </div>
       )}
 
+      {/* Tenant Notice */}
+      {!isOnTenant && (
+        <div className={css.partnerTenantNotice}>
+          <span className={css.partnerTenantNoticeIcon}>&#9432;</span>
+          <div>
+            <strong>Management actions unavailable</strong>
+            <p className={css.partnerTenantNoticeText}>
+              Switch to your institution&#39;s subdomain
+              {institutionDomain
+                ? ` (${institutionDomain.split('.')[0]}.campus2career.com)`
+                : ''} to approve, reject, or remove corporate partners.
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Partners Table */}
       {filteredPartners.length === 0 ? (
         <div className={css.noPartners}>
@@ -1444,7 +1475,7 @@ const PartnersPanel = ({
                 <th>Company</th>
                 <th>Industry</th>
                 <th>Status</th>
-                <th>Actions</th>
+                {isOnTenant && <th>Actions</th>}
               </tr>
             </thead>
             <tbody>
@@ -1472,6 +1503,7 @@ const PartnersPanel = ({
                       {partner.approvalStatus || 'pending'}
                     </span>
                   </td>
+                  {isOnTenant && (
                   <td className={css.partnerActions}>
                     {(!partner.approvalStatus || partner.approvalStatus === 'pending') && (
                       <>
@@ -1535,6 +1567,7 @@ const PartnersPanel = ({
                       </button>
                     )}
                   </td>
+                  )}
                 </tr>
               ))}
             </tbody>
@@ -1594,6 +1627,9 @@ const EducationDashboardPageComponent = props => {
   // Access check: only educational admins can access this page
   const publicData = currentUser?.attributes?.profile?.publicData || {};
   const isEducationalAdmin = publicData?.userType === 'educational-admin';
+
+  // Detect whether the user is on their school's tenant subdomain
+  const isOnTenant = useMemo(() => getIsOnTenantSubdomain(), []);
 
   const handleViewStudent = useCallback(
     student => {
@@ -2508,6 +2544,8 @@ const EducationDashboardPageComponent = props => {
               partnerActionError={partnerActionError}
               onFetchPartners={onFetchPartners}
               onPartnerAction={onPartnerAction}
+              isOnTenant={isOnTenant}
+              institutionDomain={institutionDomain}
             />
           )}
         </div>

@@ -2822,6 +2822,35 @@
   opacity: 1;
 }
 
+/* ================ Partner Tenant Notice ================ */
+
+.partnerTenantNotice {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 18px;
+  margin-bottom: var(--s2i-space-4);
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  border-radius: var(--s2i-radius-lg);
+  color: #1e40af;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.partnerTenantNoticeIcon {
+  flex-shrink: 0;
+  font-size: 20px;
+  line-height: 1.2;
+  color: #3b82f6;
+}
+
+.partnerTenantNoticeText {
+  margin: 4px 0 0;
+  font-weight: var(--s2i-font-regular, 400);
+  color: #1e40af;
+}
+
 @media (max-width: 768px) {
   .partnerStatsRow {
     grid-template-columns: repeat(2, 1fr);
