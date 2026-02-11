@@ -18,7 +18,13 @@ class LoadableComponentErrorBoundary extends Component {
   }
 
   render() {
-    if (this.state.error && this.state.error.name === 'ChunkLoadError') {
+    if (this.state.error) {
+      if (this.state.error.name === 'ChunkLoadError') {
+        return <LoadableComponentErrorBoundaryPage />;
+      }
+      // For non-ChunkLoadError errors, log and show a fallback
+      // instead of re-rendering children (which could cause an infinite loop)
+      console.error('Component error caught by boundary:', this.state.error);
       return <LoadableComponentErrorBoundaryPage />;
     }
 

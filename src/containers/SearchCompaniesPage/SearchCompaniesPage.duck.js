@@ -111,6 +111,8 @@ export const loadData = (params, search) => dispatch => {
   for (const [key, value] of urlParams.entries()) {
     searchParams[key] = value;
   }
+  // Always include userType for the server API
+  searchParams.userType = 'corporate-partner';
 
   return Promise.all([dispatch(fetchCurrentUser()), dispatch(searchCompaniesThunk(searchParams))]);
 };

@@ -1,7 +1,10 @@
+const sharetribeSdk = require('sharetribe-flex-sdk');
 const { getTrustedSdk, getSdk, handleError, serialize } = require('../api-util/sdk');
 const { getIntegrationSdkForTenant } = require('../api-util/integrationSdk');
 const { notifyInviteToApply } = require('../api-util/notifications');
 const { storeInvite } = require('./corporate-invites');
+
+const { UUID } = sharetribeSdk.types;
 
 // Security: UUID validation regex
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -23,19 +26,27 @@ const MAX_MESSAGE_LENGTH = 5000;
  *   message    - Invitation message text
  */
 module.exports = (req, res) => {
-  const { studentId, listingId, message } = req.body || {};
+  const body = req.body || {};
+  // Handle both string IDs and UUID objects (Transit deserialization may produce either)
+  const rawStudentId = body.studentId;
+  const rawListingId = body.listingId;
+  const message = body.message;
 
-  if (!studentId || !listingId) {
+  // Extract string UUID from either a UUID object or plain string
+  const studentIdStr = rawStudentId?.uuid || rawStudentId;
+  const listingIdStr = rawListingId?.uuid || rawListingId;
+
+  if (!studentIdStr || !listingIdStr) {
     return res.status(400).json({
       error: 'studentId and listingId are required.',
     });
   }
 
   // Security: Validate UUID formats
-  if (!UUID_REGEX.test(studentId)) {
+  if (!UUID_REGEX.test(studentIdStr)) {
     return res.status(400).json({ error: 'Invalid student ID format.' });
   }
-  if (!UUID_REGEX.test(listingId)) {
+  if (!UUID_REGEX.test(listingIdStr)) {
     return res.status(400).json({ error: 'Invalid listing ID format.' });
   }
 
@@ -45,6 +56,10 @@ module.exports = (req, res) => {
       error: `Message exceeds maximum length of ${MAX_MESSAGE_LENGTH} characters.`,
     });
   }
+
+  // Create proper UUID objects for SDK calls
+  const studentUUID = new UUID(studentIdStr);
+  const listingUUID = new UUID(listingIdStr);
 
   const sdk = getSdk(req, res);
 
@@ -56,7 +71,7 @@ module.exports = (req, res) => {
       const currentUserId = currentUser.id.uuid;
 
       // Step 2: Verify the listing belongs to the current user and is published
-      return sdk.ownListings.show({ id: listingId }).then(listingResponse => {
+      return sdk.ownListings.show({ id: listingUUID }).then(listingResponse => {
         const listing = listingResponse.data.data;
         const listingState = listing.attributes.state;
         const processAlias = listing.attributes.publicData?.transactionProcessAlias;
@@ -86,7 +101,7 @@ module.exports = (req, res) => {
             transition: 'transition/apply',
             processAlias,
             params: {
-              listingId,
+              listingId: listingUUID,
             },
           };
 
@@ -111,7 +126,7 @@ module.exports = (req, res) => {
                 let studentUniversity = '';
 
                 try {
-                  const studentResponse = await integrationSdk.users.show({ id: studentId });
+                  const studentResponse = await integrationSdk.users.show({ id: studentUUID });
                   const student = studentResponse.data.data;
                   studentName = student?.attributes?.profile?.displayName || 'Student';
                   studentEmail = student?.attributes?.email || '';
@@ -119,13 +134,13 @@ module.exports = (req, res) => {
 
                   // Send notification to student
                   await notifyInviteToApply({
-                    studentId,
+                    studentId: studentIdStr,
                     studentEmail,
                     studentName,
                     companyName: currentUser?.attributes?.profile?.displayName || 'Company',
                     projectTitle: listing?.attributes?.title || 'Project',
                     projectDescription: listing?.attributes?.description || '',
-                    listingId,
+                    listingId: listingIdStr,
                   });
                 } catch (notifErr) {
                   console.error('Failed to send invite notification:', notifErr);
@@ -136,11 +151,11 @@ module.exports = (req, res) => {
                 try {
                   storeInvite({
                     corporatePartnerId: currentUserId,
-                    studentId,
+                    studentId: studentIdStr,
                     studentName,
                     studentEmail,
                     studentUniversity,
-                    listingId,
+                    listingId: listingIdStr,
                     projectTitle: listing?.attributes?.title || 'Project',
                     message: messageContent,
                     transactionId: transactionId.uuid,

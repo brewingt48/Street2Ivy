@@ -96,16 +96,23 @@ export class SearchPageComponent extends Component {
 
   componentDidMount() {
     // Check if there are saved filters and no current filters in URL
-    const urlQueryParams = validUrlQueryParamsFromProps(this.props);
-    const hasCurrentFilters = isAnyFilterActive(
-      this.props.config?.search?.sortConfig,
-      urlQueryParams,
-      this.props.config?.listing?.listingFields,
-      this.props.config?.search?.defaultFilters
-    );
+    try {
+      const urlQueryParams = validUrlQueryParamsFromProps(this.props);
+      const { defaultFilters: defaultFiltersConfig, sortConfig } = this.props.config?.search || {};
+      const listingFieldsConfig = this.props.config?.listing?.listingFields || [];
+      const filterConfigs = {
+        listingFieldsConfig,
+        defaultFiltersConfig: defaultFiltersConfig || [],
+      };
+      const filterKeys = sortConfig?.conflictingFilters || [];
+      const hasCurrentFilters = isAnyFilterActive(filterKeys, urlQueryParams, filterConfigs);
 
-    if (!hasCurrentFilters && hasSavedFilters('listings')) {
-      this.setState({ showSavedFiltersPrompt: true });
+      if (!hasCurrentFilters && hasSavedFilters('listings')) {
+        this.setState({ showSavedFiltersPrompt: true });
+      }
+    } catch (e) {
+      // Don't let saved filter check crash the page
+      console.error('Error checking saved filters:', e);
     }
   }
 

@@ -161,8 +161,10 @@ const SearchCompaniesPageComponent = props => {
         pathname: '/search/companies',
         search: queryString ? `?${queryString}` : '',
       });
-      // Directly dispatch the search
-      onSearchCompanies(params);
+      // Directly dispatch the search (catch errors to prevent unhandled rejection)
+      onSearchCompanies(params).catch(err => {
+        console.error('SearchCompaniesPage: search failed:', err);
+      });
     },
     [history, onSearchCompanies]
   );

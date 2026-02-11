@@ -124,7 +124,9 @@ const InviteModal = props => {
 
           {inviteError && (
             <p className={css.inviteErrorMessage}>
-              <FormattedMessage id="InviteModal.error" />
+              {inviteError?.message || inviteError?.statusText || (
+                <FormattedMessage id="InviteModal.error" />
+              )}
             </p>
           )}
 

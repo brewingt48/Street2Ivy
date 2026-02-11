@@ -204,8 +204,10 @@ const SearchStudentsPageComponent = props => {
       const queryString = new URLSearchParams(params).toString();
       // Update URL for bookmarking/back-forward (replace to avoid extra history entries)
       history.replace({ pathname: '/search/students', search: queryString ? `?${queryString}` : '' });
-      // Directly dispatch the search
-      onSearchStudents(params);
+      // Directly dispatch the search (catch errors to prevent unhandled rejection)
+      onSearchStudents(params).catch(err => {
+        console.error('SearchStudentsPage: search failed:', err);
+      });
     },
     [history, onSearchStudents]
   );
