@@ -9,7 +9,7 @@ import { Page, LayoutSingleColumn, PaginationLinks } from '../../components';
 import TopbarContainer from '../../containers/TopbarContainer/TopbarContainer';
 import FooterContainer from '../../containers/FooterContainer/FooterContainer';
 import CompanyCard from './CompanyCard';
-import { fetchCompanyListings } from './SearchCompaniesPage.duck';
+import { searchCompanies, fetchCompanyListings } from './SearchCompaniesPage.duck';
 
 import css from './SearchCompaniesPage.module.css';
 
@@ -117,6 +117,7 @@ const SearchCompaniesPageComponent = props => {
     searchError,
     currentUser,
     companyListings,
+    onSearchCompanies,
     onFetchCompanyListings,
   } = props;
 
@@ -132,8 +133,6 @@ const SearchCompaniesPageComponent = props => {
   const isStudent = publicData?.userType === 'student';
 
   // Sync filter state when browser navigation changes the URL (back/forward).
-  // loadData is already triggered by the route system, so we only need to
-  // update the local filter state to keep the UI in sync.
   useEffect(() => {
     const urlFilters = getFiltersFromUrl(location.search);
     setFilters(prev => {
@@ -142,10 +141,10 @@ const SearchCompaniesPageComponent = props => {
     });
   }, [location.search]);
 
-  // Push filter state to URL. The route system's loadData will handle the API call,
-  // so we do NOT dispatch onSearchCompanies here (that caused double API calls and
-  // the filters not working because the two calls would race).
-  const pushFiltersToUrl = useCallback(
+  // Apply filters: update URL for bookmarking AND directly dispatch search.
+  // We dispatch directly because the route system's loadData may not reliably
+  // re-trigger on same-path URL changes in all environments.
+  const applyFilters = useCallback(
     (newFilters, page) => {
       const params = {};
       Object.entries(newFilters).forEach(([key, value]) => {
@@ -153,30 +152,36 @@ const SearchCompaniesPageComponent = props => {
       });
       if (page && page > 1) params.page = page;
 
+      // Always add userType for the API
+      params.userType = 'corporate-partner';
+
       const queryString = new URLSearchParams(params).toString();
-      history.push({
+      // Update URL for bookmarking/back-forward
+      history.replace({
         pathname: '/search/companies',
         search: queryString ? `?${queryString}` : '',
       });
+      // Directly dispatch the search
+      onSearchCompanies(params);
     },
-    [history]
+    [history, onSearchCompanies]
   );
 
   const handleFilterChange = useCallback(
     (key, value) => {
       const newFilters = { ...filters, [key]: value };
       setFilters(newFilters);
-      pushFiltersToUrl(newFilters);
+      applyFilters(newFilters);
     },
-    [filters, pushFiltersToUrl]
+    [filters, applyFilters]
   );
 
   const handleResetFilters = useCallback(() => {
     const emptyFilters = {};
     FILTER_KEYS.forEach(k => { emptyFilters[k] = ''; });
     setFilters(emptyFilters);
-    pushFiltersToUrl(emptyFilters);
-  }, [pushFiltersToUrl]);
+    applyFilters(emptyFilters);
+  }, [applyFilters]);
 
   const title = intl.formatMessage({ id: 'SearchCompaniesPage.title' });
   const hasFiltersActive = Object.values(filters).some(v => !!v);
@@ -360,6 +365,7 @@ const mapStateToProps = state => {
 };
 
 const mapDispatchToProps = dispatch => ({
+  onSearchCompanies: params => dispatch(searchCompanies(params)),
   onFetchCompanyListings: authorId => dispatch(fetchCompanyListings(authorId)),
 });
 

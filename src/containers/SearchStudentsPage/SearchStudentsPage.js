@@ -143,6 +143,7 @@ const SearchStudentsPageComponent = props => {
     inviteError,
     inviteSuccess,
     userStats,
+    onSearchStudents,
     onInviteToApply,
     onClearInviteState,
     onManageDisableScrolling,
@@ -186,9 +187,10 @@ const SearchStudentsPageComponent = props => {
     };
   }, []);
 
-  // Push filter state to URL. The route system's loadData will handle the API call,
-  // so we do NOT dispatch onSearchStudents here (that caused double API calls).
-  const pushFiltersToUrl = useCallback(
+  // Apply filters: update URL for bookmarking AND directly dispatch search.
+  // We dispatch directly because the route system's loadData may not reliably
+  // re-trigger on same-path URL changes in all environments.
+  const applyFilters = useCallback(
     (newFilters, page) => {
       const params = {};
       Object.entries(newFilters).forEach(([key, value]) => {
@@ -196,10 +198,16 @@ const SearchStudentsPageComponent = props => {
       });
       if (page && page > 1) params.page = page;
 
+      // Always add userType for the API
+      params.userType = 'student';
+
       const queryString = new URLSearchParams(params).toString();
-      history.push({ pathname: '/search/students', search: queryString ? `?${queryString}` : '' });
+      // Update URL for bookmarking/back-forward (replace to avoid extra history entries)
+      history.replace({ pathname: '/search/students', search: queryString ? `?${queryString}` : '' });
+      // Directly dispatch the search
+      onSearchStudents(params);
     },
-    [history]
+    [history, onSearchStudents]
   );
 
   // For select/dropdown filters: apply immediately (no debounce needed)
@@ -212,12 +220,12 @@ const SearchStudentsPageComponent = props => {
       }
       const newFilters = { ...filters, [key]: value };
       setFilters(newFilters);
-      pushFiltersToUrl(newFilters);
+      applyFilters(newFilters);
     },
-    [filters, pushFiltersToUrl]
+    [filters, applyFilters]
   );
 
-  // For text inputs: debounce the URL push / API call
+  // For text inputs: debounce the API call
   const handleTextFilterChange = useCallback(
     (key, value) => {
       const newFilters = { ...filters, [key]: value };
@@ -225,11 +233,11 @@ const SearchStudentsPageComponent = props => {
 
       if (debounceRef.current) clearTimeout(debounceRef.current);
       debounceRef.current = setTimeout(() => {
-        pushFiltersToUrl(newFilters);
+        applyFilters(newFilters);
         debounceRef.current = null;
       }, DEBOUNCE_MS);
     },
-    [filters, pushFiltersToUrl]
+    [filters, applyFilters]
   );
 
   const handleResetFilters = useCallback(() => {
@@ -240,11 +248,11 @@ const SearchStudentsPageComponent = props => {
     const emptyFilters = {};
     FILTER_KEYS.forEach(k => { emptyFilters[k] = ''; });
     setFilters(emptyFilters);
-    pushFiltersToUrl(emptyFilters);
-  }, [pushFiltersToUrl]);
+    applyFilters(emptyFilters);
+  }, [applyFilters]);
 
   const handlePagination = page => {
-    pushFiltersToUrl(filters, page);
+    applyFilters(filters, page);
   };
 
   const handleInvite = student => {
