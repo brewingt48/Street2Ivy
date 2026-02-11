@@ -300,6 +300,7 @@ router.post('/admin/tenants/:id/partners', adminTenants.addPartner);
 router.delete('/admin/tenants/:id/partners/:partnerId', adminTenants.removePartner);
 router.post('/admin/tenants/:id/activate', adminTenants.activate);
 router.post('/admin/tenants/:id/deactivate', adminTenants.deactivate);
+router.post('/admin/tenants/:id/create-admin', strictRateLimit, adminTenants.createAdmin);
 
 // Street2Ivy: Content Management System (CMS) endpoints
 router.get('/admin/content', adminContent.getContent);

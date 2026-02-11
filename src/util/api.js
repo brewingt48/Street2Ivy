@@ -1202,6 +1202,67 @@ export const fetchPublicCoachingConfig = () => {
   });
 };
 
+// ================ Admin Tenant Management API ================ //
+
+export const fetchAdminTenants = () => {
+  return request('/api/admin/tenants', {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
+  });
+};
+
+export const fetchAdminTenant = (id) => {
+  return request(`/api/admin/tenants/${id}`, {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
+  });
+};
+
+export const createAdminTenant = (data) => {
+  return request('/api/admin/tenants', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+};
+
+export const updateAdminTenant = (id, data) => {
+  return request(`/api/admin/tenants/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+};
+
+export const deleteAdminTenant = (id) => {
+  return request(`/api/admin/tenants/${id}`, {
+    method: 'DELETE',
+    headers: { 'Content-Type': 'application/json' },
+  });
+};
+
+export const activateAdminTenant = (id) => {
+  return request(`/api/admin/tenants/${id}/activate`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+  });
+};
+
+export const deactivateAdminTenant = (id) => {
+  return request(`/api/admin/tenants/${id}/deactivate`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+  });
+};
+
+export const createTenantAdmin = (tenantId, data) => {
+  return request(`/api/admin/tenants/${tenantId}/create-admin`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+};
+
 // ================ Tenant Content Customization API ================ //
 
 // Fetch the educational admin's own institution landing page content

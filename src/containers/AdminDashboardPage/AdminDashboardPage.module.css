@@ -4267,3 +4267,435 @@
   font-size: 13px;
   color: var(--s2i-slate-500, #64748b);
 }
+
+/* ================ Tenants Panel ================ */
+
+.tenantCreateButton {
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 600;
+  color: white;
+  background: var(--marketplaceColor, #007bff);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.tenantCreateButton:hover {
+  background: var(--marketplaceColorDark, #0056b3);
+}
+
+/* Tenants Table */
+.tableContainer {
+  overflow-x: auto;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+}
+
+.tenantsTable {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.tenantsTable th {
+  text-align: left;
+  padding: 12px 16px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  background: #fafafa;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.tenantsTable td {
+  padding: 12px 16px;
+  font-size: 14px;
+  color: #374151;
+  border-bottom: 1px solid #f3f4f6;
+  vertical-align: middle;
+}
+
+.tenantsTable tr:last-child td {
+  border-bottom: none;
+}
+
+.tenantsTable tr:hover td {
+  background: #f9fafb;
+}
+
+.tenantSubdomain {
+  font-size: 13px;
+  color: #6366f1;
+  background: #eef2ff;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.tenantDefaultBadge {
+  display: inline-block;
+  margin-left: 8px;
+  font-size: 10px;
+  font-weight: 700;
+  color: #92400e;
+  background: #fef3c7;
+  padding: 2px 6px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  vertical-align: middle;
+}
+
+.tenantStatusBadge {
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 9999px;
+}
+
+.tenantStatusActive {
+  color: #065f46;
+  background: #d1fae5;
+}
+
+.tenantStatusInactive {
+  color: #6b7280;
+  background: #f3f4f6;
+}
+
+.tenantCredentialOk {
+  color: #065f46;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.tenantCredentialMissing {
+  color: #92400e;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.tenantActions {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.tenantActionBtn {
+  padding: 5px 12px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #374151;
+  background: #f3f4f6;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.tenantActionBtn:hover {
+  background: #e5e7eb;
+}
+
+.tenantActionBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.tenantActionBtnDanger {
+  padding: 5px 12px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #dc2626;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.tenantActionBtnDanger:hover {
+  background: #fee2e2;
+  border-color: #f87171;
+}
+
+.tenantActionBtnDanger:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.tenantActionBtnPrimary {
+  padding: 5px 12px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--marketplaceColor, #007bff);
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.tenantActionBtnPrimary:hover {
+  background: #dbeafe;
+  border-color: #93c5fd;
+}
+
+/* Create Tenant Form */
+.tenantFormSection {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1f2937;
+  margin: 24px 0 16px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.tenantFormRow {
+  margin-bottom: 16px;
+}
+
+.tenantFormLabel {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  color: #374151;
+  margin-bottom: 6px;
+}
+
+.tenantFormInput {
+  display: block;
+  width: 100%;
+  padding: 10px 14px;
+  font-size: 14px;
+  color: #1f2937;
+  background: white;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  transition: border-color 0.15s ease;
+  box-sizing: border-box;
+}
+
+.tenantFormInput:focus {
+  outline: none;
+  border-color: var(--marketplaceColor, #007bff);
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+}
+
+.tenantFormHint {
+  display: block;
+  font-size: 12px;
+  color: #6b7280;
+  margin-top: 4px;
+}
+
+.tenantFormCheckboxRow {
+  margin-bottom: 16px;
+}
+
+.tenantFormCheckboxLabel {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: #374151;
+  cursor: pointer;
+}
+
+.tenantFormActions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  margin-top: 24px;
+  padding-top: 16px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.tenantCancelBtn {
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #374151;
+  background: white;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.tenantCancelBtn:hover {
+  background: #f3f4f6;
+}
+
+.tenantSubmitBtn {
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 600;
+  color: white;
+  background: var(--marketplaceColor, #007bff);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.tenantSubmitBtn:hover {
+  background: var(--marketplaceColorDark, #0056b3);
+}
+
+.tenantSubmitBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.tenantFormError {
+  padding: 12px 16px;
+  font-size: 14px;
+  color: #dc2626;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  margin-bottom: 16px;
+}
+
+/* Credentials Card */
+.credentialsCard {
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 12px;
+  padding: 24px;
+  margin-top: 16px;
+}
+
+.credentialsIntro {
+  font-size: 14px;
+  color: #374151;
+  margin: 0 0 20px;
+}
+
+.credentialRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+  padding: 10px 14px;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+}
+
+.credentialLabel {
+  font-size: 13px;
+  font-weight: 600;
+  color: #6b7280;
+  min-width: 120px;
+  flex-shrink: 0;
+}
+
+.credentialValue {
+  font-size: 14px;
+  font-family: 'SFMono-Regular', 'Consolas', 'Liberation Mono', 'Menlo', monospace;
+  color: #1f2937;
+  flex: 1;
+  word-break: break-all;
+}
+
+.copyButton {
+  padding: 4px 8px;
+  font-size: 16px;
+  background: none;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.copyButton:hover {
+  background: #f3f4f6;
+  border-color: #9ca3af;
+}
+
+.credentialsWarning {
+  margin-top: 16px;
+  padding: 12px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #92400e;
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  border-radius: 8px;
+}
+
+/* Confirm Delete Modal */
+.confirmModal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.confirmModalContent {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  max-width: 420px;
+  width: 90%;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+}
+
+.confirmModalContent h3 {
+  font-size: 18px;
+  font-weight: 600;
+  color: #1f2937;
+  margin: 0 0 12px;
+}
+
+.confirmModalContent p {
+  font-size: 14px;
+  color: #6b7280;
+  margin: 0 0 20px;
+  line-height: 1.5;
+}
+
+.confirmActions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+@media (max-width: 768px) {
+  .tenantsTable th:nth-child(4),
+  .tenantsTable td:nth-child(4),
+  .tenantsTable th:nth-child(5),
+  .tenantsTable td:nth-child(5),
+  .tenantsTable th:nth-child(6),
+  .tenantsTable td:nth-child(6) {
+    display: none;
+  }
+
+  .tenantActions {
+    flex-direction: column;
+  }
+
+  .credentialRow {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+
+  .credentialLabel {
+    min-width: auto;
+  }
+}

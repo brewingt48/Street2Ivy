@@ -36,6 +36,14 @@ import {
   fetchEducationalAdmins,
   updateSubscriptionAction,
   clearSubscriptionState,
+  // Tenant management
+  fetchTenants,
+  createTenantAction,
+  deleteTenantAction,
+  activateTenantAction,
+  deactivateTenantAction,
+  createTenantAdminAction,
+  clearTenantState,
 } from './AdminDashboardPage.duck';
 
 import css from './AdminDashboardPage.module.css';
@@ -6281,6 +6289,634 @@ const ContentManagementPanel = props => {
   );
 };
 
+// ================ Tenants Panel ================ //
+
+const TenantsPanel = props => {
+  const {
+    tenants,
+    fetchInProgress,
+    createInProgress,
+    createError,
+    createSuccess,
+    actionInProgress,
+    createAdminInProgress,
+    createAdminError,
+    createAdminResult,
+    onFetchTenants,
+    onCreateTenant,
+    onDeleteTenant,
+    onActivateTenant,
+    onDeactivateTenant,
+    onCreateTenantAdmin,
+    onClearTenantState,
+  } = props;
+
+  // Views: 'list', 'create', 'credentials'
+  const [view, setView] = useState('list');
+  const [confirmDelete, setConfirmDelete] = useState(null);
+  const [createAdminFor, setCreateAdminFor] = useState(null);
+  const [credentialsTenant, setCredentialsTenant] = useState(null);
+  const [copied, setCopied] = useState(null);
+
+  // Create tenant form state
+  const [formData, setFormData] = useState({
+    name: '',
+    subdomain: '',
+    institutionDomain: '',
+    displayName: '',
+    clientId: '',
+    clientSecret: '',
+    integrationClientId: '',
+    integrationClientSecret: '',
+    requireCorporateApproval: true,
+  });
+
+  // Create admin form state
+  const [adminForm, setAdminForm] = useState({
+    email: '',
+    firstName: '',
+    lastName: '',
+  });
+
+  // Auto-generate subdomain and displayName from name
+  const handleNameChange = value => {
+    const subdomain = value.toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 30);
+    setFormData(prev => ({
+      ...prev,
+      name: value,
+      subdomain,
+      displayName: value ? `Street2Ivy at ${value}` : '',
+    }));
+  };
+
+  // Reset form when switching to create view
+  const handleShowCreateForm = () => {
+    setFormData({
+      name: '',
+      subdomain: '',
+      institutionDomain: '',
+      displayName: '',
+      clientId: '',
+      clientSecret: '',
+      integrationClientId: '',
+      integrationClientSecret: '',
+      requireCorporateApproval: true,
+    });
+    onClearTenantState();
+    setView('create');
+  };
+
+  // Submit create tenant
+  const handleCreateTenant = async e => {
+    e.preventDefault();
+    try {
+      await onCreateTenant({
+        subdomain: formData.subdomain,
+        name: formData.name,
+        displayName: formData.displayName,
+        institutionDomain: formData.institutionDomain,
+        sharetribe: {
+          clientId: formData.clientId,
+          clientSecret: formData.clientSecret || undefined,
+          integrationClientId: formData.integrationClientId || undefined,
+          integrationClientSecret: formData.integrationClientSecret || undefined,
+        },
+        features: {
+          requireCorporateApproval: formData.requireCorporateApproval,
+        },
+      });
+      onFetchTenants();
+      setView('list');
+    } catch (err) {
+      // Error is handled by Redux state
+    }
+  };
+
+  // Handle create admin submit
+  const handleCreateAdmin = async e => {
+    e.preventDefault();
+    if (!createAdminFor) return;
+    try {
+      await onCreateTenantAdmin(createAdminFor.id, {
+        email: adminForm.email,
+        firstName: adminForm.firstName,
+        lastName: adminForm.lastName,
+      });
+      setCredentialsTenant(createAdminFor);
+      setCreateAdminFor(null);
+      setView('credentials');
+    } catch (err) {
+      // Error is handled by Redux state
+    }
+  };
+
+  // Handle delete tenant
+  const handleDeleteTenant = async id => {
+    try {
+      await onDeleteTenant(id);
+      setConfirmDelete(null);
+    } catch (err) {
+      // Error handled by Redux
+    }
+  };
+
+  // Handle activate/deactivate
+  const handleToggleStatus = async tenant => {
+    if (tenant.status === 'active') {
+      await onDeactivateTenant(tenant.id);
+    } else {
+      await onActivateTenant(tenant.id);
+    }
+    onFetchTenants();
+  };
+
+  // Copy to clipboard
+  const handleCopy = (text, label) => {
+    navigator.clipboard.writeText(text).then(() => {
+      setCopied(label);
+      setTimeout(() => setCopied(null), 2000);
+    });
+  };
+
+  // Format date
+  const formatDate = dateStr => {
+    if (!dateStr) return '—';
+    return new Date(dateStr).toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+    });
+  };
+
+  // ── Credentials View ────────────────────────────────────────
+  if (view === 'credentials' && createAdminResult) {
+    const tenantUrl = credentialsTenant
+      ? `https://${credentialsTenant.subdomain}.street2ivy.com`
+      : '';
+
+    return (
+      <div className={css.panel}>
+        <div className={css.panelHeader}>
+          <h2 className={css.panelTitle}>Tenant Admin Created Successfully</h2>
+        </div>
+
+        <div className={css.credentialsCard}>
+          <p className={css.credentialsIntro}>
+            Share these credentials with the school administrator. They can use them to log in and
+            manage their institution's portal.
+          </p>
+
+          <div className={css.credentialRow}>
+            <span className={css.credentialLabel}>Tenant URL:</span>
+            <code className={css.credentialValue}>{tenantUrl}</code>
+            <button
+              className={css.copyButton}
+              onClick={() => handleCopy(tenantUrl, 'url')}
+              title="Copy URL"
+            >
+              {copied === 'url' ? '✓' : '📋'}
+            </button>
+          </div>
+
+          <div className={css.credentialRow}>
+            <span className={css.credentialLabel}>Admin Email:</span>
+            <code className={css.credentialValue}>{createAdminResult.email}</code>
+            <button
+              className={css.copyButton}
+              onClick={() => handleCopy(createAdminResult.email, 'email')}
+              title="Copy email"
+            >
+              {copied === 'email' ? '✓' : '📋'}
+            </button>
+          </div>
+
+          <div className={css.credentialRow}>
+            <span className={css.credentialLabel}>Temp Password:</span>
+            <code className={css.credentialValue}>{createAdminResult.tempPassword}</code>
+            <button
+              className={css.copyButton}
+              onClick={() => handleCopy(createAdminResult.tempPassword, 'password')}
+              title="Copy password"
+            >
+              {copied === 'password' ? '✓' : '📋'}
+            </button>
+          </div>
+
+          <div className={css.credentialsWarning}>
+            Save these credentials now — the temporary password cannot be retrieved later. The admin
+            should change their password after first login.
+          </div>
+        </div>
+
+        <div className={css.tenantFormActions}>
+          <button
+            className={css.tenantCancelBtn}
+            onClick={() => {
+              onClearTenantState();
+              setView('list');
+            }}
+          >
+            Done
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // ── Create Admin Form (inline modal) ────────────────────────
+  if (createAdminFor) {
+    return (
+      <div className={css.panel}>
+        <div className={css.panelHeader}>
+          <h2 className={css.panelTitle}>Create Admin for {createAdminFor.name}</h2>
+        </div>
+
+        <p style={{ color: 'var(--colorGrey600)', marginBottom: '24px' }}>
+          Create an educational admin user who will manage this tenant's portal. They'll receive
+          a temporary password to log in.
+        </p>
+
+        {createAdminError && (
+          <div className={css.tenantFormError}>
+            {createAdminError?.message || 'Failed to create admin. Please try again.'}
+          </div>
+        )}
+
+        <form onSubmit={handleCreateAdmin}>
+          <div className={css.tenantFormRow}>
+            <label className={css.tenantFormLabel}>Email *</label>
+            <input
+              className={css.tenantFormInput}
+              type="email"
+              value={adminForm.email}
+              onChange={e => setAdminForm(prev => ({ ...prev, email: e.target.value }))}
+              placeholder={`admin@${createAdminFor.institutionDomain || 'school.edu'}`}
+              required
+            />
+          </div>
+          <div className={css.tenantFormRow}>
+            <label className={css.tenantFormLabel}>First Name *</label>
+            <input
+              className={css.tenantFormInput}
+              type="text"
+              value={adminForm.firstName}
+              onChange={e => setAdminForm(prev => ({ ...prev, firstName: e.target.value }))}
+              placeholder="Jane"
+              required
+            />
+          </div>
+          <div className={css.tenantFormRow}>
+            <label className={css.tenantFormLabel}>Last Name *</label>
+            <input
+              className={css.tenantFormInput}
+              type="text"
+              value={adminForm.lastName}
+              onChange={e => setAdminForm(prev => ({ ...prev, lastName: e.target.value }))}
+              placeholder="Smith"
+              required
+            />
+          </div>
+          <div className={css.tenantFormActions}>
+            <button
+              type="button"
+              className={css.tenantCancelBtn}
+              onClick={() => {
+                setCreateAdminFor(null);
+                setAdminForm({ email: '', firstName: '', lastName: '' });
+                onClearTenantState();
+              }}
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className={css.tenantSubmitBtn}
+              disabled={createAdminInProgress}
+            >
+              {createAdminInProgress ? 'Creating...' : 'Create Admin & Generate Password'}
+            </button>
+          </div>
+        </form>
+      </div>
+    );
+  }
+
+  // ── Create Tenant Form ──────────────────────────────────────
+  if (view === 'create') {
+    return (
+      <div className={css.panel}>
+        <div className={css.panelHeader}>
+          <h2 className={css.panelTitle}>Create New Tenant</h2>
+        </div>
+
+        {createError && (
+          <div className={css.tenantFormError}>
+            {createError?.message || 'Failed to create tenant. Please check your inputs.'}
+          </div>
+        )}
+
+        <form onSubmit={handleCreateTenant}>
+          <div className={css.tenantFormSection}>School Information</div>
+
+          <div className={css.tenantFormRow}>
+            <label className={css.tenantFormLabel}>School Name *</label>
+            <input
+              className={css.tenantFormInput}
+              type="text"
+              value={formData.name}
+              onChange={e => handleNameChange(e.target.value)}
+              placeholder="Harvard University"
+              required
+            />
+          </div>
+
+          <div className={css.tenantFormRow}>
+            <label className={css.tenantFormLabel}>Subdomain *</label>
+            <input
+              className={css.tenantFormInput}
+              type="text"
+              value={formData.subdomain}
+              onChange={e =>
+                setFormData(prev => ({
+                  ...prev,
+                  subdomain: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''),
+                }))
+              }
+              placeholder="harvard"
+              required
+            />
+            <span className={css.tenantFormHint}>
+              {formData.subdomain
+                ? `${formData.subdomain}.street2ivy.com`
+                : 'subdomain.street2ivy.com'}
+            </span>
+          </div>
+
+          <div className={css.tenantFormRow}>
+            <label className={css.tenantFormLabel}>Institution Email Domain</label>
+            <input
+              className={css.tenantFormInput}
+              type="text"
+              value={formData.institutionDomain}
+              onChange={e => setFormData(prev => ({ ...prev, institutionDomain: e.target.value }))}
+              placeholder="harvard.edu"
+            />
+          </div>
+
+          <div className={css.tenantFormRow}>
+            <label className={css.tenantFormLabel}>Display Name</label>
+            <input
+              className={css.tenantFormInput}
+              type="text"
+              value={formData.displayName}
+              onChange={e => setFormData(prev => ({ ...prev, displayName: e.target.value }))}
+              placeholder="Street2Ivy at Harvard University"
+            />
+          </div>
+
+          <div className={css.tenantFormSection}>Sharetribe Credentials</div>
+
+          <div className={css.tenantFormRow}>
+            <label className={css.tenantFormLabel}>Client ID *</label>
+            <input
+              className={css.tenantFormInput}
+              type="text"
+              value={formData.clientId}
+              onChange={e => setFormData(prev => ({ ...prev, clientId: e.target.value }))}
+              placeholder="Sharetribe Marketplace SDK Client ID"
+              required
+            />
+          </div>
+
+          <div className={css.tenantFormRow}>
+            <label className={css.tenantFormLabel}>Client Secret</label>
+            <input
+              className={css.tenantFormInput}
+              type="password"
+              value={formData.clientSecret}
+              onChange={e => setFormData(prev => ({ ...prev, clientSecret: e.target.value }))}
+              placeholder="Sharetribe SDK Client Secret"
+            />
+          </div>
+
+          <div className={css.tenantFormRow}>
+            <label className={css.tenantFormLabel}>Integration Client ID</label>
+            <input
+              className={css.tenantFormInput}
+              type="text"
+              value={formData.integrationClientId}
+              onChange={e =>
+                setFormData(prev => ({ ...prev, integrationClientId: e.target.value }))
+              }
+              placeholder="Integration API Client ID"
+            />
+          </div>
+
+          <div className={css.tenantFormRow}>
+            <label className={css.tenantFormLabel}>Integration Client Secret</label>
+            <input
+              className={css.tenantFormInput}
+              type="password"
+              value={formData.integrationClientSecret}
+              onChange={e =>
+                setFormData(prev => ({ ...prev, integrationClientSecret: e.target.value }))
+              }
+              placeholder="Integration API Client Secret"
+            />
+          </div>
+
+          <div className={css.tenantFormSection}>Features</div>
+
+          <div className={css.tenantFormCheckboxRow}>
+            <label className={css.tenantFormCheckboxLabel}>
+              <input
+                type="checkbox"
+                checked={formData.requireCorporateApproval}
+                onChange={e =>
+                  setFormData(prev => ({ ...prev, requireCorporateApproval: e.target.checked }))
+                }
+              />
+              Require corporate partner approval
+            </label>
+          </div>
+
+          <div className={css.tenantFormActions}>
+            <button
+              type="button"
+              className={css.tenantCancelBtn}
+              onClick={() => setView('list')}
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className={css.tenantSubmitBtn}
+              disabled={createInProgress}
+            >
+              {createInProgress ? 'Creating...' : 'Create Tenant'}
+            </button>
+          </div>
+        </form>
+      </div>
+    );
+  }
+
+  // ── List View ───────────────────────────────────────────────
+  return (
+    <div className={css.panel}>
+      <div className={css.panelHeader}>
+        <h2 className={css.panelTitle}>Tenant Management</h2>
+        <button className={css.tenantCreateButton} onClick={handleShowCreateForm}>
+          + Create New Tenant
+        </button>
+      </div>
+
+      {fetchInProgress ? (
+        <p style={{ textAlign: 'center', padding: '40px', color: 'var(--colorGrey600)' }}>
+          Loading tenants...
+        </p>
+      ) : tenants.length === 0 ? (
+        <p style={{ textAlign: 'center', padding: '40px', color: 'var(--colorGrey600)' }}>
+          No tenants found. Create your first tenant to get started.
+        </p>
+      ) : (
+        <div className={css.tableContainer}>
+          <table className={css.tenantsTable}>
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Subdomain</th>
+                <th>Status</th>
+                <th>Credentials</th>
+                <th>Partners</th>
+                <th>Created</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {tenants.map(tenant => {
+                const isDefault = tenant.id === 'default';
+                const isActive = tenant.status === 'active';
+                const hasCredentials =
+                  tenant.sharetribe?.hasClientSecret && tenant.sharetribe?.hasIntegrationCredentials;
+
+                return (
+                  <tr key={tenant.id}>
+                    <td>
+                      <strong>{tenant.name}</strong>
+                      {isDefault && (
+                        <span className={css.tenantDefaultBadge}>DEFAULT</span>
+                      )}
+                    </td>
+                    <td>
+                      <code className={css.tenantSubdomain}>{tenant.subdomain}</code>
+                    </td>
+                    <td>
+                      <span
+                        className={classNames(css.tenantStatusBadge, {
+                          [css.tenantStatusActive]: isActive,
+                          [css.tenantStatusInactive]: !isActive,
+                        })}
+                      >
+                        {isActive ? 'Active' : 'Inactive'}
+                      </span>
+                    </td>
+                    <td>
+                      {hasCredentials ? (
+                        <span className={css.tenantCredentialOk} title="All credentials configured">
+                          ✓ Complete
+                        </span>
+                      ) : (
+                        <span
+                          className={css.tenantCredentialMissing}
+                          title="Missing some credentials"
+                        >
+                          ⚠ Incomplete
+                        </span>
+                      )}
+                    </td>
+                    <td>{tenant.corporatePartnerIds?.length || 0}</td>
+                    <td>{formatDate(tenant.createdAt)}</td>
+                    <td className={css.tenantActions}>
+                      {!isDefault && (
+                        <>
+                          <button
+                            className={css.tenantActionBtn}
+                            onClick={() => handleToggleStatus(tenant)}
+                            disabled={actionInProgress === tenant.id}
+                            title={isActive ? 'Deactivate' : 'Activate'}
+                          >
+                            {actionInProgress === tenant.id
+                              ? '...'
+                              : isActive
+                              ? 'Deactivate'
+                              : 'Activate'}
+                          </button>
+                          <button
+                            className={css.tenantActionBtnDanger}
+                            onClick={() => setConfirmDelete(tenant)}
+                            disabled={actionInProgress === tenant.id}
+                            title="Delete tenant"
+                          >
+                            Delete
+                          </button>
+                        </>
+                      )}
+                      <button
+                        className={css.tenantActionBtnPrimary}
+                        onClick={() => {
+                          setCreateAdminFor(tenant);
+                          setAdminForm({
+                            email: '',
+                            firstName: '',
+                            lastName: '',
+                          });
+                          onClearTenantState();
+                        }}
+                        title="Create an educational admin for this tenant"
+                      >
+                        Create Admin
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {/* Confirm Delete Modal */}
+      {confirmDelete && (
+        <div className={css.confirmModal}>
+          <div className={css.confirmModalContent}>
+            <h3>Delete Tenant</h3>
+            <p>
+              Are you sure you want to delete <strong>{confirmDelete.name}</strong>? This action
+              cannot be undone.
+            </p>
+            <div className={css.confirmActions}>
+              <button
+                className={css.tenantCancelBtn}
+                onClick={() => setConfirmDelete(null)}
+              >
+                Cancel
+              </button>
+              <button
+                className={css.tenantActionBtnDanger}
+                onClick={() => handleDeleteTenant(confirmDelete.id)}
+                disabled={actionInProgress === confirmDelete.id}
+              >
+                {actionInProgress === confirmDelete.id ? 'Deleting...' : 'Delete'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
 // ================ Main Component ================ //
 
 const AdminDashboardPageComponent = props => {
@@ -6349,6 +6985,23 @@ const AdminDashboardPageComponent = props => {
     onFetchEducationalAdmins,
     onUpdateSubscription,
     onClearSubscriptionState,
+    // Tenants
+    tenants,
+    fetchTenantsInProgress,
+    createTenantInProgress,
+    createTenantError,
+    createTenantSuccess,
+    tenantActionInProgress,
+    createTenantAdminInProgress,
+    createTenantAdminError,
+    createTenantAdminResult,
+    onFetchTenants,
+    onCreateTenant,
+    onDeleteTenant,
+    onActivateTenant,
+    onDeactivateTenant,
+    onCreateTenantAdmin,
+    onClearTenantState,
   } = props;
 
   const intl = useIntl();
@@ -6465,6 +7118,12 @@ const AdminDashboardPageComponent = props => {
             >
               Student Waitlist
             </button>
+            <button
+              className={classNames(css.tab, { [css.tabActive]: activeTab === 'tenants' })}
+              onClick={() => handleTabChange('tenants')}
+            >
+              Tenants
+            </button>
           </div>
 
           {/* Tab Content */}
@@ -6576,6 +7235,27 @@ const AdminDashboardPageComponent = props => {
             <StudentWaitlistPanel />
           )}
 
+          {activeTab === 'tenants' && (
+            <TenantsPanel
+              tenants={tenants}
+              fetchInProgress={fetchTenantsInProgress}
+              createInProgress={createTenantInProgress}
+              createError={createTenantError}
+              createSuccess={createTenantSuccess}
+              actionInProgress={tenantActionInProgress}
+              createAdminInProgress={createTenantAdminInProgress}
+              createAdminError={createTenantAdminError}
+              createAdminResult={createTenantAdminResult}
+              onFetchTenants={onFetchTenants}
+              onCreateTenant={onCreateTenant}
+              onDeleteTenant={onDeleteTenant}
+              onActivateTenant={onActivateTenant}
+              onDeactivateTenant={onDeactivateTenant}
+              onCreateTenantAdmin={onCreateTenantAdmin}
+              onClearTenantState={onClearTenantState}
+            />
+          )}
+
         </div>
       </LayoutSingleColumn>
     </Page>
@@ -6616,6 +7296,17 @@ const mapStateToProps = state => {
     fetchEducationalAdminsInProgress,
     updateSubscriptionInProgress,
     updateSubscriptionSuccess,
+    // Tenants
+    tenants,
+    fetchTenantsInProgress,
+    fetchTenantsError,
+    createTenantInProgress,
+    createTenantError,
+    createTenantSuccess,
+    tenantActionInProgress,
+    createTenantAdminInProgress,
+    createTenantAdminError,
+    createTenantAdminResult,
   } = state.AdminDashboardPage;
 
   return {
@@ -6652,6 +7343,16 @@ const mapStateToProps = state => {
     fetchEducationalAdminsInProgress,
     updateSubscriptionInProgress,
     updateSubscriptionSuccess,
+    // Tenants
+    tenants,
+    fetchTenantsInProgress,
+    createTenantInProgress,
+    createTenantError,
+    createTenantSuccess,
+    tenantActionInProgress,
+    createTenantAdminInProgress,
+    createTenantAdminError,
+    createTenantAdminResult,
   };
 };
 
@@ -6681,6 +7382,14 @@ const mapDispatchToProps = dispatch => ({
   onFetchEducationalAdmins: params => dispatch(fetchEducationalAdmins(params)),
   onUpdateSubscription: (userId, data) => dispatch(updateSubscriptionAction(userId, data)),
   onClearSubscriptionState: () => dispatch(clearSubscriptionState()),
+  // Tenants
+  onFetchTenants: () => dispatch(fetchTenants()),
+  onCreateTenant: data => dispatch(createTenantAction(data)),
+  onDeleteTenant: id => dispatch(deleteTenantAction(id)),
+  onActivateTenant: id => dispatch(activateTenantAction(id)),
+  onDeactivateTenant: id => dispatch(deactivateTenantAction(id)),
+  onCreateTenantAdmin: (tenantId, data) => dispatch(createTenantAdminAction(tenantId, data)),
+  onClearTenantState: () => dispatch(clearTenantState()),
 });
 
 const AdminDashboardPage = compose(

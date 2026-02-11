@@ -26,6 +26,14 @@ import {
   rejectEducationalAdminApplication as rejectApplicationApi,
   fetchEducationalAdmins as fetchEducationalAdminsApi,
   updateEducationalAdminSubscription as updateSubscriptionApi,
+  // Tenant management
+  fetchAdminTenants as fetchAdminTenantsApi,
+  createAdminTenant as createAdminTenantApi,
+  updateAdminTenant as updateAdminTenantApi,
+  deleteAdminTenant as deleteAdminTenantApi,
+  activateAdminTenant as activateAdminTenantApi,
+  deactivateAdminTenant as deactivateAdminTenantApi,
+  createTenantAdmin as createTenantAdminApi,
   // Blog management
   fetchBlogPosts as fetchBlogPostsApi,
   fetchBlogPost as fetchBlogPostApi,
@@ -494,6 +502,105 @@ export const deleteBlogCategoryThunk = createAsyncThunk(
   }
 );
 
+// ================ Tenant Thunks ================ //
+
+export const fetchTenantsThunk = createAsyncThunk(
+  'app/AdminDashboardPage/fetchTenants',
+  async (_, { rejectWithValue }) => {
+    try {
+      return await fetchAdminTenantsApi();
+    } catch (e) {
+      return rejectWithValue(storableError(e));
+    }
+  }
+);
+
+export const fetchTenants = () => dispatch => dispatch(fetchTenantsThunk()).unwrap();
+
+export const createTenantThunk = createAsyncThunk(
+  'app/AdminDashboardPage/createTenant',
+  async (data, { rejectWithValue }) => {
+    try {
+      return await createAdminTenantApi(data);
+    } catch (e) {
+      return rejectWithValue(storableError(e));
+    }
+  }
+);
+
+export const createTenantAction = data => dispatch =>
+  dispatch(createTenantThunk(data)).unwrap();
+
+export const updateTenantThunk = createAsyncThunk(
+  'app/AdminDashboardPage/updateTenant',
+  async ({ id, data }, { rejectWithValue }) => {
+    try {
+      return await updateAdminTenantApi(id, data);
+    } catch (e) {
+      return rejectWithValue(storableError(e));
+    }
+  }
+);
+
+export const updateTenantAction = (id, data) => dispatch =>
+  dispatch(updateTenantThunk({ id, data })).unwrap();
+
+export const deleteTenantThunk = createAsyncThunk(
+  'app/AdminDashboardPage/deleteTenant',
+  async (id, { rejectWithValue }) => {
+    try {
+      return await deleteAdminTenantApi(id);
+    } catch (e) {
+      return rejectWithValue(storableError(e));
+    }
+  }
+);
+
+export const deleteTenantAction = id => dispatch =>
+  dispatch(deleteTenantThunk(id)).unwrap();
+
+export const activateTenantThunk = createAsyncThunk(
+  'app/AdminDashboardPage/activateTenant',
+  async (id, { rejectWithValue }) => {
+    try {
+      return await activateAdminTenantApi(id);
+    } catch (e) {
+      return rejectWithValue(storableError(e));
+    }
+  }
+);
+
+export const activateTenantAction = id => dispatch =>
+  dispatch(activateTenantThunk(id)).unwrap();
+
+export const deactivateTenantThunk = createAsyncThunk(
+  'app/AdminDashboardPage/deactivateTenant',
+  async (id, { rejectWithValue }) => {
+    try {
+      return await deactivateAdminTenantApi(id);
+    } catch (e) {
+      return rejectWithValue(storableError(e));
+    }
+  }
+);
+
+export const deactivateTenantAction = id => dispatch =>
+  dispatch(deactivateTenantThunk(id)).unwrap();
+
+export const createTenantAdminThunk = createAsyncThunk(
+  'app/AdminDashboardPage/createTenantAdmin',
+  async ({ tenantId, data }, { rejectWithValue }) => {
+    try {
+      return await createTenantAdminApi(tenantId, data);
+    } catch (e) {
+      return rejectWithValue(storableError(e));
+    }
+  }
+);
+
+export const createTenantAdminAction = (tenantId, data) => dispatch =>
+  dispatch(createTenantAdminThunk({ tenantId, data })).unwrap();
+
 // ================ Slice ================ //
 
 const adminDashboardPageSlice = createSlice({
@@ -562,6 +669,18 @@ const adminDashboardPageSlice = createSlice({
     updateSubscriptionInProgress: null,
     updateSubscriptionSuccess: false,
 
+    // Tenant Management
+    tenants: [],
+    fetchTenantsInProgress: false,
+    fetchTenantsError: null,
+    createTenantInProgress: false,
+    createTenantError: null,
+    createTenantSuccess: false,
+    tenantActionInProgress: null,
+    createTenantAdminInProgress: false,
+    createTenantAdminError: null,
+    createTenantAdminResult: null,
+
     // Blog Management
     blogPosts: [],
     blogPostsPagination: null,
@@ -599,6 +718,14 @@ const adminDashboardPageSlice = createSlice({
     clearSubscriptionState: state => {
       state.updateSubscriptionInProgress = null;
       state.updateSubscriptionSuccess = false;
+    },
+    clearTenantState: state => {
+      state.createTenantInProgress = false;
+      state.createTenantError = null;
+      state.createTenantSuccess = false;
+      state.createTenantAdminInProgress = false;
+      state.createTenantAdminError = null;
+      state.createTenantAdminResult = null;
     },
     clearBlogPostState: state => {
       state.saveBlogPostInProgress = false;
@@ -1010,6 +1137,107 @@ const adminDashboardPageSlice = createSlice({
       // Delete blog category
       .addCase(deleteBlogCategoryThunk.fulfilled, (state, action) => {
         state.blogCategories = action.payload.categories || [];
+      })
+      // Fetch tenants
+      .addCase(fetchTenantsThunk.pending, state => {
+        state.fetchTenantsInProgress = true;
+        state.fetchTenantsError = null;
+      })
+      .addCase(fetchTenantsThunk.fulfilled, (state, action) => {
+        state.fetchTenantsInProgress = false;
+        state.tenants = action.payload.tenants || [];
+      })
+      .addCase(fetchTenantsThunk.rejected, (state, action) => {
+        state.fetchTenantsInProgress = false;
+        state.fetchTenantsError = action.payload;
+      })
+      // Create tenant
+      .addCase(createTenantThunk.pending, state => {
+        state.createTenantInProgress = true;
+        state.createTenantError = null;
+        state.createTenantSuccess = false;
+      })
+      .addCase(createTenantThunk.fulfilled, (state, action) => {
+        state.createTenantInProgress = false;
+        state.createTenantSuccess = true;
+        const newTenant = action.payload.tenant;
+        if (newTenant) {
+          state.tenants.push(newTenant);
+        }
+      })
+      .addCase(createTenantThunk.rejected, (state, action) => {
+        state.createTenantInProgress = false;
+        state.createTenantError = action.payload;
+      })
+      // Update tenant
+      .addCase(updateTenantThunk.fulfilled, (state, action) => {
+        const updated = action.payload.tenant;
+        if (updated) {
+          const index = state.tenants.findIndex(t => t.id === updated.id);
+          if (index !== -1) {
+            state.tenants[index] = updated;
+          }
+        }
+      })
+      // Delete tenant
+      .addCase(deleteTenantThunk.pending, (state, action) => {
+        state.tenantActionInProgress = action.meta.arg;
+      })
+      .addCase(deleteTenantThunk.fulfilled, (state, action) => {
+        state.tenantActionInProgress = null;
+        const deletedId = action.meta.arg;
+        state.tenants = state.tenants.filter(t => t.id !== deletedId);
+      })
+      .addCase(deleteTenantThunk.rejected, state => {
+        state.tenantActionInProgress = null;
+      })
+      // Activate tenant
+      .addCase(activateTenantThunk.pending, (state, action) => {
+        state.tenantActionInProgress = action.meta.arg;
+      })
+      .addCase(activateTenantThunk.fulfilled, (state, action) => {
+        state.tenantActionInProgress = null;
+        const updated = action.payload.tenant;
+        if (updated) {
+          const index = state.tenants.findIndex(t => t.id === updated.id);
+          if (index !== -1) {
+            state.tenants[index] = updated;
+          }
+        }
+      })
+      .addCase(activateTenantThunk.rejected, state => {
+        state.tenantActionInProgress = null;
+      })
+      // Deactivate tenant
+      .addCase(deactivateTenantThunk.pending, (state, action) => {
+        state.tenantActionInProgress = action.meta.arg;
+      })
+      .addCase(deactivateTenantThunk.fulfilled, (state, action) => {
+        state.tenantActionInProgress = null;
+        const updated = action.payload.tenant;
+        if (updated) {
+          const index = state.tenants.findIndex(t => t.id === updated.id);
+          if (index !== -1) {
+            state.tenants[index] = updated;
+          }
+        }
+      })
+      .addCase(deactivateTenantThunk.rejected, state => {
+        state.tenantActionInProgress = null;
+      })
+      // Create tenant admin
+      .addCase(createTenantAdminThunk.pending, state => {
+        state.createTenantAdminInProgress = true;
+        state.createTenantAdminError = null;
+        state.createTenantAdminResult = null;
+      })
+      .addCase(createTenantAdminThunk.fulfilled, (state, action) => {
+        state.createTenantAdminInProgress = false;
+        state.createTenantAdminResult = action.payload.user || null;
+      })
+      .addCase(createTenantAdminThunk.rejected, (state, action) => {
+        state.createTenantAdminInProgress = false;
+        state.createTenantAdminError = action.payload;
       });
   },
 });
@@ -1021,6 +1249,7 @@ export const {
   clearContentState,
   clearUserStats,
   clearSubscriptionState,
+  clearTenantState,
   clearBlogPostState,
   setSelectedBlogPost,
   clearSelectedBlogPost,
@@ -1047,6 +1276,8 @@ export const loadData = (params, search) => dispatch => {
     promises.push(dispatch(fetchApplicationsThunk({ status: 'pending' })));
     promises.push(dispatch(fetchApplicationStatsThunk()));
     promises.push(dispatch(fetchEducationalAdminsThunk({})));
+  } else if (tab === 'tenants') {
+    promises.push(dispatch(fetchTenantsThunk()));
   } else if (tab === 'blog') {
     promises.push(dispatch(fetchBlogPostsThunk({})));
   } else {

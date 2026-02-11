@@ -33,17 +33,40 @@ const SectionAuthorMaybe = props => {
   const processName = resolveLatestProcessName(transactionProcessAlias.split('/')[0]);
   const isInquiryProcess = processName === INQUIRY_PROCESS_NAME;
 
-  // Street2Ivy: Use company-focused heading for corporate partners
+  // Street2Ivy: Hide the "About" section for corporate partner listings
+  // Corporate partner info is already shown elsewhere on the page
   const authorPublicData = listing.author?.attributes?.profile?.publicData;
   const isCorporatePartner = authorPublicData?.userType === 'corporate-partner';
-  const sectionHeadingId = isCorporatePartner
-    ? 'ListingPage.aboutCompanyTitle'
-    : 'ListingPage.aboutProviderTitle';
+
+  if (isCorporatePartner) {
+    // Only render the inquiry modal (no author section visible)
+    return (
+      <Modal
+        id="ListingPage.inquiry"
+        contentClassName={css.inquiryModalContent}
+        isOpen={isInquiryModalOpen}
+        onClose={onCloseInquiryModal}
+        usePortal
+        onManageDisableScrolling={onManageDisableScrolling}
+        focusElementId={CONTACT_USER_LINK}
+      >
+        <InquiryForm
+          className={css.inquiryForm}
+          submitButtonWrapperClassName={css.inquirySubmitButtonWrapper}
+          listingTitle={title}
+          authorDisplayName={authorDisplayName}
+          sendInquiryError={sendInquiryError}
+          onSubmit={onSubmitInquiry}
+          inProgress={sendInquiryInProgress}
+        />
+      </Modal>
+    );
+  }
 
   return (
     <section id="author" className={css.sectionAuthor}>
       <Heading as="h2" rootClassName={css.sectionHeadingWithExtraMargin}>
-        <FormattedMessage id={sectionHeadingId} />
+        <FormattedMessage id="ListingPage.aboutProviderTitle" />
       </Heading>
       <UserCard
         user={listing.author}

@@ -5,6 +5,8 @@
  * Each tenant represents an institution with its own Sharetribe marketplace account.
  */
 
+const crypto = require('crypto');
+const marketplaceSdkLib = require('sharetribe-flex-sdk');
 const { getSdk, handleError } = require('../../api-util/sdk');
 const {
   getAllTenants,
@@ -355,6 +357,116 @@ async function deactivate(req, res) {
   }
 }
 
+/**
+ * POST /api/admin/tenants/:id/create-admin
+ *
+ * Creates an educational admin user for a tenant using the Marketplace SDK.
+ * Body: { email, firstName, lastName }
+ * Returns the user email and a temporary password.
+ */
+async function createAdmin(req, res) {
+  const { id } = req.params;
+  const { email, firstName, lastName } = req.body;
+
+  try {
+    const admin = await verifySystemAdmin(req, res);
+    if (!admin) {
+      return res.status(403).json({
+        error: 'Access denied. System administrator privileges required.',
+      });
+    }
+
+    // Validate required fields
+    if (!email || !firstName || !lastName) {
+      return res.status(400).json({
+        error: 'email, firstName, and lastName are required.',
+      });
+    }
+
+    // Get tenant
+    const tenant = getTenantById(id);
+    if (!tenant) {
+      return res.status(404).json({ error: 'Tenant not found.' });
+    }
+
+    // Tenant must have a Sharetribe clientId to create users
+    const tenantClientId = tenant.sharetribe?.clientId;
+    if (!tenantClientId) {
+      return res.status(400).json({
+        error: 'Tenant does not have a Sharetribe Client ID configured.',
+      });
+    }
+
+    // Generate a secure temporary password
+    const tempPassword = crypto.randomBytes(12).toString('base64url') + '!A1';
+
+    // Create a fresh Marketplace SDK instance for the tenant
+    const tenantSdk = marketplaceSdkLib.createInstance({
+      clientId: tenantClientId,
+    });
+
+    // Derive institution info from tenant
+    const institutionDomain = tenant.institutionDomain || email.split('@')[1] || '';
+    const institutionName = tenant.name || '';
+
+    // Create the user via Marketplace SDK (the only way to programmatically create users)
+    await tenantSdk.currentUser.create({
+      email,
+      password: tempPassword,
+      firstName,
+      lastName,
+      displayName: `${firstName} ${lastName}`,
+      publicData: {
+        userType: 'educational-admin',
+        emailDomain: institutionDomain,
+        institutionName: institutionName,
+        institutionDomain: institutionDomain,
+        adminRole: 'career-services',
+        approvalStatus: 'approved',
+        approvedAt: new Date().toISOString(),
+      },
+    });
+
+    // Logout the SDK session so it doesn't interfere with other operations
+    try {
+      await tenantSdk.logout();
+    } catch (e) {
+      /* ignore logout errors */
+    }
+
+    console.log('Tenant admin created:', {
+      tenantId: id,
+      email,
+      name: `${firstName} ${lastName}`,
+    });
+
+    res.status(201).json({
+      success: true,
+      message: 'Educational admin created successfully.',
+      user: {
+        email,
+        firstName,
+        lastName,
+        tempPassword,
+      },
+      tenant: sanitizeTenant(tenant),
+    });
+  } catch (error) {
+    console.error('Create tenant admin error:', error);
+
+    if (error.status === 409 || error.message?.includes('email-taken')) {
+      return res.status(409).json({
+        error: 'A user with this email already exists.',
+      });
+    }
+
+    if (error.message) {
+      return res.status(400).json({ error: error.message });
+    }
+    handleError(res, error);
+  }
+}
+
 module.exports = {
   list,
   get,
@@ -365,4 +477,5 @@ module.exports = {
   removePartner,
   activate,
   deactivate,
+  createAdmin,
 };
