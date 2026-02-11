@@ -4623,12 +4623,21 @@
 }
 
 .tenantFormCheckboxLabel {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   font-size: 14px;
   font-weight: 500;
   color: #374151;
+  cursor: pointer;
+  line-height: 1.4;
+}
+
+.tenantFormCheckboxLabel input[type='checkbox'] {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  flex-shrink: 0;
   cursor: pointer;
 }
 
@@ -4638,7 +4647,7 @@
   line-height: 1.5;
   color: #6b7280;
   margin-top: 6px;
-  padding-left: 26px;
+  padding-left: 28px;
 }
 
 .tenantFormActions {
