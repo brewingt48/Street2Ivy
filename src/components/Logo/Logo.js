@@ -61,6 +61,8 @@ export const LogoComponent = props => {
     logoImageDesktop,
     logoImageMobile,
     logoSettings,
+    defaultLogoDesktop,
+    defaultLogoMobile,
     ...rest
   } = props;
 
@@ -70,6 +72,14 @@ export const LogoComponent = props => {
     logoImageClassName || css.logo,
     getHeightClassName(logoSettings?.height)
   );
+
+  // If the CMS logo fails to load, fall back to the default logo
+  const handleImgError = (e) => {
+    const fallback = layout === 'desktop' ? defaultLogoDesktop : defaultLogoMobile;
+    if (fallback && e.target.src !== fallback) {
+      e.target.src = fallback;
+    }
+  };
 
   // Logo from hosted asset
   if (isImageAsset(logoImageDesktop) && hasValidLogoSettings && layout === 'desktop') {
@@ -115,14 +125,26 @@ export const LogoComponent = props => {
   } else if (layout === 'desktop') {
     return (
       <div className={logoClasses}>
-        <img className={logoImageClasses} src={logoImageDesktop} alt={marketplaceName} {...rest} />
+        <img
+          className={logoImageClasses}
+          src={logoImageDesktop}
+          alt={marketplaceName}
+          onError={handleImgError}
+          {...rest}
+        />
       </div>
     );
   }
 
   return (
     <div className={logoClasses}>
-      <img className={logoImageClasses} src={logoImageMobile} alt={marketplaceName} {...rest} />
+      <img
+        className={logoImageClasses}
+        src={logoImageMobile}
+        alt={marketplaceName}
+        onError={handleImgError}
+        {...rest}
+      />
     </div>
   );
 };
@@ -202,6 +224,8 @@ const Logo = props => {
       logoImageMobile={effectiveLogoMobile}
       logoSettings={effectiveLogoSettings}
       marketplaceName={config.marketplaceName}
+      defaultLogoDesktop={logoImageDesktop}
+      defaultLogoMobile={logoImageMobile}
     />
   );
 };

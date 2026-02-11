@@ -26,13 +26,13 @@ async function verifySearchPermission(req, res) {
     const userType = publicData.userType;
 
     // Only these user types can search other users
-    const allowedTypes = ['corporate-partner', 'educational-admin', 'system-admin'];
+    const allowedTypes = ['corporate-partner', 'educational-admin', 'system-admin', 'student'];
 
     if (!allowedTypes.includes(userType)) {
       return {
         authorized: false,
         error:
-          'Access denied. Only corporate partners, educational administrators, and system administrators can search users.',
+          'Access denied. Only corporate partners, educational administrators, system administrators, and students can search users.',
         status: 403,
       };
     }
@@ -114,6 +114,14 @@ module.exports = async (req, res) => {
   if (authResult.userType === 'educational-admin' && userType !== 'student') {
     return res.status(403).json({
       error: 'Educational administrators can only search for students.',
+      code: 'FORBIDDEN',
+    });
+  }
+
+  // SECURITY: Students can only search for corporate partners (companies)
+  if (authResult.userType === 'student' && userType !== 'corporate-partner') {
+    return res.status(403).json({
+      error: 'Students can only search for companies.',
       code: 'FORBIDDEN',
     });
   }

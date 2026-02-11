@@ -215,11 +215,13 @@ function sanitizeOriginalFilename(filename) {
   return sanitized.substring(0, 100);
 }
 
-// Upload directory - in dev mode, use server/uploads; in production, use build/static/uploads
-const isDev = process.env.NODE_ENV === 'development';
-const UPLOAD_DIR = isDev
-  ? path.join(__dirname, '../../uploads')
-  : path.join(__dirname, '../../../build/static/uploads');
+// Upload directory - always use server/uploads so the path matches the
+// express.static middleware registered in apiRouter.js (router.use('/uploads', ...))
+// which serves files from server/uploads/ at /api/uploads/*.
+// Note: On Heroku's ephemeral filesystem, uploaded files will be lost on
+// dyno restart. For production persistence, use an external storage service
+// (e.g. AWS S3, Cloudinary) and store the external URL instead.
+const UPLOAD_DIR = path.join(__dirname, '../../uploads');
 
 // Ensure upload directory exists
 if (!fs.existsSync(UPLOAD_DIR)) {
