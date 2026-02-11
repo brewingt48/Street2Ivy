@@ -8,7 +8,8 @@
 const fs = require('fs');
 const path = require('path');
 const { getIntegrationSdkForTenant } = require('../../api-util/integrationSdk');
-const { handleError } = require('../../api-util/sdk');
+const { handleError, getSdk } = require('../../api-util/sdk');
+const { verifySystemAdmin: verifySystemAdminAuth } = require('../../api-util/security');
 
 // Data file for blocked students
 const BLOCKED_STUDENTS_FILE = path.join(__dirname, '../../data/blocked-coaching-students.json');
@@ -49,16 +50,14 @@ function saveBlockedStudents(data) {
 
 /**
  * Helper to verify user is a system admin
+ * Uses the Marketplace SDK (session-based) for authentication,
+ * NOT the Integration SDK which doesn't support currentUser.
  */
-async function verifySystemAdmin(sdk) {
-  const currentUserRes = await sdk.currentUser.show();
-  const currentUser = currentUserRes.data.data;
-  const userType = currentUser.attributes.profile.publicData?.userType;
-
-  if (userType !== 'system-admin') {
+async function verifySystemAdmin(req, res) {
+  const currentUser = await verifySystemAdminAuth(req, res);
+  if (!currentUser) {
     throw { status: 403, message: 'Access denied. System admin only.' };
   }
-
   return currentUser;
 }
 
@@ -69,7 +68,7 @@ async function verifySystemAdmin(sdk) {
 async function listBlockedStudents(req, res) {
   try {
     const sdk = getIntegrationSdkForTenant(req.tenant);
-    await verifySystemAdmin(sdk);
+    await verifySystemAdmin(req, res);
 
     const data = loadBlockedStudents();
     const blockedStudents = data.blockedStudents || [];
@@ -120,7 +119,7 @@ async function listBlockedStudents(req, res) {
 async function blockStudent(req, res) {
   try {
     const sdk = getIntegrationSdkForTenant(req.tenant);
-    const adminUser = await verifySystemAdmin(sdk);
+    const adminUser = await verifySystemAdmin(req, res);
 
     const { userId, reason } = req.body;
 
@@ -179,7 +178,7 @@ async function blockStudent(req, res) {
 async function unblockStudent(req, res) {
   try {
     const sdk = getIntegrationSdkForTenant(req.tenant);
-    await verifySystemAdmin(sdk);
+    await verifySystemAdmin(req, res);
 
     const { userId } = req.body;
 
@@ -217,7 +216,7 @@ async function unblockStudent(req, res) {
 async function checkStudentAccess(req, res) {
   try {
     const sdk = getIntegrationSdkForTenant(req.tenant);
-    await verifySystemAdmin(sdk);
+    await verifySystemAdmin(req, res);
 
     const { userId } = req.params;
 
@@ -242,7 +241,7 @@ async function checkStudentAccess(req, res) {
 async function getInstitutionsCoachingSummary(req, res) {
   try {
     const sdk = getIntegrationSdkForTenant(req.tenant);
-    await verifySystemAdmin(sdk);
+    await verifySystemAdmin(req, res);
 
     // Get institutions from the institutions module
     const adminInstitutions = require('./institutions');
@@ -320,7 +319,7 @@ async function getInstitutionsCoachingSummary(req, res) {
 async function getInstitutionStudents(req, res) {
   try {
     const sdk = getIntegrationSdkForTenant(req.tenant);
-    await verifySystemAdmin(sdk);
+    await verifySystemAdmin(req, res);
 
     const { domain } = req.params;
     const normalizedDomain = domain.toLowerCase();
