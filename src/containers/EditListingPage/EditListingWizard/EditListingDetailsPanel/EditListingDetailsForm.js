@@ -30,13 +30,15 @@ const TITLE_MAX_LENGTH = 60;
 // Show various error messages
 const ErrorMessage = props => {
   const { fetchErrors } = props;
-  const { updateListingError, createListingDraftError, showListingsError } = fetchErrors || {};
+  const { updateListingError, createListingDraftError, showListingsError, publishListingError } = fetchErrors || {};
   const errorMessage = updateListingError ? (
     <FormattedMessage id="EditListingDetailsForm.updateFailed" />
   ) : createListingDraftError ? (
     <FormattedMessage id="EditListingDetailsForm.createListingDraftError" />
   ) : showListingsError ? (
     <FormattedMessage id="EditListingDetailsForm.showListingFailed" />
+  ) : publishListingError ? (
+    <FormattedMessage id="EditListingDetailsForm.publishFailed" />
   ) : null;
 
   if (errorMessage) {

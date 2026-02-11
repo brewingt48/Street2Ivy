@@ -162,7 +162,8 @@ const EditListingWizardTab = props => {
         }
       })
       .catch(e => {
-        // No need for extra actions
+        // Log errors for debugging - they are also shown via fetchErrors in the form
+        console.error('EditListingWizardTab: error during listing update/create:', e);
       });
   };
 

@@ -281,6 +281,7 @@
   "EditListingDetailsForm.listingTypePlaceholder": "Select listing type",
   "EditListingDetailsForm.listingTypeRequired": "You need to select a listing type.",
   "EditListingDetailsForm.maxLength": "Must be {maxLength} characters or less",
+  "EditListingDetailsForm.publishFailed": "Failed to publish the project. Please try again.",
   "EditListingDetailsForm.showListingFailed": "Fetching listing data failed.",
   "EditListingDetailsForm.title": "Project title",
   "EditListingDetailsForm.titlePlaceholder": "e.g. Market Research Analysis for Q2 Campaign",

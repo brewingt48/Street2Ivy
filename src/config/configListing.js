@@ -146,10 +146,9 @@ export const listingFields = [
       isDetail: true,
     },
     saveConfig: {
-      label: 'Company Size (employees)',
+      label: 'Company Size (optional)',
       placeholderMessage: 'Select company size...',
-      isRequired: true,
-      requiredMessage: 'Please select your company size.',
+      isRequired: false,
     },
   },
   {
@@ -558,10 +557,9 @@ export const listingFields = [
       isDetail: true,
     },
     saveConfig: {
-      label: 'Estimated Hours',
+      label: 'Estimated Hours (optional)',
       placeholderMessage: 'Select estimated time commitment...',
-      isRequired: true,
-      requiredMessage: 'Please select the estimated hours for this project.',
+      isRequired: false,
     },
   },
   {
@@ -576,10 +574,9 @@ export const listingFields = [
       label: 'Compensation',
     },
     saveConfig: {
-      label: 'Compensation',
+      label: 'Compensation Details (optional)',
       placeholderMessage: 'e.g. $500, Unpaid/Credit, $25/hr',
-      isRequired: true,
-      requiredMessage: 'Please specify the compensation for this project.',
+      isRequired: false,
     },
   },
   {
@@ -632,47 +629,7 @@ export const listingFields = [
       requiredMessage: 'Please select the number of students needed.',
     },
   },
-  {
-    key: 'industryCategory',
-    scope: 'public',
-    schemaType: 'enum',
-    enumOptions: [
-      { option: 'technology', label: 'Technology' },
-      { option: 'finance', label: 'Finance' },
-      { option: 'consulting', label: 'Consulting' },
-      { option: 'healthcare', label: 'Healthcare' },
-      { option: 'education', label: 'Education' },
-      { option: 'manufacturing', label: 'Manufacturing' },
-      { option: 'retail', label: 'Retail' },
-      { option: 'media', label: 'Media & Entertainment' },
-      { option: 'nonprofit', label: 'Nonprofit' },
-      { option: 'government', label: 'Government' },
-      { option: 'energy', label: 'Energy' },
-      { option: 'real-estate', label: 'Real Estate' },
-      { option: 'legal', label: 'Legal' },
-      { option: 'other', label: 'Other' },
-    ],
-    listingTypeConfig: {
-      limitToListingTypeIds: true,
-      listingTypeIds: ['project'],
-    },
-    filterConfig: {
-      indexForSearch: true,
-      filterType: 'SelectMultipleFilter',
-      label: 'Industry',
-      group: 'primary',
-    },
-    showConfig: {
-      label: 'Industry',
-      isDetail: true,
-    },
-    saveConfig: {
-      label: 'Industry Category',
-      placeholderMessage: 'Select an industry...',
-      isRequired: true,
-      requiredMessage: 'Please select an industry category.',
-    },
-  },
+  // industryCategory removed - companySector already covers industry/sector selection
   // ─── Street2Ivy: Confidential Project Details (visible only in workspace) ────
   {
     key: 'confidentialBrief',
