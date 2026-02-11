@@ -146,7 +146,7 @@ const educationDashboardPageSlice = createSlice({
     students: [],
     institutionName: null,
     institutionDomain: null,
-    subscriptionStatus: null, // { depositPaid, depositPaidDate, aiCoachingApproved, aiCoachingApprovedDate }
+    subscriptionStatus: null, // { aiCoachingApproved, aiCoachingApprovedDate }
     pagination: null,
     fetchInProgress: false,
     fetchError: null,

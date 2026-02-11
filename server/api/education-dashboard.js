@@ -32,9 +32,17 @@ module.exports = async (req, res) => {
 
   try {
     // Step 1: Get current user and verify they are an educational admin
-    const sdk = getSdk(req, res);
-    const currentUserResponse = await sdk.currentUser.show();
-    const currentUser = currentUserResponse.data.data;
+    let sdk, currentUser;
+    try {
+      sdk = getSdk(req, res);
+      const currentUserResponse = await sdk.currentUser.show();
+      currentUser = currentUserResponse.data.data;
+    } catch (authError) {
+      console.error('Education dashboard auth error:', authError.message || authError);
+      return res.status(401).json({
+        error: 'Authentication required. Please log in to access the education dashboard.',
+      });
+    }
     const publicData = currentUser.attributes.profile.publicData || {};
     const userType = publicData.userType;
 
@@ -48,10 +56,8 @@ module.exports = async (req, res) => {
     const institutionDomain = publicData.institutionDomain;
     const institutionName = publicData.institutionName;
 
-    // Get subscription status
+    // Get subscription status (AI coaching only — deposits removed)
     const subscriptionStatus = {
-      depositPaid: publicData.depositPaid || false,
-      depositPaidDate: publicData.depositPaidDate || null,
       aiCoachingApproved: publicData.aiCoachingApproved || false,
       aiCoachingApprovedDate: publicData.aiCoachingApprovedDate || null,
     };
@@ -64,16 +70,56 @@ module.exports = async (req, res) => {
     }
 
     // Step 3: Query students from this institution using Integration API
-    const integrationSdk = getIntegrationSdkForTenant(req.tenant);
+    let integrationSdk;
+    try {
+      integrationSdk = getIntegrationSdkForTenant(req.tenant);
+    } catch (sdkError) {
+      console.error('Failed to initialize Integration SDK for education dashboard:', sdkError.message);
+      // Return empty dashboard with stats if Integration SDK is unavailable
+      return res.status(200).json({
+        stats: {
+          totalStudents: 0, activeStudents: 0, projectsApplied: 0,
+          projectsAccepted: 0, projectsDeclined: 0, projectsCompleted: 0,
+          projectsPending: 0, invitationsReceived: 0, uniqueCompanies: 0,
+          acceptanceRate: 0, completionRate: 0,
+        },
+        students: [],
+        institutionName: institutionName || 'Your Institution',
+        institutionDomain,
+        subscriptionStatus,
+        pagination: { totalItems: 0, totalPages: 0, page: 1, perPage: 20 },
+        warning: 'Integration API credentials are not configured. Contact your system administrator to set up student search.',
+      });
+    }
 
-    const studentsResponse = await integrationSdk.users.query({
-      pub_userType: 'student',
-      pub_emailDomain: institutionDomain.toLowerCase(),
-      include: ['profileImage'],
-      'fields.image': ['variants.square-small', 'variants.square-small2x'],
-      page: parseInt(page, 10),
-      perPage: Math.min(parseInt(perPage, 10) || 20, 100),
-    });
+    let studentsResponse;
+    try {
+      studentsResponse = await integrationSdk.users.query({
+        pub_userType: 'student',
+        pub_emailDomain: institutionDomain.toLowerCase(),
+        include: ['profileImage'],
+        'fields.image': ['variants.square-small', 'variants.square-small2x'],
+        page: parseInt(page, 10),
+        perPage: Math.min(parseInt(perPage, 10) || 20, 100),
+      });
+    } catch (queryError) {
+      console.error('Education dashboard student query failed:', queryError.message, queryError.data || '');
+      // The pub_emailDomain search schema may not be set up — return empty dashboard gracefully
+      return res.status(200).json({
+        stats: {
+          totalStudents: 0, activeStudents: 0, projectsApplied: 0,
+          projectsAccepted: 0, projectsDeclined: 0, projectsCompleted: 0,
+          projectsPending: 0, invitationsReceived: 0, uniqueCompanies: 0,
+          acceptanceRate: 0, completionRate: 0,
+        },
+        students: [],
+        institutionName: institutionName || 'Your Institution',
+        institutionDomain,
+        subscriptionStatus,
+        pagination: { totalItems: 0, totalPages: 0, page: 1, perPage: 20 },
+        warning: 'Unable to query students. The email domain search index may not be configured in your Sharetribe Console.',
+      });
+    }
 
     const { data: studentsData, included = [], meta } = studentsResponse.data;
 

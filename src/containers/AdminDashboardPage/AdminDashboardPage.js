@@ -2305,38 +2305,38 @@ const UnifiedInstitutionManagementPanel = props => {
       </div>
 
       {/* Section Sub-tabs */}
-      <div className={css.depositSubTabs}>
+      <div className={css.institutionSubTabs}>
         <button
-          className={classNames(css.depositSubTab, {
-            [css.depositSubTabActive]: activeSection === 'applications',
+          className={classNames(css.institutionSubTab, {
+            [css.institutionSubTabActive]: activeSection === 'applications',
           })}
           onClick={() => setActiveSection('applications')}
         >
-          <span className={css.depositSubTabIcon}>📋</span>
+          <span className={css.institutionSubTabIcon}>📋</span>
           Applications
           {applicationStats?.pending > 0 && (
             <span className={css.badgeCount}>{applicationStats.pending}</span>
           )}
         </button>
         <button
-          className={classNames(css.depositSubTab, {
-            [css.depositSubTabActive]: activeSection === 'admins',
+          className={classNames(css.institutionSubTab, {
+            [css.institutionSubTabActive]: activeSection === 'admins',
           })}
           onClick={() => {
             setActiveSection('admins');
             onFetchEducationalAdmins({});
           }}
         >
-          <span className={css.depositSubTabIcon}>🎓</span>
+          <span className={css.institutionSubTabIcon}>🎓</span>
           Educational Admins
         </button>
         <button
-          className={classNames(css.depositSubTab, {
-            [css.depositSubTabActive]: activeSection === 'domains',
+          className={classNames(css.institutionSubTab, {
+            [css.institutionSubTabActive]: activeSection === 'domains',
           })}
           onClick={() => setActiveSection('domains')}
         >
-          <span className={css.depositSubTabIcon}>🏛️</span>
+          <span className={css.institutionSubTabIcon}>🏛️</span>
           Institution Domains
         </button>
       </div>
@@ -2626,8 +2626,9 @@ const EducationalAdminsSubPanel = props => {
   return (
     <div className={css.subPanelContent}>
       <p className={css.subPanelDescription}>
-        Manage subscription status for educational administrators. Toggle deposit and AI coaching
-        access for each institution.
+        Manage AI coaching access for educational administrators. When AI coaching is approved
+        for an institution, their students gain access to the AI-powered career coaching tool
+        that provides personalized resume reviews, interview preparation, and career guidance.
       </p>
 
       {updateSubscriptionSuccess && (
@@ -2646,7 +2647,6 @@ const EducationalAdminsSubPanel = props => {
             <tr>
               <th>Administrator</th>
               <th>Institution</th>
-              <th>Deposit Paid</th>
               <th>AI Coaching</th>
               <th>Joined</th>
             </tr>
@@ -2676,23 +2676,6 @@ const EducationalAdminsSubPanel = props => {
                         @{publicData.institutionDomain || 'N/A'}
                       </span>
                     </div>
-                  </td>
-                  <td>
-                    <button
-                      className={classNames(css.toggleButton, {
-                        [css.toggleOn]: publicData.depositPaid,
-                        [css.toggleOff]: !publicData.depositPaid,
-                      })}
-                      onClick={() =>
-                        handleUpdateSubscription(admin.id, 'depositPaid', !publicData.depositPaid)
-                      }
-                      disabled={updateSubscriptionInProgress === admin.id}
-                    >
-                      {publicData.depositPaid ? '✓ Paid' : '✗ Not Paid'}
-                    </button>
-                    {publicData.depositPaidDate && (
-                      <span className={css.dateInfo}>{formatDate(publicData.depositPaidDate)}</span>
-                    )}
                   </td>
                   <td>
                     <button
@@ -3296,7 +3279,9 @@ const EducationalAdminApplicationsPanel = props => {
   const renderAdminsSection = () => (
     <div className={css.adminsSection}>
       <p className={css.panelDescription}>
-        Manage subscription status for educational administrators. Toggle deposit and AI coaching access for each institution.
+        Manage AI coaching access for educational administrators. When AI coaching is approved
+        for an institution, their students gain access to the AI-powered career coaching tool
+        that provides personalized resume reviews, interview preparation, and career guidance.
       </p>
 
       {updateSubscriptionSuccess && (
@@ -3315,7 +3300,6 @@ const EducationalAdminApplicationsPanel = props => {
             <tr>
               <th>Administrator</th>
               <th>Institution</th>
-              <th>Deposit Paid</th>
               <th>AI Coaching</th>
               <th>Joined</th>
             </tr>
@@ -3343,21 +3327,6 @@ const EducationalAdminApplicationsPanel = props => {
                         @{publicData.institutionDomain || 'N/A'}
                       </span>
                     </div>
-                  </td>
-                  <td>
-                    <button
-                      className={classNames(css.toggleButton, {
-                        [css.toggleOn]: publicData.depositPaid,
-                        [css.toggleOff]: !publicData.depositPaid,
-                      })}
-                      onClick={() => handleUpdateSubscription(admin.id, 'depositPaid', !publicData.depositPaid)}
-                      disabled={updateSubscriptionInProgress === admin.id}
-                    >
-                      {publicData.depositPaid ? '✓ Paid' : '✗ Not Paid'}
-                    </button>
-                    {publicData.depositPaidDate && (
-                      <span className={css.dateInfo}>{formatDate(publicData.depositPaidDate)}</span>
-                    )}
                   </td>
                   <td>
                     <button
@@ -3859,8 +3828,36 @@ const AICoachingConfigPanel = () => {
       <div className={css.panelHeader}>
         <h2 className={css.panelTitle}>AI Coaching Management</h2>
         <p className={css.panelDescription}>
-          Configure the AI coaching platform, manage institution access, and control individual student access.
+          Manage the AI-powered career coaching platform for students. This tool provides
+          personalized resume reviews, interview preparation, career path guidance, and
+          job search strategies powered by artificial intelligence.
         </p>
+      </div>
+
+      {/* How it works guide */}
+      <div className={css.aiCoachingGuide}>
+        <h3 className={css.aiCoachingGuideTitle}>How AI Coaching Works</h3>
+        <ol className={css.aiCoachingGuideSteps}>
+          <li>
+            <strong>Set up the platform</strong> — In "Platform Settings," enable the coaching
+            platform and enter the URL where your AI coaching tool is hosted. Add a welcome
+            message and terms of use for students.
+          </li>
+          <li>
+            <strong>Enable institutions</strong> — In "Institutions," toggle on AI coaching
+            for each school. Only students from enabled institutions can access the coaching
+            tool. You can also set a custom coaching URL per institution.
+          </li>
+          <li>
+            <strong>Approve educational admins</strong> — In the "Institutions" tab of the
+            main admin dashboard, toggle the "AI Coaching" column to approve each educational
+            admin. This allows the institution's students to see the coaching link.
+          </li>
+          <li>
+            <strong>Manage access</strong> — Use "Blocked Students" to revoke access for
+            individual students who violate terms of use or misuse the platform.
+          </li>
+        </ol>
       </div>
 
       {/* Sub-tabs */}
@@ -3894,6 +3891,11 @@ const AICoachingConfigPanel = () => {
       {/* Platform Settings Tab */}
       {activeSubTab === 'config' && (
         <div className={css.formSection}>
+          <p className={css.subTabIntro}>
+            Configure the global AI coaching platform settings. These settings apply to all
+            institutions unless overridden at the institution level. The Platform URL is where
+            students will be redirected when they click "Access AI Coaching" on their dashboard.
+          </p>
           <div className={css.formGroup}>
             <label className={css.formLabel}>Platform Status</label>
             <div className={css.toggleWrapper}>

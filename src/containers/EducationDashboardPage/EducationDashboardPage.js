@@ -1635,22 +1635,10 @@ const EducationDashboardPageComponent = props => {
               </p>
             )}
 
-            {/* Subscription Status Banner */}
+            {/* AI Coaching Status Banner */}
             {subscriptionStatus && (
               <div className={css.subscriptionStatusBanner}>
                 <div className={css.subscriptionStatusItems}>
-                  <div className={`${css.subscriptionStatusItem} ${subscriptionStatus.depositPaid ? css.statusActive : css.statusInactive}`}>
-                    <span className={css.statusIcon}>{subscriptionStatus.depositPaid ? '✅' : '⏳'}</span>
-                    <span className={css.statusLabel}>
-                      <FormattedMessage id="EducationDashboardPage.depositStatus" />
-                    </span>
-                    <span className={css.statusValue}>
-                      {subscriptionStatus.depositPaid
-                        ? <FormattedMessage id="EducationDashboardPage.depositPaid" />
-                        : <FormattedMessage id="EducationDashboardPage.depositPending" />
-                      }
-                    </span>
-                  </div>
                   <div className={`${css.subscriptionStatusItem} ${subscriptionStatus.aiCoachingApproved ? css.statusActive : css.statusInactive}`}>
                     <span className={css.statusIcon}>{subscriptionStatus.aiCoachingApproved ? '✅' : '⏳'}</span>
                     <span className={css.statusLabel}>
@@ -1664,7 +1652,7 @@ const EducationDashboardPageComponent = props => {
                     </span>
                   </div>
                 </div>
-                {(!subscriptionStatus.depositPaid || !subscriptionStatus.aiCoachingApproved) && (
+                {!subscriptionStatus.aiCoachingApproved && (
                   <p className={css.subscriptionNote}>
                     <FormattedMessage id="EducationDashboardPage.subscriptionNote" />
                   </p>
@@ -2591,7 +2579,7 @@ const mapStateToProps = state => {
     students,
     institutionName,
     institutionDomain,
-    subscriptionStatus: subscriptionStatus || { depositPaid: false, aiCoachingApproved: false },
+    subscriptionStatus: subscriptionStatus || { aiCoachingApproved: false },
     pagination,
     fetchInProgress,
     fetchError,

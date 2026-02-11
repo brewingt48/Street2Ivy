@@ -3082,15 +3082,15 @@
   margin-bottom: 16px;
 }
 
-/* Unified Deposits Panel Sub-tabs */
-.depositSubTabs {
+/* Institution Management Sub-tabs */
+.institutionSubTabs {
   display: flex;
   gap: 0;
   border-bottom: 2px solid var(--colorGrey200);
   margin-bottom: 24px;
 }
 
-.depositSubTab {
+.institutionSubTab {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -3106,18 +3106,18 @@
   transition: all 0.2s ease;
 }
 
-.depositSubTab:hover {
+.institutionSubTab:hover {
   color: var(--colorGrey900);
   background-color: var(--colorGrey50);
 }
 
-.depositSubTabActive {
+.institutionSubTabActive {
   color: var(--marketplaceColor);
   border-bottom-color: var(--marketplaceColor);
   background-color: var(--colorGrey50);
 }
 
-.depositSubTabIcon {
+.institutionSubTabIcon {
   font-size: 16px;
 }
 
@@ -3179,11 +3179,11 @@
 
 /* Mobile responsiveness for unified panels */
 @media (max-width: 768px) {
-  .depositSubTabs {
+  .institutionSubTabs {
     flex-wrap: wrap;
   }
 
-  .depositSubTab {
+  .institutionSubTab {
     padding: 10px 16px;
     font-size: 13px;
     flex: 1;
@@ -3191,7 +3191,7 @@
     min-width: 120px;
   }
 
-  .depositSubTabIcon {
+  .institutionSubTabIcon {
     font-size: 14px;
   }
 
@@ -3210,12 +3210,12 @@
 }
 
 @media (max-width: 500px) {
-  .depositSubTab {
+  .institutionSubTab {
     padding: 8px 12px;
     font-size: 12px;
   }
 
-  .depositSubTabIcon {
+  .institutionSubTabIcon {
     display: none;
   }
 
@@ -3997,6 +3997,55 @@
   margin: 0 0 16px 0;
   padding-bottom: 8px;
   border-bottom: 1px solid var(--colorGrey200);
+}
+
+/* AI Coaching Guide */
+.aiCoachingGuide {
+  background: #f0f9ff;
+  border: 1px solid #bae6fd;
+  border-radius: 8px;
+  padding: 20px 24px;
+  margin-bottom: 24px;
+}
+
+.aiCoachingGuideTitle {
+  font-size: 15px;
+  font-weight: 600;
+  color: #0c4a6e;
+  margin: 0 0 12px;
+}
+
+.aiCoachingGuideSteps {
+  margin: 0;
+  padding: 0 0 0 20px;
+  list-style: decimal;
+}
+
+.aiCoachingGuideSteps li {
+  font-size: 13px;
+  line-height: 1.6;
+  color: #374151;
+  margin-bottom: 8px;
+}
+
+.aiCoachingGuideSteps li:last-child {
+  margin-bottom: 0;
+}
+
+.aiCoachingGuideSteps li strong {
+  color: #0c4a6e;
+}
+
+/* Sub-tab intro text */
+.subTabIntro {
+  font-size: 13px;
+  line-height: 1.6;
+  color: #6b7280;
+  margin: 0 0 20px;
+  padding: 12px 16px;
+  background: #fafafa;
+  border-left: 3px solid var(--marketplaceColor);
+  border-radius: 0 6px 6px 0;
 }
 
 /* Sub-tabs for nested navigation within panels */
