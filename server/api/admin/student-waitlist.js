@@ -127,7 +127,7 @@ async function addToWaitlist(req, res) {
 
     res.status(201).json({
       success: true,
-      message: 'You have been added to our waitlist. We will notify you when your school joins Street2Ivy!',
+      message: 'You have been added to our waitlist. We will notify you when your school joins Campus2Career!',
     });
   } catch (error) {
     console.error('Error adding to waitlist:', error);

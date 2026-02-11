@@ -754,15 +754,16 @@ export const userTypes = [
       payoutDetails: false,
     },
   },
-  {
-    userType: 'alumni',
-    label: 'Alumni',
-    // Alumni don't handle payments
-    accountLinksVisibility: {
-      paymentMethods: false,
-      payoutDetails: false,
-    },
-  },
+  // Alumni signup is hidden for now — alumni type is kept in allUserTypes
+  // so existing accounts still work. Uncomment to re-enable alumni signup.
+  // {
+  //   userType: 'alumni',
+  //   label: 'Alumni',
+  //   accountLinksVisibility: {
+  //     paymentMethods: false,
+  //     payoutDetails: false,
+  //   },
+  // },
   {
     userType: 'educational-institution',
     label: 'Educational Institution',

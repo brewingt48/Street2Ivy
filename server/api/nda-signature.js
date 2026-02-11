@@ -698,7 +698,7 @@ function getDefaultNdaText(projectTitle) {
 
 This Non-Disclosure Agreement ("Agreement") is entered into as of the date of the last signature below.
 
-PROJECT: ${projectTitle || 'Street2Ivy Project'}
+PROJECT: ${projectTitle || 'Campus2Career Project'}
 
 1. CONFIDENTIAL INFORMATION
 The parties agree that all information shared in connection with this project, including but not limited to business plans, technical data, trade secrets, customer information, and any other proprietary information, shall be considered confidential.

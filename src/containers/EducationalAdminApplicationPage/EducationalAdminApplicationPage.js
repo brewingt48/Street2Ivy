@@ -310,7 +310,7 @@ const EducationalAdminApplicationPageComponent = props => {
                     id="reason"
                     value={formData.reason}
                     onChange={e => handleChange('reason', e.target.value)}
-                    placeholder="Tell us how you plan to use Street2Ivy to help your students..."
+                    placeholder="Tell us how you plan to use Campus2Career to help your students..."
                     rows={4}
                     required
                   />

@@ -30,7 +30,7 @@ const DEFAULT_TESTIMONIALS = [
     company: 'Green Ventures',
     project: 'Sustainability Strategy',
     quote:
-      'Street2Ivy connected me with a company that values diverse perspectives. The project let me apply my environmental science knowledge to real business challenges.',
+      'Campus2Career connected me with a company that values diverse perspectives. The project let me apply my environmental science knowledge to real business challenges.',
     outcome: 'Built portfolio for grad school applications',
     avatar: null,
   },

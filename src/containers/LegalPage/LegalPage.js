@@ -65,7 +65,7 @@ const LegalPage = () => {
   }, [slug]);
 
   const pageTitle = pageData?.title || 'Legal';
-  const siteTitle = config.marketplaceName || 'Street2Ivy';
+  const siteTitle = config.marketplaceName || 'Campus2Career';
 
   if (loading) {
     return (

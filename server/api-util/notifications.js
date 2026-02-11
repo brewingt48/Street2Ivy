@@ -85,7 +85,7 @@ const NOTIFICATION_TEMPLATES = {
 
       After careful consideration, the corporate partner has decided to move forward with other candidates for this project.
 
-      Don't be discouraged! There are many other opportunities waiting for you on Street2Ivy.
+      Don't be discouraged! There are many other opportunities waiting for you on Campus2Career.
 
       Browse more projects: {browseProjectsUrl}
 
@@ -173,7 +173,7 @@ const NOTIFICATION_TEMPLATES = {
 
       {companyName} has submitted a performance assessment for your work on "{projectTitle}".
 
-      This assessment is now part of your Street2Ivy profile and can be viewed by other corporate partners.
+      This assessment is now part of your Campus2Career profile and can be viewed by other corporate partners.
 
       View your assessment: {assessmentUrl}
 

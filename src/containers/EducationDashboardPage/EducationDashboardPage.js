@@ -520,7 +520,7 @@ const MessagesPanel = props => {
                       {messageTab === 'received'
                         ? (msg.senderName || 'Unknown')
                         : (msg.recipientType === 'all-students' ? 'All Students' :
-                           msg.recipientType === 'system-admin' ? 'Street2Ivy Support' :
+                           msg.recipientType === 'system-admin' ? 'Campus2Career Support' :
                            msg.recipientName || 'Unknown')}
                     </td>
                     <td className={css.messageSubjectCell}>
@@ -571,7 +571,7 @@ const MessagesPanel = props => {
               ) : (
                 <p><strong>To:</strong> {
                   selectedMessage.recipientType === 'all-students' ? 'All Students' :
-                  selectedMessage.recipientType === 'system-admin' ? 'Street2Ivy Support' :
+                  selectedMessage.recipientType === 'system-admin' ? 'Campus2Career Support' :
                   selectedMessage.recipientName || 'Unknown'
                 }</p>
               )}
@@ -885,9 +885,9 @@ const CustomizeLandingPanel = ({ institutionDomain }) => {
                   type="text"
                   value={formState.hero.title}
                   onChange={e => updateField('hero', 'title', e.target.value)}
-                  placeholder="e.g. Howard University x Street2Ivy"
+                  placeholder="e.g. Howard University x Campus2Career"
                 />
-                <span className={css.fieldHint}>Leave blank to use the default Street2Ivy headline</span>
+                <span className={css.fieldHint}>Leave blank to use the default Campus2Career headline</span>
               </div>
               <div className={css.formField}>
                 <label>Hero Subtitle</label>
@@ -1187,7 +1187,7 @@ const AlumniNetworkPanel = ({ institutionDomain }) => {
           <textarea
             value={inviteMessage}
             onChange={e => setInviteMessage(e.target.value)}
-            placeholder="Join our alumni network on Street2Ivy and connect with current students..."
+            placeholder="Join our alumni network on Campus2Career and connect with current students..."
             rows={2}
           />
         </div>
@@ -1693,12 +1693,13 @@ const EducationDashboardPageComponent = props => {
             >
               <FormattedMessage id="EducationDashboardPage.tabCustomize" />
             </button>
-            <button
+            {/* Alumni tab hidden for now — uncomment to re-enable */}
+            {/* <button
               className={`${css.tab} ${activeTab === 'alumni' ? css.activeTab : ''}`}
               onClick={() => setActiveTab('alumni')}
             >
               <FormattedMessage id="EducationDashboardPage.tabAlumni" />
-            </button>
+            </button> */}
             <button
               className={`${css.tab} ${activeTab === 'partners' ? css.activeTab : ''}`}
               onClick={() => setActiveTab('partners')}
@@ -2444,10 +2445,10 @@ const EducationDashboardPageComponent = props => {
             <CustomizeLandingPanel institutionDomain={institutionDomain} />
           )}
 
-          {/* Alumni Network Tab */}
-          {activeTab === 'alumni' && (
+          {/* Alumni Network Tab — hidden for now */}
+          {/* {activeTab === 'alumni' && (
             <AlumniNetworkPanel institutionDomain={institutionDomain} />
-          )}
+          )} */}
 
           {/* Partners Tab */}
           {activeTab === 'partners' && (

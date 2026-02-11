@@ -4296,7 +4296,7 @@ const AICoachingConfigPanel = () => {
             <p className={css.modalDescription}>
               {editingInstitution
                 ? 'Update the institution details below.'
-                : 'Add a new institution to enable their students to access Street2Ivy.'}
+                : 'Add a new institution to enable their students to access Campus2Career.'}
             </p>
 
             {institutionError && (
@@ -4878,7 +4878,7 @@ const ContentManagementPanel = props => {
       const toggleableSections = [
         { key: 'hero', label: 'Hero Section', desc: 'The main banner with headline, subtitle, and call-to-action buttons' },
         { key: 'statistics', label: 'Statistics', desc: 'Impact numbers (students matched, companies, etc.)' },
-        { key: 'features', label: 'Features', desc: 'The "Why Street2Ivy" value proposition cards' },
+        { key: 'features', label: 'Features', desc: 'The "Why Campus2Career" value proposition cards' },
         { key: 'howItWorks', label: 'How It Works', desc: 'Step-by-step process for companies, students, and schools' },
         { key: 'videoTestimonial', label: 'Video Testimonial', desc: 'Video testimonial section' },
         { key: 'testimonials', label: 'Written Testimonials', desc: 'Written quotes from students and partners' },
@@ -6347,7 +6347,7 @@ const TenantsPanel = props => {
       ...prev,
       name: value,
       subdomain,
-      displayName: value ? `Street2Ivy at ${value}` : '',
+      displayName: value ? `${value} on Campus2Career` : '',
     }));
   };
 
@@ -6687,7 +6687,7 @@ const TenantsPanel = props => {
               type="text"
               value={formData.displayName}
               onChange={e => setFormData(prev => ({ ...prev, displayName: e.target.value }))}
-              placeholder="Street2Ivy at Harvard University"
+              placeholder="Harvard University on Campus2Career"
             />
             <span className={css.tenantFormHint}>
               The marketplace name shown in the header and page titles. Auto-generated from school

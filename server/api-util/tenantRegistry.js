@@ -24,8 +24,8 @@ function buildDefaultTenant() {
   return {
     id: 'default',
     subdomain: null, // matches the bare domain (no subdomain)
-    name: process.env.REACT_APP_MARKETPLACE_NAME || 'Street2Ivy',
-    displayName: process.env.REACT_APP_MARKETPLACE_NAME || 'Street2Ivy',
+    name: process.env.REACT_APP_MARKETPLACE_NAME || 'Campus2Career',
+    displayName: process.env.REACT_APP_MARKETPLACE_NAME || 'Campus2Career',
     status: 'active',
     sharetribe: {
       clientId: process.env.REACT_APP_SHARETRIBE_SDK_CLIENT_ID,
@@ -38,7 +38,7 @@ function buildDefaultTenant() {
         process.env.SHARETRIBE_SDK_CLIENT_SECRET,
     },
     branding: {
-      marketplaceName: process.env.REACT_APP_MARKETPLACE_NAME || 'Street2Ivy',
+      marketplaceName: process.env.REACT_APP_MARKETPLACE_NAME || 'Campus2Career',
     },
     institutionDomain: null,
     corporatePartnerIds: [],
@@ -171,7 +171,7 @@ function createTenant(tenantData) {
     id: normalizedSubdomain,
     subdomain: normalizedSubdomain,
     name,
-    displayName: tenantData.displayName || `Street2Ivy at ${name}`,
+    displayName: tenantData.displayName || `${name} on Campus2Career`,
     status: tenantData.status || 'active',
     sharetribe: {
       clientId: sharetribe.clientId,
@@ -180,7 +180,7 @@ function createTenant(tenantData) {
       integrationClientSecret: sharetribe.integrationClientSecret || sharetribe.clientSecret,
     },
     branding: tenantData.branding || {
-      marketplaceName: `Street2Ivy at ${name}`,
+      marketplaceName: `${name} on Campus2Career`,
     },
     institutionDomain: tenantData.institutionDomain || null,
     corporatePartnerIds: tenantData.corporatePartnerIds || [],

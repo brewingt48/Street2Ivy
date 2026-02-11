@@ -52,7 +52,7 @@ const defaultContent = {
     title: 'Connect Ivy League Talent with Industry Leaders',
     titleColor: null, // Custom color for hero title
     subtitle:
-      'Street2Ivy bridges the gap between elite university students and Fortune 500 companies through meaningful project-based collaborations.',
+      'Campus2Career bridges the gap between elite university students and Fortune 500 companies through meaningful project-based collaborations.',
     subtitleColor: null, // Custom color for hero subtitle
     primaryButtonText: 'Get Started',
     primaryButtonBgColor: null, // Custom background color for primary button
@@ -70,7 +70,7 @@ const defaultContent = {
   features: {
     id: 'features',
     section: 'features',
-    sectionTitle: 'Why Street2Ivy',
+    sectionTitle: 'Why Campus2Career',
     items: [
       {
         id: 'feature-1',
@@ -148,7 +148,7 @@ const defaultContent = {
       {
         id: 'testimonial-1',
         quote:
-          'Street2Ivy connected me with an amazing internship opportunity at a Fortune 500 company. The experience was invaluable!',
+          'Campus2Career connected me with an amazing internship opportunity at a Fortune 500 company. The experience was invaluable!',
         author: 'Sarah Chen',
         role: 'Harvard University, Class of 2024',
         initials: 'SC',
@@ -157,7 +157,7 @@ const defaultContent = {
       {
         id: 'testimonial-2',
         quote:
-          'The quality of talent we found through Street2Ivy exceeded our expectations. These students brought fresh perspectives to our projects.',
+          'The quality of talent we found through Campus2Career exceeded our expectations. These students brought fresh perspectives to our projects.',
         author: 'Michael Roberts',
         role: 'VP of Innovation, Tech Corp',
         initials: 'MR',
@@ -166,7 +166,7 @@ const defaultContent = {
       {
         id: 'testimonial-3',
         quote:
-          'As a first-generation college student, Street2Ivy gave me access to opportunities I never knew existed.',
+          'As a first-generation college student, Campus2Career gave me access to opportunities I never knew existed.',
         author: 'James Williams',
         role: 'Yale University, Class of 2025',
         initials: 'JW',
@@ -175,7 +175,7 @@ const defaultContent = {
       {
         id: 'testimonial-4',
         quote:
-          "We've hired three full-time employees from Street2Ivy projects. It's become our primary talent pipeline.",
+          "We've hired three full-time employees from Campus2Career projects. It's become our primary talent pipeline.",
         author: 'Emily Thompson',
         role: 'HR Director, Global Finance Inc',
         initials: 'ET',
@@ -193,7 +193,7 @@ const defaultContent = {
       {
         id: 'testimonial-6',
         quote:
-          "Street2Ivy's vetting process ensures we only work with the most motivated and talented students.",
+          "Campus2Career's vetting process ensures we only work with the most motivated and talented students.",
         author: 'Lisa Anderson',
         role: 'CEO, StartUp Ventures',
         initials: 'LA',
@@ -209,7 +209,7 @@ const defaultContent = {
     section: 'cta',
     title: 'Ready to Get Started?',
     description:
-      'Join thousands of students and companies already using Street2Ivy to create meaningful connections.',
+      'Join thousands of students and companies already using Campus2Career to create meaningful connections.',
     buttonText: 'Create Your Account',
     isActive: true,
     updatedAt: new Date().toISOString(),

@@ -151,7 +151,7 @@ const BlogPage = props => {
       className={css.root}
       scrollingDisabled={scrollingDisabled}
       title={pageTitle}
-      description={intl.formatMessage({ id: 'BlogPage.description', defaultMessage: 'News, tips, and insights from Street2Ivy' })}
+      description={intl.formatMessage({ id: 'BlogPage.description', defaultMessage: 'News, tips, and insights from Campus2Career' })}
     >
       <LayoutSingleColumn
         topbar={<TopbarContainer currentPage="BlogPage" />}

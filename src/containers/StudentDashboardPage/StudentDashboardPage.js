@@ -376,10 +376,10 @@ const MessageCenter = ({ transactions, isLoading, onSelectMessage, currentUserId
     setShowNewMessageDropdown(false);
     // If institution has contact info, use mailto
     if (institutionInfo?.adminEmail) {
-      window.location.href = `mailto:${institutionInfo.adminEmail}?subject=Student%20Inquiry%20from%20Street2Ivy`;
+      window.location.href = `mailto:${institutionInfo.adminEmail}?subject=Student%20Inquiry%20from%20Campus2Career`;
     } else {
       // Fallback to a generic career services email
-      window.location.href = `mailto:careerservices@${institutionInfo?.domain || 'university.edu'}?subject=Student%20Inquiry%20from%20Street2Ivy`;
+      window.location.href = `mailto:careerservices@${institutionInfo?.domain || 'university.edu'}?subject=Student%20Inquiry%20from%20Campus2Career`;
     }
   };
 
@@ -1075,7 +1075,7 @@ const StudentDashboardPageComponent = props => {
           {/* Onboarding Checklist */}
           {showOnboarding && (
             <OnboardingChecklist
-              title="Get Started with Street2Ivy"
+              title="Get Started with Campus2Career"
               subtitle="Complete these steps to make the most of your experience"
               items={onboardingItems}
               variant="student"
@@ -1392,7 +1392,7 @@ const StudentDashboardPageComponent = props => {
                         </div>
 
                         <p className={css.aiCoachingDescription}>
-                          AI Career Coaching is available when your institution activates this feature. Encourage your school to partner with Street2Ivy to unlock personalized coaching.
+                          AI Career Coaching is available when your institution activates this feature. Encourage your school to partner with Campus2Career to unlock personalized coaching.
                         </p>
 
                         <div className={css.lockedFeaturesList}>
@@ -1405,7 +1405,7 @@ const StudentDashboardPageComponent = props => {
 
                       <div className={css.aiCoachingCTA}>
                         <a
-                          href="mailto:careerservices@university.edu?subject=Request%20AI%20Career%20Coaching%20from%20Street2Ivy"
+                          href="mailto:careerservices@university.edu?subject=Request%20AI%20Career%20Coaching%20from%20Campus2Career"
                           className={css.requestAccessButton}
                         >
                           <span>📧</span>

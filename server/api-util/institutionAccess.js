@@ -111,7 +111,7 @@ function getAccessDeniedMessage(reason) {
     no_email_domain:
       'Your account is missing email domain information. Please update your profile or contact support.',
     institution_not_found:
-      'Your institution is not currently a member of Street2Ivy. Please contact your school administrator to request access.',
+      'Your institution is not currently a member of Campus2Career. Please contact your school administrator to request access.',
     membership_inactive:
       "Your institution's membership is not currently active. Please contact your school administrator.",
     membership_not_started:

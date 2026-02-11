@@ -110,7 +110,7 @@ async function sendMessage(req, res) {
     if (recipientType === 'all-students') {
       recipientName = `All Students (${institutionName})`;
     } else if (recipientType === 'system-admin') {
-      recipientName = 'Street2Ivy Support';
+      recipientName = 'Campus2Career Support';
     } else if (recipientType.startsWith('student-')) {
       actualRecipientId = recipientType.replace('student-', '');
       // Fetch student name

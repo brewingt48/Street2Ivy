@@ -27,11 +27,11 @@ let html = fs.readFileSync(indexPath, 'utf-8');
 html = html.replace('data-htmlattr="htmlAttributes"', 'lang="en"');
 
 // Replace title placeholder
-html = html.replace('<!--!title-->', '<title>Street2Ivy | Where Talent Meets Opportunity</title>');
+html = html.replace('<!--!title-->', '<title>Campus2Career | Where Campus Meets Career</title>');
 
 // Replace meta placeholder
 html = html.replace('<!--!meta-->', [
-  '<meta name="description" content="Street2Ivy connects students with companies for real-world project experience.">',
+  '<meta name="description" content="Campus2Career connects students with companies for real-world project experience.">',
 ].join('\n'));
 
 // Replace link placeholder with CSS links
