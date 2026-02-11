@@ -1453,57 +1453,83 @@
 /* ================ Sent Invites Panel ================ */
 
 .sentInvitesSection {
-  margin-bottom: 32px;
+  margin-bottom: var(--s2i-space-8);
+  padding: var(--s2i-space-6);
+  background: white;
+  border: 1px solid var(--s2i-slate-200);
+  border-radius: var(--s2i-radius-xl);
+  box-shadow: var(--s2i-shadow-sm);
+}
+
+.sentInvitesSection .sectionTitle {
+  margin-bottom: var(--s2i-space-5);
 }
 
 .sentInvitesPanel {
-  background: white;
-  border-radius: 12px;
-  border: 1px solid var(--colorGrey100);
-  overflow: hidden;
+  /* Panel sits inside the white card wrapper, no extra border needed */
 }
 
 /* Invite Stats Summary */
 .inviteStatsSummary {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 1px;
-  background: var(--colorGrey100);
-  border-bottom: 1px solid var(--colorGrey100);
+  gap: var(--s2i-space-4);
+  margin-bottom: var(--s2i-space-5);
+
+  @media (max-width: 600px) {
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--s2i-space-3);
+  }
 }
 
 .inviteStatItem {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 16px;
-  background: white;
+  padding: var(--s2i-space-5);
+  background: var(--s2i-slate-50);
+  border: 1px solid var(--s2i-slate-200);
+  border-radius: var(--s2i-radius-xl);
+  transition: var(--s2i-transition-all);
+}
+
+.inviteStatItem:hover {
+  background: var(--s2i-slate-100);
+  border-color: var(--s2i-slate-300);
 }
 
 .inviteStatValue {
-  font-size: 24px;
-  font-weight: 700;
-  color: var(--colorGrey900);
+  font-family: var(--s2i-font-display);
+  font-size: 28px;
+  font-weight: var(--s2i-font-bold);
+  color: var(--s2i-navy-900);
+  line-height: 1;
+  letter-spacing: -0.02em;
+
+  @media (--viewportMedium) {
+    font-size: 32px;
+  }
 }
 
 .inviteStatPending {
-  color: #f59e0b;
+  color: var(--s2i-amber-600);
 }
 
 .inviteStatAccepted {
-  color: #10b981;
+  color: var(--s2i-emerald-600);
 }
 
 .inviteStatDeclined {
-  color: #ef4444;
+  color: var(--s2i-coral-600);
 }
 
 .inviteStatLabel {
   font-size: 12px;
-  color: var(--colorGrey600);
-  margin-top: 4px;
+  color: var(--s2i-slate-500);
+  margin-top: 8px;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.05em;
+  font-weight: var(--s2i-font-medium);
 }
 
 /* Invite Filter Controls */
@@ -1511,90 +1537,120 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 16px 20px;
-  border-bottom: 1px solid var(--colorGrey100);
-  background: var(--colorGrey50);
+  padding: var(--s2i-space-4) var(--s2i-space-5);
+  margin-bottom: var(--s2i-space-5);
+  background: var(--s2i-slate-50);
+  border: 1px solid var(--s2i-slate-200);
+  border-radius: var(--s2i-radius-lg);
 }
 
 .inviteFilterSelect {
-  padding: 8px 12px;
+  padding: 10px 14px;
   font-size: 14px;
-  border: 1px solid var(--colorGrey300);
-  border-radius: 6px;
+  font-weight: var(--s2i-font-medium);
+  color: var(--s2i-slate-700);
+  border: 1px solid var(--s2i-slate-300);
+  border-radius: var(--s2i-radius-lg);
   background: white;
-  min-width: 150px;
+  min-width: 160px;
+  transition: var(--s2i-transition-base);
+  cursor: pointer;
 }
 
 .inviteFilterSelect:focus {
   outline: none;
-  border-color: var(--marketplaceColor);
+  border-color: var(--s2i-teal-500);
+  box-shadow: 0 0 0 3px rgba(0, 200, 190, 0.15);
 }
 
 .inviteStudentsButton {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 8px 16px;
+  padding: 10px 20px;
   font-size: 14px;
-  font-weight: 500;
+  font-weight: var(--s2i-font-semibold);
   color: white;
-  background-color: var(--marketplaceColor);
-  border-radius: 6px;
+  background: linear-gradient(135deg, var(--s2i-teal-500) 0%, var(--s2i-teal-600) 100%);
+  border-radius: var(--s2i-radius-lg);
   text-decoration: none;
-  transition: background-color 0.2s;
+  transition: var(--s2i-transition-all);
+  white-space: nowrap;
+  box-shadow: 0 4px 14px rgba(0, 200, 190, 0.3);
 }
 
 .inviteStudentsButton:hover {
-  background-color: var(--marketplaceColorDark);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(0, 200, 190, 0.4);
+  text-decoration: none;
+  color: white;
 }
 
 /* No Invites State */
 .noInvites {
   text-align: center;
-  padding: 48px 24px;
+  padding: 56px 24px;
+  background: var(--s2i-slate-50);
+  border-radius: var(--s2i-radius-lg);
+  border: 2px dashed var(--s2i-slate-300);
 }
 
 .noInvitesIcon {
-  font-size: 48px;
-  margin-bottom: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  background: var(--s2i-teal-50);
+  border-radius: var(--s2i-radius-full);
+  font-size: 32px;
+  margin-bottom: var(--s2i-space-4);
 }
 
 .noInvitesTitle {
+  font-family: var(--s2i-font-display);
   font-size: 18px;
-  font-weight: 600;
-  color: var(--colorGrey900);
+  font-weight: var(--s2i-font-semibold);
+  color: var(--s2i-navy-900);
   margin: 0 0 8px 0;
 }
 
 .noInvitesText {
   font-size: 14px;
-  color: var(--colorGrey600);
-  margin: 0 0 20px 0;
+  color: var(--s2i-slate-500);
+  margin: 0 0 24px 0;
+  line-height: 1.6;
 }
 
 .inviteStudentsButtonLarge {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 12px 24px;
-  font-size: 15px;
-  font-weight: 500;
+  padding: 14px 28px;
+  min-height: 48px;
+  font-size: 14px;
+  font-weight: var(--s2i-font-semibold);
   color: white;
-  background-color: var(--marketplaceColor);
-  border-radius: 8px;
+  background: linear-gradient(135deg, var(--s2i-teal-500) 0%, var(--s2i-teal-600) 100%);
+  border-radius: var(--s2i-radius-lg);
   text-decoration: none;
-  transition: all 0.2s;
+  transition: var(--s2i-transition-all);
+  box-shadow: 0 4px 14px rgba(0, 200, 190, 0.3);
 }
 
 .inviteStudentsButtonLarge:hover {
-  background-color: var(--marketplaceColorDark);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 200, 190, 0.4);
+  text-decoration: none;
+  color: white;
 }
 
 /* Invites Table */
 .invitesList {
   overflow-x: auto;
+  background: white;
+  border-radius: var(--s2i-radius-lg);
+  border: 1px solid var(--s2i-slate-200);
 }
 
 .invitesTable {
@@ -1604,122 +1660,138 @@
 }
 
 .invitesTable thead tr {
-  background: var(--colorGrey50);
+  background: var(--s2i-slate-50);
 }
 
 .invitesTable th {
-  padding: 12px 16px;
+  padding: 14px 16px;
   text-align: left;
-  font-weight: 600;
+  font-weight: var(--s2i-font-semibold);
   font-size: 12px;
-  color: var(--colorGrey600);
+  color: var(--s2i-slate-500);
   text-transform: uppercase;
-  letter-spacing: 0.5px;
-  border-bottom: 1px solid var(--colorGrey200);
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid var(--s2i-slate-200);
 }
 
 .invitesTable td {
-  padding: 14px 16px;
-  border-bottom: 1px solid var(--colorGrey100);
+  padding: 16px;
+  border-bottom: 1px solid var(--s2i-slate-100);
   vertical-align: middle;
+  color: var(--s2i-slate-700);
+}
+
+.invitesTable tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.inviteRow {
+  transition: var(--s2i-transition-base);
 }
 
 .inviteRow:hover {
-  background-color: var(--colorGrey50);
+  background-color: var(--s2i-slate-50);
 }
 
 /* Student Info Cell */
 .inviteStudentInfo {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 3px;
 }
 
 .inviteStudentName {
-  font-weight: 500;
-  color: var(--colorGrey900);
+  font-weight: var(--s2i-font-medium);
+  color: var(--s2i-navy-900);
   text-decoration: none;
+  transition: var(--s2i-transition-base);
 }
 
 .inviteStudentName:hover {
-  color: var(--marketplaceColor);
-  text-decoration: underline;
+  color: var(--s2i-teal-600);
+  text-decoration: none;
 }
 
 .inviteStudentUniversity {
   font-size: 12px;
-  color: var(--colorGrey500);
+  color: var(--s2i-slate-500);
 }
 
 /* Project Title Link */
 .inviteProjectTitle {
-  color: var(--colorGrey700);
+  color: var(--s2i-slate-700);
   text-decoration: none;
+  font-weight: var(--s2i-font-medium);
+  transition: var(--s2i-transition-base);
 }
 
 .inviteProjectTitle:hover {
-  color: var(--marketplaceColor);
-  text-decoration: underline;
+  color: var(--s2i-teal-600);
+  text-decoration: none;
 }
 
 /* Date Cell */
 .inviteDate {
-  color: var(--colorGrey500);
+  color: var(--s2i-slate-500);
+  font-size: 13px;
   white-space: nowrap;
 }
 
 /* Status Badges */
 .inviteStatusBadge {
   display: inline-block;
-  padding: 4px 10px;
+  padding: 5px 14px;
   font-size: 11px;
-  font-weight: 600;
+  font-weight: var(--s2i-font-semibold);
   text-transform: uppercase;
-  letter-spacing: 0.5px;
-  border-radius: 20px;
+  letter-spacing: 0.03em;
+  border-radius: var(--s2i-radius-full);
 }
 
 .inviteStatusPending {
-  background-color: #fef3c7;
-  color: #92400e;
+  background-color: var(--s2i-amber-50);
+  color: var(--s2i-amber-700);
 }
 
 .inviteStatusAccepted {
-  background-color: #d1fae5;
-  color: #065f46;
+  background-color: var(--s2i-emerald-50);
+  color: var(--s2i-emerald-700);
 }
 
 .inviteStatusDeclined {
-  background-color: #fee2e2;
-  color: #991b1b;
+  background-color: var(--s2i-coral-50);
+  color: var(--s2i-coral-700);
 }
 
 .inviteStatusExpired {
-  background-color: var(--colorGrey100);
-  color: var(--colorGrey600);
+  background-color: var(--s2i-slate-100);
+  color: var(--s2i-slate-600);
 }
 
 /* View Transaction Link */
 .viewTransactionLink {
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--marketplaceColor);
+  font-size: 12px;
+  font-weight: var(--s2i-font-medium);
+  color: var(--s2i-teal-600);
   text-decoration: none;
+  padding: 8px 14px;
+  border: 1px solid var(--s2i-teal-500);
+  border-radius: var(--s2i-radius-lg);
+  transition: var(--s2i-transition-all);
+  display: inline-block;
 }
 
 .viewTransactionLink:hover {
-  text-decoration: underline;
+  background-color: var(--s2i-teal-500);
+  color: white;
+  text-decoration: none;
 }
 
 /* Responsive */
 @media (max-width: 768px) {
-  .inviteStatsSummary {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
   .inviteFilterControls {
     flex-direction: column;
-    gap: 12px;
+    gap: var(--s2i-space-3);
   }
 
   .inviteFilterSelect {

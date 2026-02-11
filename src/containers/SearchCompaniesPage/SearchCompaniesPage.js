@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { connect } from 'react-redux';
 import { compose } from 'redux';
 import { useHistory, useLocation } from 'react-router-dom';
@@ -9,7 +9,7 @@ import { Page, LayoutSingleColumn, PaginationLinks } from '../../components';
 import TopbarContainer from '../../containers/TopbarContainer/TopbarContainer';
 import FooterContainer from '../../containers/FooterContainer/FooterContainer';
 import CompanyCard from './CompanyCard';
-import { searchCompanies, fetchCompanyListings } from './SearchCompaniesPage.duck';
+import { fetchCompanyListings } from './SearchCompaniesPage.duck';
 
 import css from './SearchCompaniesPage.module.css';
 
@@ -93,9 +93,19 @@ const SIZE_OPTIONS = [
   { value: 'enterprise', label: '1000+ employees' },
 ];
 
+const FILTER_KEYS = ['industry', 'companySize', 'state'];
+
 const getFilterValueFromUrl = (search, key) => {
   const params = new URLSearchParams(search);
   return params.get(key) || '';
+};
+
+const getFiltersFromUrl = search => {
+  const result = {};
+  FILTER_KEYS.forEach(key => {
+    result[key] = getFilterValueFromUrl(search, key);
+  });
+  return result;
 };
 
 const SearchCompaniesPageComponent = props => {
@@ -107,7 +117,6 @@ const SearchCompaniesPageComponent = props => {
     searchError,
     currentUser,
     companyListings,
-    onSearchCompanies,
     onFetchCompanyListings,
   } = props;
 
@@ -115,17 +124,28 @@ const SearchCompaniesPageComponent = props => {
   const history = useHistory();
   const location = useLocation();
 
-  const [filters, setFilters] = useState({
-    industry: getFilterValueFromUrl(location.search, 'industry'),
-    companySize: getFilterValueFromUrl(location.search, 'companySize'),
-    state: getFilterValueFromUrl(location.search, 'state'),
-  });
+  // Filter state from URL
+  const [filters, setFilters] = useState(() => getFiltersFromUrl(location.search));
 
   // Access check: only students can access this page
   const publicData = currentUser?.attributes?.profile?.publicData || {};
   const isStudent = publicData?.userType === 'student';
 
-  const applyFilters = useCallback(
+  // Sync filter state when browser navigation changes the URL (back/forward).
+  // loadData is already triggered by the route system, so we only need to
+  // update the local filter state to keep the UI in sync.
+  useEffect(() => {
+    const urlFilters = getFiltersFromUrl(location.search);
+    setFilters(prev => {
+      const changed = FILTER_KEYS.some(k => prev[k] !== urlFilters[k]);
+      return changed ? urlFilters : prev;
+    });
+  }, [location.search]);
+
+  // Push filter state to URL. The route system's loadData will handle the API call,
+  // so we do NOT dispatch onSearchCompanies here (that caused double API calls and
+  // the filters not working because the two calls would race).
+  const pushFiltersToUrl = useCallback(
     (newFilters, page) => {
       const params = {};
       Object.entries(newFilters).forEach(([key, value]) => {
@@ -138,23 +158,25 @@ const SearchCompaniesPageComponent = props => {
         pathname: '/search/companies',
         search: queryString ? `?${queryString}` : '',
       });
-
-      onSearchCompanies(params);
     },
-    [history, onSearchCompanies]
+    [history]
   );
 
-  const handleFilterChange = (key, value) => {
-    const newFilters = { ...filters, [key]: value };
-    setFilters(newFilters);
-    applyFilters(newFilters);
-  };
+  const handleFilterChange = useCallback(
+    (key, value) => {
+      const newFilters = { ...filters, [key]: value };
+      setFilters(newFilters);
+      pushFiltersToUrl(newFilters);
+    },
+    [filters, pushFiltersToUrl]
+  );
 
-  const handleResetFilters = () => {
-    const emptyFilters = { industry: '', companySize: '', state: '' };
+  const handleResetFilters = useCallback(() => {
+    const emptyFilters = {};
+    FILTER_KEYS.forEach(k => { emptyFilters[k] = ''; });
     setFilters(emptyFilters);
-    applyFilters(emptyFilters);
-  };
+    pushFiltersToUrl(emptyFilters);
+  }, [pushFiltersToUrl]);
 
   const title = intl.formatMessage({ id: 'SearchCompaniesPage.title' });
   const hasFiltersActive = Object.values(filters).some(v => !!v);
@@ -338,7 +360,6 @@ const mapStateToProps = state => {
 };
 
 const mapDispatchToProps = dispatch => ({
-  onSearchCompanies: params => dispatch(searchCompanies(params)),
   onFetchCompanyListings: authorId => dispatch(fetchCompanyListings(authorId)),
 });
 

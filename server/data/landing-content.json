@@ -2,8 +2,8 @@
   "branding": {
     "id": "branding",
     "section": "branding",
-    "logoUrl": "/api/uploads/logo-1770446864491-yap10u.png",
-    "logoHeight": 60,
+    "logoUrl": null,
+    "logoHeight": 36,
     "tagline": "",
     "faviconUrl": null,
     "socialFacebook": null,

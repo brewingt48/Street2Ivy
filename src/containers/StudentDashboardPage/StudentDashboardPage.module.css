@@ -2053,6 +2053,194 @@
   color: white;
 }
 
+/* ================ No Projects Warning Modal ================ */
+
+.noProjectsOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(12, 20, 48, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(4px);
+  animation: fadeIn 0.2s ease-out;
+  padding: 20px;
+}
+
+.noProjectsModal {
+  background: white;
+  border-radius: var(--s2i-radius-xl);
+  max-width: 520px;
+  width: 100%;
+  box-shadow: var(--s2i-shadow-xl);
+  animation: slideUp 0.3s ease-out;
+  overflow: hidden;
+}
+
+.noProjectsModalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--s2i-space-5) var(--s2i-space-6);
+  background: linear-gradient(135deg, var(--s2i-amber-50) 0%, var(--s2i-amber-100) 100%);
+  border-bottom: 1px solid var(--s2i-amber-200);
+}
+
+.noProjectsModalTitle {
+  font-family: var(--s2i-font-display);
+  font-size: 18px;
+  font-weight: var(--s2i-font-semibold);
+  color: var(--s2i-amber-800);
+  margin: 0;
+}
+
+.noProjectsModalClose {
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: rgba(0, 0, 0, 0.08);
+  border-radius: var(--s2i-radius-full);
+  font-size: 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--s2i-transition-all);
+  color: var(--s2i-slate-600);
+}
+
+.noProjectsModalClose:hover {
+  background-color: rgba(0, 0, 0, 0.15);
+  color: var(--s2i-navy-900);
+}
+
+.noProjectsModalBody {
+  padding: var(--s2i-space-6);
+  text-align: center;
+}
+
+.noProjectsModalIcon {
+  font-size: 56px;
+  margin-bottom: var(--s2i-space-4);
+  opacity: 0.8;
+}
+
+.noProjectsModalText {
+  font-size: 16px;
+  font-weight: var(--s2i-font-medium);
+  color: var(--s2i-navy-900);
+  margin: 0 0 var(--s2i-space-3) 0;
+  line-height: 1.6;
+}
+
+.noProjectsModalSubtext {
+  font-size: 14px;
+  color: var(--s2i-slate-600);
+  margin: 0 0 var(--s2i-space-4) 0;
+  line-height: 1.5;
+}
+
+.noProjectsModalList {
+  text-align: left;
+  padding-left: 20px;
+  margin: 0;
+}
+
+.noProjectsModalList li {
+  font-size: 14px;
+  color: var(--s2i-slate-600);
+  line-height: 1.6;
+  margin-bottom: 8px;
+}
+
+.noProjectsModalList li:last-child {
+  margin-bottom: 0;
+}
+
+.noProjectsModalActions {
+  display: flex;
+  gap: var(--s2i-space-3);
+  justify-content: center;
+  padding: var(--s2i-space-5) var(--s2i-space-6);
+  border-top: 1px solid var(--s2i-slate-200);
+  background: var(--s2i-slate-50);
+}
+
+.noProjectsModalProfileLink {
+  padding: 12px 24px;
+  background: white;
+  border: 1px solid var(--s2i-slate-300);
+  border-radius: var(--s2i-radius-lg);
+  font-size: 14px;
+  font-weight: var(--s2i-font-medium);
+  color: var(--s2i-navy-800);
+  text-decoration: none;
+  transition: var(--s2i-transition-all);
+}
+
+.noProjectsModalProfileLink:hover {
+  background: var(--s2i-slate-50);
+  border-color: var(--s2i-slate-400);
+  color: var(--s2i-navy-900);
+}
+
+.noProjectsModalDismiss {
+  padding: 12px 24px;
+  background: var(--s2i-teal-500);
+  color: white;
+  border: none;
+  border-radius: var(--s2i-radius-lg);
+  font-size: 14px;
+  font-weight: var(--s2i-font-semibold);
+  cursor: pointer;
+  transition: var(--s2i-transition-all);
+}
+
+.noProjectsModalDismiss:hover {
+  background: var(--s2i-teal-600);
+  transform: translateY(-1px);
+}
+
+/* No Projects Inline Banner */
+.noProjectsInlineBanner {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--s2i-space-4);
+  background: var(--s2i-amber-50);
+  border: 1px solid var(--s2i-amber-300);
+  border-radius: var(--s2i-radius-xl);
+  padding: var(--s2i-space-5) var(--s2i-space-6);
+}
+
+.noProjectsInlineIcon {
+  font-size: 28px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.noProjectsInlineContent {
+  flex: 1;
+}
+
+.noProjectsInlineTitle {
+  display: block;
+  font-size: 15px;
+  font-weight: var(--s2i-font-semibold);
+  color: var(--s2i-amber-800);
+  margin-bottom: 4px;
+}
+
+.noProjectsInlineText {
+  font-size: 14px;
+  color: var(--s2i-amber-700);
+  margin: 0;
+  line-height: 1.5;
+}
+
 /* Quick Tips Card */
 .quickTipsCard {
   background: white;

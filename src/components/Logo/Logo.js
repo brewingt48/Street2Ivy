@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import classNames from 'classnames';
 
 import { useConfiguration } from '../../context/configurationContext';
@@ -7,8 +7,10 @@ import { fetchPublicContent, apiBaseUrl } from '../../util/api';
 
 import css from './Logo.module.css';
 
-// Cache for CMS logo URL to avoid repeated fetches
+// Module-level cache for CMS branding data.
+// This ensures subsequent mounts (e.g. page navigation) don't re-flash.
 let cmsLogoCache = null;
+// Shared fetch promise so concurrent Logo mounts don't fire duplicate requests.
 let cmsFetchPromise = null;
 
 const HEIGHT_24 = 24;
@@ -63,6 +65,7 @@ export const LogoComponent = props => {
     logoSettings,
     defaultLogoDesktop,
     defaultLogoMobile,
+    isLoading,
     ...rest
   } = props;
 
@@ -73,13 +76,30 @@ export const LogoComponent = props => {
     getHeightClassName(logoSettings?.height)
   );
 
-  // If the CMS logo fails to load, fall back to the default logo
+  // If the CMS logo fails to load (e.g. ephemeral file lost on Heroku),
+  // fall back to the built-in Campus2Career default logo (not the old branding).
   const handleImgError = (e) => {
     const fallback = layout === 'desktop' ? defaultLogoDesktop : defaultLogoMobile;
     if (fallback && e.target.src !== fallback) {
       e.target.src = fallback;
     }
   };
+
+  // While the CMS fetch is in flight, show the built-in default logo immediately.
+  // This prevents a flash of broken/empty content during the async fetch.
+  // Since the default logo is now Campus2Career, the user always sees correct branding.
+  if (isLoading) {
+    const fallbackSrc = layout === 'desktop' ? defaultLogoDesktop : defaultLogoMobile;
+    return (
+      <div className={logoClasses}>
+        <img
+          className={logoImageClasses}
+          src={fallbackSrc}
+          alt={marketplaceName}
+        />
+      </div>
+    );
+  }
 
   // Logo from hosted asset
   if (isImageAsset(logoImageDesktop) && hasValidLogoSettings && layout === 'desktop') {
@@ -150,6 +170,37 @@ export const LogoComponent = props => {
 };
 
 /**
+ * Shared fetch function that deduplicates concurrent requests.
+ * Returns a promise that resolves to the branding data object or false.
+ */
+const fetchCmsBranding = () => {
+  if (cmsFetchPromise) {
+    return cmsFetchPromise;
+  }
+
+  cmsFetchPromise = fetchPublicContent()
+    .then(response => {
+      const branding = response?.data?.branding;
+      const brandingData = branding
+        ? {
+            logoUrl: branding.logoUrl || null,
+            logoHeight: branding.logoHeight || null,
+          }
+        : false;
+      cmsLogoCache = brandingData;
+      cmsFetchPromise = null;
+      return brandingData;
+    })
+    .catch(() => {
+      cmsLogoCache = false;
+      cmsFetchPromise = null;
+      return false;
+    });
+
+  return cmsFetchPromise;
+};
+
+/**
  * This component returns a logo
  *
  * @component
@@ -166,43 +217,40 @@ const Logo = props => {
   // NOTE: logo images are set in hosted branding.json asset or src/config/brandingConfig.js
   const { logoImageDesktop, logoImageMobile, logoSettings } = config.branding;
 
-  // State for CMS branding data (logo URL and height)
+  // Start from cache if available, otherwise null (triggers loading state).
   const [cmsBranding, setCmsBranding] = useState(cmsLogoCache);
+  const mountedRef = useRef(true);
 
   // Fetch CMS content to check for custom logo and settings
   useEffect(() => {
-    // Always fetch fresh data to ensure we get the latest logo settings
-    const fetchBranding = () => {
-      fetchPublicContent()
-        .then(response => {
-          const branding = response?.data?.branding;
-          const brandingData = branding ? {
-            logoUrl: branding.logoUrl || null,
-            logoHeight: branding.logoHeight || null,
-          } : false;
-          cmsLogoCache = brandingData;
-          setCmsBranding(brandingData);
-        })
-        .catch(() => {
-          cmsLogoCache = false;
-          setCmsBranding(false);
-        });
-    };
+    mountedRef.current = true;
 
-    // If we already have a cached value, use it initially but still fetch fresh data
+    // If we have a cached result, use it immediately (no loading flash).
     if (cmsLogoCache !== null) {
       setCmsBranding(cmsLogoCache);
     }
 
-    fetchBranding();
+    // Always fetch fresh data to pick up admin changes.
+    fetchCmsBranding().then(data => {
+      if (mountedRef.current) {
+        setCmsBranding(data);
+      }
+    });
+
+    return () => {
+      mountedRef.current = false;
+    };
   }, []);
+
+  // Determine loading state: only true on first mount when there's no cache yet.
+  const isLoading = cmsBranding === null;
 
   // Use CMS logo if available, otherwise use default
   const cmsLogoUrl = cmsBranding && cmsBranding !== false ? cmsBranding.logoUrl : null;
   const cmsLogoHeight = cmsBranding && cmsBranding !== false ? cmsBranding.logoHeight : null;
 
-  // For CMS logo URLs that start with /api/, prepend the API base URL in development
-  // This ensures the logo loads from the correct server
+  // For CMS logo URLs that start with /api/, prepend the API base URL in development.
+  // This ensures the logo loads from the correct server.
   const resolvedLogoUrl = cmsLogoUrl && cmsLogoUrl.startsWith('/api/')
     ? `${apiBaseUrl()}${cmsLogoUrl}`
     : cmsLogoUrl;
@@ -210,8 +258,8 @@ const Logo = props => {
   const effectiveLogoDesktop = resolvedLogoUrl || logoImageDesktop;
   const effectiveLogoMobile = resolvedLogoUrl || logoImageMobile;
 
-  // Use CMS logo height if set, otherwise use default logoSettings
-  // Ensure format is set to 'image' for valid settings
+  // Use CMS logo height if set, otherwise use default logoSettings.
+  // Ensure format is set to 'image' for valid settings.
   const effectiveLogoSettings = cmsLogoHeight
     ? { ...logoSettings, height: cmsLogoHeight, format: 'image' }
     : logoSettings;
@@ -226,6 +274,7 @@ const Logo = props => {
       marketplaceName={config.marketplaceName}
       defaultLogoDesktop={logoImageDesktop}
       defaultLogoMobile={logoImageMobile}
+      isLoading={isLoading}
     />
   );
 };

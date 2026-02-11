@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { connect } from 'react-redux';
 import { compose } from 'redux';
 import { useHistory, useLocation } from 'react-router-dom';
@@ -113,10 +113,22 @@ const GRADUATION_YEAR_OPTIONS = [
   { value: '2029', label: '2029' },
 ];
 
+const FILTER_KEYS = ['state', 'university', 'major', 'skills', 'interests', 'graduationYear'];
+
 const getFilterValueFromUrl = (search, key) => {
   const params = new URLSearchParams(search);
   return params.get(key) || '';
 };
+
+const getFiltersFromUrl = search => {
+  const result = {};
+  FILTER_KEYS.forEach(key => {
+    result[key] = getFilterValueFromUrl(search, key);
+  });
+  return result;
+};
+
+const DEBOUNCE_MS = 400;
 
 const SearchStudentsPageComponent = props => {
   const {
@@ -131,7 +143,6 @@ const SearchStudentsPageComponent = props => {
     inviteError,
     inviteSuccess,
     userStats,
-    onSearchStudents,
     onInviteToApply,
     onClearInviteState,
     onManageDisableScrolling,
@@ -143,14 +154,10 @@ const SearchStudentsPageComponent = props => {
   const location = useLocation();
 
   // Filter state from URL
-  const [filters, setFilters] = useState({
-    state: getFilterValueFromUrl(location.search, 'state'),
-    university: getFilterValueFromUrl(location.search, 'university'),
-    major: getFilterValueFromUrl(location.search, 'major'),
-    skills: getFilterValueFromUrl(location.search, 'skills'),
-    interests: getFilterValueFromUrl(location.search, 'interests'),
-    graduationYear: getFilterValueFromUrl(location.search, 'graduationYear'),
-  });
+  const [filters, setFilters] = useState(() => getFiltersFromUrl(location.search));
+
+  // Debounce timer ref for text inputs
+  const debounceRef = useRef(null);
 
   // Invite modal state
   const [inviteModalOpen, setInviteModalOpen] = useState(false);
@@ -160,7 +167,28 @@ const SearchStudentsPageComponent = props => {
   const publicData = currentUser?.attributes?.profile?.publicData || {};
   const isCorporatePartner = publicData?.userType === 'corporate-partner';
 
-  const applyFilters = useCallback(
+  // Sync filter state when browser navigation changes the URL (back/forward).
+  // loadData is already triggered by the route system, so we only need to
+  // update the local filter state to keep the UI in sync.
+  useEffect(() => {
+    const urlFilters = getFiltersFromUrl(location.search);
+    setFilters(prev => {
+      // Only update if something actually changed to avoid unnecessary re-renders
+      const changed = FILTER_KEYS.some(k => prev[k] !== urlFilters[k]);
+      return changed ? urlFilters : prev;
+    });
+  }, [location.search]);
+
+  // Clean up debounce timer on unmount
+  useEffect(() => {
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
+  }, []);
+
+  // Push filter state to URL. The route system's loadData will handle the API call,
+  // so we do NOT dispatch onSearchStudents here (that caused double API calls).
+  const pushFiltersToUrl = useCallback(
     (newFilters, page) => {
       const params = {};
       Object.entries(newFilters).forEach(([key, value]) => {
@@ -168,37 +196,55 @@ const SearchStudentsPageComponent = props => {
       });
       if (page && page > 1) params.page = page;
 
-      // Update URL
       const queryString = new URLSearchParams(params).toString();
       history.push({ pathname: '/search/students', search: queryString ? `?${queryString}` : '' });
-
-      // Dispatch search
-      onSearchStudents(params);
     },
-    [history, onSearchStudents]
+    [history]
   );
 
-  const handleFilterChange = (key, value) => {
-    const newFilters = { ...filters, [key]: value };
-    setFilters(newFilters);
-    applyFilters(newFilters);
-  };
+  // For select/dropdown filters: apply immediately (no debounce needed)
+  const handleSelectFilterChange = useCallback(
+    (key, value) => {
+      // Cancel any pending debounced text search
+      if (debounceRef.current) {
+        clearTimeout(debounceRef.current);
+        debounceRef.current = null;
+      }
+      const newFilters = { ...filters, [key]: value };
+      setFilters(newFilters);
+      pushFiltersToUrl(newFilters);
+    },
+    [filters, pushFiltersToUrl]
+  );
 
-  const handleResetFilters = () => {
-    const emptyFilters = {
-      state: '',
-      university: '',
-      major: '',
-      skills: '',
-      interests: '',
-      graduationYear: '',
-    };
+  // For text inputs: debounce the URL push / API call
+  const handleTextFilterChange = useCallback(
+    (key, value) => {
+      const newFilters = { ...filters, [key]: value };
+      setFilters(newFilters);
+
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+      debounceRef.current = setTimeout(() => {
+        pushFiltersToUrl(newFilters);
+        debounceRef.current = null;
+      }, DEBOUNCE_MS);
+    },
+    [filters, pushFiltersToUrl]
+  );
+
+  const handleResetFilters = useCallback(() => {
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current);
+      debounceRef.current = null;
+    }
+    const emptyFilters = {};
+    FILTER_KEYS.forEach(k => { emptyFilters[k] = ''; });
     setFilters(emptyFilters);
-    applyFilters(emptyFilters);
-  };
+    pushFiltersToUrl(emptyFilters);
+  }, [pushFiltersToUrl]);
 
   const handlePagination = page => {
-    applyFilters(filters, page);
+    pushFiltersToUrl(filters, page);
   };
 
   const handleInvite = student => {
@@ -257,7 +303,7 @@ const SearchStudentsPageComponent = props => {
                 <select
                   className={css.filterSelect}
                   value={filters.state}
-                  onChange={e => handleFilterChange('state', e.target.value)}
+                  onChange={e => handleSelectFilterChange('state', e.target.value)}
                 >
                   <option value="">All States</option>
                   {STATE_OPTIONS.map(opt => (
@@ -276,7 +322,7 @@ const SearchStudentsPageComponent = props => {
                 <select
                   className={css.filterSelect}
                   value={filters.graduationYear}
-                  onChange={e => handleFilterChange('graduationYear', e.target.value)}
+                  onChange={e => handleSelectFilterChange('graduationYear', e.target.value)}
                 >
                   <option value="">All Years</option>
                   {GRADUATION_YEAR_OPTIONS.map(opt => (
@@ -295,7 +341,7 @@ const SearchStudentsPageComponent = props => {
                 <select
                   className={css.filterSelect}
                   value={filters.skills}
-                  onChange={e => handleFilterChange('skills', e.target.value)}
+                  onChange={e => handleSelectFilterChange('skills', e.target.value)}
                 >
                   <option value="">All Skills</option>
                   {SKILL_OPTIONS.map(opt => (
@@ -314,7 +360,7 @@ const SearchStudentsPageComponent = props => {
                 <select
                   className={css.filterSelect}
                   value={filters.interests}
-                  onChange={e => handleFilterChange('interests', e.target.value)}
+                  onChange={e => handleSelectFilterChange('interests', e.target.value)}
                 >
                   <option value="">All Interests</option>
                   {INTEREST_OPTIONS.map(opt => (
@@ -337,7 +383,7 @@ const SearchStudentsPageComponent = props => {
                   type="text"
                   placeholder="e.g. Stanford, MIT..."
                   value={filters.university}
-                  onChange={e => handleFilterChange('university', e.target.value)}
+                  onChange={e => handleTextFilterChange('university', e.target.value)}
                 />
               </div>
 
@@ -351,7 +397,7 @@ const SearchStudentsPageComponent = props => {
                   type="text"
                   placeholder="e.g. Computer Science..."
                   value={filters.major}
-                  onChange={e => handleFilterChange('major', e.target.value)}
+                  onChange={e => handleTextFilterChange('major', e.target.value)}
                 />
               </div>
 

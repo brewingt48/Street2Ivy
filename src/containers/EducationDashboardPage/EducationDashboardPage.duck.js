@@ -123,7 +123,13 @@ const partnerActionPayloadCreator = async ({ action, userId, reason }, { rejectW
     }
     return { action, userId, response };
   } catch (e) {
-    return rejectWithValue(storableError(e));
+    // The server returns { error: "message" } but storableError only captures e.message.
+    // Preserve the server error message so the UI can display it.
+    const storable = storableError(e);
+    if (!storable.message && e.error) {
+      storable.message = e.error;
+    }
+    return rejectWithValue(storable);
   }
 };
 

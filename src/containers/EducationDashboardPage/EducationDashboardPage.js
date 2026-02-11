@@ -1305,16 +1305,50 @@ const PartnersPanel = ({
   partners,
   partnersInProgress,
   partnerActionInProgress,
+  partnerActionError,
   onFetchPartners,
   onPartnerAction,
 }) => {
   const [statusFilter, setStatusFilter] = useState('all');
   const [rejectReason, setRejectReason] = useState('');
   const [rejectingId, setRejectingId] = useState(null);
+  const [actionFeedback, setActionFeedback] = useState(null);
 
   useEffect(() => {
     onFetchPartners();
   }, [onFetchPartners]);
+
+  // Show error feedback when a partner action fails
+  useEffect(() => {
+    if (partnerActionError) {
+      const errorMsg = partnerActionError.message || 'Action failed. Please try again.';
+      setActionFeedback({ type: 'error', message: errorMsg });
+      // Auto-clear error feedback after 6 seconds
+      const timer = setTimeout(() => setActionFeedback(null), 6000);
+      return () => clearTimeout(timer);
+    }
+  }, [partnerActionError]);
+
+  const handlePartnerAction = (action, userId, reason) => {
+    setActionFeedback(null);
+    onPartnerAction(action, userId, reason)
+      .then(() => {
+        const actionLabels = { approve: 'approved', reject: 'rejected', remove: 'removed' };
+        setActionFeedback({
+          type: 'success',
+          message: `Corporate partner successfully ${actionLabels[action] || action}.`,
+        });
+        // Auto-clear success feedback after 4 seconds
+        setTimeout(() => setActionFeedback(null), 4000);
+        // Refetch to get fresh server state
+        onFetchPartners();
+      })
+      .catch(err => {
+        const errorMsg = err?.message || err?.error || 'Action failed. Please try again.';
+        setActionFeedback({ type: 'error', message: errorMsg });
+        setTimeout(() => setActionFeedback(null), 6000);
+      });
+  };
 
   const filteredPartners = statusFilter === 'all'
     ? partners
@@ -1332,7 +1366,7 @@ const PartnersPanel = ({
   };
 
   const handleReject = (userId) => {
-    onPartnerAction('reject', userId, rejectReason);
+    handlePartnerAction('reject', userId, rejectReason);
     setRejectingId(null);
     setRejectReason('');
   };
@@ -1380,6 +1414,20 @@ const PartnersPanel = ({
           <option value="rejected">Rejected ({rejectedCount})</option>
         </select>
       </div>
+
+      {/* Action Feedback */}
+      {actionFeedback && (
+        <div className={actionFeedback.type === 'error' ? css.partnerActionError : css.partnerActionSuccess}>
+          {actionFeedback.message}
+          <button
+            type="button"
+            className={css.partnerFeedbackDismiss}
+            onClick={() => setActionFeedback(null)}
+          >
+            ×
+          </button>
+        </div>
+      )}
 
       {/* Partners Table */}
       {filteredPartners.length === 0 ? (
@@ -1429,7 +1477,7 @@ const PartnersPanel = ({
                       <>
                         <button
                           className={css.partnerApproveBtn}
-                          onClick={() => onPartnerAction('approve', partner.id)}
+                          onClick={() => handlePartnerAction('approve', partner.id)}
                           disabled={partnerActionInProgress}
                         >
                           Approve
@@ -1471,7 +1519,7 @@ const PartnersPanel = ({
                     {partner.approvalStatus === 'approved' && (
                       <button
                         className={css.partnerRemoveBtn}
-                        onClick={() => onPartnerAction('remove', partner.id)}
+                        onClick={() => handlePartnerAction('remove', partner.id)}
                         disabled={partnerActionInProgress}
                       >
                         Remove
@@ -1480,7 +1528,7 @@ const PartnersPanel = ({
                     {partner.approvalStatus === 'rejected' && (
                       <button
                         className={css.partnerApproveBtn}
-                        onClick={() => onPartnerAction('approve', partner.id)}
+                        onClick={() => handlePartnerAction('approve', partner.id)}
                         disabled={partnerActionInProgress}
                       >
                         Re-approve
@@ -1530,6 +1578,7 @@ const EducationDashboardPageComponent = props => {
     partners,
     partnersInProgress,
     partnerActionInProgress,
+    partnerActionError,
     onFetchPartners,
     onPartnerAction,
   } = props;
@@ -2456,6 +2505,7 @@ const EducationDashboardPageComponent = props => {
               partners={partners}
               partnersInProgress={partnersInProgress}
               partnerActionInProgress={partnerActionInProgress}
+              partnerActionError={partnerActionError}
               onFetchPartners={onFetchPartners}
               onPartnerAction={onPartnerAction}
             />
@@ -2571,6 +2621,7 @@ const mapStateToProps = state => {
     partners,
     partnersInProgress,
     partnerActionInProgress,
+    partnerActionError,
   } = state.EducationDashboardPage;
 
   return {
@@ -2596,6 +2647,7 @@ const mapStateToProps = state => {
     partners: partners || [],
     partnersInProgress: partnersInProgress || false,
     partnerActionInProgress: partnerActionInProgress || false,
+    partnerActionError: partnerActionError || null,
   };
 };
 

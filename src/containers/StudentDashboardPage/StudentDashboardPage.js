@@ -262,18 +262,108 @@ const ProjectCard = ({ project, type, onAccept, onDecline }) => {
   );
 };
 
+// ================ No Projects Warning Modal ================ //
+
+const NoProjectsWarningModal = ({ isOpen, onClose }) => {
+  if (!isOpen) return null;
+
+  return (
+    <div className={css.noProjectsOverlay} onClick={onClose}>
+      <div className={css.noProjectsModal} onClick={e => e.stopPropagation()}>
+        <div className={css.noProjectsModalHeader}>
+          <h3 className={css.noProjectsModalTitle}>No Projects Available</h3>
+          <button className={css.noProjectsModalClose} onClick={onClose}>x</button>
+        </div>
+        <div className={css.noProjectsModalBody}>
+          <div className={css.noProjectsModalIcon}>📋</div>
+          <p className={css.noProjectsModalText}>
+            There are no projects posted yet. Corporate partners have not listed any opportunities at this time.
+          </p>
+          <p className={css.noProjectsModalSubtext}>
+            This is normal — new projects are added regularly. Here is what you can do in the meantime:
+          </p>
+          <ul className={css.noProjectsModalList}>
+            <li>Complete your profile so you are ready when projects are posted</li>
+            <li>Add your skills and interests to get better matches</li>
+            <li>Check back soon — new opportunities are added frequently</li>
+          </ul>
+        </div>
+        <div className={css.noProjectsModalActions}>
+          <NamedLink
+            name="ProfileSettingsPage"
+            className={css.noProjectsModalProfileLink}
+          >
+            Update Your Profile
+          </NamedLink>
+          <button className={css.noProjectsModalDismiss} onClick={onClose}>
+            Got It
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 // ================ Browse Projects Panel Component ================ //
 
-const BrowseProjectsPanel = ({ projects, isLoading }) => {
+const BrowseProjectsPanel = ({ projects, isLoading, onNoBrowseProjects }) => {
   if (isLoading) {
     return <div className={css.loadingState}><span className={css.spinner}></span> Loading projects...</div>;
   }
 
+  const hasProjects = projects && projects.length > 0;
+
   return (
     <div className={css.browseProjectsPanel}>
+      {/* Browse All Projects CTA */}
+      <div className={css.browseProjectsCTA}>
+        <div className={css.browseProjectsCTAContent}>
+          <div className={css.browseProjectsCTAIcon}>🔍</div>
+          <div className={css.browseProjectsCTAInfo}>
+            <h3 className={css.browseProjectsCTATitle}>Find Your Next Opportunity</h3>
+            <p className={css.browseProjectsCTADescription}>
+              Search and filter through available projects from corporate partners.
+              Find opportunities that match your skills and career goals.
+            </p>
+          </div>
+        </div>
+        <div className={css.browseProjectsCTAActions}>
+          {hasProjects ? (
+            <NamedLink
+              name="SearchPageWithListingType"
+              params={{ listingType: 'project' }}
+              className={css.browseAllButton}
+            >
+              Browse All Projects
+            </NamedLink>
+          ) : (
+            <button
+              className={css.browseAllButton}
+              onClick={onNoBrowseProjects}
+            >
+              Browse All Projects
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* No Projects Notice (inline) */}
+      {!hasProjects && (
+        <div className={css.noProjectsInlineBanner}>
+          <span className={css.noProjectsInlineIcon}>📋</span>
+          <div className={css.noProjectsInlineContent}>
+            <strong className={css.noProjectsInlineTitle}>No projects posted yet</strong>
+            <p className={css.noProjectsInlineText}>
+              Corporate partners have not listed any opportunities at this time.
+              New projects are added regularly — check back soon!
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Quick Tips Card */}
       <div className={css.quickTipsCard}>
-        <h4 className={css.quickTipsTitle}>💡 Tips for Finding Projects</h4>
+        <h4 className={css.quickTipsTitle}>Tips for Finding Projects</h4>
         <div className={css.quickTipsList}>
           <div className={css.quickTip}>
             <span className={css.tipIcon}>✅</span>
@@ -732,6 +822,7 @@ const StudentDashboardPageComponent = props => {
   const [selectedMessage, setSelectedMessage] = useState(null);
   const [statDetailModal, setStatDetailModal] = useState(null);
   const [onboardingDismissed, setOnboardingDismissed] = useState(false);
+  const [showNoProjectsWarning, setShowNoProjectsWarning] = useState(false);
 
   // State for projects and messages
   const [projects, setProjects] = useState({
@@ -770,13 +861,34 @@ const StudentDashboardPageComponent = props => {
     }
   }, [currentUser]);
 
-  // Note: Available projects are fetched from the SearchPage via SDK
-  // For the dashboard, we'll show a simplified browse experience with a link to full search
+  // Fetch available project listings to check if any exist
   useEffect(() => {
-    // For now, set loading to false since we'll link to the full search page
-    // In a future iteration, we could fetch featured/recent listings via an API endpoint
-    setIsLoadingProjects(false);
-    setAvailableProjects([]);
+    const fetchAvailableProjects = async () => {
+      setIsLoadingProjects(true);
+      try {
+        const baseUrl = apiBaseUrl();
+        // Query listings API to check if any project listings are available
+        const response = await fetch(
+          `${baseUrl}/api/listings/query?pub_listingType=project&perPage=1`,
+          { credentials: 'include' }
+        );
+        if (response.ok) {
+          const data = await response.json();
+          const listings = data.data || [];
+          setAvailableProjects(listings);
+        } else {
+          // If the API call fails, default to empty but do not block the user
+          setAvailableProjects([]);
+        }
+      } catch (error) {
+        console.error('Failed to fetch available projects:', error);
+        setAvailableProjects([]);
+      } finally {
+        setIsLoadingProjects(false);
+      }
+    };
+
+    fetchAvailableProjects();
   }, []);
 
   // Fetch student's transactions (applications/orders)
@@ -842,6 +954,11 @@ const StudentDashboardPageComponent = props => {
       fetchStudentTransactions();
     }
   }, [currentUser]);
+
+  // Handle "Browse Projects" click when no projects are available
+  const handleNoProjectsClick = () => {
+    setShowNoProjectsWarning(true);
+  };
 
   // Handle AI coaching access
   const handleAICoachingClick = () => {
@@ -1087,7 +1204,13 @@ const StudentDashboardPageComponent = props => {
           <div className={css.tabNavigation}>
             <button
               className={classNames(css.tab, { [css.tabActive]: activeTab === 'browse' })}
-              onClick={() => setActiveTab('browse')}
+              onClick={() => {
+                setActiveTab('browse');
+                // Show warning popup when switching to browse tab and no projects exist
+                if (!isLoadingProjects && availableProjects.length === 0) {
+                  setShowNoProjectsWarning(true);
+                }
+              }}
             >
               <span className={css.tabIcon}>🔍</span>
               Browse Projects
@@ -1155,6 +1278,7 @@ const StudentDashboardPageComponent = props => {
               <BrowseProjectsPanel
                 projects={availableProjects}
                 isLoading={isLoadingProjects}
+                onNoBrowseProjects={handleNoProjectsClick}
               />
             )}
 
@@ -1430,6 +1554,12 @@ const StudentDashboardPageComponent = props => {
             </div>
           )}
         </div>
+
+        {/* No Projects Warning Modal */}
+        <NoProjectsWarningModal
+          isOpen={showNoProjectsWarning}
+          onClose={() => setShowNoProjectsWarning(false)}
+        />
 
         {/* AI Coaching Warning Modal */}
         {showCoachingModal && (
