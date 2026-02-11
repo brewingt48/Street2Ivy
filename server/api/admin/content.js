@@ -204,6 +204,20 @@ const defaultContent = {
     updatedAt: new Date().toISOString(),
     updatedBy: null,
   },
+  statistics: {
+    id: 'statistics',
+    section: 'statistics',
+    sectionTitle: 'Our Impact',
+    items: [
+      { id: 'stat-1', value: 5000, label: 'Students', suffix: '+' },
+      { id: 'stat-2', value: 850, label: 'Projects Completed', suffix: '+' },
+      { id: 'stat-3', value: 200, label: 'Partner Companies', suffix: '+' },
+      { id: 'stat-4', value: 4.9, label: 'Average Rating', suffix: '★' },
+    ],
+    isActive: true,
+    updatedAt: new Date().toISOString(),
+    updatedBy: null,
+  },
   cta: {
     id: 'cta',
     section: 'cta',
@@ -313,14 +327,23 @@ const getContent = async (req, res) => {
     }
 
     const content = loadContent();
+    // Safely compute lastUpdated — some sections may not have updatedAt
+    let lastUpdated = '1970-01-01';
+    try {
+      Object.values(content).forEach(section => {
+        if (section && section.updatedAt) {
+          const sectionDate = new Date(section.updatedAt);
+          if (sectionDate > new Date(lastUpdated)) {
+            lastUpdated = section.updatedAt;
+          }
+        }
+      });
+    } catch (e) {
+      // Fallback — meta is informational only
+    }
     res.status(200).json({
       data: content,
-      meta: {
-        lastUpdated: Object.values(content).reduce((latest, section) => {
-          const sectionDate = new Date(section.updatedAt);
-          return sectionDate > new Date(latest) ? section.updatedAt : latest;
-        }, '1970-01-01'),
-      },
+      meta: { lastUpdated },
     });
   } catch (error) {
     console.error('Error getting content:', error);

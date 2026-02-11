@@ -758,7 +758,7 @@ const CustomizeLandingPanel = ({ institutionDomain }) => {
           <p className={css.customizeDescription}>
             {intl.formatMessage(
               { id: 'EducationDashboardPage.customizeDescription' },
-              { subdomain: `${subdomainPreview}.street2ivy.com` }
+              { subdomain: `${subdomainPreview}.campus2career.com` }
             )}
           </p>
         </div>

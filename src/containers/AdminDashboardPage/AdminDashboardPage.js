@@ -4672,6 +4672,7 @@ const ContentManagementPanel = props => {
   const {
     content,
     fetchInProgress,
+    fetchError,
     updateInProgress,
     updateSuccess,
     onFetchContent,
@@ -4689,12 +4690,16 @@ const ContentManagementPanel = props => {
   const [successMessage, setSuccessMessage] = useState('');
   const [uploadInProgress, setUploadInProgress] = useState(false);
   const [uploadError, setUploadError] = useState(null);
+  const [fetchAttempted, setFetchAttempted] = useState(false);
 
   useEffect(() => {
-    if (!content) {
-      onFetchContent();
+    if (!content && !fetchAttempted && !fetchInProgress) {
+      setFetchAttempted(true);
+      onFetchContent().catch(err => {
+        console.error('Failed to fetch content:', err);
+      });
     }
-  }, [content, onFetchContent]);
+  }, [content, fetchAttempted, fetchInProgress, onFetchContent]);
 
   // Clear form data when changing sections
   useEffect(() => {
@@ -6241,6 +6246,50 @@ const ContentManagementPanel = props => {
     );
   }
 
+  if (!content && fetchError) {
+    return (
+      <div className={css.panel}>
+        <div className={css.panelHeader}>
+          <h2 className={css.panelTitle}>Content Management</h2>
+        </div>
+        <div className={css.errorMessage}>
+          <p>Failed to load content. Please check that you are logged in as a system administrator.</p>
+          <button
+            className={css.saveButton}
+            onClick={() => {
+              setFetchAttempted(false);
+            }}
+            style={{ marginTop: '12px' }}
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (!content && !fetchInProgress) {
+    return (
+      <div className={css.panel}>
+        <div className={css.panelHeader}>
+          <h2 className={css.panelTitle}>Content Management</h2>
+        </div>
+        <div className={css.loadingState}>
+          <p>No content data found.</p>
+          <button
+            className={css.saveButton}
+            onClick={() => {
+              setFetchAttempted(false);
+            }}
+            style={{ marginTop: '12px' }}
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className={css.panel}>
       <div className={css.panelHeader}>
@@ -6372,6 +6421,9 @@ const TenantsPanel = props => {
   const handleCreateTenant = async e => {
     e.preventDefault();
     try {
+      if (!formData.clientId || !formData.clientSecret) {
+        return; // Both Client ID and Client Secret are required
+      }
       await onCreateTenant({
         subdomain: formData.subdomain,
         name: formData.name,
@@ -6379,7 +6431,7 @@ const TenantsPanel = props => {
         institutionDomain: formData.institutionDomain,
         sharetribe: {
           clientId: formData.clientId,
-          clientSecret: formData.clientSecret || undefined,
+          clientSecret: formData.clientSecret,
           integrationClientId: formData.integrationClientId || undefined,
           integrationClientSecret: formData.integrationClientSecret || undefined,
         },
@@ -6453,7 +6505,7 @@ const TenantsPanel = props => {
   // ── Credentials View ────────────────────────────────────────
   if (view === 'credentials' && createAdminResult) {
     const tenantUrl = credentialsTenant
-      ? `https://${credentialsTenant.subdomain}.street2ivy.com`
+      ? `https://${credentialsTenant.subdomain}.campus2career.com`
       : '';
 
     return (
@@ -6613,7 +6665,7 @@ const TenantsPanel = props => {
 
         <p className={css.tenantFormIntro}>
           Set up a new white-label portal for an educational institution. Each tenant gets their own
-          subdomain (e.g., <strong>harvard.street2ivy.com</strong>) with a separate Sharetribe
+          subdomain (e.g., <strong>harvard.campus2career.com</strong>) with a separate Sharetribe
           marketplace. After creating the tenant, you can create an admin account and share the
           login credentials with the school.
         </p>
@@ -6660,8 +6712,8 @@ const TenantsPanel = props => {
             />
             <span className={css.tenantFormHint}>
               {formData.subdomain
-                ? `This tenant will be accessible at: ${formData.subdomain}.street2ivy.com`
-                : 'The subdomain for this institution (e.g., "harvard" for harvard.street2ivy.com)'}
+                ? `This tenant will be accessible at: ${formData.subdomain}.campus2career.com`
+                : 'The subdomain for this institution (e.g., "harvard" for harvard.campus2career.com)'}
             </span>
           </div>
 
@@ -6719,17 +6771,18 @@ const TenantsPanel = props => {
           </div>
 
           <div className={css.tenantFormRow}>
-            <label className={css.tenantFormLabel}>Client Secret</label>
+            <label className={css.tenantFormLabel}>Client Secret *</label>
             <input
               className={css.tenantFormInput}
               type="password"
               value={formData.clientSecret}
               onChange={e => setFormData(prev => ({ ...prev, clientSecret: e.target.value }))}
               placeholder="Enter client secret"
+              required
             />
             <span className={css.tenantFormHint}>
-              Optional but recommended. Enables server-side trusted operations like password reset
-              and admin user creation.
+              Required. Found in Sharetribe Console &rarr; Build &rarr; Applications. Enables server-side
+              trusted operations like password reset and admin user creation.
             </span>
           </div>
 
@@ -6993,6 +7046,7 @@ const AdminDashboardPageComponent = props => {
     // Content Management
     content,
     fetchContentInProgress,
+    fetchContentError,
     updateContentInProgress,
     updateContentSuccess,
     // User Stats
@@ -7242,6 +7296,7 @@ const AdminDashboardPageComponent = props => {
             <ContentManagementPanel
               content={content}
               fetchInProgress={fetchContentInProgress}
+              fetchError={fetchContentError}
               updateInProgress={updateContentInProgress}
               updateSuccess={updateContentSuccess}
               onFetchContent={onFetchContent}
@@ -7330,6 +7385,7 @@ const mapStateToProps = state => {
     fetchReportsInProgress,
     content,
     fetchContentInProgress,
+    fetchContentError,
     updateContentInProgress,
     updateContentSuccess,
     userStats,
@@ -7377,6 +7433,7 @@ const mapStateToProps = state => {
     fetchReportsInProgress,
     content,
     fetchContentInProgress,
+    fetchContentError,
     updateContentInProgress,
     updateContentSuccess,
     userStats,

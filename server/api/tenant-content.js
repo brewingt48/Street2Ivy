@@ -9,8 +9,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const { getIntegrationSdk } = require('../api-util/integrationSdk');
-const { handleError } = require('../api-util/sdk');
+const { getSdk, handleError } = require('../api-util/sdk');
 
 const TENANT_CONTENT_DIR = path.join(__dirname, '../data/tenant-content');
 
@@ -116,7 +115,7 @@ async function verifyEducationalAdmin(sdk) {
  */
 async function getMyTenantContent(req, res) {
   try {
-    const sdk = await getIntegrationSdk(req);
+    const sdk = getSdk(req, res);
     const { domain } = await verifyEducationalAdmin(sdk);
 
     const content = loadTenantContent(domain);
@@ -139,7 +138,7 @@ async function getMyTenantContent(req, res) {
  */
 async function updateMyTenantContent(req, res) {
   try {
-    const sdk = await getIntegrationSdk(req);
+    const sdk = getSdk(req, res);
     const { currentUser, domain } = await verifyEducationalAdmin(sdk);
 
     const existingContent = loadTenantContent(domain) || { ...defaultTenantContent };
@@ -244,7 +243,7 @@ async function getPublicTenantContent(req, res) {
  */
 async function resetMyTenantContent(req, res) {
   try {
-    const sdk = await getIntegrationSdk(req);
+    const sdk = getSdk(req, res);
     const { domain } = await verifyEducationalAdmin(sdk);
 
     const filePath = path.join(TENANT_CONTENT_DIR, `${domain}.json`);
