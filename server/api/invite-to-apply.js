@@ -55,10 +55,22 @@ module.exports = (req, res) => {
       const currentUser = currentUserResponse.data.data;
       const currentUserId = currentUser.id.uuid;
 
-      // Step 2: Verify the listing belongs to the current user
+      // Step 2: Verify the listing belongs to the current user and is published
       return sdk.ownListings.show({ id: listingId }).then(listingResponse => {
         const listing = listingResponse.data.data;
+        const listingState = listing.attributes.state;
         const processAlias = listing.attributes.publicData?.transactionProcessAlias;
+
+        // Listing must be published to send invitations
+        if (listingState !== 'published') {
+          const error = new Error(
+            `This project must be published before you can send invitations. Current status: ${listingState || 'draft'}. Please publish the project first.`
+          );
+          error.status = 400;
+          error.statusText = error.message;
+          error.data = { listingState };
+          throw error;
+        }
 
         if (!processAlias) {
           const error = new Error('Listing does not have a transaction process configured.');

@@ -102,9 +102,23 @@ export const ListingPageComponent = props => {
     props.inquiryModalOpenForListingId === props.params.id
   );
   const [mounted, setMounted] = useState(false);
+  const [showPublishSuccess, setShowPublishSuccess] = useState(false);
 
   useEffect(() => {
     setMounted(true);
+    // Check if we arrived here after publishing a listing
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('published') === 'true') {
+        setShowPublishSuccess(true);
+        // Clean the URL param without triggering navigation
+        const cleanUrl = window.location.pathname;
+        window.history.replaceState({}, '', cleanUrl);
+        // Auto-dismiss after 8 seconds
+        const timer = setTimeout(() => setShowPublishSuccess(false), 8000);
+        return () => clearTimeout(timer);
+      }
+    }
   }, []);
 
   const {
@@ -349,6 +363,41 @@ export const ListingPageComponent = props => {
       }}
     >
       <LayoutSingleColumn className={css.pageRoot} topbar={topbar} footer={<FooterContainer />}>
+        {showPublishSuccess && (
+          <div style={{
+            background: 'linear-gradient(135deg, #059669, #10b981)',
+            color: '#fff',
+            padding: '16px 24px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            fontSize: '15px',
+            fontWeight: 500,
+            borderRadius: '0 0 8px 8px',
+            boxShadow: '0 2px 8px rgba(5, 150, 105, 0.3)',
+            margin: '0 auto 16px',
+            maxWidth: '1128px',
+            width: '100%',
+          }}>
+            <span>&#10003; Your project has been published successfully! Students can now discover and apply for it.</span>
+            <button
+              onClick={() => setShowPublishSuccess(false)}
+              style={{
+                background: 'rgba(255,255,255,0.2)',
+                border: 'none',
+                color: '#fff',
+                cursor: 'pointer',
+                borderRadius: '4px',
+                padding: '4px 10px',
+                fontSize: '13px',
+                marginLeft: '16px',
+                flexShrink: 0,
+              }}
+            >
+              Dismiss
+            </button>
+          </div>
+        )}
         <div className={css.contentWrapperForProductLayout}>
           <div className={css.mainColumnForProductLayout}>
             {mounted && currentListing.id && noPayoutDetailsSetWithOwnListing ? (

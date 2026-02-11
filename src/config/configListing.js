@@ -333,18 +333,18 @@ export const listingFields = [
     filterConfig: {
       indexForSearch: true,
       filterType: 'SelectMultipleFilter',
-      label: 'Project Duration',
+      label: 'Project Timeline',
       group: 'secondary',
     },
     showConfig: {
-      label: 'Project Duration',
+      label: 'Project Timeline',
       isDetail: true,
     },
     saveConfig: {
-      label: 'Project Duration',
-      placeholderMessage: 'Select expected project duration...',
+      label: 'Project Timeline (how many weeks/months will the project span?)',
+      placeholderMessage: 'Select the calendar duration of the project...',
       isRequired: true,
-      requiredMessage: 'Please select the project duration.',
+      requiredMessage: 'Please select the project timeline.',
     },
   },
   {
@@ -549,16 +549,16 @@ export const listingFields = [
     filterConfig: {
       indexForSearch: true,
       filterType: 'SelectMultipleFilter',
-      label: 'Estimated Hours',
+      label: 'Total Hours',
       group: 'secondary',
     },
     showConfig: {
-      label: 'Estimated Hours',
+      label: 'Total Hourly Commitment',
       isDetail: true,
     },
     saveConfig: {
-      label: 'Estimated Hours (optional)',
-      placeholderMessage: 'Select estimated time commitment...',
+      label: 'Total Hourly Commitment (total hours the student will work across the project)',
+      placeholderMessage: 'Select total hours of work expected...',
       isRequired: false,
     },
   },

@@ -139,37 +139,20 @@ module.exports = async (req, res) => {
   const sanitizedIndustry = sanitizeString(industry, { maxLength: 100 });
   const sanitizedCompanySize = sanitizeString(companySize, { maxLength: 50 });
 
-  // Build the Integration API query params
-  const queryParams = {
-    pub_userType: userType,
-    include: ['profileImage'],
-    'fields.image': ['variants.square-small', 'variants.square-small2x'],
-    page: pagination.page,
-    perPage: pagination.perPage,
-  };
+  // Determine if any user filters are active (beyond just userType)
+  const hasStudentFilters =
+    userType === 'student' &&
+    (sanitizedState || sanitizedGraduationYear || sanitizedSkills || sanitizedInterests || sanitizedUniversity || sanitizedMajor);
+  const hasCompanyFilters =
+    userType === 'corporate-partner' &&
+    (sanitizedState || sanitizedIndustry || sanitizedCompanySize);
+  const hasActiveFilters = hasStudentFilters || hasCompanyFilters;
 
   // SECURITY: For educational admins, restrict to their institution's email domain
+  let institutionDomainFilter = null;
   if (authResult.userType === 'educational-admin') {
     const adminPublicData = authResult.user.attributes?.profile?.publicData || {};
-    const institutionDomain = adminPublicData.institutionDomain;
-
-    if (institutionDomain) {
-      queryParams.pub_emailDomain = institutionDomain;
-    }
-  }
-
-  // Add filters based on user type
-  if (userType === 'student') {
-    if (sanitizedState) queryParams.pub_studentState = sanitizedState;
-    if (sanitizedGraduationYear) queryParams.pub_graduationYear = sanitizedGraduationYear;
-    if (sanitizedSkills) queryParams.pub_skills = `has_any:${sanitizedSkills}`;
-    if (sanitizedInterests) queryParams.pub_interests = `has_any:${sanitizedInterests}`;
-    if (sanitizedUniversity) queryParams.pub_university = sanitizedUniversity;
-    if (sanitizedMajor) queryParams.pub_major = sanitizedMajor;
-  } else if (userType === 'corporate-partner') {
-    if (sanitizedState) queryParams.pub_companyState = sanitizedState;
-    if (sanitizedIndustry) queryParams.pub_industry = sanitizedIndustry;
-    if (sanitizedCompanySize) queryParams.pub_companySize = sanitizedCompanySize;
+    institutionDomainFilter = adminPublicData.institutionDomain || null;
   }
 
   try {
@@ -186,94 +169,234 @@ module.exports = async (req, res) => {
         major: sanitizedMajor,
         graduationYear: sanitizedGraduationYear,
         industry: sanitizedIndustry,
+        companySize: sanitizedCompanySize,
       },
     });
 
-    integrationSdk.users
-      .query(queryParams)
-      .then(response => {
+    // Strategy: Fetch users by userType from the Integration API, then apply
+    // all other filters server-side in memory. This guarantees filtering works
+    // regardless of whether Sharetribe search schemas are configured for
+    // extended data fields. We fetch in batches if filters are active.
+    const fetchAllPages = async () => {
+      const allUsers = [];
+      const allIncluded = [];
+      let currentPage = 1;
+      const batchSize = 100; // Max per page for Integration API
+      let totalPages = 1;
+
+      do {
+        const queryParams = {
+          pub_userType: userType,
+          include: ['profileImage'],
+          'fields.image': ['variants.square-small', 'variants.square-small2x'],
+          page: currentPage,
+          perPage: batchSize,
+        };
+
+        // Apply institution domain filter at the API level (this one is reliable)
+        if (institutionDomainFilter) {
+          queryParams.pub_emailDomain = institutionDomainFilter;
+        }
+
+        const response = await integrationSdk.users.query(queryParams);
         const { data, included = [] } = response.data;
+        allUsers.push(...data);
+        allIncluded.push(...included);
+        totalPages = response.data.meta.totalPages;
+        currentPage++;
+      } while (currentPage <= totalPages && currentPage <= 10); // Cap at 1000 users max
 
-        // Build a map of included images for quick lookup
-        const imageMap = {};
-        included.forEach(item => {
-          if (item.type === 'image') {
-            imageMap[item.id.uuid] = item;
-          }
-        });
+      return { allUsers, allIncluded };
+    };
 
-        // Transform users for the frontend
-        // SECURITY: Only expose safe public data, never expose email or private data
-        const users = data.map(user => {
-          const profileImageRef = user.relationships?.profileImage?.data;
-          const profileImage = profileImageRef ? imageMap[profileImageRef.id.uuid] : null;
+    // If no filters active, use simple paginated query (fast path)
+    const fetchSinglePage = async () => {
+      const queryParams = {
+        pub_userType: userType,
+        include: ['profileImage'],
+        'fields.image': ['variants.square-small', 'variants.square-small2x'],
+        page: pagination.page,
+        perPage: pagination.perPage,
+      };
 
-          // Filter publicData to only include safe fields
-          const rawPublicData = user.attributes.profile.publicData || {};
-          const safePublicData = {
-            userType: rawPublicData.userType,
-            university: rawPublicData.university,
-            major: rawPublicData.major,
-            graduationYear: rawPublicData.graduationYear,
-            studentState: rawPublicData.studentState,
-            skills: rawPublicData.skills,
-            interests: rawPublicData.interests,
-            companyName: rawPublicData.companyName,
-            companyState: rawPublicData.companyState,
-            industry: rawPublicData.industry,
-            companySize: rawPublicData.companySize,
-            // Exclude: email, emailDomain, phone, and other sensitive fields
-          };
+      if (institutionDomainFilter) {
+        queryParams.pub_emailDomain = institutionDomainFilter;
+      }
 
-          return {
-            id: user.id.uuid,
-            type: user.type,
-            attributes: {
-              banned: user.attributes.banned,
-              deleted: user.attributes.deleted,
-              createdAt: user.attributes.createdAt,
-              profile: {
-                displayName: user.attributes.profile.displayName,
-                abbreviatedName: user.attributes.profile.abbreviatedName,
-                bio: user.attributes.profile.bio,
-                publicData: safePublicData,
-              },
-            },
-            profileImage: profileImage
-              ? {
-                  id: profileImage.id.uuid,
-                  type: profileImage.type,
-                  attributes: profileImage.attributes,
-                }
-              : null,
-          };
-        });
+      const response = await integrationSdk.users.query(queryParams);
+      return {
+        allUsers: response.data.data,
+        allIncluded: response.data.included || [],
+        meta: response.data.meta,
+      };
+    };
 
-        // Multi-tenancy: filter corporate partners to only those associated with this tenant
-        const tenantPartners = req.tenant?.corporatePartnerIds;
-        const filteredUsers = (tenantPartners?.length > 0 && userType === 'corporate-partner')
-          ? users.filter(u => tenantPartners.includes(u.id))
-          : users;
+    let rawUsers, rawIncluded, apiMeta;
 
-        const paginationMeta = response.data.meta;
+    if (hasActiveFilters) {
+      const result = await fetchAllPages();
+      rawUsers = result.allUsers;
+      rawIncluded = result.allIncluded;
+      apiMeta = null; // We'll compute pagination ourselves after filtering
+    } else {
+      const result = await fetchSinglePage();
+      rawUsers = result.allUsers;
+      rawIncluded = result.allIncluded;
+      apiMeta = result.meta;
+    }
 
-        res.status(200).json({
-          users: filteredUsers,
-          pagination: {
-            totalItems: paginationMeta.totalItems,
-            totalPages: paginationMeta.totalPages,
-            page: paginationMeta.page,
-            perPage: paginationMeta.perPage,
+    // Build a map of included images for quick lookup
+    const imageMap = {};
+    rawIncluded.forEach(item => {
+      if (item.type === 'image') {
+        imageMap[item.id.uuid] = item;
+      }
+    });
+
+    // Transform users for the frontend
+    // SECURITY: Only expose safe public data, never expose email or private data
+    let users = rawUsers.map(user => {
+      const profileImageRef = user.relationships?.profileImage?.data;
+      const profileImage = profileImageRef ? imageMap[profileImageRef.id.uuid] : null;
+
+      const rawPublicData = user.attributes.profile.publicData || {};
+      const safePublicData = {
+        userType: rawPublicData.userType,
+        university: rawPublicData.university,
+        major: rawPublicData.major,
+        graduationYear: rawPublicData.graduationYear,
+        studentState: rawPublicData.studentState,
+        skills: rawPublicData.skills,
+        interests: rawPublicData.interests,
+        companyName: rawPublicData.companyName,
+        companyState: rawPublicData.companyState,
+        industry: rawPublicData.industry,
+        companySize: rawPublicData.companySize,
+      };
+
+      return {
+        id: user.id.uuid,
+        type: user.type,
+        attributes: {
+          banned: user.attributes.banned,
+          deleted: user.attributes.deleted,
+          createdAt: user.attributes.createdAt,
+          profile: {
+            displayName: user.attributes.profile.displayName,
+            abbreviatedName: user.attributes.profile.abbreviatedName,
+            bio: user.attributes.profile.bio,
+            publicData: safePublicData,
           },
-        });
-      })
-      .catch(e => {
-        console.error('Integration API search-users error:', e);
-        handleError(res, e);
+        },
+        profileImage: profileImage
+          ? {
+              id: profileImage.id.uuid,
+              type: profileImage.type,
+              attributes: profileImage.attributes,
+            }
+          : null,
+        // Keep raw publicData for server-side filtering (stripped before response)
+        _rawPublicData: rawPublicData,
+      };
+    });
+
+    // Multi-tenancy: filter corporate partners to only those associated with this tenant
+    const tenantPartners = req.tenant?.corporatePartnerIds;
+    if (tenantPartners?.length > 0 && userType === 'corporate-partner') {
+      users = users.filter(u => tenantPartners.includes(u.id));
+    }
+
+    // Apply server-side filters in memory (guaranteed to work)
+    if (hasActiveFilters) {
+      users = users.filter(u => {
+        const pd = u._rawPublicData;
+
+        if (userType === 'student') {
+          // State: exact match
+          if (sanitizedState && pd.studentState !== sanitizedState) return false;
+
+          // Graduation year: exact match
+          if (sanitizedGraduationYear && String(pd.graduationYear) !== sanitizedGraduationYear) return false;
+
+          // Skills: has_any — check if user has at least one of the requested skills
+          if (sanitizedSkills) {
+            const requestedSkills = sanitizedSkills.split(',').map(s => s.trim().toLowerCase());
+            const userSkills = Array.isArray(pd.skills)
+              ? pd.skills.map(s => String(s).toLowerCase())
+              : [];
+            const hasAny = requestedSkills.some(rs => userSkills.includes(rs));
+            if (!hasAny) return false;
+          }
+
+          // Interests: has_any — check if user has at least one of the requested interests
+          if (sanitizedInterests) {
+            const requestedInterests = sanitizedInterests.split(',').map(s => s.trim().toLowerCase());
+            const userInterests = Array.isArray(pd.interests)
+              ? pd.interests.map(s => String(s).toLowerCase())
+              : [];
+            const hasAny = requestedInterests.some(ri => userInterests.includes(ri));
+            if (!hasAny) return false;
+          }
+
+          // University: case-insensitive substring match
+          if (sanitizedUniversity) {
+            const userUni = String(pd.university || '').toLowerCase();
+            if (!userUni.includes(sanitizedUniversity.toLowerCase())) return false;
+          }
+
+          // Major: case-insensitive substring match
+          if (sanitizedMajor) {
+            const userMajor = String(pd.major || '').toLowerCase();
+            if (!userMajor.includes(sanitizedMajor.toLowerCase())) return false;
+          }
+        } else if (userType === 'corporate-partner') {
+          // State: exact match
+          if (sanitizedState && pd.companyState !== sanitizedState) return false;
+
+          // Industry: exact match
+          if (sanitizedIndustry && pd.industry !== sanitizedIndustry) return false;
+
+          // Company size: exact match
+          if (sanitizedCompanySize && pd.companySize !== sanitizedCompanySize) return false;
+        }
+
+        return true;
       });
+    }
+
+    // Strip _rawPublicData before sending response
+    users = users.map(({ _rawPublicData, ...rest }) => rest);
+
+    // Compute pagination
+    let responsePagination;
+    if (hasActiveFilters) {
+      // Manual pagination over filtered results
+      const totalItems = users.length;
+      const totalPages = Math.max(1, Math.ceil(totalItems / pagination.perPage));
+      const safePage = Math.min(pagination.page, totalPages);
+      const startIdx = (safePage - 1) * pagination.perPage;
+      users = users.slice(startIdx, startIdx + pagination.perPage);
+      responsePagination = {
+        totalItems,
+        totalPages,
+        page: safePage,
+        perPage: pagination.perPage,
+      };
+    } else {
+      responsePagination = {
+        totalItems: apiMeta.totalItems,
+        totalPages: apiMeta.totalPages,
+        page: apiMeta.page,
+        perPage: apiMeta.perPage,
+      };
+    }
+
+    res.status(200).json({
+      users,
+      pagination: responsePagination,
+    });
   } catch (e) {
-    // Handle getIntegrationSdkForTenant(req.tenant) errors (e.g., missing CLIENT_SECRET)
-    console.error('search-users setup error:', e.message);
-    res.status(500).json({ error: 'Internal server error' });
+    console.error('search-users error:', e.message || e);
+    handleError(res, e);
   }
 };

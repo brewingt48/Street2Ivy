@@ -210,6 +210,7 @@ export const EditListingPageComponent = props => {
             slug: listingSlug,
             variant: LISTING_PAGE_PENDING_APPROVAL_VARIANT,
           },
+          search: '?published=true',
         }
       : {
           name: 'ListingPage',
@@ -217,6 +218,7 @@ export const EditListingPageComponent = props => {
             id: listingId.uuid,
             slug: listingSlug,
           },
+          search: '?published=true',
         };
 
     return <NamedRedirect {...redirectProps} />;

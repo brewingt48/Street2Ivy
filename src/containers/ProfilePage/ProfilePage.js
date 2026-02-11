@@ -661,7 +661,7 @@ export const ProfilePageComponent = props => {
           publicData={publicData}
           metadata={metadata}
           userFieldConfig={userFields}
-          hideReviews={hasNoViewingRightsOnPrivateMarketplace}
+          hideReviews={true}
           intl={intl}
           userTypeRoles={userTypeRoles}
           profileUserId={profileUser?.id?.uuid}
