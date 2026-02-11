@@ -78,8 +78,8 @@
 
 .panelHeader {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  flex-direction: column;
+  gap: 6px;
   margin-bottom: 20px;
 }
 
@@ -3125,6 +3125,14 @@
   padding-top: 0;
 }
 
+.subPanelDescription {
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--colorGrey600);
+  margin: 0 0 20px 0;
+  max-width: 720px;
+}
+
 .subPanelHeader {
   display: flex;
   justify-content: space-between;
@@ -3747,12 +3755,6 @@
 }
 
 /* ================ AI Coaching Configuration Panel ================ */
-
-.panelDescription {
-  color: var(--colorGrey600);
-  font-size: 14px;
-  margin-top: 8px;
-}
 
 .formSection {
   max-width: 700px;

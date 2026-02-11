@@ -2430,6 +2430,13 @@ const ApplicationsSubPanel = props => {
 
   return (
     <div className={css.subPanelContent}>
+      <p className={css.subPanelDescription}>
+        Review and manage partnership applications from educational administrators who want to bring
+        Campus2Career to their institution. Approving an application creates the school&apos;s account
+        and gives their admin access to the Education Dashboard, where they can invite students,
+        customize their landing page, and manage their campus presence.
+      </p>
+
       {/* Stats Overview */}
       {applicationStats && (
         <div className={css.statsGrid}>
