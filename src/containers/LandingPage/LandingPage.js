@@ -379,17 +379,30 @@ const LandingPageComponent = props => {
                 <section className={css.heroSection} ref={heroVis.ref}>
                   <div className={css.heroOverlay} />
 
-                  {/* Subtle animated particles */}
+                  {/* Subtle animated particles — deterministic positions to avoid SSR hydration mismatch */}
                   <div className={css.heroParticles} aria-hidden="true">
-                    {[...Array(12)].map((_, i) => (
+                    {[
+                      { left: 8, top: 15, delay: 0, dur: 20 },
+                      { left: 23, top: 72, delay: 3, dur: 24 },
+                      { left: 45, top: 30, delay: 7, dur: 19 },
+                      { left: 67, top: 85, delay: 11, dur: 26 },
+                      { left: 82, top: 42, delay: 2, dur: 22 },
+                      { left: 15, top: 55, delay: 14, dur: 28 },
+                      { left: 55, top: 10, delay: 5, dur: 21 },
+                      { left: 90, top: 68, delay: 9, dur: 25 },
+                      { left: 35, top: 90, delay: 16, dur: 23 },
+                      { left: 72, top: 20, delay: 8, dur: 27 },
+                      { left: 50, top: 60, delay: 12, dur: 18 },
+                      { left: 5, top: 35, delay: 18, dur: 29 },
+                    ].map((p, i) => (
                       <div
                         key={i}
                         className={css.particle}
                         style={{
-                          left: `${Math.random() * 100}%`,
-                          top: `${Math.random() * 100}%`,
-                          animationDelay: `${Math.random() * 20}s`,
-                          animationDuration: `${18 + Math.random() * 12}s`,
+                          left: `${p.left}%`,
+                          top: `${p.top}%`,
+                          animationDelay: `${p.delay}s`,
+                          animationDuration: `${p.dur}s`,
                         }}
                       />
                     ))}
