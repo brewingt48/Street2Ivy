@@ -6609,6 +6609,13 @@ const TenantsPanel = props => {
           <h2 className={css.panelTitle}>Create New Tenant</h2>
         </div>
 
+        <p className={css.tenantFormIntro}>
+          Set up a new white-label portal for an educational institution. Each tenant gets their own
+          subdomain (e.g., <strong>harvard.street2ivy.com</strong>) with a separate Sharetribe
+          marketplace. After creating the tenant, you can create an admin account and share the
+          login credentials with the school.
+        </p>
+
         {createError && (
           <div className={css.tenantFormError}>
             {createError?.message || 'Failed to create tenant. Please check your inputs.'}
@@ -6628,6 +6635,10 @@ const TenantsPanel = props => {
               placeholder="Harvard University"
               required
             />
+            <span className={css.tenantFormHint}>
+              The full name of the institution. This will be used to auto-generate the subdomain and
+              display name.
+            </span>
           </div>
 
           <div className={css.tenantFormRow}>
@@ -6647,8 +6658,8 @@ const TenantsPanel = props => {
             />
             <span className={css.tenantFormHint}>
               {formData.subdomain
-                ? `${formData.subdomain}.street2ivy.com`
-                : 'subdomain.street2ivy.com'}
+                ? `This tenant will be accessible at: ${formData.subdomain}.street2ivy.com`
+                : 'The subdomain for this institution (e.g., "harvard" for harvard.street2ivy.com)'}
             </span>
           </div>
 
@@ -6661,6 +6672,10 @@ const TenantsPanel = props => {
               onChange={e => setFormData(prev => ({ ...prev, institutionDomain: e.target.value }))}
               placeholder="harvard.edu"
             />
+            <span className={css.tenantFormHint}>
+              The school's email domain (e.g., "harvard.edu"). Used to verify student email
+              addresses belong to this institution.
+            </span>
           </div>
 
           <div className={css.tenantFormRow}>
@@ -6672,9 +6687,18 @@ const TenantsPanel = props => {
               onChange={e => setFormData(prev => ({ ...prev, displayName: e.target.value }))}
               placeholder="Street2Ivy at Harvard University"
             />
+            <span className={css.tenantFormHint}>
+              The marketplace name shown in the header and page titles. Auto-generated from school
+              name.
+            </span>
           </div>
 
           <div className={css.tenantFormSection}>Sharetribe Credentials</div>
+          <p className={css.tenantFormSectionDesc}>
+            Each tenant requires its own Sharetribe marketplace account. You can find these
+            credentials in the Sharetribe Console under{' '}
+            <strong>Build &rarr; Applications</strong>.
+          </p>
 
           <div className={css.tenantFormRow}>
             <label className={css.tenantFormLabel}>Client ID *</label>
@@ -6683,9 +6707,13 @@ const TenantsPanel = props => {
               type="text"
               value={formData.clientId}
               onChange={e => setFormData(prev => ({ ...prev, clientId: e.target.value }))}
-              placeholder="Sharetribe Marketplace SDK Client ID"
+              placeholder="e.g., 0a1b2c3d-4e5f-6a7b-8c9d-0e1f2a3b4c5d"
               required
             />
+            <span className={css.tenantFormHint}>
+              Found in Sharetribe Console &rarr; Build &rarr; Applications. Required for user login
+              and marketplace functionality.
+            </span>
           </div>
 
           <div className={css.tenantFormRow}>
@@ -6695,8 +6723,12 @@ const TenantsPanel = props => {
               type="password"
               value={formData.clientSecret}
               onChange={e => setFormData(prev => ({ ...prev, clientSecret: e.target.value }))}
-              placeholder="Sharetribe SDK Client Secret"
+              placeholder="Enter client secret"
             />
+            <span className={css.tenantFormHint}>
+              Optional but recommended. Enables server-side trusted operations like password reset
+              and admin user creation.
+            </span>
           </div>
 
           <div className={css.tenantFormRow}>
@@ -6708,8 +6740,12 @@ const TenantsPanel = props => {
               onChange={e =>
                 setFormData(prev => ({ ...prev, integrationClientId: e.target.value }))
               }
-              placeholder="Integration API Client ID"
+              placeholder="e.g., 1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d"
             />
+            <span className={css.tenantFormHint}>
+              Found in Sharetribe Console &rarr; Build &rarr; Applications (Integration API section).
+              Enables admin features like user search and bulk operations.
+            </span>
           </div>
 
           <div className={css.tenantFormRow}>
@@ -6721,11 +6757,14 @@ const TenantsPanel = props => {
               onChange={e =>
                 setFormData(prev => ({ ...prev, integrationClientSecret: e.target.value }))
               }
-              placeholder="Integration API Client Secret"
+              placeholder="Enter integration client secret"
             />
+            <span className={css.tenantFormHint}>
+              Required along with Integration Client ID for server-to-server admin operations.
+            </span>
           </div>
 
-          <div className={css.tenantFormSection}>Features</div>
+          <div className={css.tenantFormSection}>Tenant Settings</div>
 
           <div className={css.tenantFormCheckboxRow}>
             <label className={css.tenantFormCheckboxLabel}>
@@ -6738,6 +6777,13 @@ const TenantsPanel = props => {
               />
               Require corporate partner approval
             </label>
+            <span className={css.tenantFormCheckboxHint}>
+              When enabled, corporate partners who sign up on this tenant's site must be manually
+              approved by an administrator before they can search for students, view profiles,
+              or post projects. This helps maintain quality control over which companies can
+              access the talent pool. When disabled, corporate partners have immediate access
+              upon registration.
+            </span>
           </div>
 
           <div className={css.tenantFormActions}>

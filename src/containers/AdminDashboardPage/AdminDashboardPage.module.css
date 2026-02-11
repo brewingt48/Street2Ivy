@@ -4446,13 +4446,31 @@
 }
 
 /* Create Tenant Form */
+.tenantFormIntro {
+  font-size: 14px;
+  line-height: 1.6;
+  color: #4b5563;
+  background: #f0f9ff;
+  border: 1px solid #bae6fd;
+  border-radius: 8px;
+  padding: 14px 18px;
+  margin-bottom: 8px;
+}
+
 .tenantFormSection {
   font-size: 16px;
   font-weight: 600;
   color: #1f2937;
-  margin: 24px 0 16px;
+  margin: 24px 0 8px;
   padding-bottom: 8px;
   border-bottom: 1px solid #e5e7eb;
+}
+
+.tenantFormSectionDesc {
+  font-size: 13px;
+  line-height: 1.5;
+  color: #6b7280;
+  margin: 0 0 16px;
 }
 
 .tenantFormRow {
@@ -4502,8 +4520,18 @@
   align-items: center;
   gap: 8px;
   font-size: 14px;
+  font-weight: 500;
   color: #374151;
   cursor: pointer;
+}
+
+.tenantFormCheckboxHint {
+  display: block;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #6b7280;
+  margin-top: 6px;
+  padding-left: 26px;
 }
 
 .tenantFormActions {
