@@ -31,6 +31,19 @@ const LOCAL_HOSTS = new Set([
 ]);
 
 /**
+ * Platform hosting domains where the app name is NOT a tenant subdomain.
+ * e.g. "street2ivy-dev-c54ffcb26038.herokuapp.com" — the first label is
+ * the Heroku app name, not a tenant identifier.
+ */
+const PLATFORM_DOMAINS = [
+  'herokuapp.com',
+  'herokussl.com',
+  'vercel.app',
+  'netlify.app',
+  'onrender.com',
+];
+
+/**
  * Extract the subdomain from an Express request object.
  *
  * @param {import('express').Request} req  Express request
@@ -73,6 +86,14 @@ function getSubdomain(req) {
   // Exact match on the base domain itself (no subdomain)
   if (host === BASE_DOMAIN) {
     return null;
+  }
+
+  // --- Platform hosting domains (Heroku, Vercel, etc.) ---
+  // The app name is NOT a tenant subdomain on these platforms.
+  for (const platformDomain of PLATFORM_DOMAINS) {
+    if (host.endsWith(`.${platformDomain}`)) {
+      return null;
+    }
   }
 
   // --- Fallback: hostname is NOT under the base domain ---
