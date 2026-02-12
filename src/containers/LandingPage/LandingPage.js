@@ -4,7 +4,7 @@ import { compose } from 'redux';
 import { connect } from 'react-redux';
 
 import { FormattedMessage, useIntl } from '../../util/reactIntl';
-import { LayoutComposer, NamedLink, Page } from '../../components';
+import { LayoutComposer, NamedLink, NamedRedirect, Page } from '../../components';
 import TopbarContainer from '../TopbarContainer/TopbarContainer';
 import FooterContainer from '../FooterContainer/FooterContainer';
 import { fetchPublicContent, fetchPublicCoachingConfig, fetchPublicTenantContent, apiBaseUrl } from '../../util/api';
@@ -244,6 +244,17 @@ const LandingPageComponent = props => {
   const projectsCount = useCountUp(stat2.value);
   const companiesCount = useCountUp(stat3.value);
   const ratingCount = useCountUp(stat4.value);
+
+  // Redirect logged-in users to their dashboard (placed after all hooks)
+  if (isAuthenticated && userType) {
+    if (userType === 'student') {
+      return <NamedRedirect name="StudentDashboardPage" />;
+    } else if (userType === 'corporate-partner') {
+      return <NamedRedirect name="CorporateDashboardPage" />;
+    } else if (userType === 'educational-institution-admin') {
+      return <NamedRedirect name="EducationDashboardPage" />;
+    }
+  }
 
   // ─── Tenant-aware heading ─────────────────────────────────────────────────
   const tenantHeroTitle = tc?.hero?.title || null;
