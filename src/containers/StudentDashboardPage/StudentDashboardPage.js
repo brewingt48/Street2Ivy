@@ -1132,16 +1132,9 @@ const StudentDashboardPageComponent = props => {
   const onboardingItems = [
     {
       id: 'profile',
-      label: 'Complete your profile',
-      description: 'Add your university, major, skills, and bio',
-      completed: hasProfileComplete,
-      link: { name: 'ProfileSettingsPage' },
-    },
-    {
-      id: 'photo',
-      label: 'Upload a profile photo',
-      description: 'Help corporate partners put a face to your name',
-      completed: !!profilePicture,
+      label: 'Complete your profile & upload a photo',
+      description: 'Add your university, major, bio, and a profile photo so corporate partners can get to know you',
+      completed: hasProfileComplete && !!profilePicture,
       link: { name: 'ProfileSettingsPage' },
     },
     {
@@ -1206,11 +1199,11 @@ const StudentDashboardPageComponent = props => {
               className={classNames(css.tab, { [css.tabActive]: activeTab === 'browse' })}
               onClick={() => {
                 setActiveTab('browse');
-                // Show warning popup when switching to browse tab and no projects exist
                 if (!isLoadingProjects && availableProjects.length === 0) {
                   setShowNoProjectsWarning(true);
                 }
               }}
+              title="Discover available projects from corporate partners and apply"
             >
               <span className={css.tabIcon}>🔍</span>
               Browse Projects
@@ -1221,6 +1214,7 @@ const StudentDashboardPageComponent = props => {
             <button
               className={classNames(css.tab, { [css.tabActive]: activeTab === 'activeProjects' })}
               onClick={() => setActiveTab('activeProjects')}
+              title="View projects you've been accepted to and are currently working on"
             >
               <span className={css.tabIcon}>🚀</span>
               Active Projects
@@ -1231,6 +1225,7 @@ const StudentDashboardPageComponent = props => {
             <button
               className={classNames(css.tab, { [css.tabActive]: activeTab === 'projects' })}
               onClick={() => setActiveTab('projects')}
+              title="Track the status of all your submitted project applications"
             >
               <span className={css.tabIcon}>📋</span>
               My Applications
@@ -1241,6 +1236,7 @@ const StudentDashboardPageComponent = props => {
             <button
               className={classNames(css.tab, { [css.tabActive]: activeTab === 'invites' })}
               onClick={() => setActiveTab('invites')}
+              title="Review invitations from corporate partners who want you on their projects"
             >
               <span className={css.tabIcon}>🎯</span>
               Invites
@@ -1251,6 +1247,7 @@ const StudentDashboardPageComponent = props => {
             <button
               className={classNames(css.tab, { [css.tabActive]: activeTab === 'history' })}
               onClick={() => setActiveTab('history')}
+              title="View your completed projects and past work history"
             >
               <span className={css.tabIcon}>📚</span>
               Completed
@@ -1258,6 +1255,7 @@ const StudentDashboardPageComponent = props => {
             <button
               className={classNames(css.tab, { [css.tabActive]: activeTab === 'messages' })}
               onClick={() => setActiveTab('messages')}
+              title="Read and respond to messages from corporate partners and the platform"
             >
               <span className={css.tabIcon}>💬</span>
               Messages
@@ -1265,10 +1263,20 @@ const StudentDashboardPageComponent = props => {
                 <span className={css.tabBadge}>{unreadMessages}</span>
               )}
             </button>
-            <NamedLink name="SearchCompaniesPage" className={css.tabLink}>
+            <NamedLink name="SearchCompaniesPage" className={css.tabLink} title="Find and explore corporate partner profiles">
               <span className={css.tabIcon}>🏢</span>
               Search Companies
             </NamedLink>
+          </div>
+
+          {/* Tab Description */}
+          <div className={css.tabDescription}>
+            {activeTab === 'browse' && 'Discover available projects posted by corporate partners. Use filters to find projects that match your skills and interests, then apply directly.'}
+            {activeTab === 'activeProjects' && 'Projects you have been accepted to and are currently working on. Click a project to view details or access the project workspace.'}
+            {activeTab === 'projects' && 'Track all your submitted applications. See which are pending review, accepted, or declined by corporate partners.'}
+            {activeTab === 'invites' && 'Corporate partners can invite you to apply for their projects. Review invitations here and decide which opportunities interest you.'}
+            {activeTab === 'history' && 'Your completed project history. Review past work, feedback received, and build your professional portfolio.'}
+            {activeTab === 'messages' && 'Messages from corporate partners and the Campus2Career team. Stay connected and respond to inquiries about your applications.'}
           </div>
 
           {/* Tab Content */}

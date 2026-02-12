@@ -1751,33 +1751,40 @@ const EducationDashboardPageComponent = props => {
             <button
               className={`${css.tab} ${activeTab === 'overview' ? css.activeTab : ''}`}
               onClick={() => setActiveTab('overview')}
+              title="View a summary of your institution's activity, student engagement, and key metrics"
             >
               <FormattedMessage id="EducationDashboardPage.tabOverview" />
             </button>
             <button
               className={`${css.tab} ${activeTab === 'students' ? css.activeTab : ''}`}
               onClick={() => setActiveTab('students')}
+              title="Manage your enrolled students, view their profiles, and track their project participation"
             >
               <FormattedMessage id="EducationDashboardPage.tabStudents" />
             </button>
             <button
               className={`${css.tab} ${activeTab === 'reports' ? css.activeTab : ''}`}
               onClick={() => setActiveTab('reports')}
+              title="Access detailed analytics and reports on student outcomes, project completion rates, and engagement"
             >
               <FormattedMessage id="EducationDashboardPage.tabReports" />
             </button>
             <button
               className={`${css.tab} ${activeTab === 'messages' ? css.activeTab : ''}`}
               onClick={() => setActiveTab('messages')}
+              title="Send and manage communications with students and the Campus2Career team"
             >
               <FormattedMessage id="EducationDashboardPage.tabMessages" />
             </button>
-            <button
-              className={`${css.tab} ${activeTab === 'customize' ? css.activeTab : ''}`}
-              onClick={() => setActiveTab('customize')}
-            >
-              <FormattedMessage id="EducationDashboardPage.tabCustomize" />
-            </button>
+            {isOnTenant && (
+              <button
+                className={`${css.tab} ${activeTab === 'customize' ? css.activeTab : ''}`}
+                onClick={() => setActiveTab('customize')}
+                title="Customize your institution's landing page branding, content, and section visibility"
+              >
+                <FormattedMessage id="EducationDashboardPage.tabCustomize" />
+              </button>
+            )}
             {/* Alumni tab hidden for now — uncomment to re-enable */}
             {/* <button
               className={`${css.tab} ${activeTab === 'alumni' ? css.activeTab : ''}`}
@@ -1788,9 +1795,20 @@ const EducationDashboardPageComponent = props => {
             <button
               className={`${css.tab} ${activeTab === 'partners' ? css.activeTab : ''}`}
               onClick={() => setActiveTab('partners')}
+              title="View and manage corporate partners connected to your institution"
             >
               Corporate Partners
             </button>
+          </div>
+
+          {/* Tab Description */}
+          <div className={css.tabDescription}>
+            {activeTab === 'overview' && 'A snapshot of your institution\'s Campus2Career activity including student engagement, project participation, and key performance metrics.'}
+            {activeTab === 'students' && 'View and manage students enrolled from your institution. Track their project applications, active projects, and completion history.'}
+            {activeTab === 'reports' && 'Detailed reports and analytics on student outcomes, project completion rates, skills developed, and overall institutional engagement.'}
+            {activeTab === 'messages' && 'Send messages to students and communicate with the Campus2Career team about your institution\'s needs.'}
+            {activeTab === 'customize' && 'Personalize your institution\'s landing page with custom branding, hero content, statistics, and section visibility settings.'}
+            {activeTab === 'partners' && 'View corporate partners connected to your institution and manage partnership relationships.'}
           </div>
 
           {/* Loading State */}
@@ -2525,8 +2543,8 @@ const EducationDashboardPageComponent = props => {
             />
           )}
 
-          {/* Customize Landing Page Tab */}
-          {activeTab === 'customize' && (
+          {/* Customize Landing Page Tab — only available on tenant subdomain */}
+          {activeTab === 'customize' && isOnTenant && (
             <CustomizeLandingPanel institutionDomain={institutionDomain} />
           )}
 

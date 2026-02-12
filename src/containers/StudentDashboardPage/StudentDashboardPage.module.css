@@ -489,6 +489,14 @@
   color: var(--s2i-navy-900);
 }
 
+.tabDescription {
+  font-size: 14px;
+  color: var(--s2i-slate-500);
+  padding: 0 4px 16px;
+  margin-top: -16px;
+  line-height: 1.5;
+}
+
 /* ================ Tab Content ================ */
 
 .tabContent {

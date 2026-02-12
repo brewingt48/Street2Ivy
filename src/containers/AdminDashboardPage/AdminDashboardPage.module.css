@@ -68,6 +68,13 @@
   border-bottom-color: var(--marketplaceColor);
 }
 
+.tabDescription {
+  font-size: 14px;
+  color: #6b7280;
+  padding: 0 4px 16px;
+  line-height: 1.5;
+}
+
 /* Panel Sections */
 .panel {
   background: white;
@@ -93,19 +100,30 @@
 /* User Management Panel - Stats Bar */
 .userStatsBar {
   display: flex;
-  gap: 24px;
-  padding: 20px 24px;
+  gap: 0;
+  padding: 0;
   background: white;
   border: 1px solid var(--colorGrey200);
   border-radius: 12px;
   margin-bottom: 24px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+  overflow: hidden;
 }
 
 .userStatItem {
   display: flex;
   flex-direction: column;
-  min-width: 100px;
+  align-items: center;
+  justify-content: center;
+  flex: 1 1 0%;
+  min-width: 0;
+  padding: 20px 12px;
+  text-align: center;
+  border-right: 1px solid var(--colorGrey200);
+}
+
+.userStatItem:last-child {
+  border-right: none;
 }
 
 .userStatValue {
@@ -128,9 +146,22 @@
 }
 
 .userStatLabel {
-  font-size: 14px;
+  font-size: 13px;
   color: #6b7280;
-  margin-top: 4px;
+  margin-top: 6px;
+  white-space: nowrap;
+}
+
+@media (max-width: 768px) {
+  .userStatsBar {
+    flex-wrap: wrap;
+  }
+  .userStatItem {
+    flex: 1 1 45%;
+    border-right: none;
+    border-bottom: 1px solid var(--colorGrey200);
+    padding: 16px 12px;
+  }
 }
 
 /* User Management Panel - Filter Bar */

@@ -723,6 +723,7 @@ export const CorporateDashboardPageComponent = props => {
                   <div className={css.applicationsSummaryContent}>
                     <div className={css.applicationsSummaryInfo}>
                       <h3 className={css.sectionTitle}>Student Applications</h3>
+                      <p className={css.sectionDescription}>Review and manage student applications for your posted projects.</p>
                       <div className={css.applicationsSummaryStats}>
                         <span className={css.applicationStatItem}>
                           <strong>{dashboardStats.applicationStats?.total || 0}</strong> Total
@@ -745,6 +746,7 @@ export const CorporateDashboardPageComponent = props => {
               {/* Sent Invites Section */}
               <div className={css.sentInvitesSection}>
                 <h3 className={css.sectionTitle}>Sent Invitations</h3>
+                <p className={css.sectionDescription}>Track invitations you have sent to students to apply for your projects.</p>
                 <SentInvitesPanel
                   invites={sentInvites || []}
                   stats={sentInvitesStats}
@@ -820,6 +822,7 @@ export const CorporateDashboardPageComponent = props => {
             <h3 className={css.sectionTitle}>
               {intl.formatMessage({ id: 'CorporateDashboardPage.pendingAssessmentsTitle' })}
             </h3>
+            <p className={css.sectionDescription}>Rate and provide feedback on students who have completed your projects.</p>
             <PendingAssessmentsPanel intl={intl} />
           </div>
 

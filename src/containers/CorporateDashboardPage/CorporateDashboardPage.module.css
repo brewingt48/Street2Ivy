@@ -180,6 +180,13 @@
   margin: 0;
 }
 
+.sectionDescription {
+  font-size: 14px;
+  color: var(--s2i-slate-500);
+  margin: 4px 0 0;
+  line-height: 1.5;
+}
+
 .postProjectButton {
   display: inline-flex;
   align-items: center;

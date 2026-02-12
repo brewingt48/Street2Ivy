@@ -93,6 +93,13 @@
   color: white;
 }
 
+.tabDescription {
+  font-size: 14px;
+  color: var(--s2i-slate-500);
+  padding: 0 4px 16px;
+  line-height: 1.5;
+}
+
 /* Apply Button */
 .applyButton {
   display: inline-flex;

@@ -262,10 +262,10 @@ const UserManagementPanel = props => {
 
   const getUserTypeLabel = userType => {
     const labels = {
-      student: 'Student',
-      'corporate-partner': 'Corporate',
-      'educational-admin': 'Edu Admin',
-      'system-admin': 'Sys Admin',
+      student: 'College Student',
+      'corporate-partner': 'Corporate Partner',
+      'educational-admin': 'College Admin',
+      'system-admin': 'System Admin',
     };
     return labels[userType] || userType;
   };
@@ -315,15 +315,15 @@ const UserManagementPanel = props => {
         </div>
         <div className={css.userStatItem}>
           <span className={classNames(css.userStatValue, css.studentValue)}>{userCounts.students}</span>
-          <span className={css.userStatLabel}>Students</span>
+          <span className={css.userStatLabel}>College Students</span>
         </div>
         <div className={css.userStatItem}>
           <span className={classNames(css.userStatValue, css.corporateValue)}>{userCounts.corporate}</span>
-          <span className={css.userStatLabel}>Corporate</span>
+          <span className={css.userStatLabel}>Corporate Partners</span>
         </div>
         <div className={css.userStatItem}>
           <span className={classNames(css.userStatValue, css.eduAdminValue)}>{userCounts.eduAdmin}</span>
-          <span className={css.userStatLabel}>Edu Admins</span>
+          <span className={css.userStatLabel}>College Admins</span>
         </div>
       </div>
 
@@ -7182,57 +7182,79 @@ const AdminDashboardPageComponent = props => {
             <button
               className={classNames(css.tab, { [css.tabActive]: activeTab === 'users' })}
               onClick={() => handleTabChange('users')}
+              title="View, search, filter, and manage all platform users"
             >
               <FormattedMessage id="AdminDashboardPage.tabUsers" />
             </button>
             <button
               className={classNames(css.tab, { [css.tabActive]: activeTab === 'create-admin' })}
               onClick={() => handleTabChange('create-admin')}
+              title="Create new system administrator accounts for the platform"
             >
               <FormattedMessage id="AdminDashboardPage.tabCreateAdmin" />
             </button>
             <button
               className={classNames(css.tab, { [css.tabActive]: activeTab === 'messages' })}
               onClick={() => handleTabChange('messages')}
+              title="Send platform-wide announcements and messages to users"
             >
               <FormattedMessage id="AdminDashboardPage.tabMessages" />
             </button>
             <button
               className={classNames(css.tab, { [css.tabActive]: activeTab === 'reports' })}
               onClick={() => handleTabChange('reports')}
+              title="View platform analytics, user growth, and project engagement reports"
             >
               <FormattedMessage id="AdminDashboardPage.tabReports" />
             </button>
             <button
               className={classNames(css.tab, { [css.tabActive]: activeTab === 'content' })}
               onClick={() => handleTabChange('content')}
+              title="Manage the main landing page content, hero section, statistics, and testimonials"
             >
               <FormattedMessage id="AdminDashboardPage.tabContent" />
             </button>
             <button
               className={classNames(css.tab, { [css.tabActive]: activeTab === 'institutions' })}
               onClick={() => handleTabChange('institutions')}
+              title="Manage partner educational institutions, their domains, and access settings"
             >
               <FormattedMessage id="AdminDashboardPage.tabInstitutions" />
             </button>
             <button
               className={classNames(css.tab, { [css.tabActive]: activeTab === 'coaching' })}
               onClick={() => handleTabChange('coaching')}
+              title="Configure the AI Career Coaching platform integration and settings"
             >
               AI Coaching
             </button>
             <button
               className={classNames(css.tab, { [css.tabActive]: activeTab === 'waitlist' })}
               onClick={() => handleTabChange('waitlist')}
+              title="Review and manage students waiting for platform access approval"
             >
               Student Waitlist
             </button>
             <button
               className={classNames(css.tab, { [css.tabActive]: activeTab === 'tenants' })}
               onClick={() => handleTabChange('tenants')}
+              title="Create and manage institution tenant subdomains for white-label experiences"
             >
               Tenants
             </button>
+          </div>
+
+          {/* Tab Description */}
+          <div className={css.tabDescription}>
+            {activeTab === 'users' && 'View all platform users, filter by type (College Students, Corporate Partners, College Admins), search by name or email, and manage user accounts.'}
+            {activeTab === 'create-admin' && 'Create new system administrator accounts with full platform management capabilities.'}
+            {activeTab === 'messages' && 'Compose and send messages to individual users or broadcast announcements across the platform.'}
+            {activeTab === 'reports' && 'Platform-wide analytics including user growth trends, project statistics, and engagement metrics.'}
+            {activeTab === 'content' && 'Edit the main Campus2Career landing page hero section, statistics, testimonials, and other dynamic content.'}
+            {activeTab === 'institutions' && 'Add, edit, and manage partner educational institutions. Configure their domains, AI coaching access, and student enrollment settings.'}
+            {activeTab === 'coaching' && 'Configure the AI Career Coaching integration including platform name, URL, and enable/disable access for students.'}
+            {activeTab === 'waitlist' && 'Review students who have registered and are awaiting platform access approval. Approve or decline access requests.'}
+            {activeTab === 'tenants' && 'Create and manage white-label tenant subdomains for partner institutions, allowing customized landing pages and branding.'}
           </div>
 
           {/* Tab Content */}
