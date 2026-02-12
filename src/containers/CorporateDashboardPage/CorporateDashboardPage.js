@@ -6,7 +6,7 @@ import { useIntl } from '../../util/reactIntl';
 import { useConfiguration } from '../../context/configurationContext';
 import { isScrollingDisabled } from '../../ducks/ui.duck';
 import { getOwnListingsById } from './CorporateDashboardPage.duck';
-import { fetchPendingAssessments, exportCorporateReport } from '../../util/api';
+import { fetchPendingAssessments, exportCorporateReport, closeProjectListing, reopenProjectListing } from '../../util/api';
 
 import { Page, LayoutSingleColumn, NamedLink, H3, StudentAssessmentForm, OnboardingChecklist } from '../../components';
 
@@ -366,7 +366,7 @@ const SentInvitesPanel = ({ invites, stats, isLoading, onRefresh }) => {
 // ================ Project Card ================ //
 
 const ProjectCard = props => {
-  const { listing } = props;
+  const { listing, onClose, onReopen, isProcessing } = props;
   const { title, state, publicData } = listing.attributes;
   const listingId = listing.id.uuid;
   const slug = title
@@ -379,27 +379,77 @@ const ProjectCard = props => {
   const estimatedHours = publicData?.estimatedHours || '';
   const studentsNeeded = publicData?.studentsNeeded || '';
   const industryCategory = publicData?.industryCategory || '';
+  const applicationDeadline = publicData?.applicationDeadline || '';
+  const isClosed = state === 'closed';
+  const isDraft = state === 'draft';
+  const isPublished = state === 'published';
+
+  const handleClose = e => {
+    e.preventDefault();
+    e.stopPropagation();
+    const confirmMsg = isDraft
+      ? 'Are you sure you want to discard this draft project?'
+      : 'Are you sure you want to close this project? It will be removed from the marketplace.';
+    if (window.confirm(confirmMsg)) {
+      onClose(listingId);
+    }
+  };
+
+  const handleReopen = e => {
+    e.preventDefault();
+    e.stopPropagation();
+    onReopen(listingId);
+  };
 
   return (
-    <NamedLink className={css.projectCard} name="ListingPage" params={{ id: listingId, slug }}>
-      <h4 className={css.projectCardTitle}>{title || 'Untitled Project'}</h4>
-      <div className={css.projectCardMeta}>
-        {industryCategory && (
-          <span className={css.projectCardMetaItem}>
-            {industryCategory.charAt(0).toUpperCase() + industryCategory.slice(1)}
-          </span>
+    <div className={css.projectCard}>
+      <NamedLink className={css.projectCardLink} name="ListingPage" params={{ id: listingId, slug }}>
+        <h4 className={css.projectCardTitle}>{title || 'Untitled Project'}</h4>
+        <div className={css.projectCardMeta}>
+          {industryCategory && (
+            <span className={css.projectCardMetaItem}>
+              {industryCategory.charAt(0).toUpperCase() + industryCategory.slice(1)}
+            </span>
+          )}
+          {estimatedHours && <span className={css.projectCardMetaItem}>{estimatedHours} hrs</span>}
+          {studentsNeeded && (
+            <span className={css.projectCardMetaItem}>
+              {studentsNeeded} {studentsNeeded === '1' ? 'student' : 'students'}
+            </span>
+          )}
+          {applicationDeadline && applicationDeadline !== 'open' && (
+            <span className={css.projectCardMetaItem}>
+              Deadline: {applicationDeadline.replace(/-/g, ' ')}
+            </span>
+          )}
+        </div>
+        <span className={`${css.projectCardStatus} ${getStatusClass(state)}`}>
+          {getStatusLabel(state)}
+        </span>
+      </NamedLink>
+      <div className={css.projectCardActions}>
+        {(isPublished || isDraft) && (
+          <button
+            className={css.projectCloseButton}
+            onClick={handleClose}
+            disabled={isProcessing}
+            title={isDraft ? 'Discard draft' : 'Close project'}
+          >
+            {isProcessing ? '...' : isDraft ? 'Discard' : 'Close'}
+          </button>
         )}
-        {estimatedHours && <span className={css.projectCardMetaItem}>{estimatedHours} hrs</span>}
-        {studentsNeeded && (
-          <span className={css.projectCardMetaItem}>
-            {studentsNeeded} {studentsNeeded === '1' ? 'student' : 'students'}
-          </span>
+        {isClosed && (
+          <button
+            className={css.projectReopenButton}
+            onClick={handleReopen}
+            disabled={isProcessing}
+            title="Reopen project"
+          >
+            {isProcessing ? '...' : 'Reopen'}
+          </button>
         )}
       </div>
-      <span className={`${css.projectCardStatus} ${getStatusClass(state)}`}>
-        {getStatusLabel(state)}
-      </span>
-    </NamedLink>
+    </div>
   );
 };
 
@@ -429,6 +479,9 @@ export const CorporateDashboardPageComponent = props => {
   // State for stat detail modals
   const [statDetailModal, setStatDetailModal] = useState(null);
   const [onboardingDismissed, setOnboardingDismissed] = useState(false);
+  const [processingListingId, setProcessingListingId] = useState(null);
+  const [listingActionError, setListingActionError] = useState(null);
+  const [removedListingIds, setRemovedListingIds] = useState([]);
 
   const title = intl.formatMessage({ id: 'CorporateDashboardPage.title' });
 
@@ -597,6 +650,43 @@ export const CorporateDashboardPageComponent = props => {
 
     setStatDetailModal(modalData);
   };
+
+  // Handle close/delete project
+  const handleCloseListing = async (listingId) => {
+    setProcessingListingId(listingId);
+    setListingActionError(null);
+    try {
+      await closeProjectListing(listingId);
+      // Remove from local display
+      setRemovedListingIds(prev => [...prev, listingId]);
+    } catch (err) {
+      console.error('Failed to close listing:', err);
+      setListingActionError({ id: listingId, message: err?.message || 'Failed to close project. Please try again.' });
+    } finally {
+      setProcessingListingId(null);
+    }
+  };
+
+  // Handle reopen project
+  const handleReopenListing = async (listingId) => {
+    setProcessingListingId(listingId);
+    setListingActionError(null);
+    try {
+      await reopenProjectListing(listingId);
+      // Remove from the removed list so it shows again
+      setRemovedListingIds(prev => prev.filter(id => id !== listingId));
+      // Force page reload to get fresh listing data
+      window.location.reload();
+    } catch (err) {
+      console.error('Failed to reopen listing:', err);
+      setListingActionError({ id: listingId, message: err?.message || 'Failed to reopen project. Please try again.' });
+    } finally {
+      setProcessingListingId(null);
+    }
+  };
+
+  // Filter out removed listings from display
+  const visibleListings = listings.filter(l => !removedListingIds.includes(l.id.uuid));
 
   if (!isCorporatePartner && currentUser) {
     return (
@@ -861,8 +951,17 @@ export const CorporateDashboardPageComponent = props => {
               </div>
             ) : (
               <div className={css.projectsList}>
-                {listings.map(l => (
-                  <ProjectCard key={l.id.uuid} listing={l} />
+                {listingActionError && (
+                  <div className={css.listingActionError}>{listingActionError.message}</div>
+                )}
+                {visibleListings.map(l => (
+                  <ProjectCard
+                    key={l.id.uuid}
+                    listing={l}
+                    onClose={handleCloseListing}
+                    onReopen={handleReopenListing}
+                    isProcessing={processingListingId === l.id.uuid}
+                  />
                 ))}
               </div>
             )}

@@ -428,6 +428,14 @@ if (require.main === module) {
     if (dev) {
       console.log(`Open http://localhost:${PORT}/ and start hacking!\n`);
     }
+
+    // Start the deadline expiration scheduler (auto-closes expired projects)
+    try {
+      const { startDeadlineExpirationScheduler } = require('./api/listing-management');
+      startDeadlineExpirationScheduler();
+    } catch (schedulerErr) {
+      console.error('[Scheduler] Failed to start deadline expiration scheduler:', schedulerErr);
+    }
   });
 
   // Graceful shutdown:

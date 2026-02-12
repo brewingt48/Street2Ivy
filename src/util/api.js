@@ -268,6 +268,16 @@ export const declineProjectApplication = (applicationId, body = {}) => {
   return post(`/api/project-applications/${applicationId}/decline`, body);
 };
 
+// Close (delete) a project listing
+export const closeProjectListing = listingId => {
+  return post(`/api/listings/${listingId}/close`, {});
+};
+
+// Reopen a closed project listing
+export const reopenProjectListing = listingId => {
+  return post(`/api/listings/${listingId}/reopen`, {});
+};
+
 // Street2Ivy: Fetch company listings (open projects)
 //
 // Fetch published listings for a corporate partner (by author ID)

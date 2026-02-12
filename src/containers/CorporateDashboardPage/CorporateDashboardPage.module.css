@@ -242,18 +242,90 @@
   border-radius: var(--s2i-radius-xl);
   padding: var(--s2i-space-6);
   transition: var(--s2i-transition-all);
-  text-decoration: none;
-  display: block;
+  display: flex;
+  flex-direction: column;
   color: inherit;
   box-shadow: var(--s2i-shadow-sm);
+  position: relative;
 
   &:hover {
     box-shadow: var(--s2i-shadow-md);
     border-color: var(--s2i-slate-300);
-    transform: translateY(-2px);
+  }
+}
+
+.projectCardLink {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+  flex: 1;
+
+  &:hover {
     text-decoration: none;
     color: inherit;
   }
+}
+
+.projectCardActions {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--s2i-slate-100);
+}
+
+.projectCloseButton {
+  padding: 4px 12px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #991b1b;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover {
+    background: #fee2e2;
+    border-color: #fca5a5;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.projectReopenButton {
+  padding: 4px 12px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #065f46;
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover {
+    background: #d1fae5;
+    border-color: #6ee7b7;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.listingActionError {
+  padding: 10px 14px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  color: #991b1b;
+  font-size: 13px;
+  margin-bottom: 12px;
 }
 
 .projectCardTitle {
