@@ -808,37 +808,37 @@ export const CorporateDashboardPageComponent = props => {
             />
           </div>
 
+          {/* Application Inbox Card - Always visible */}
+          <div className={css.applicationsSummarySection}>
+            <div className={css.applicationsSummaryCard}>
+              <div className={css.applicationsSummaryContent}>
+                <div className={css.applicationsSummaryInfo}>
+                  <h3 className={css.sectionTitle}>Student Applications</h3>
+                  <p className={css.sectionDescription}>
+                    Review applications, accept or decline students, message them, and leave reviews — all in your Inbox.
+                  </p>
+                </div>
+                <NamedLink name="InboxPage" params={{ tab: 'sales' }} className={css.viewApplicationsButton}>
+                  Open Inbox →
+                </NamedLink>
+              </div>
+            </div>
+          </div>
+
+          {/* Sent Invites Section - Always visible */}
+          <div className={css.sentInvitesSection}>
+            <h3 className={css.sectionTitle}>Sent Invitations</h3>
+            <p className={css.sectionDescription}>Track invitations you have sent to students to apply for your projects.</p>
+            <SentInvitesPanel
+              invites={sentInvites || []}
+              stats={sentInvitesStats}
+              isLoading={sentInvitesInProgress}
+            />
+          </div>
+
           {/* Enhanced Stats Section */}
           {dashboardStats && (
             <>
-              {/* Application Inbox Card - Links to Sharetribe Inbox for managing applications */}
-              <div className={css.applicationsSummarySection}>
-                <div className={css.applicationsSummaryCard}>
-                  <div className={css.applicationsSummaryContent}>
-                    <div className={css.applicationsSummaryInfo}>
-                      <h3 className={css.sectionTitle}>Student Applications</h3>
-                      <p className={css.sectionDescription}>
-                        Review applications, accept or decline students, message them, and leave reviews — all in your Inbox.
-                      </p>
-                    </div>
-                    <NamedLink name="InboxPage" params={{ tab: 'sales' }} className={css.viewApplicationsButton}>
-                      Open Inbox →
-                    </NamedLink>
-                  </div>
-                </div>
-              </div>
-
-              {/* Sent Invites Section */}
-              <div className={css.sentInvitesSection}>
-                <h3 className={css.sectionTitle}>Sent Invitations</h3>
-                <p className={css.sectionDescription}>Track invitations you have sent to students to apply for your projects.</p>
-                <SentInvitesPanel
-                  invites={sentInvites || []}
-                  stats={sentInvitesStats}
-                  isLoading={sentInvitesInProgress}
-                />
-              </div>
-
               {/* Completion Stats */}
               <div className={css.enhancedStatsSection}>
                 <h3 className={css.sectionTitle}>

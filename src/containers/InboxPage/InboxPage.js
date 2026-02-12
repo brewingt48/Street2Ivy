@@ -57,6 +57,26 @@ import InboxSearchForm from './InboxSearchForm/InboxSearchForm';
 import { stateDataShape, getStateData } from './InboxPage.stateData';
 import css from './InboxPage.module.css';
 
+const INBOX_PAGE_SIZE = 10;
+
+// Format a timestamp into a human-readable relative time (e.g. "2h ago", "3d ago")
+const formatRelativeTime = dateString => {
+  if (!dateString) return '';
+  const date = new Date(dateString);
+  const now = new Date();
+  const diffMs = now - date;
+  const diffMins = Math.floor(diffMs / 60000);
+  const diffHours = Math.floor(diffMs / 3600000);
+  const diffDays = Math.floor(diffMs / 86400000);
+
+  if (diffMins < 1) return 'Just now';
+  if (diffMins < 60) return `${diffMins}m ago`;
+  if (diffHours < 24) return `${diffHours}h ago`;
+  if (diffDays < 7) return `${diffDays}d ago`;
+  if (diffDays < 30) return `${Math.floor(diffDays / 7)}w ago`;
+  return date.toLocaleDateString([], { month: 'short', day: 'numeric' });
+};
+
 // Check if the transaction line-items use booking-related units
 const getUnitLineItem = lineItems => {
   const unitLineItem = lineItems?.find(
@@ -173,14 +193,14 @@ export const InboxItem = props => {
   } = stateData;
   const isCustomer = transactionRole === TX_TRANSITION_ACTOR_CUSTOMER;
 
-  const lineItems = tx.attributes?.lineItems;
+  const lineItems = tx.attributes?.lineItems || [];
   const hasPricingData = lineItems.length > 0;
   const unitLineItem = getUnitLineItem(lineItems);
-  const quantity = hasPricingData && isPurchase ? unitLineItem.quantity.toString() : null;
-  const showStock = stockType === STOCK_MULTIPLE_ITEMS || (quantity && unitLineItem.quantity > 1);
+  const quantity = hasPricingData && isPurchase ? unitLineItem?.quantity?.toString() : null;
+  const showStock = stockType === STOCK_MULTIPLE_ITEMS || (quantity && unitLineItem?.quantity > 1);
   const otherUser = isCustomer ? provider : customer;
-  const otherUserDisplayName = <UserDisplayName user={otherUser} intl={intl} />;
-  const isOtherUserBanned = otherUser.attributes.banned;
+  const otherUserDisplayName = otherUser ? <UserDisplayName user={otherUser} intl={intl} /> : null;
+  const isOtherUserBanned = otherUser?.attributes?.banned;
 
   const rowNotificationDot =
     isSaleNotification || isOrderNotification ? <div className={css.notificationDot} /> : null;
@@ -194,41 +214,59 @@ export const InboxItem = props => {
     [css.stateNoActionNeeded]: !actionNeeded,
   });
 
+  // Format relative time for the transaction
+  const lastTransitionedAt = tx.attributes?.lastTransitionedAt;
+  const timeAgo = lastTransitionedAt ? formatRelativeTime(lastTransitionedAt) : '';
+
   return (
-    <div className={css.item}>
-      <div className={css.itemAvatar}>
-        <Avatar user={otherUser} />
-      </div>
-      <NamedLink
-        className={linkClasses}
-        name={isCustomer ? 'OrderDetailsPage' : 'SaleDetailsPage'}
-        params={{ id: tx.id.uuid }}
-      >
-        <div className={css.rowNotificationDot}>{rowNotificationDot}</div>
-        <div className={css.itemUsername}>{otherUserDisplayName}</div>
-        <div className={css.itemTitle}>{listing?.attributes?.title}</div>
-        <div className={css.itemDetails}>
-          {isBooking ? (
-            <BookingTimeInfoMaybe transaction={tx} />
-          ) : isPurchase && hasPricingData && showStock ? (
-            <FormattedMessage id="InboxPage.quantity" values={{ quantity }} />
-          ) : null}
+    <NamedLink
+      className={css.itemCard}
+      name={isCustomer ? 'OrderDetailsPage' : 'SaleDetailsPage'}
+      params={{ id: tx.id.uuid }}
+    >
+      {/* Notification indicator bar */}
+      {(isSaleNotification || isOrderNotification) && <div className={css.itemNotificationBar} />}
+
+      <div className={css.itemCardContent}>
+        {/* Left: Avatar */}
+        <div className={css.itemAvatarWrapper}>
+          <Avatar user={otherUser} className={css.itemAvatarImg} />
+          {actionNeeded && <div className={css.itemAvatarBadge} />}
         </div>
-        {availabilityType == AVAILABILITY_MULTIPLE_SEATS && unitLineItem?.seats ? (
-          <div className={css.itemSeats}>
-            <FormattedMessage id="InboxPage.seats" values={{ seats: unitLineItem.seats }} />
+
+        {/* Center: Info */}
+        <div className={css.itemInfo}>
+          <div className={css.itemInfoTop}>
+            <span className={css.itemUserName}>{otherUserDisplayName}</span>
+            <span className={css.itemTimestamp}>{timeAgo}</span>
           </div>
-        ) : null}
-        <div className={css.itemState}>
+          <div className={css.itemProjectTitle}>{listing?.attributes?.title}</div>
+          <div className={css.itemMeta}>
+            {isBooking ? (
+              <BookingTimeInfoMaybe transaction={tx} />
+            ) : isPurchase && hasPricingData && showStock ? (
+              <FormattedMessage id="InboxPage.quantity" values={{ quantity }} />
+            ) : null}
+            {availabilityType == AVAILABILITY_MULTIPLE_SEATS && unitLineItem?.seats ? (
+              <span>
+                <FormattedMessage id="InboxPage.seats" values={{ seats: unitLineItem.seats }} />
+              </span>
+            ) : null}
+          </div>
+        </div>
+
+        {/* Right: Status badge */}
+        <div className={css.itemStatusArea}>
           <div className={stateClasses}>
             <FormattedMessage
               id={`InboxPage.${processName}.${processState}.status`}
               values={{ transactionRole }}
             />
           </div>
+          <span className={css.itemArrow}>→</span>
         </div>
-      </NamedLink>
-    </div>
+      </div>
+    </NamedLink>
   );
 };
 
@@ -433,35 +471,73 @@ export const InboxPageComponent = props => {
         }
         footer={<FooterContainer />}
       >
-        <InboxSearchForm
-          onSubmit={() => {}}
-          onSelect={handleSortSelect(tab, routeConfiguration, history)}
-          intl={intl}
-          tab={tab}
-          routeConfiguration={routeConfiguration}
-          history={history}
-        />
+        {/* Modern Inbox Header */}
+        <div className={css.inboxHeader}>
+          <div className={css.inboxHeaderInfo}>
+            <h2 className={css.inboxHeaderTitle}>
+              {isOrders
+                ? intl.formatMessage({ id: 'InboxPage.ordersHeading' })
+                : intl.formatMessage({ id: 'InboxPage.salesHeading' })}
+            </h2>
+            <p className={css.inboxHeaderSubtitle}>
+              {isOrders
+                ? intl.formatMessage({ id: 'InboxPage.ordersSubtitle' })
+                : intl.formatMessage({ id: 'InboxPage.salesSubtitle' })}
+            </p>
+          </div>
+          <InboxSearchForm
+            onSubmit={() => {}}
+            onSelect={handleSortSelect(tab, routeConfiguration, history)}
+            intl={intl}
+            tab={tab}
+            routeConfiguration={routeConfiguration}
+            history={history}
+          />
+        </div>
+
+        {/* Transaction count */}
+        {!fetchInProgress && transactions.length > 0 && (
+          <div className={css.inboxCount}>
+            {transactions.length} {transactions.length === 1 ? 'conversation' : 'conversations'}
+            {pagination?.totalItems > INBOX_PAGE_SIZE && (
+              <span className={css.inboxCountTotal}> of {pagination.totalItems}</span>
+            )}
+          </div>
+        )}
+
         {fetchOrdersOrSalesError ? (
-          <p className={css.error}>
+          <div className={css.errorCard}>
+            <span className={css.errorIcon}>⚠</span>
             <FormattedMessage id="InboxPage.fetchFailed" />
-          </p>
+          </div>
         ) : null}
-        <ul className={css.itemList}>
+
+        <div className={css.itemList}>
           {!fetchInProgress ? (
             transactions.map(toTxItem)
           ) : (
-            <li className={css.listItemsLoading}>
+            <div className={css.loadingContainer}>
               <IconSpinner />
-            </li>
+              <span className={css.loadingText}>Loading your inbox...</span>
+            </div>
           )}
           {hasNoResults ? (
-            <li key="noResults" className={css.noResults}>
-              <FormattedMessage
-                id={isOrders ? 'InboxPage.noOrdersFound' : 'InboxPage.noSalesFound'}
-              />
-            </li>
+            <div className={css.emptyState}>
+              <div className={css.emptyStateIcon}>📬</div>
+              <h3 className={css.emptyStateTitle}>
+                <FormattedMessage
+                  id={isOrders ? 'InboxPage.noOrdersTitle' : 'InboxPage.noSalesTitle'}
+                />
+              </h3>
+              <p className={css.emptyStateText}>
+                <FormattedMessage
+                  id={isOrders ? 'InboxPage.noOrdersFound' : 'InboxPage.noSalesFound'}
+                />
+              </p>
+            </div>
           ) : null}
-        </ul>
+        </div>
+
         {hasTransactions && pagination && pagination.totalPages > 1 ? (
           <PaginationLinks
             className={css.pagination}
