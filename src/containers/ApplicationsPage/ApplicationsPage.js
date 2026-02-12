@@ -6,7 +6,12 @@ import classNames from 'classnames';
 
 import { FormattedMessage, useIntl } from '../../util/reactIntl';
 import { isScrollingDisabled } from '../../ducks/ui.duck';
-import { apiBaseUrl } from '../../util/api';
+import {
+  apiBaseUrl,
+  fetchApplicationByTransaction,
+  acceptProjectApplication,
+  declineProjectApplication,
+} from '../../util/api';
 
 import {
   Page,
@@ -57,25 +62,122 @@ const formatDate = (dateString) => {
   });
 };
 
+// ================ Application Detail Panel ================ //
+
+const ApplicationDetailPanel = ({ applicationData, isLoading }) => {
+  if (isLoading) {
+    return <div className={css.detailLoading}>Loading application details...</div>;
+  }
+  if (!applicationData) {
+    return <div className={css.detailEmpty}>No detailed application data available.</div>;
+  }
+
+  const baseUrl = apiBaseUrl();
+
+  return (
+    <div className={css.detailPanel}>
+      {/* Cover Letter */}
+      <div className={css.detailSection}>
+        <h4 className={css.detailSectionTitle}>Cover Letter</h4>
+        <p className={css.detailText}>{applicationData.coverLetter || 'Not provided'}</p>
+      </div>
+
+      {/* Interest Reason */}
+      {applicationData.interestReason && (
+        <div className={css.detailSection}>
+          <h4 className={css.detailSectionTitle}>Why They're Interested</h4>
+          <p className={css.detailText}>{applicationData.interestReason}</p>
+        </div>
+      )}
+
+      {/* Skills */}
+      {applicationData.skills?.length > 0 && (
+        <div className={css.detailSection}>
+          <h4 className={css.detailSectionTitle}>Relevant Skills</h4>
+          <div className={css.skillTags}>
+            {applicationData.skills.map(skill => (
+              <span key={skill} className={css.skillTag}>{skill}</span>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Key Info Grid */}
+      <div className={css.detailGrid}>
+        {applicationData.availabilityDate && (
+          <div className={css.detailGridItem}>
+            <span className={css.detailGridLabel}>Available From</span>
+            <span className={css.detailGridValue}>{formatDate(applicationData.availabilityDate)}</span>
+          </div>
+        )}
+        {applicationData.hoursPerWeek && (
+          <div className={css.detailGridItem}>
+            <span className={css.detailGridLabel}>Hours/Week</span>
+            <span className={css.detailGridValue}>{applicationData.hoursPerWeek}</span>
+          </div>
+        )}
+        {applicationData.gpa && (
+          <div className={css.detailGridItem}>
+            <span className={css.detailGridLabel}>GPA</span>
+            <span className={css.detailGridValue}>{applicationData.gpa}</span>
+          </div>
+        )}
+        {applicationData.relevantCoursework && (
+          <div className={css.detailGridItem}>
+            <span className={css.detailGridLabel}>Coursework</span>
+            <span className={css.detailGridValue}>{applicationData.relevantCoursework}</span>
+          </div>
+        )}
+      </div>
+
+      {/* Resume */}
+      {applicationData.resumeAttachment && (
+        <div className={css.detailSection}>
+          <h4 className={css.detailSectionTitle}>Resume</h4>
+          <a
+            href={`${baseUrl}/api/attachments/${applicationData.resumeAttachment.id}/download`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={css.resumeLink}
+          >
+            &#128196; {applicationData.resumeAttachment.name} ({applicationData.resumeAttachment.size})
+          </a>
+        </div>
+      )}
+
+      {/* References */}
+      {applicationData.referencesText && (
+        <div className={css.detailSection}>
+          <h4 className={css.detailSectionTitle}>References</h4>
+          <p className={css.detailText}>{applicationData.referencesText}</p>
+        </div>
+      )}
+    </div>
+  );
+};
+
 // ================ Application Row Component ================ //
 
-const ApplicationRow = ({ application, onAccept, onDecline, onViewDetails, isProcessing, actionError }) => {
+const ApplicationRow = ({ application, onAccept, onDecline, isProcessing, actionError, expandedId, onToggleExpand, applicationDetails, detailsLoading }) => {
   const student = application.customer;
   const status = getTransactionStatus(application);
   const appliedDate = application.attributes?.createdAt;
   const applicationId = application.id?.uuid;
+  const isExpanded = expandedId === applicationId;
 
   const studentName = student?.attributes?.profile?.displayName || 'Unknown Student';
   const studentInitials = student?.attributes?.profile?.abbreviatedName || '??';
   const university = student?.attributes?.profile?.publicData?.university || 'Not specified';
   const major = student?.attributes?.profile?.publicData?.major || 'Not specified';
 
-  // Check if this row has an error
   const hasError = actionError?.id === applicationId;
 
   return (
     <>
-      <tr className={css.applicationRow} onClick={() => onViewDetails(application)}>
+      <tr
+        className={classNames(css.applicationRow, { [css.applicationRowExpanded]: isExpanded })}
+        onClick={() => onToggleExpand(applicationId)}
+      >
         <td className={css.studentCell}>
           <div className={css.studentInfo}>
             <div className={css.avatarWrapper}>
@@ -123,25 +225,33 @@ const ApplicationRow = ({ application, onAccept, onDecline, onViewDetails, isPro
               </button>
             </div>
           )}
-          {status !== 'pending' && (
-            <button
-              className={css.viewButton}
-              onClick={(e) => {
-                e.stopPropagation();
-                onViewDetails(application);
-              }}
-            >
-              View Details
-            </button>
-          )}
+          <button
+            className={css.expandButton}
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggleExpand(applicationId);
+            }}
+          >
+            {isExpanded ? '▲ Hide' : '▼ Details'}
+          </button>
         </td>
       </tr>
       {hasError && (
         <tr className={css.errorRow}>
           <td colSpan="5">
             <div className={css.actionErrorMessage}>
-              ⚠️ {actionError.message}
+              {actionError.message}
             </div>
+          </td>
+        </tr>
+      )}
+      {isExpanded && (
+        <tr className={css.detailRow}>
+          <td colSpan="5">
+            <ApplicationDetailPanel
+              applicationData={applicationDetails[applicationId]}
+              isLoading={detailsLoading[applicationId]}
+            />
           </td>
         </tr>
       )}
@@ -151,7 +261,7 @@ const ApplicationRow = ({ application, onAccept, onDecline, onViewDetails, isPro
 
 // ================ Project Section Component ================ //
 
-const ProjectSection = ({ project, applications, onAccept, onDecline, onViewDetails, sortConfig, onSort, processingId, actionError }) => {
+const ProjectSection = ({ project, applications, onAccept, onDecline, sortConfig, onSort, processingId, actionError, expandedId, onToggleExpand, applicationDetails, detailsLoading }) => {
   const [isExpanded, setIsExpanded] = useState(true);
 
   const sortedApplications = useMemo(() => {
@@ -257,9 +367,12 @@ const ProjectSection = ({ project, applications, onAccept, onDecline, onViewDeta
                   application={application}
                   onAccept={onAccept}
                   onDecline={onDecline}
-                  onViewDetails={onViewDetails}
                   isProcessing={processingId === application.id?.uuid}
                   actionError={actionError}
+                  expandedId={expandedId}
+                  onToggleExpand={onToggleExpand}
+                  applicationDetails={applicationDetails}
+                  detailsLoading={detailsLoading}
                 />
               ))}
             </tbody>
@@ -283,9 +396,12 @@ const ApplicationsPageComponent = (props) => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [actionError, setActionError] = useState(null);
-  const [processingId, setProcessingId] = useState(null); // Track which application is being processed
+  const [processingId, setProcessingId] = useState(null);
   const [sortConfig, setSortConfig] = useState({ key: 'date', direction: 'desc' });
   const [filterStatus, setFilterStatus] = useState('all');
+  const [expandedId, setExpandedId] = useState(null);
+  const [applicationDetails, setApplicationDetails] = useState({});
+  const [detailsLoading, setDetailsLoading] = useState({});
 
   // Fetch applications data
   useEffect(() => {
@@ -329,39 +445,61 @@ const ApplicationsPageComponent = (props) => {
     }));
   };
 
+  // Handle toggle expand to show application details
+  const handleToggleExpand = async (applicationId) => {
+    if (expandedId === applicationId) {
+      setExpandedId(null);
+      return;
+    }
+    setExpandedId(applicationId);
+
+    // If we already have details cached, don't re-fetch
+    if (applicationDetails[applicationId]) return;
+
+    setDetailsLoading(prev => ({ ...prev, [applicationId]: true }));
+    try {
+      const data = await fetchApplicationByTransaction(applicationId);
+      setApplicationDetails(prev => ({ ...prev, [applicationId]: data?.application || data }));
+    } catch (err) {
+      console.error('Failed to fetch application details:', err);
+      setApplicationDetails(prev => ({ ...prev, [applicationId]: null }));
+    } finally {
+      setDetailsLoading(prev => ({ ...prev, [applicationId]: false }));
+    }
+  };
+
   // Handle accept application
   const handleAccept = async (application) => {
-    const applicationId = application.id?.uuid;
-    setProcessingId(applicationId);
+    const transactionId = application.id?.uuid;
+    setProcessingId(transactionId);
     setActionError(null);
 
     try {
-      const baseUrl = apiBaseUrl();
-      const response = await fetch(`${baseUrl}/api/transactions/${applicationId}/accept`, {
-        method: 'POST',
-        credentials: 'include',
-      });
-
-      if (response.ok) {
-        // Update local state only after confirmed success
-        setApplications(prev => prev.map(app =>
-          app.id?.uuid === applicationId
-            ? { ...app, attributes: { ...app.attributes, lastTransition: 'transition/accept' } }
-            : app
-        ));
-      } else {
-        // Parse error message from response
-        const errorData = await response.json().catch(() => ({}));
-        const errorMessage = errorData.message || 'Failed to accept application. Please try again.';
-        setActionError({ id: applicationId, message: errorMessage, type: 'accept' });
+      // Find the project-application ID from cached details or fetch it
+      const details = applicationDetails[transactionId];
+      let appId = details?.id;
+      if (!appId) {
+        const appData = await fetchApplicationByTransaction(transactionId);
+        const app = appData?.application || appData;
+        appId = app?.id;
       }
+
+      if (appId) {
+        await acceptProjectApplication(appId);
+      } else {
+        throw new Error('Could not find application record');
+      }
+
+      // Update local state after confirmed success
+      setApplications(prev => prev.map(app =>
+        app.id?.uuid === transactionId
+          ? { ...app, attributes: { ...app.attributes, lastTransition: 'transition/accept' } }
+          : app
+      ));
     } catch (err) {
       console.error('Failed to accept application:', err);
-      setActionError({
-        id: applicationId,
-        message: 'Network error. Please check your connection and try again.',
-        type: 'accept'
-      });
+      const errorMessage = err?.message || 'Failed to accept application. Please try again.';
+      setActionError({ id: transactionId, message: errorMessage, type: 'accept' });
     } finally {
       setProcessingId(null);
     }
@@ -369,46 +507,39 @@ const ApplicationsPageComponent = (props) => {
 
   // Handle decline application
   const handleDecline = async (application) => {
-    const applicationId = application.id?.uuid;
-    setProcessingId(applicationId);
+    const transactionId = application.id?.uuid;
+    setProcessingId(transactionId);
     setActionError(null);
 
     try {
-      const baseUrl = apiBaseUrl();
-      const response = await fetch(`${baseUrl}/api/transactions/${applicationId}/decline`, {
-        method: 'POST',
-        credentials: 'include',
-      });
-
-      if (response.ok) {
-        // Update local state only after confirmed success
-        setApplications(prev => prev.map(app =>
-          app.id?.uuid === applicationId
-            ? { ...app, attributes: { ...app.attributes, lastTransition: 'transition/decline' } }
-            : app
-        ));
-      } else {
-        // Parse error message from response
-        const errorData = await response.json().catch(() => ({}));
-        const errorMessage = errorData.message || 'Failed to decline application. Please try again.';
-        setActionError({ id: applicationId, message: errorMessage, type: 'decline' });
+      // Find the project-application ID from cached details or fetch it
+      const details = applicationDetails[transactionId];
+      let appId = details?.id;
+      if (!appId) {
+        const appData = await fetchApplicationByTransaction(transactionId);
+        const app = appData?.application || appData;
+        appId = app?.id;
       }
+
+      if (appId) {
+        await declineProjectApplication(appId);
+      } else {
+        throw new Error('Could not find application record');
+      }
+
+      // Update local state after confirmed success
+      setApplications(prev => prev.map(app =>
+        app.id?.uuid === transactionId
+          ? { ...app, attributes: { ...app.attributes, lastTransition: 'transition/decline' } }
+          : app
+      ));
     } catch (err) {
       console.error('Failed to decline application:', err);
-      setActionError({
-        id: applicationId,
-        message: 'Network error. Please check your connection and try again.',
-        type: 'decline'
-      });
+      const errorMessage = err?.message || 'Failed to decline application. Please try again.';
+      setActionError({ id: transactionId, message: errorMessage, type: 'decline' });
     } finally {
       setProcessingId(null);
     }
-  };
-
-  // Handle view details
-  const handleViewDetails = (application) => {
-    const transactionId = application.id?.uuid || application.id;
-    history.push(`/sale/${transactionId}/details`);
   };
 
   // Group applications by project/listing
@@ -563,11 +694,14 @@ const ApplicationsPageComponent = (props) => {
                     applications={projectApps}
                     onAccept={handleAccept}
                     onDecline={handleDecline}
-                    onViewDetails={handleViewDetails}
                     sortConfig={sortConfig}
                     onSort={handleSort}
                     processingId={processingId}
                     actionError={actionError}
+                    expandedId={expandedId}
+                    onToggleExpand={handleToggleExpand}
+                    applicationDetails={applicationDetails}
+                    detailsLoading={detailsLoading}
                   />
                 ))}
               </div>

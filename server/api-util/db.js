@@ -277,9 +277,36 @@ sqlite.exec(`
     created_at TEXT
   );
 
+  CREATE TABLE IF NOT EXISTS project_applications (
+    id TEXT PRIMARY KEY,
+    student_id TEXT NOT NULL,
+    listing_id TEXT NOT NULL,
+    transaction_id TEXT,
+    invite_id TEXT,
+    cover_letter TEXT,
+    resume_attachment_id TEXT,
+    availability_date TEXT,
+    interest_reason TEXT,
+    skills TEXT,
+    relevant_coursework TEXT,
+    gpa TEXT,
+    hours_per_week INTEGER,
+    references_text TEXT,
+    status TEXT DEFAULT 'pending',
+    submitted_at TEXT,
+    reviewed_at TEXT,
+    reviewer_notes TEXT
+  );
+
+  CREATE INDEX IF NOT EXISTS idx_project_applications_student ON project_applications(student_id);
+  CREATE INDEX IF NOT EXISTS idx_project_applications_listing ON project_applications(listing_id);
+  CREATE INDEX IF NOT EXISTS idx_project_applications_status ON project_applications(status);
+  CREATE INDEX IF NOT EXISTS idx_project_applications_transaction ON project_applications(transaction_id);
+
   CREATE INDEX IF NOT EXISTS idx_notifications_recipient ON notifications(recipient_id);
   CREATE INDEX IF NOT EXISTS idx_notifications_unread ON notifications(recipient_id, is_read);
   CREATE INDEX IF NOT EXISTS idx_corporate_invites_partner ON corporate_invites(corporate_partner_id);
+  CREATE INDEX IF NOT EXISTS idx_corporate_invites_student ON corporate_invites(student_id);
   CREATE INDEX IF NOT EXISTS idx_assessments_student ON assessments(student_id);
   CREATE INDEX IF NOT EXISTS idx_assessments_transaction ON assessments(transaction_id);
   CREATE INDEX IF NOT EXISTS idx_blog_posts_slug ON blog_posts(slug);
@@ -1515,6 +1542,135 @@ const adminMessages = {
 };
 
 // -------------------------------------------------------------------
+// Project Applications
+// -------------------------------------------------------------------
+
+const projectApplications = {
+  getById(id) {
+    const row = sqlite.prepare('SELECT * FROM project_applications WHERE id = ?').get(id);
+    return row ? projectApplications._fromRow(row) : null;
+  },
+
+  getByStudentAndListing(studentId, listingId) {
+    const row = sqlite.prepare(
+      'SELECT * FROM project_applications WHERE student_id = ? AND listing_id = ? ORDER BY submitted_at DESC LIMIT 1'
+    ).get(studentId, listingId);
+    return row ? projectApplications._fromRow(row) : null;
+  },
+
+  getByListingId(listingId, { status, limit = 50 } = {}) {
+    let sql = 'SELECT * FROM project_applications WHERE listing_id = ?';
+    const params = [listingId];
+    if (status) {
+      sql += ' AND status = ?';
+      params.push(status);
+    }
+    sql += ' ORDER BY submitted_at DESC';
+    if (limit) {
+      sql += ' LIMIT ?';
+      params.push(limit);
+    }
+    return sqlite.prepare(sql).all(...params).map(projectApplications._fromRow);
+  },
+
+  getByStudentId(studentId, { status, limit = 50 } = {}) {
+    let sql = 'SELECT * FROM project_applications WHERE student_id = ?';
+    const params = [studentId];
+    if (status) {
+      sql += ' AND status = ?';
+      params.push(status);
+    }
+    sql += ' ORDER BY submitted_at DESC';
+    if (limit) {
+      sql += ' LIMIT ?';
+      params.push(limit);
+    }
+    return sqlite.prepare(sql).all(...params).map(projectApplications._fromRow);
+  },
+
+  getByTransactionId(transactionId) {
+    const row = sqlite.prepare(
+      'SELECT * FROM project_applications WHERE transaction_id = ?'
+    ).get(transactionId);
+    return row ? projectApplications._fromRow(row) : null;
+  },
+
+  create(app) {
+    sqlite.prepare(`
+      INSERT INTO project_applications
+        (id, student_id, listing_id, transaction_id, invite_id,
+         cover_letter, resume_attachment_id, availability_date,
+         interest_reason, skills, relevant_coursework, gpa,
+         hours_per_week, references_text, status, submitted_at,
+         reviewed_at, reviewer_notes)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).run(
+      app.id,
+      app.studentId,
+      app.listingId,
+      app.transactionId || null,
+      app.inviteId || null,
+      app.coverLetter || '',
+      app.resumeAttachmentId || null,
+      app.availabilityDate || null,
+      app.interestReason || '',
+      JSON.stringify(app.skills || []),
+      app.relevantCoursework || '',
+      app.gpa || '',
+      app.hoursPerWeek || null,
+      app.referencesText || '',
+      app.status || 'pending',
+      app.submittedAt || new Date().toISOString(),
+      app.reviewedAt || null,
+      app.reviewerNotes || null
+    );
+  },
+
+  updateStatus(id, status, reviewerNotes) {
+    const now = new Date().toISOString();
+    sqlite.prepare(
+      'UPDATE project_applications SET status = ?, reviewed_at = ?, reviewer_notes = ? WHERE id = ?'
+    ).run(status, now, reviewerNotes || null, id);
+    return projectApplications.getById(id);
+  },
+
+  updateTransactionId(id, transactionId) {
+    sqlite.prepare(
+      'UPDATE project_applications SET transaction_id = ? WHERE id = ?'
+    ).run(transactionId, id);
+  },
+
+  _fromRow(row) {
+    let skills = [];
+    try {
+      skills = JSON.parse(row.skills || '[]');
+    } catch (e) {
+      skills = [];
+    }
+    return {
+      id: row.id,
+      studentId: row.student_id,
+      listingId: row.listing_id,
+      transactionId: row.transaction_id,
+      inviteId: row.invite_id,
+      coverLetter: row.cover_letter,
+      resumeAttachmentId: row.resume_attachment_id,
+      availabilityDate: row.availability_date,
+      interestReason: row.interest_reason,
+      skills,
+      relevantCoursework: row.relevant_coursework,
+      gpa: row.gpa,
+      hoursPerWeek: row.hours_per_week,
+      referencesText: row.references_text,
+      status: row.status,
+      submittedAt: row.submitted_at,
+      reviewedAt: row.reviewed_at,
+      reviewerNotes: row.reviewer_notes,
+    };
+  },
+};
+
+// -------------------------------------------------------------------
 // Transaction helper (expose sqlite.transaction for multi-step ops)
 // -------------------------------------------------------------------
 
@@ -1551,4 +1707,5 @@ module.exports = {
   ndaSignatures,
   notifications,
   adminMessages,
+  projectApplications,
 };

@@ -5,6 +5,7 @@ import { useHistory } from 'react-router-dom';
 import { FormattedMessage, useIntl } from '../../util/reactIntl';
 import { isScrollingDisabled } from '../../ducks/ui.duck';
 import { apiBaseUrl, transitionTransaction, fetchStudentInvites, acceptStudentInvite, declineStudentInvite } from '../../util/api';
+import { createSlug } from '../../util/urlHelpers';
 import { types as sdkTypes } from '../../util/sdkLoader';
 import classNames from 'classnames';
 
@@ -1008,10 +1009,12 @@ const StudentDashboardPageComponent = props => {
           invites: prev.invites.filter(p => p.id !== project.id),
           active: [...prev.active, { ...project, status: 'active' }],
         }));
-        // Redirect to the listing page so the student can apply
+        // Redirect to the listing page so the student can submit their application
         const listingId = response?.data?.listingId || project.listingId;
         if (listingId) {
-          history.push(`/l/${listingId}`);
+          const slug = createSlug(project.title || 'project');
+          const inviteId = project.inviteId || project.id;
+          history.push(`/l/${slug}/${listingId}?invite=${inviteId}`);
         }
       }
     } catch (err) {

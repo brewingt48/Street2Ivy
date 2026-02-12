@@ -223,6 +223,51 @@ export const declineStudentInvite = inviteId => {
   return post(`/api/student/invites/${inviteId}/decline`, {});
 };
 
+// Street2Ivy: Project Applications
+//
+// Submit a project application (student applies to a project listing)
+export const submitProjectApplication = body => {
+  return post('/api/project-applications', body);
+};
+
+// Fetch application details by transaction ID (for corporate review)
+export const fetchApplicationByTransaction = transactionId => {
+  return request(`/api/project-applications/by-transaction/${transactionId}`, {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
+  });
+};
+
+// Fetch all applications for a listing (corporate partner)
+export const fetchApplicationsByListing = listingId => {
+  return request(`/api/project-applications/by-listing/${listingId}`, {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
+  });
+};
+
+// Fetch student's own applications
+export const fetchMyApplications = (params = {}) => {
+  const queryString = Object.entries(params)
+    .filter(([, v]) => v != null && v !== '')
+    .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`)
+    .join('&');
+  return request(
+    `/api/student/applications${queryString ? `?${queryString}` : ''}`,
+    { method: 'GET', headers: { 'Content-Type': 'application/json' } }
+  );
+};
+
+// Accept a project application (corporate partner)
+export const acceptProjectApplication = (applicationId, body = {}) => {
+  return post(`/api/project-applications/${applicationId}/accept`, body);
+};
+
+// Decline a project application (corporate partner)
+export const declineProjectApplication = (applicationId, body = {}) => {
+  return post(`/api/project-applications/${applicationId}/decline`, body);
+};
+
 // Street2Ivy: Fetch company listings (open projects)
 //
 // Fetch published listings for a corporate partner (by author ID)

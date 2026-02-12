@@ -33,6 +33,7 @@ import {
   isNegotiationProcess,
   isInquiryProcess,
   isPurchaseProcess,
+  isProjectApplicationProcess,
   resolveLatestProcessName,
 } from '../../transactions/transaction';
 
@@ -69,6 +70,12 @@ const NegotiationForm = loadable(() =>
 const NegotiationRequestQuoteForm = loadable(() =>
   import(
     /* webpackChunkName: "NegotiationRequestQuoteForm" */ './NegotiationRequestQuoteForm/NegotiationRequestQuoteForm'
+  )
+);
+
+const ProjectApplicationForm = loadable(() =>
+  import(
+    /* webpackChunkName: "ProjectApplicationForm" */ './ProjectApplicationForm/ProjectApplicationForm'
   )
 );
 
@@ -316,6 +323,7 @@ const OrderPanel = props => {
 
   const price = listing?.attributes?.price;
   const isInquiry = isInquiryProcess(processName);
+  const isProjectApplication = isProjectApplicationProcess(processName);
   const isBooking = isBookingProcess(processName);
   const isPurchase = isPurchaseProcess(processName);
   const isNegotiation = isNegotiationProcess(processName);
@@ -350,7 +358,8 @@ const OrderPanel = props => {
   const showProductOrderForm =
     mounted && shouldHavePurchase && !isClosed && typeof currentStock === 'number';
 
-  const showInquiryForm = mounted && !isClosed && isInquiry;
+  const showProjectApplicationForm = mounted && !isClosed && isProjectApplication;
+  const showInquiryForm = mounted && !isClosed && isInquiry && !isProjectApplication;
   // if listing is a request, we show the negotiation form (reverse negotiation). User (provider) needs to make an offer first.
   const showNegotiationForm = mounted && !isClosed && isNegotiation && unitType === REQUEST;
   // if listing is an offer, we show the "request a quote" form as user needs to ask for a quote first from the provider.
@@ -531,6 +540,12 @@ const OrderPanel = props => {
             onContactUser={onContactUser}
             {...sharedProps}
           />
+        ) : showProjectApplicationForm ? (
+          <ProjectApplicationForm
+            listingId={listing?.id?.uuid}
+            inviteId={parse(location.search)?.invite || null}
+            isOwnListing={isOwnListing}
+          />
         ) : showInquiryForm ? (
           <InquiryWithoutPaymentForm
             formId="OrderPanelInquiryForm"
@@ -580,7 +595,7 @@ const OrderPanel = props => {
             onClick={handleSubmit(
               isOwnListing,
               isClosed,
-              showInquiryForm || showNegotiationForm,
+              showInquiryForm || showNegotiationForm || showProjectApplicationForm,
               onSubmit,
               history,
               location
@@ -593,6 +608,8 @@ const OrderPanel = props => {
               <FormattedMessage id="OrderPanel.ctaButtonMessageNoStock" />
             ) : isPurchase ? (
               <FormattedMessage id="OrderPanel.ctaButtonMessagePurchase" />
+            ) : showProjectApplicationForm ? (
+              'Apply for Project'
             ) : showNegotiationForm ? (
               <FormattedMessage id="OrderPanel.ctaButtonMessageMakeOffer" />
             ) : showRequestQuoteForm ? (

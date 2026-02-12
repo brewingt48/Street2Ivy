@@ -90,6 +90,9 @@ const messageAttachments = require('./api/message-attachments');
 // Student Invites (accept/decline corporate invitations)
 const studentInvites = require('./api/student-invites');
 
+// Project Applications (student submit, corporate review)
+const projectApplications = require('./api/project-applications');
+
 const createUserWithIdp = require('./api/auth/createUserWithIdp');
 
 const { authenticateFacebook, authenticateFacebookCallback } = require('./api/auth/facebook');
@@ -130,6 +133,8 @@ const csrfExemptPaths = [
   '/invite-to-apply',
   // Student invite actions — protected by SDK session auth
   '/student/invites',
+  // Project application endpoints — protected by SDK session auth
+  '/project-applications',
 ];
 router.use((req, res, next) => {
   // Skip CSRF for exempt paths
@@ -229,6 +234,15 @@ router.get('/transactions/query', studentDashboard.queryTransactions);
 router.get('/student/invites', studentInvites.listStudentInvites);
 router.post('/student/invites/:inviteId/accept', studentInvites.acceptInvite);
 router.post('/student/invites/:inviteId/decline', studentInvites.declineInvite);
+
+// Street2Ivy: Project Applications (submit, fetch, accept/decline)
+router.post('/project-applications', projectApplications.submitApplication);
+router.get('/project-applications/by-transaction/:transactionId', projectApplications.getApplicationByTransaction);
+router.get('/project-applications/by-listing/:listingId', projectApplications.getApplicationsByListing);
+router.get('/project-applications/:applicationId', projectApplications.getApplication);
+router.post('/project-applications/:applicationId/accept', projectApplications.acceptApplication);
+router.post('/project-applications/:applicationId/decline', projectApplications.declineApplication);
+router.get('/student/applications', projectApplications.getStudentApplications);
 
 // Street2Ivy: Company/Corporate partner listings (for student search)
 router.get('/company/:authorId/listings', companyListings);

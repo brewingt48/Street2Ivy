@@ -1,0 +1,261 @@
+@import '../../../styles/customMediaQueries.css';
+
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.sectionTitle {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--s2i-navy-900);
+  margin: 8px 0 4px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--s2i-slate-100);
+}
+
+.fieldGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.fieldRow {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+
+  @media (--viewportMedium) {
+    flex-wrap: nowrap;
+  }
+}
+
+.halfField {
+  flex: 1 1 100%;
+
+  @media (--viewportMedium) {
+    flex: 1 1 48%;
+  }
+}
+
+.label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--s2i-navy-800);
+  margin-bottom: 4px;
+}
+
+.required {
+  color: var(--s2i-coral-500);
+  margin-left: 2px;
+}
+
+.textarea {
+  width: 100%;
+  min-height: 100px;
+  padding: 10px 12px;
+  border: 1px solid var(--s2i-slate-200);
+  border-radius: 6px;
+  font-size: 14px;
+  font-family: inherit;
+  color: var(--s2i-navy-900);
+  resize: vertical;
+  transition: border-color 0.2s;
+
+  &:focus {
+    outline: none;
+    border-color: var(--s2i-teal-500);
+    box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.1);
+  }
+
+  &::placeholder {
+    color: var(--s2i-slate-400);
+  }
+}
+
+.textareaSmall {
+  composes: textarea;
+  min-height: 60px;
+}
+
+.input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--s2i-slate-200);
+  border-radius: 6px;
+  font-size: 14px;
+  font-family: inherit;
+  color: var(--s2i-navy-900);
+  transition: border-color 0.2s;
+
+  &:focus {
+    outline: none;
+    border-color: var(--s2i-teal-500);
+    box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.1);
+  }
+
+  &::placeholder {
+    color: var(--s2i-slate-400);
+  }
+}
+
+.select {
+  composes: input;
+  appearance: auto;
+  cursor: pointer;
+}
+
+.numberInput {
+  composes: input;
+  max-width: 120px;
+}
+
+/* Skills multi-select */
+.skillsGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.skillChip {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 12px;
+  border: 1px solid var(--s2i-slate-200);
+  border-radius: 20px;
+  font-size: 13px;
+  color: var(--s2i-navy-700);
+  background: white;
+  cursor: pointer;
+  transition: all 0.2s;
+  user-select: none;
+
+  &:hover {
+    border-color: var(--s2i-teal-400);
+    color: var(--s2i-teal-700);
+  }
+}
+
+.skillChipSelected {
+  composes: skillChip;
+  background: var(--s2i-teal-50);
+  border-color: var(--s2i-teal-500);
+  color: var(--s2i-teal-700);
+  font-weight: 500;
+}
+
+/* Resume upload */
+.uploadArea {
+  border: 2px dashed var(--s2i-slate-200);
+  border-radius: 8px;
+  padding: 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover {
+    border-color: var(--s2i-teal-400);
+    background: var(--s2i-teal-50);
+  }
+}
+
+.uploadAreaActive {
+  composes: uploadArea;
+  border-color: var(--s2i-teal-500);
+  background: var(--s2i-teal-50);
+}
+
+.uploadIcon {
+  font-size: 24px;
+  margin-bottom: 4px;
+}
+
+.uploadText {
+  font-size: 13px;
+  color: var(--s2i-slate-500);
+}
+
+.uploadedFile {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  background: var(--s2i-slate-50);
+  border-radius: 6px;
+  font-size: 13px;
+  color: var(--s2i-navy-700);
+}
+
+.uploadedFileName {
+  flex: 1;
+  font-weight: 500;
+}
+
+.removeFileButton {
+  background: none;
+  border: none;
+  color: var(--s2i-coral-500);
+  cursor: pointer;
+  font-size: 16px;
+  padding: 0 4px;
+
+  &:hover {
+    color: var(--s2i-coral-700);
+  }
+}
+
+/* Submit */
+.submitSection {
+  margin-top: 8px;
+  padding-top: 16px;
+  border-top: 1px solid var(--s2i-slate-100);
+}
+
+.submitButton {
+  width: 100%;
+  padding: 12px 24px;
+  background: var(--s2i-teal-600);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+
+  &:hover {
+    background: var(--s2i-teal-700);
+  }
+
+  &:disabled {
+    background: var(--s2i-slate-300);
+    cursor: not-allowed;
+  }
+}
+
+.error {
+  padding: 10px 14px;
+  background: var(--s2i-coral-50);
+  border: 1px solid var(--s2i-coral-200);
+  border-radius: 6px;
+  color: var(--s2i-coral-700);
+  font-size: 13px;
+}
+
+.success {
+  padding: 16px;
+  background: var(--s2i-teal-50);
+  border: 1px solid var(--s2i-teal-200);
+  border-radius: 8px;
+  text-align: center;
+  color: var(--s2i-teal-700);
+  font-weight: 500;
+}
+
+.fieldHint {
+  font-size: 12px;
+  color: var(--s2i-slate-400);
+  margin-top: 2px;
+}
