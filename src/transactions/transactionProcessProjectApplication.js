@@ -16,7 +16,9 @@
 
 export const transitions = {
   // A student (customer) applies to a project listing
-  APPLY: 'transition/apply',
+  // Note: The Sharetribe Console process uses 'transition/inquire-without-payment'
+  // as the initial transition (no-payment inquiry flow).
+  APPLY: 'transition/inquire-without-payment',
 
   // Corporate partner (provider) accepts or declines the application
   ACCEPT: 'transition/accept',

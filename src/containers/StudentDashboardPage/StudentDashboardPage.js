@@ -548,7 +548,14 @@ const StudentDashboardPageComponent = props => {
               completed.push({ ...projectData, status: 'completed' });
             } else if (lastTransition.includes('accept')) {
               active.push({ ...projectData, status: 'active' });
-            } else if (lastTransition.includes('request-project-application') || lastTransition.includes('inquire') || lastTransition.includes('apply')) {
+            } else if (lastTransition.includes('decline')) {
+              // Declined applications go to history
+              completed.push({ ...projectData, status: 'declined' });
+            } else if (
+              lastTransition.includes('request-project-application') ||
+              lastTransition.includes('inquire') ||
+              lastTransition.includes('apply')
+            ) {
               active.push({ ...projectData, status: 'pending' });
               setHasAppliedToProject(true);
             }

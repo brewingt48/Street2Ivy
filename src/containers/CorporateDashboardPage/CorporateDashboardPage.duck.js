@@ -74,9 +74,12 @@ export const fetchCorporateInboxThunk = createAsyncThunk(
         only: 'sale',
         lastTransitions: [
           'transition/inquire',
+          'transition/inquire-without-payment',
           'transition/request-project-application',
+          'transition/apply',
           'transition/accept',
           'transition/decline',
+          'transition/mark-completed',
           'transition/complete',
           'transition/review-1-by-provider',
           'transition/review-1-by-customer',
