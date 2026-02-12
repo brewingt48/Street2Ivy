@@ -11,6 +11,8 @@ import {
   fetchApplicationByTransaction,
   acceptProjectApplication,
   declineProjectApplication,
+  markProjectCompleted,
+  fetchTransactionReviews,
 } from '../../util/api';
 
 import {
@@ -31,13 +33,18 @@ const getTransactionStatus = (transaction) => {
   const statusMap = {
     'transition/inquire': 'pending',
     'transition/request-project-application': 'pending',
+    'transition/apply': 'pending',
     'transition/accept': 'accepted',
     'transition/decline': 'declined',
+    'transition/mark-completed': 'completed',
     'transition/complete': 'completed',
-    'transition/review-1-by-provider': 'completed',
-    'transition/review-1-by-customer': 'completed',
-    'transition/review-2-by-provider': 'completed',
-    'transition/review-2-by-customer': 'completed',
+    'transition/review-1-by-provider': 'reviewed',
+    'transition/review-1-by-customer': 'reviewed',
+    'transition/review-2-by-provider': 'reviewed',
+    'transition/review-2-by-customer': 'reviewed',
+    'transition/expire-review-period': 'reviewed',
+    'transition/expire-customer-review-period': 'reviewed',
+    'transition/expire-provider-review-period': 'reviewed',
   };
   return statusMap[lastTransition] || 'pending';
 };
@@ -48,6 +55,7 @@ const getStatusLabel = (status) => {
     accepted: 'Accepted',
     declined: 'Declined',
     completed: 'Completed',
+    reviewed: 'Reviewed',
   };
   return labels[status] || 'Pending';
 };
@@ -158,7 +166,7 @@ const ApplicationDetailPanel = ({ applicationData, isLoading }) => {
 
 // ================ Application Row Component ================ //
 
-const ApplicationRow = ({ application, onAccept, onDecline, isProcessing, actionError, expandedId, onToggleExpand, applicationDetails, detailsLoading }) => {
+const ApplicationRow = ({ application, onAccept, onDecline, onMarkDone, isProcessing, actionError, expandedId, onToggleExpand, applicationDetails, detailsLoading }) => {
   const student = application.customer;
   const status = getTransactionStatus(application);
   const appliedDate = application.attributes?.createdAt;
@@ -201,30 +209,54 @@ const ApplicationRow = ({ application, onAccept, onDecline, isProcessing, action
           </span>
         </td>
         <td className={css.actionsCell}>
-          {status === 'pending' && (
-            <div className={css.actionButtons} onClick={(e) => e.stopPropagation()}>
+          <div className={css.actionButtons} onClick={(e) => e.stopPropagation()}>
+            {status === 'pending' && (
+              <>
+                <button
+                  className={css.acceptButton}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onAccept(application);
+                  }}
+                  disabled={isProcessing}
+                >
+                  {isProcessing ? 'Processing...' : 'Accept'}
+                </button>
+                <button
+                  className={css.declineButton}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onDecline(application);
+                  }}
+                  disabled={isProcessing}
+                >
+                  {isProcessing ? 'Processing...' : 'Decline'}
+                </button>
+              </>
+            )}
+            {status === 'accepted' && (
               <button
-                className={css.acceptButton}
+                className={css.markDoneButton}
                 onClick={(e) => {
                   e.stopPropagation();
-                  onAccept(application);
+                  onMarkDone(application);
                 }}
                 disabled={isProcessing}
               >
-                {isProcessing ? 'Processing...' : 'Accept'}
+                {isProcessing ? 'Processing...' : '✓ Mark Done'}
               </button>
-              <button
-                className={css.declineButton}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onDecline(application);
-                }}
-                disabled={isProcessing}
+            )}
+            {(status === 'completed' || status === 'reviewed') && (
+              <NamedLink
+                name="SaleDetailsPage"
+                params={{ id: applicationId }}
+                className={css.reviewButton}
+                onClick={(e) => e.stopPropagation()}
               >
-                {isProcessing ? 'Processing...' : 'Decline'}
-              </button>
-            </div>
-          )}
+                {status === 'reviewed' ? '★ View Reviews' : '★ Leave Review'}
+              </NamedLink>
+            )}
+          </div>
           <button
             className={css.expandButton}
             onClick={(e) => {
@@ -261,7 +293,7 @@ const ApplicationRow = ({ application, onAccept, onDecline, isProcessing, action
 
 // ================ Project Section Component ================ //
 
-const ProjectSection = ({ project, applications, onAccept, onDecline, sortConfig, onSort, processingId, actionError, expandedId, onToggleExpand, applicationDetails, detailsLoading }) => {
+const ProjectSection = ({ project, applications, onAccept, onDecline, onMarkDone, sortConfig, onSort, processingId, actionError, expandedId, onToggleExpand, applicationDetails, detailsLoading }) => {
   const [isExpanded, setIsExpanded] = useState(true);
 
   const sortedApplications = useMemo(() => {
@@ -367,6 +399,7 @@ const ProjectSection = ({ project, applications, onAccept, onDecline, sortConfig
                   application={application}
                   onAccept={onAccept}
                   onDecline={onDecline}
+                  onMarkDone={onMarkDone}
                   isProcessing={processingId === application.id?.uuid}
                   actionError={actionError}
                   expandedId={expandedId}
@@ -500,6 +533,33 @@ const ApplicationsPageComponent = (props) => {
       console.error('Failed to accept application:', err);
       const errorMessage = err?.message || 'Failed to accept application. Please try again.';
       setActionError({ id: transactionId, message: errorMessage, type: 'accept' });
+    } finally {
+      setProcessingId(null);
+    }
+  };
+
+  // Handle mark project done
+  const handleMarkDone = async (application) => {
+    const transactionId = application.id?.uuid;
+    if (!window.confirm('Are you sure you want to mark this project as completed? This will start the review process for both you and the student.')) {
+      return;
+    }
+    setProcessingId(transactionId);
+    setActionError(null);
+
+    try {
+      await markProjectCompleted(transactionId);
+
+      // Update local state
+      setApplications(prev => prev.map(app =>
+        app.id?.uuid === transactionId
+          ? { ...app, attributes: { ...app.attributes, lastTransition: 'transition/mark-completed' } }
+          : app
+      ));
+    } catch (err) {
+      console.error('Failed to mark project as done:', err);
+      const errorMessage = err?.message || 'Failed to mark project as done. Please try again.';
+      setActionError({ id: transactionId, message: errorMessage, type: 'markDone' });
     } finally {
       setProcessingId(null);
     }
@@ -643,6 +703,7 @@ const ApplicationsPageComponent = (props) => {
                 <option value="accepted">Accepted</option>
                 <option value="declined">Declined</option>
                 <option value="completed">Completed</option>
+                <option value="reviewed">Reviewed</option>
               </select>
             </div>
             <NamedLink name="SearchStudentsPage" className={css.inviteStudentsButton}>
@@ -694,6 +755,7 @@ const ApplicationsPageComponent = (props) => {
                     applications={projectApps}
                     onAccept={handleAccept}
                     onDecline={handleDecline}
+                    onMarkDone={handleMarkDone}
                     sortConfig={sortConfig}
                     onSort={handleSort}
                     processingId={processingId}

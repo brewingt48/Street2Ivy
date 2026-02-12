@@ -6,7 +6,7 @@ import { useIntl } from '../../util/reactIntl';
 import { useConfiguration } from '../../context/configurationContext';
 import { isScrollingDisabled } from '../../ducks/ui.duck';
 import { getOwnListingsById } from './CorporateDashboardPage.duck';
-import { fetchPendingAssessments, exportCorporateReport, closeProjectListing, reopenProjectListing } from '../../util/api';
+import { fetchPendingAssessments, exportCorporateReport, closeProjectListing, reopenProjectListing, fetchMyReviews } from '../../util/api';
 
 import { Page, LayoutSingleColumn, NamedLink, H3, StudentAssessmentForm, OnboardingChecklist } from '../../components';
 
@@ -359,6 +359,119 @@ const SentInvitesPanel = ({ invites, stats, isLoading, onRefresh }) => {
           </table>
         </div>
       )}
+    </div>
+  );
+};
+
+// ================ Reviews Panel ================ //
+
+const ReviewsPanel = () => {
+  const [reviews, setReviews] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState('about');
+
+  useEffect(() => {
+    fetchMyReviews()
+      .then(data => {
+        setReviews(data);
+        setLoading(false);
+      })
+      .catch(err => {
+        console.error('Failed to fetch reviews:', err);
+        setLoading(false);
+      });
+  }, []);
+
+  const formatDate = dateString => {
+    return new Date(dateString).toLocaleDateString([], {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+    });
+  };
+
+  const renderStars = rating => {
+    return Array.from({ length: 5 }, (_, i) => (
+      <span key={i} className={i < rating ? css.starFilled : css.starEmpty}>
+        ★
+      </span>
+    ));
+  };
+
+  if (loading) {
+    return <div className={css.loading}>Loading reviews...</div>;
+  }
+
+  if (!reviews || (reviews.totalAbout === 0 && reviews.totalBy === 0)) {
+    return (
+      <div className={css.noAssessments}>
+        <span className={css.noAssessmentsIcon}>★</span>
+        <p>No reviews yet. Reviews will appear here after projects are completed and reviewed.</p>
+      </div>
+    );
+  }
+
+  const activeReviews = activeTab === 'about' ? reviews.reviewsAboutUser : reviews.reviewsByUser;
+
+  return (
+    <div className={css.reviewsPanel}>
+      {reviews.averageRating && (
+        <div className={css.reviewsSummary}>
+          <div className={css.reviewsAvgRating}>
+            <span className={css.reviewsAvgNumber}>{reviews.averageRating}</span>
+            <div className={css.reviewsAvgStars}>{renderStars(Math.round(parseFloat(reviews.averageRating)))}</div>
+          </div>
+          <span className={css.reviewsCount}>{reviews.totalAbout} review{reviews.totalAbout !== 1 ? 's' : ''} received</span>
+        </div>
+      )}
+
+      <div className={css.reviewsTabs}>
+        <button
+          className={classNames(css.reviewsTab, { [css.reviewsTabActive]: activeTab === 'about' })}
+          onClick={() => setActiveTab('about')}
+        >
+          Reviews About Me ({reviews.totalAbout})
+        </button>
+        <button
+          className={classNames(css.reviewsTab, { [css.reviewsTabActive]: activeTab === 'by' })}
+          onClick={() => setActiveTab('by')}
+        >
+          Reviews I Wrote ({reviews.totalBy})
+        </button>
+      </div>
+
+      <div className={css.reviewsList}>
+        {activeReviews.length === 0 ? (
+          <p className={css.reviewsEmpty}>
+            {activeTab === 'about' ? 'No reviews received yet.' : 'You haven\'t written any reviews yet.'}
+          </p>
+        ) : (
+          activeReviews.map(review => (
+            <div key={review.id} className={css.reviewCard}>
+              <div className={css.reviewCardHeader}>
+                <div className={css.reviewCardUser}>
+                  <div className={css.reviewCardAvatar}>
+                    {(activeTab === 'about' ? review.author?.displayName : review.subject?.displayName || '?').charAt(0).toUpperCase()}
+                  </div>
+                  <div className={css.reviewCardUserInfo}>
+                    <span className={css.reviewCardName}>
+                      {activeTab === 'about' ? review.author?.displayName : review.subject?.displayName}
+                    </span>
+                    <span className={css.reviewCardProject}>{review.projectTitle}</span>
+                  </div>
+                </div>
+                <div className={css.reviewCardMeta}>
+                  <div className={css.reviewCardStars}>{renderStars(review.rating)}</div>
+                  <span className={css.reviewCardDate}>{formatDate(review.createdAt)}</span>
+                </div>
+              </div>
+              {review.content && (
+                <p className={css.reviewCardContent}>{review.content}</p>
+              )}
+            </div>
+          ))
+        )}
+      </div>
     </div>
   );
 };
@@ -914,6 +1027,13 @@ export const CorporateDashboardPageComponent = props => {
             </h3>
             <p className={css.sectionDescription}>Rate and provide feedback on students who have completed your projects.</p>
             <PendingAssessmentsPanel intl={intl} />
+          </div>
+
+          {/* Reviews Section */}
+          <div className={css.assessmentsSection}>
+            <h3 className={css.sectionTitle}>Reviews</h3>
+            <p className={css.sectionDescription}>View reviews exchanged between you and students after completing projects.</p>
+            <ReviewsPanel />
           </div>
 
           {/* Active Projects */}

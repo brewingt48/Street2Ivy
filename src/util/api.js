@@ -268,6 +268,34 @@ export const declineProjectApplication = (applicationId, body = {}) => {
   return post(`/api/project-applications/${applicationId}/decline`, body);
 };
 
+// Mark a project as completed (corporate partner transitions accepted → completed)
+export const markProjectCompleted = (transactionId) => {
+  return request('/api/transaction-transition', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      transactionId,
+      transition: 'transition/mark-completed',
+    }),
+  });
+};
+
+// Fetch reviews about the current user and reviews they've written
+export const fetchMyReviews = () => {
+  return request('/api/reviews/me', {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
+  });
+};
+
+// Fetch reviews for a specific transaction
+export const fetchTransactionReviews = transactionId => {
+  return request(`/api/reviews/transaction/${transactionId}`, {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
+  });
+};
+
 // Close (delete) a project listing
 export const closeProjectListing = listingId => {
   return post(`/api/listings/${listingId}/close`, {});

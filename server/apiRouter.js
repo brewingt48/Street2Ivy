@@ -96,6 +96,9 @@ const projectApplications = require('./api/project-applications');
 // Listing Management (close/reopen projects)
 const listingManagement = require('./api/listing-management');
 
+// Reviews (fetch Sharetribe reviews)
+const reviews = require('./api/reviews');
+
 const createUserWithIdp = require('./api/auth/createUserWithIdp');
 
 const { authenticateFacebook, authenticateFacebookCallback } = require('./api/auth/facebook');
@@ -140,6 +143,8 @@ const csrfExemptPaths = [
   '/project-applications',
   // Listing management — protected by SDK session auth
   '/listings',
+  // Transaction transition — protected by SDK session auth
+  '/transaction-transition',
 ];
 router.use((req, res, next) => {
   // Skip CSRF for exempt paths
@@ -252,6 +257,10 @@ router.get('/student/applications', projectApplications.getStudentApplications);
 // Street2Ivy: Listing Management (close/reopen projects)
 router.post('/listings/:listingId/close', listingManagement.closeListing);
 router.post('/listings/:listingId/reopen', listingManagement.reopenListing);
+
+// Street2Ivy: Reviews (fetch Sharetribe reviews for users and transactions)
+router.get('/reviews/me', reviews.getReviewsForUser);
+router.get('/reviews/transaction/:transactionId', reviews.getReviewsForTransaction);
 
 // Street2Ivy: Company/Corporate partner listings (for student search)
 router.get('/company/:authorId/listings', companyListings);

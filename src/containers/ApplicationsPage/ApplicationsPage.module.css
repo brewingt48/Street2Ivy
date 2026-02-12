@@ -362,6 +362,11 @@
   background: #dbeafe;
 }
 
+.statusReviewed {
+  color: #6d28d9;
+  background: #ede9fe;
+}
+
 .actionsCell {
   min-width: 180px;
 }
@@ -419,9 +424,48 @@
   background-color: #eff6ff;
 }
 
+.markDoneButton {
+  padding: 6px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  color: white;
+  background-color: #2563eb;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.markDoneButton:hover {
+  background-color: #1d4ed8;
+}
+
+.reviewButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #7c3aed;
+  background-color: white;
+  border: 1px solid #7c3aed;
+  border-radius: 6px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+
+.reviewButton:hover {
+  background-color: #f5f3ff;
+  text-decoration: none;
+  color: #6d28d9;
+}
+
 /* Disabled button states */
 .acceptButton:disabled,
-.declineButton:disabled {
+.declineButton:disabled,
+.markDoneButton:disabled {
   opacity: 0.6;
   cursor: not-allowed;
 }

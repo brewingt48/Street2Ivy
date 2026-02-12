@@ -4,7 +4,7 @@ import { compose } from 'redux';
 import { useHistory } from 'react-router-dom';
 import { FormattedMessage, useIntl } from '../../util/reactIntl';
 import { isScrollingDisabled } from '../../ducks/ui.duck';
-import { apiBaseUrl, transitionTransaction, fetchStudentInvites, acceptStudentInvite, declineStudentInvite } from '../../util/api';
+import { apiBaseUrl, transitionTransaction, fetchStudentInvites, acceptStudentInvite, declineStudentInvite, fetchMyReviews } from '../../util/api';
 import { createSlug } from '../../util/urlHelpers';
 import { types as sdkTypes } from '../../util/sdkLoader';
 import classNames from 'classnames';
@@ -791,6 +791,124 @@ const MessageDetailModal = ({ message, onClose }) => {
   );
 };
 
+// ================ Student Reviews Panel ================ //
+
+const StudentReviewsPanel = () => {
+  const [reviews, setReviews] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState('about');
+
+  useEffect(() => {
+    fetchMyReviews()
+      .then(data => {
+        setReviews(data);
+        setLoading(false);
+      })
+      .catch(err => {
+        console.error('Failed to fetch reviews:', err);
+        setLoading(false);
+      });
+  }, []);
+
+  const formatDate = dateString => {
+    return new Date(dateString).toLocaleDateString([], {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+    });
+  };
+
+  const renderStars = rating => {
+    return Array.from({ length: 5 }, (_, i) => (
+      <span key={i} className={i < rating ? css.starFilled : css.starEmpty}>
+        ★
+      </span>
+    ));
+  };
+
+  if (loading) {
+    return <div className={css.loadingState}><span className={css.spinner}></span> Loading reviews...</div>;
+  }
+
+  if (!reviews || (reviews.totalAbout === 0 && reviews.totalBy === 0)) {
+    return (
+      <div className={css.reviewsEmptyState}>
+        <span className={css.reviewsEmptyIcon}>★</span>
+        <h3 className={css.reviewsEmptyTitle}>No Reviews Yet</h3>
+        <p className={css.reviewsEmptyText}>
+          Reviews will appear here after you complete projects and receive feedback from corporate partners.
+        </p>
+      </div>
+    );
+  }
+
+  const activeReviews = activeTab === 'about' ? reviews.reviewsAboutUser : reviews.reviewsByUser;
+
+  return (
+    <div className={css.reviewsPanel}>
+      {reviews.averageRating && (
+        <div className={css.reviewsSummaryCard}>
+          <div className={css.reviewsSummaryLeft}>
+            <span className={css.reviewsAvgNumber}>{reviews.averageRating}</span>
+            <div className={css.reviewsAvgStars}>{renderStars(Math.round(parseFloat(reviews.averageRating)))}</div>
+          </div>
+          <span className={css.reviewsSummaryCount}>
+            {reviews.totalAbout} review{reviews.totalAbout !== 1 ? 's' : ''} received
+          </span>
+        </div>
+      )}
+
+      <div className={css.reviewsTabs}>
+        <button
+          className={classNames(css.reviewsTab, { [css.reviewsTabActive]: activeTab === 'about' })}
+          onClick={() => setActiveTab('about')}
+        >
+          Reviews About Me ({reviews.totalAbout})
+        </button>
+        <button
+          className={classNames(css.reviewsTab, { [css.reviewsTabActive]: activeTab === 'by' })}
+          onClick={() => setActiveTab('by')}
+        >
+          Reviews I Wrote ({reviews.totalBy})
+        </button>
+      </div>
+
+      <div className={css.reviewsList}>
+        {activeReviews.length === 0 ? (
+          <p className={css.reviewsListEmpty}>
+            {activeTab === 'about' ? 'No reviews received yet.' : 'You haven\'t written any reviews yet.'}
+          </p>
+        ) : (
+          activeReviews.map(review => (
+            <div key={review.id} className={css.reviewCard}>
+              <div className={css.reviewCardHeader}>
+                <div className={css.reviewCardUser}>
+                  <div className={css.reviewCardAvatar}>
+                    {(activeTab === 'about' ? review.author?.displayName : review.subject?.displayName || '?').charAt(0).toUpperCase()}
+                  </div>
+                  <div className={css.reviewCardUserInfo}>
+                    <span className={css.reviewCardName}>
+                      {activeTab === 'about' ? review.author?.displayName : review.subject?.displayName}
+                    </span>
+                    <span className={css.reviewCardProject}>{review.projectTitle}</span>
+                  </div>
+                </div>
+                <div className={css.reviewCardMeta}>
+                  <div className={css.reviewCardStars}>{renderStars(review.rating)}</div>
+                  <span className={css.reviewCardDate}>{formatDate(review.createdAt)}</span>
+                </div>
+              </div>
+              {review.content && (
+                <p className={css.reviewCardContent}>{review.content}</p>
+              )}
+            </div>
+          ))
+        )}
+      </div>
+    </div>
+  );
+};
+
 // ================ Empty State Component ================ //
 
 const EmptyState = ({ icon, title, description, action, actionLink, actionText }) => (
@@ -1293,6 +1411,14 @@ const StudentDashboardPageComponent = props => {
               Completed
             </button>
             <button
+              className={classNames(css.tab, { [css.tabActive]: activeTab === 'reviews' })}
+              onClick={() => setActiveTab('reviews')}
+              title="View reviews from corporate partners and reviews you've written"
+            >
+              <span className={css.tabIcon}>★</span>
+              Reviews
+            </button>
+            <button
               className={classNames(css.tab, { [css.tabActive]: activeTab === 'messages' })}
               onClick={() => setActiveTab('messages')}
               title="Read and respond to messages from corporate partners and the platform"
@@ -1316,6 +1442,7 @@ const StudentDashboardPageComponent = props => {
             {activeTab === 'projects' && 'Track all your submitted applications. See which are pending review, accepted, or declined by corporate partners.'}
             {activeTab === 'invites' && 'Corporate partners can invite you to apply for their projects. Review invitations here and decide which opportunities interest you.'}
             {activeTab === 'history' && 'Your completed project history. Review past work, feedback received, and build your professional portfolio.'}
+            {activeTab === 'reviews' && 'View reviews from corporate partners about your project work, and reviews you\'ve written about your experiences.'}
             {activeTab === 'messages' && 'Messages from corporate partners and the Campus2Career team. Stay connected and respond to inquiries about your applications.'}
           </div>
 
@@ -1437,6 +1564,13 @@ const StudentDashboardPageComponent = props => {
                     description="You haven't completed any projects yet. Once you finish your first project, it will appear here."
                   />
                 )}
+              </div>
+            )}
+
+            {/* Reviews Tab */}
+            {activeTab === 'reviews' && (
+              <div className={css.reviewsSection}>
+                <StudentReviewsPanel />
               </div>
             )}
 
