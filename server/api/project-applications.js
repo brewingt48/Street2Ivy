@@ -157,12 +157,14 @@ const submitApplication = async (req, res) => {
     // Send notification to corporate partner about new application
     try {
       const integrationSdk = getIntegrationSdkForTenant(req.tenant);
+      console.log('[ProjectApplications] Sending notifications for application', applicationId, 'listingId:', listingIdStr);
 
       // Get listing details for notification (Integration SDK accepts plain string IDs)
       const listingResponse = await integrationSdk.listings.show({ id: listingIdStr });
       const listing = listingResponse.data.data;
       const projectTitle = listing?.attributes?.title || 'Project';
       const providerId = listing?.relationships?.author?.data?.id?.uuid;
+      console.log('[ProjectApplications] Listing found:', projectTitle, 'providerId:', providerId);
 
       // Get provider details
       if (providerId) {
@@ -190,6 +192,7 @@ const submitApplication = async (req, res) => {
             applicationUrl: `${baseUrl}/dashboard/applications`,
           },
         });
+        console.log('[ProjectApplications] ✓ Sent NEW_APPLICATION notification to provider:', providerId);
 
         // Notify student (confirmation)
         await sendNotification({
@@ -203,9 +206,12 @@ const submitApplication = async (req, res) => {
             timeline: listing?.attributes?.publicData?.timeline || 'See project details',
           },
         });
+        console.log('[ProjectApplications] ✓ Sent APPLICATION_RECEIVED notification to student:', studentId);
+      } else {
+        console.warn('[ProjectApplications] No providerId found for listing', listingIdStr);
       }
     } catch (notifErr) {
-      console.error('Failed to send application notifications:', notifErr);
+      console.error('[ProjectApplications] Failed to send application notifications:', notifErr.message || notifErr);
       // Don't fail the request if notification fails
     }
 

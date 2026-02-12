@@ -1,5 +1,13 @@
+/**
+ * Reviews API
+ *
+ * Fetches reviews using the Marketplace SDK (user's authenticated session).
+ * Note: The Integration SDK does NOT support the reviews endpoint,
+ * so we must use the Marketplace SDK which has reviews.query() and reviews.show().
+ */
 const { getSdk, handleError } = require('../api-util/sdk');
-const { getIntegrationSdkForTenant } = require('../api-util/integrationSdk');
+const { types: sdkTypes } = require('sharetribe-flex-sdk');
+const { UUID } = sdkTypes;
 
 const getReviewsForUser = async (req, res) => {
   try {
@@ -7,19 +15,18 @@ const getReviewsForUser = async (req, res) => {
 
     // Get current user
     const currentUserRes = await sdk.currentUser.show();
-    const userId = currentUserRes.data.data.id.uuid;
+    const userId = currentUserRes.data.data.id;
 
-    const integrationSdk = getIntegrationSdkForTenant(req.tenant);
-
+    // Use Marketplace SDK for reviews (Integration SDK doesn't support reviews endpoint)
     // Fetch reviews about this user (where they are the subject)
-    const aboutUserRes = await integrationSdk.reviews.query({
+    const aboutUserRes = await sdk.reviews.query({
       subjectId: userId,
       state: 'public',
       include: ['author', 'author.profileImage', 'listing'],
     });
 
     // Fetch reviews written by this user
-    const byUserRes = await integrationSdk.reviews.query({
+    const byUserRes = await sdk.reviews.query({
       authorId: userId,
       state: 'public',
       include: ['subject', 'subject.profileImage', 'listing'],
@@ -77,7 +84,7 @@ const getReviewsForUser = async (req, res) => {
     });
 
   } catch (err) {
-    console.error('[Reviews] Failed to fetch reviews:', err);
+    console.error('[Reviews] Failed to fetch reviews:', err.message || err);
     res.status(500).json({ error: 'Failed to fetch reviews', details: err.message });
   }
 };
@@ -90,10 +97,11 @@ const getReviewsForTransaction = async (req, res) => {
       return res.status(400).json({ error: 'Transaction ID is required' });
     }
 
-    const integrationSdk = getIntegrationSdkForTenant(req.tenant);
+    const sdk = getSdk(req, res);
 
-    const reviewsRes = await integrationSdk.reviews.query({
-      transactionId,
+    // Use Marketplace SDK for reviews (Integration SDK doesn't support reviews endpoint)
+    const reviewsRes = await sdk.reviews.query({
+      transactionId: new UUID(transactionId),
       state: 'public',
       include: ['author', 'author.profileImage', 'subject'],
     });
@@ -129,7 +137,7 @@ const getReviewsForTransaction = async (req, res) => {
     res.status(200).json({ reviews: formattedReviews });
 
   } catch (err) {
-    console.error('[Reviews] Failed to fetch transaction reviews:', err);
+    console.error('[Reviews] Failed to fetch transaction reviews:', err.message || err);
     res.status(500).json({ error: 'Failed to fetch reviews', details: err.message });
   }
 };
