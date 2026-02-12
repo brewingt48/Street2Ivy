@@ -16,6 +16,21 @@
   }
 }
 
+.backToDashboard {
+  display: inline-flex;
+  align-items: center;
+  color: #6b7280;
+  font-size: 14px;
+  text-decoration: none;
+  margin-bottom: 8px;
+  transition: color 0.2s;
+}
+
+.backToDashboard:hover {
+  color: #1f2937;
+  text-decoration: none;
+}
+
 .pageHeading {
   composes: h1 from global;
   margin-top: 0;

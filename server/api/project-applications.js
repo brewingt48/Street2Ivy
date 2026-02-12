@@ -1,6 +1,8 @@
 const crypto = require('crypto');
 const db = require('../api-util/db');
 const { getSdk, handleError, serialize } = require('../api-util/sdk');
+const { sendNotification, NOTIFICATION_TYPES } = require('../api-util/notifications');
+const { getIntegrationSdkForTenant } = require('../api-util/integrationSdk');
 
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
@@ -58,6 +60,30 @@ const submitApplication = async (req, res) => {
       return res.status(400).json({
         error: 'Cover letter must be at least 20 characters.',
       });
+    }
+
+    if (!interestReason || interestReason.trim().length < 10) {
+      return res.status(400).json({ error: 'Please explain why you are interested in this project.' });
+    }
+
+    if (!Array.isArray(skills) || skills.length === 0) {
+      return res.status(400).json({ error: 'Please select at least one relevant skill.' });
+    }
+
+    if (!availabilityDate) {
+      return res.status(400).json({ error: 'Please provide your availability start date.' });
+    }
+
+    if (!hoursPerWeek || parseInt(hoursPerWeek, 10) < 1) {
+      return res.status(400).json({ error: 'Please enter hours available per week.' });
+    }
+
+    if (!relevantCoursework || relevantCoursework.trim().length < 3) {
+      return res.status(400).json({ error: 'Please list your relevant coursework.' });
+    }
+
+    if (!referencesText || referencesText.trim().length < 5) {
+      return res.status(400).json({ error: 'Please provide at least one reference.' });
     }
 
     // Check for duplicate application
@@ -126,6 +152,63 @@ const submitApplication = async (req, res) => {
       } catch (invErr) {
         console.error('Failed to update invite status:', invErr);
       }
+    }
+
+    // Send notification to corporate partner about new application
+    try {
+      const sharetribeSdk = require('sharetribe-flex-sdk');
+      const { UUID } = sharetribeSdk.types;
+      const integrationSdk = getIntegrationSdkForTenant(req.tenant);
+
+      // Get listing details for notification
+      const listingResponse = await integrationSdk.listings.show({ id: new UUID(listingIdStr) });
+      const listing = listingResponse.data.data;
+      const projectTitle = listing?.attributes?.title || 'Project';
+      const providerId = listing?.relationships?.author?.data?.id?.uuid;
+
+      // Get provider details
+      if (providerId) {
+        const providerResponse = await integrationSdk.users.show({ id: new UUID(providerId) });
+        const provider = providerResponse.data.data;
+        const providerEmail = provider?.attributes?.email;
+        const providerName = provider?.attributes?.profile?.displayName || 'Company';
+
+        const studentName = currentUser?.attributes?.profile?.displayName || 'Student';
+        const studentUniversity = currentUser?.attributes?.profile?.publicData?.university || 'Not specified';
+        const studentMajor = currentUser?.attributes?.profile?.publicData?.major || 'Not specified';
+        const baseUrl = process.env.REACT_APP_MARKETPLACE_ROOT_URL || 'https://street2ivy.com';
+
+        // Notify corporate partner
+        await sendNotification({
+          type: NOTIFICATION_TYPES.NEW_APPLICATION,
+          recipientId: providerId,
+          recipientEmail: providerEmail,
+          data: {
+            companyName: providerName,
+            projectTitle,
+            studentName,
+            studentUniversity,
+            studentMajor,
+            applicationUrl: `${baseUrl}/dashboard/applications`,
+          },
+        });
+
+        // Notify student (confirmation)
+        await sendNotification({
+          type: NOTIFICATION_TYPES.APPLICATION_RECEIVED,
+          recipientId: studentId,
+          recipientEmail: currentUser?.attributes?.email,
+          data: {
+            studentName,
+            projectTitle,
+            companyName: providerName,
+            timeline: listing?.attributes?.publicData?.timeline || 'See project details',
+          },
+        });
+      }
+    } catch (notifErr) {
+      console.error('Failed to send application notifications:', notifErr);
+      // Don't fail the request if notification fails
     }
 
     res.status(201).json({
@@ -361,6 +444,35 @@ const acceptApplication = async (req, res) => {
       }
     }
 
+    // Notify student that their application was accepted
+    try {
+      const integrationSdk = getIntegrationSdkForTenant(req.tenant);
+      const studentResponse = await integrationSdk.users.show({ id: new UUID(application.studentId) });
+      const student = studentResponse.data.data;
+      const studentName = student?.attributes?.profile?.displayName || 'Student';
+      const studentEmail = student?.attributes?.email;
+
+      const listingResponse = await integrationSdk.listings.show({ id: new UUID(application.listingId) });
+      const listing = listingResponse.data.data;
+      const projectTitle = listing?.attributes?.title || 'Project';
+
+      const currentUserResponse = await sdk.currentUser.show();
+      const companyName = currentUserResponse.data.data?.attributes?.profile?.displayName || 'Company';
+
+      await sendNotification({
+        type: NOTIFICATION_TYPES.APPLICATION_ACCEPTED,
+        recipientId: application.studentId,
+        recipientEmail: studentEmail,
+        data: {
+          studentName,
+          projectTitle,
+          companyName,
+        },
+      });
+    } catch (notifErr) {
+      console.error('Failed to send acceptance notification:', notifErr);
+    }
+
     res.status(200).json({
       success: true,
       application: updated,
@@ -416,6 +528,37 @@ const declineApplication = async (req, res) => {
       } catch (txErr) {
         console.error('Failed to transition Sharetribe transaction:', txErr);
       }
+    }
+
+    // Notify student that their application was declined
+    try {
+      const integrationSdk = getIntegrationSdkForTenant(req.tenant);
+      const studentResponse = await integrationSdk.users.show({ id: new UUID(application.studentId) });
+      const student = studentResponse.data.data;
+      const studentName = student?.attributes?.profile?.displayName || 'Student';
+      const studentEmail = student?.attributes?.email;
+
+      const listingResponse = await integrationSdk.listings.show({ id: new UUID(application.listingId) });
+      const listing = listingResponse.data.data;
+      const projectTitle = listing?.attributes?.title || 'Project';
+
+      const currentUserResponse = await sdk.currentUser.show();
+      const companyName = currentUserResponse.data.data?.attributes?.profile?.displayName || 'Company';
+      const baseUrl = process.env.REACT_APP_MARKETPLACE_ROOT_URL || 'https://street2ivy.com';
+
+      await sendNotification({
+        type: NOTIFICATION_TYPES.APPLICATION_DECLINED,
+        recipientId: application.studentId,
+        recipientEmail: studentEmail,
+        data: {
+          studentName,
+          projectTitle,
+          companyName,
+          browseProjectsUrl: `${baseUrl}/s`,
+        },
+      });
+    } catch (notifErr) {
+      console.error('Failed to send decline notification:', notifErr);
     }
 
     res.status(200).json({

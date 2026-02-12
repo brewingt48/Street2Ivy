@@ -6,7 +6,7 @@ import { FormattedMessage, useIntl } from '../../util/reactIntl';
 import { isScrollingDisabled } from '../../ducks/ui.duck';
 import { manageDisableScrolling } from '../../ducks/ui.duck';
 
-import { Page, LayoutSingleColumn, PaginationLinks } from '../../components';
+import { Page, LayoutSingleColumn, PaginationLinks, NamedLink } from '../../components';
 import TopbarContainer from '../../containers/TopbarContainer/TopbarContainer';
 import FooterContainer from '../../containers/FooterContainer/FooterContainer';
 import StudentCard from './StudentCard';
@@ -298,6 +298,9 @@ const SearchStudentsPageComponent = props => {
     <Page title={title} scrollingDisabled={scrollingDisabled}>
       <LayoutSingleColumn topbar={<TopbarContainer />} footer={<FooterContainer />}>
         <div className={css.pageContent}>
+          <NamedLink name="CorporateDashboardPage" className={css.backToDashboard}>
+            ← Back to Dashboard
+          </NamedLink>
           <h1 className={css.pageHeading}>
             <FormattedMessage id="SearchStudentsPage.heading" />
           </h1>

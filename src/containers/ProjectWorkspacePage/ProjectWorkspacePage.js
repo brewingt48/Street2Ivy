@@ -636,6 +636,9 @@ const ProjectWorkspacePageComponent = props => {
     <Page title={title} scrollingDisabled={scrollingDisabled}>
       <LayoutSingleColumn topbar={<TopbarContainer />} footer={<FooterContainer />}>
         <div className={css.pageContent}>
+          <NamedLink name="StudentDashboardPage" className={css.backToDashboard}>
+            ← Back to Dashboard
+          </NamedLink>
           <div className={css.pageHeader}>
             <h1 className={css.pageTitle}>{listing?.title || 'Project Details'}</h1>
             <p className={css.pageSubtitle}>
