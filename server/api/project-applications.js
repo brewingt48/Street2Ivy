@@ -156,19 +156,17 @@ const submitApplication = async (req, res) => {
 
     // Send notification to corporate partner about new application
     try {
-      const sharetribeSdk = require('sharetribe-flex-sdk');
-      const { UUID } = sharetribeSdk.types;
       const integrationSdk = getIntegrationSdkForTenant(req.tenant);
 
-      // Get listing details for notification
-      const listingResponse = await integrationSdk.listings.show({ id: new UUID(listingIdStr) });
+      // Get listing details for notification (Integration SDK accepts plain string IDs)
+      const listingResponse = await integrationSdk.listings.show({ id: listingIdStr });
       const listing = listingResponse.data.data;
       const projectTitle = listing?.attributes?.title || 'Project';
       const providerId = listing?.relationships?.author?.data?.id?.uuid;
 
       // Get provider details
       if (providerId) {
-        const providerResponse = await integrationSdk.users.show({ id: new UUID(providerId) });
+        const providerResponse = await integrationSdk.users.show({ id: providerId });
         const provider = providerResponse.data.data;
         const providerEmail = provider?.attributes?.email;
         const providerName = provider?.attributes?.profile?.displayName || 'Company';
@@ -447,12 +445,12 @@ const acceptApplication = async (req, res) => {
     // Notify student that their application was accepted
     try {
       const integrationSdk = getIntegrationSdkForTenant(req.tenant);
-      const studentResponse = await integrationSdk.users.show({ id: new UUID(application.studentId) });
+      const studentResponse = await integrationSdk.users.show({ id: application.studentId });
       const student = studentResponse.data.data;
       const studentName = student?.attributes?.profile?.displayName || 'Student';
       const studentEmail = student?.attributes?.email;
 
-      const listingResponse = await integrationSdk.listings.show({ id: new UUID(application.listingId) });
+      const listingResponse = await integrationSdk.listings.show({ id: application.listingId });
       const listing = listingResponse.data.data;
       const projectTitle = listing?.attributes?.title || 'Project';
 
@@ -533,12 +531,12 @@ const declineApplication = async (req, res) => {
     // Notify student that their application was declined
     try {
       const integrationSdk = getIntegrationSdkForTenant(req.tenant);
-      const studentResponse = await integrationSdk.users.show({ id: new UUID(application.studentId) });
+      const studentResponse = await integrationSdk.users.show({ id: application.studentId });
       const student = studentResponse.data.data;
       const studentName = student?.attributes?.profile?.displayName || 'Student';
       const studentEmail = student?.attributes?.email;
 
-      const listingResponse = await integrationSdk.listings.show({ id: new UUID(application.listingId) });
+      const listingResponse = await integrationSdk.listings.show({ id: application.listingId });
       const listing = listingResponse.data.data;
       const projectTitle = listing?.attributes?.title || 'Project';
 

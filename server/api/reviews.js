@@ -7,9 +7,9 @@ const getReviewsForUser = async (req, res) => {
 
     // Get current user
     const currentUserRes = await sdk.currentUser.show();
-    const userId = currentUserRes.data.data.id;
+    const userId = currentUserRes.data.data.id.uuid;
 
-    const integrationSdk = getIntegrationSdkForTenant(req);
+    const integrationSdk = getIntegrationSdkForTenant(req.tenant);
 
     // Fetch reviews about this user (where they are the subject)
     const aboutUserRes = await integrationSdk.reviews.query({
@@ -90,7 +90,7 @@ const getReviewsForTransaction = async (req, res) => {
       return res.status(400).json({ error: 'Transaction ID is required' });
     }
 
-    const integrationSdk = getIntegrationSdkForTenant(req);
+    const integrationSdk = getIntegrationSdkForTenant(req.tenant);
 
     const reviewsRes = await integrationSdk.reviews.query({
       transactionId,

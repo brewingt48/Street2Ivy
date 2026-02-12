@@ -62,16 +62,16 @@ module.exports = (req, res) => {
       // Send notification when a project is marked as completed
       if (transition === 'transition/mark-completed') {
         try {
-          const integrationSdk = getIntegrationSdkForTenant(req);
+          const integrationSdk = getIntegrationSdkForTenant(req.tenant);
           const txData = data?.data;
           const customerId = txData?.relationships?.customer?.data?.id?.uuid;
           const listingId = txData?.relationships?.listing?.data?.id?.uuid;
 
           if (customerId && listingId) {
-            // Fetch listing and customer info for notification
+            // Fetch listing and customer info for notification (Integration SDK accepts plain string IDs)
             const [listingRes, customerRes] = await Promise.all([
-              integrationSdk.listings.show({ id: new UUID(listingId) }),
-              integrationSdk.users.show({ id: new UUID(customerId) }),
+              integrationSdk.listings.show({ id: listingId }),
+              integrationSdk.users.show({ id: customerId }),
             ]);
             const projectTitle = listingRes?.data?.data?.attributes?.title || 'Unknown Project';
             const studentName = customerRes?.data?.data?.attributes?.profile?.displayName || 'Student';
