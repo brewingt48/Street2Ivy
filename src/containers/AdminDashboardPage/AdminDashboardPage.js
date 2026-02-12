@@ -1149,7 +1149,7 @@ const ClickableStatCard = ({ value, label, onClick, hasData }) => {
       onClick={isClickable ? onClick : undefined}
       role={isClickable ? 'button' : undefined}
       tabIndex={isClickable ? 0 : undefined}
-      onKeyPress={isClickable ? (e) => e.key === 'Enter' && onClick() : undefined}
+      onKeyDown={isClickable ? (e) => e.key === 'Enter' && onClick() : undefined}
     >
       <p className={css.statValue}>{value}</p>
       <p className={css.statLabel}>{label}</p>
@@ -4819,14 +4819,7 @@ const ContentManagementPanel = props => {
       delete dataToSave.updatedAt;
       delete dataToSave.updatedBy;
 
-      console.log('=== Saving Section ===');
-      console.log('Section:', activeSection);
-      console.log('formData:', formData);
-      console.log('currentSectionData:', currentSectionData);
-      console.log('dataToSave:', dataToSave);
-
       await onUpdateContent(activeSection, dataToSave);
-      console.log('Save completed successfully');
       // Note: formData will be cleared in the updateSuccess effect after content is refreshed
     } catch (e) {
       console.error('Failed to update content:', e);

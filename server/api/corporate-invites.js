@@ -1,29 +1,7 @@
+const db = require('../api-util/db');
 const { getSdk, handleError, serialize } = require('../api-util/sdk');
 const { getIntegrationSdkForTenant } = require('../api-util/integrationSdk');
 const { verifyCorporatePartnerApproved } = require('../api-util/corporateApproval');
-
-/**
- * In-memory invite store for tracking sent invitations
- * In production, this would be stored in a database
- *
- * Structure: Map<corporatePartnerId, Array<InviteRecord>>
- *
- * InviteRecord: {
- *   id: string,
- *   studentId: string,
- *   studentName: string,
- *   studentEmail: string,
- *   studentUniversity: string,
- *   listingId: string,
- *   projectTitle: string,
- *   message: string,
- *   transactionId: string,
- *   status: 'pending' | 'accepted' | 'declined' | 'expired',
- *   sentAt: string (ISO date),
- *   respondedAt: string | null (ISO date),
- * }
- */
-const inviteStore = new Map();
 
 /**
  * Store a new invite record when an invitation is sent
@@ -39,10 +17,9 @@ function storeInvite({
   message,
   transactionId,
 }) {
-  const invites = inviteStore.get(corporatePartnerId) || [];
-
   const inviteRecord = {
     id: `inv_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+    corporatePartnerId,
     studentId,
     studentName: studentName || 'Unknown Student',
     studentEmail: studentEmail || '',
@@ -56,14 +33,7 @@ function storeInvite({
     respondedAt: null,
   };
 
-  invites.unshift(inviteRecord);
-
-  // Keep only last 100 invites per corporate partner
-  if (invites.length > 100) {
-    invites.length = 100;
-  }
-
-  inviteStore.set(corporatePartnerId, invites);
+  db.corporateInvites.create(inviteRecord);
 
   return inviteRecord;
 }
@@ -72,29 +42,14 @@ function storeInvite({
  * Update invite status when student responds
  */
 function updateInviteStatus(corporatePartnerId, transactionId, status) {
-  const invites = inviteStore.get(corporatePartnerId) || [];
-  const invite = invites.find(i => i.transactionId === transactionId);
-
-  if (invite) {
-    invite.status = status;
-    invite.respondedAt = new Date().toISOString();
-  }
-
-  return invite;
+  return db.corporateInvites.updateStatus(corporatePartnerId, transactionId, status);
 }
 
 /**
  * Get all invites for a corporate partner
  */
 function getInvites(corporatePartnerId, { status, limit = 50 } = {}) {
-  const invites = inviteStore.get(corporatePartnerId) || [];
-
-  let filtered = invites;
-  if (status) {
-    filtered = invites.filter(i => i.status === status);
-  }
-
-  return filtered.slice(0, limit);
+  return db.corporateInvites.getByPartnerId(corporatePartnerId, { status, limit });
 }
 
 /**
@@ -173,10 +128,10 @@ const getInviteDetails = async (req, res) => {
     const currentUserId = currentUser.id.uuid;
 
     const { inviteId } = req.params;
-    const invites = getInvites(currentUserId, {});
-    const invite = invites.find(i => i.id === inviteId);
 
-    if (!invite) {
+    const invite = db.corporateInvites.getById(inviteId);
+
+    if (!invite || invite.corporatePartnerId !== currentUserId) {
       return res.status(404).json({
         error: 'Invite not found.',
       });
@@ -205,8 +160,6 @@ const getInviteDetails = async (req, res) => {
  * Resend an invitation (creates a new transaction)
  */
 const resendInvite = (req, res) => {
-  // This would re-trigger the invite-to-apply flow
-  // For now, return not implemented
   res.status(501).json({
     error: 'Resend functionality not yet implemented.',
   });

@@ -1,6 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
+const db = require('../api-util/db');
 const { getSdk, handleError } = require('../api-util/sdk');
 
 // Configuration
@@ -12,41 +13,6 @@ const BLOCKED_EXTENSIONS = ['.exe', '.bat', '.sh', '.cmd', '.ps1', '.msi', '.jar
 // Ensure upload directory exists
 if (!fs.existsSync(UPLOAD_DIR)) {
   fs.mkdirSync(UPLOAD_DIR, { recursive: true });
-}
-
-// Metadata file for tracking attachments
-const ATTACHMENTS_META_FILE = path.join(__dirname, '../data/attachments-meta.json');
-const dataDir = path.join(__dirname, '../data');
-if (!fs.existsSync(dataDir)) {
-  fs.mkdirSync(dataDir, { recursive: true });
-}
-
-/**
- * Load attachments metadata from persistent storage
- */
-function loadAttachmentsMeta() {
-  try {
-    if (fs.existsSync(ATTACHMENTS_META_FILE)) {
-      const data = fs.readFileSync(ATTACHMENTS_META_FILE, 'utf8');
-      return JSON.parse(data);
-    }
-  } catch (error) {
-    console.error('Error loading attachments metadata:', error);
-  }
-  return { attachments: {}, idCounter: 1 };
-}
-
-/**
- * Save attachments metadata to persistent storage
- */
-function saveAttachmentsMeta(meta) {
-  try {
-    fs.writeFileSync(ATTACHMENTS_META_FILE, JSON.stringify(meta, null, 2), 'utf8');
-    return true;
-  } catch (error) {
-    console.error('Error saving attachments metadata:', error);
-    return false;
-  }
 }
 
 /**
@@ -69,12 +35,10 @@ function getFileExtension(filename) {
 function isFileTypeAllowed(filename) {
   const ext = getFileExtension(filename);
 
-  // Block dangerous extensions
   if (BLOCKED_EXTENSIONS.includes(ext)) {
     return { allowed: false, reason: `File type ${ext} is not allowed for security reasons` };
   }
 
-  // Check if extension is in allowed list
   if (!ALLOWED_EXTENSIONS.includes(ext)) {
     return {
       allowed: false,
@@ -114,7 +78,6 @@ function formatFileSize(bytes) {
  */
 async function uploadAttachment(req, res) {
   try {
-    // Verify user is authenticated
     const sdk = getSdk(req, res);
     const currentUserResponse = await sdk.currentUser.show();
     const currentUser = currentUserResponse.data.data;
@@ -127,34 +90,30 @@ async function uploadAttachment(req, res) {
     const file = req.files.file;
     const { contextType, contextId } = req.body;
 
-    // Validate context
     if (!contextType || !contextId) {
       return res.status(400).json({ error: 'Missing contextType or contextId' });
     }
 
-    // Check file size
     if (file.size > MAX_FILE_SIZE) {
       return res.status(400).json({
         error: `File size exceeds maximum limit of ${formatFileSize(MAX_FILE_SIZE)}`
       });
     }
 
-    // Check file type
     const typeCheck = isFileTypeAllowed(file.name);
     if (!typeCheck.allowed) {
       return res.status(400).json({ error: typeCheck.reason });
     }
 
-    // Generate unique ID and filename
     const attachmentId = generateAttachmentId();
     const ext = getFileExtension(file.name);
     const safeFilename = `${attachmentId}${ext}`;
     const filePath = path.join(UPLOAD_DIR, safeFilename);
 
-    // Save file
+    // Save the actual file to disk
     await file.mv(filePath);
 
-    // Create attachment metadata
+    // Create attachment metadata in SQLite
     const attachment = {
       id: attachmentId,
       originalName: file.name,
@@ -166,15 +125,12 @@ async function uploadAttachment(req, res) {
       extension: ext,
       uploadedBy: userId,
       uploadedAt: new Date().toISOString(),
-      contextType, // 'transaction', 'workspace', etc.
-      contextId,   // The ID of the transaction/workspace
+      contextType,
+      contextId,
       downloadCount: 0,
     };
 
-    // Save metadata
-    const meta = loadAttachmentsMeta();
-    meta.attachments[attachmentId] = attachment;
-    saveAttachmentsMeta(meta);
+    db.attachments.create(attachment);
 
     res.status(200).json({
       success: true,
@@ -201,11 +157,12 @@ async function uploadAttachment(req, res) {
  */
 async function downloadAttachment(req, res) {
   try {
+    const sdk = getSdk(req, res);
+    await sdk.currentUser.show();
+
     const { id } = req.params;
 
-    // Load metadata
-    const meta = loadAttachmentsMeta();
-    const attachment = meta.attachments[id];
+    const attachment = db.attachments.getById(id);
 
     if (!attachment) {
       return res.status(404).json({ error: 'Attachment not found' });
@@ -218,16 +175,16 @@ async function downloadAttachment(req, res) {
     }
 
     // Update download count
-    attachment.downloadCount++;
-    attachment.lastDownloadedAt = new Date().toISOString();
-    saveAttachmentsMeta(meta);
+    db.attachments.incrementDownloadCount(id);
 
-    // Set headers for download
-    res.setHeader('Content-Disposition', `attachment; filename="${attachment.originalName}"`);
+    // SECURITY: Sanitize filename to prevent Content-Disposition header injection
+    const safeName = attachment.originalName
+      .replace(/["\\\n\r]/g, '_')
+      .replace(/[^\x20-\x7E]/g, '_');
+    res.setHeader('Content-Disposition', `attachment; filename="${safeName}"`);
     res.setHeader('Content-Type', attachment.mimeType || 'application/octet-stream');
     res.setHeader('Content-Length', attachment.size);
 
-    // Stream file
     const fileStream = fs.createReadStream(filePath);
     fileStream.pipe(res);
   } catch (error) {
@@ -242,11 +199,12 @@ async function downloadAttachment(req, res) {
  */
 async function previewAttachment(req, res) {
   try {
+    const sdk = getSdk(req, res);
+    await sdk.currentUser.show();
+
     const { id } = req.params;
 
-    // Load metadata
-    const meta = loadAttachmentsMeta();
-    const attachment = meta.attachments[id];
+    const attachment = db.attachments.getById(id);
 
     if (!attachment) {
       return res.status(404).json({ error: 'Attachment not found' });
@@ -262,11 +220,13 @@ async function previewAttachment(req, res) {
       return res.status(404).json({ error: 'File not found' });
     }
 
-    // Set headers for inline display
+    // SECURITY: Sanitize filename for inline display
+    const safeName = attachment.originalName
+      .replace(/["\\\n\r]/g, '_')
+      .replace(/[^\x20-\x7E]/g, '_');
     res.setHeader('Content-Type', attachment.mimeType);
-    res.setHeader('Content-Disposition', `inline; filename="${attachment.originalName}"`);
+    res.setHeader('Content-Disposition', `inline; filename="${safeName}"`);
 
-    // Stream file
     const fileStream = fs.createReadStream(filePath);
     fileStream.pipe(res);
   } catch (error) {
@@ -281,30 +241,28 @@ async function previewAttachment(req, res) {
  */
 async function getAttachments(req, res) {
   try {
+    const sdk = getSdk(req, res);
+    await sdk.currentUser.show();
+
     const { contextType, contextId } = req.query;
 
     if (!contextType || !contextId) {
       return res.status(400).json({ error: 'Missing contextType or contextId' });
     }
 
-    // Load metadata
-    const meta = loadAttachmentsMeta();
+    const attachmentsList = db.attachments.getByContext(contextType, contextId);
 
-    // Filter attachments by context
-    const attachments = Object.values(meta.attachments)
-      .filter(a => a.contextType === contextType && a.contextId === contextId)
-      .map(a => ({
-        id: a.id,
-        name: a.originalName,
-        size: a.size,
-        sizeFormatted: a.sizeFormatted,
-        fileType: a.fileType,
-        extension: a.extension,
-        uploadedAt: a.uploadedAt,
-        url: `/api/attachments/${a.id}/download`,
-        previewUrl: a.fileType === 'image' ? `/api/attachments/${a.id}/preview` : null,
-      }))
-      .sort((a, b) => new Date(b.uploadedAt) - new Date(a.uploadedAt));
+    const attachments = attachmentsList.map(a => ({
+      id: a.id,
+      name: a.originalName,
+      size: a.size,
+      sizeFormatted: a.sizeFormatted,
+      fileType: a.fileType,
+      extension: a.extension,
+      uploadedAt: a.uploadedAt,
+      url: `/api/attachments/${a.id}/download`,
+      previewUrl: a.fileType === 'image' ? `/api/attachments/${a.id}/preview` : null,
+    }));
 
     res.status(200).json({
       success: true,
@@ -322,7 +280,6 @@ async function getAttachments(req, res) {
  */
 async function deleteAttachment(req, res) {
   try {
-    // Verify user is authenticated
     const sdk = getSdk(req, res);
     const currentUserResponse = await sdk.currentUser.show();
     const currentUser = currentUserResponse.data.data;
@@ -330,9 +287,7 @@ async function deleteAttachment(req, res) {
 
     const { id } = req.params;
 
-    // Load metadata
-    const meta = loadAttachmentsMeta();
-    const attachment = meta.attachments[id];
+    const attachment = db.attachments.getById(id);
 
     if (!attachment) {
       return res.status(404).json({ error: 'Attachment not found' });
@@ -343,15 +298,14 @@ async function deleteAttachment(req, res) {
       return res.status(403).json({ error: 'You can only delete your own attachments' });
     }
 
-    // Delete file
+    // Delete the actual file from disk
     const filePath = path.join(UPLOAD_DIR, attachment.storedName);
     if (fs.existsSync(filePath)) {
       fs.unlinkSync(filePath);
     }
 
-    // Remove from metadata
-    delete meta.attachments[id];
-    saveAttachmentsMeta(meta);
+    // Remove metadata from SQLite
+    db.attachments.delete(id);
 
     res.status(200).json({
       success: true,
@@ -369,11 +323,12 @@ async function deleteAttachment(req, res) {
  */
 async function getAttachmentInfo(req, res) {
   try {
+    const sdk = getSdk(req, res);
+    await sdk.currentUser.show();
+
     const { id } = req.params;
 
-    // Load metadata
-    const meta = loadAttachmentsMeta();
-    const attachment = meta.attachments[id];
+    const attachment = db.attachments.getById(id);
 
     if (!attachment) {
       return res.status(404).json({ error: 'Attachment not found' });

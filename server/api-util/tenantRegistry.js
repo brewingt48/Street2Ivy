@@ -4,16 +4,10 @@
  * Manages multi-tenant configuration for Street2Ivy.
  * Each tenant represents an institution with its own Sharetribe marketplace account.
  *
- * Follows the same file-based persistence pattern as server/api/admin/institutions.js.
+ * Persistence: SQLite via server/api-util/db.js
  */
 
-const fs = require('fs');
-const path = require('path');
-
-const TENANTS_FILE = path.join(__dirname, '../data/tenants.json');
-
-// In-memory store keyed by subdomain
-let tenants = new Map();
+const db = require('./db');
 
 /**
  * Build the default tenant from environment variables.
@@ -49,54 +43,27 @@ function buildDefaultTenant() {
 }
 
 /**
- * Load tenants from file. If file does not exist, initializes with the default tenant.
+ * Load / seed tenants on startup.
+ * Ensures the default tenant always exists in the database.
  */
 function loadTenants() {
-  try {
-    if (fs.existsSync(TENANTS_FILE)) {
-      const data = fs.readFileSync(TENANTS_FILE, 'utf8');
-      const tenantList = JSON.parse(data);
-      tenants.clear();
-      tenantList.forEach(t => {
-        const key = t.subdomain || 'default';
-        tenants.set(key, t);
-      });
-      console.log(`Loaded ${tenantList.length} tenants from file`);
+  const allTenants = db.tenants.getAll();
 
-      // Ensure the default tenant always exists
-      if (!tenants.has('default')) {
-        const defaultTenant = buildDefaultTenant();
-        tenants.set('default', defaultTenant);
-        saveTenants();
-      }
-      return;
-    }
-  } catch (error) {
-    console.error('Error loading tenants:', error);
+  if (allTenants.length === 0) {
+    // No tenants in DB — seed with the default tenant
+    const defaultTenant = buildDefaultTenant();
+    db.tenants.upsert(defaultTenant);
+    console.log('Initialized tenant registry with default tenant');
+    return;
   }
 
-  // No file found — initialize with default tenant
-  const defaultTenant = buildDefaultTenant();
-  tenants.set('default', defaultTenant);
-  saveTenants();
-  console.log('Initialized tenant registry with default tenant');
-}
+  console.log(`Loaded ${allTenants.length} tenants from database`);
 
-/**
- * Save tenants to file.
- */
-function saveTenants() {
-  try {
-    const dataDir = path.dirname(TENANTS_FILE);
-    if (!fs.existsSync(dataDir)) {
-      fs.mkdirSync(dataDir, { recursive: true });
-    }
-    const tenantList = Array.from(tenants.values());
-    fs.writeFileSync(TENANTS_FILE, JSON.stringify(tenantList, null, 2), 'utf8');
-    return true;
-  } catch (error) {
-    console.error('Error saving tenants:', error);
-    return false;
+  // Ensure default tenant exists
+  const hasDefault = allTenants.some(t => t.id === 'default');
+  if (!hasDefault) {
+    const defaultTenant = buildDefaultTenant();
+    db.tenants.upsert(defaultTenant);
   }
 }
 
@@ -105,35 +72,30 @@ function saveTenants() {
  */
 function getTenantBySubdomain(subdomain) {
   if (!subdomain) {
-    return tenants.get('default') || null;
+    return db.tenants.getById('default') || null;
   }
-  return tenants.get(subdomain.toLowerCase()) || null;
+  return db.tenants.getBySubdomain(subdomain.toLowerCase()) || null;
 }
 
 /**
  * Get a tenant by ID. Returns null if not found.
  */
 function getTenantById(id) {
-  for (const tenant of tenants.values()) {
-    if (tenant.id === id) {
-      return tenant;
-    }
-  }
-  return null;
+  return db.tenants.getById(id) || null;
 }
 
 /**
  * Get the default tenant (the one backed by environment variable credentials).
  */
 function getDefaultTenant() {
-  return tenants.get('default') || null;
+  return db.tenants.getById('default') || null;
 }
 
 /**
  * Get all tenants as an array.
  */
 function getAllTenants() {
-  return Array.from(tenants.values());
+  return db.tenants.getAll();
 }
 
 /**
@@ -153,7 +115,7 @@ function createTenant(tenantData) {
   if (normalizedSubdomain === 'default' || normalizedSubdomain === 'www' || normalizedSubdomain === 'api') {
     throw new Error('This subdomain is reserved.');
   }
-  if (tenants.has(normalizedSubdomain)) {
+  if (db.tenants.getBySubdomain(normalizedSubdomain)) {
     throw new Error('A tenant with this subdomain already exists.');
   }
 
@@ -189,8 +151,7 @@ function createTenant(tenantData) {
     updatedAt: new Date().toISOString(),
   };
 
-  tenants.set(normalizedSubdomain, tenant);
-  saveTenants();
+  db.tenants.upsert(tenant);
 
   return tenant;
 }
@@ -227,7 +188,7 @@ function updateTenant(id, updates) {
   }
 
   tenant.updatedAt = new Date().toISOString();
-  saveTenants();
+  db.tenants.upsert(tenant);
 
   return tenant;
 }
@@ -245,10 +206,17 @@ function deleteTenant(id) {
     throw new Error('Tenant not found.');
   }
 
-  const key = tenant.subdomain || 'default';
-  tenants.delete(key);
-  saveTenants();
+  db.tenants.delete(id);
 
+  return true;
+}
+
+/**
+ * saveTenants is a no-op for backward compatibility.
+ * The SQLite layer auto-persists.
+ */
+function saveTenants() {
+  // No-op — SQLite writes are synchronous and immediate
   return true;
 }
 

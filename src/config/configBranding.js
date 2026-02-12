@@ -1,7 +1,3 @@
-import brandImage from '../assets/biketribe-brandImage-1500.jpg';
-import facebookImage from '../assets/biketribe-facebook-sharing-1200x630.jpg';
-import twitterImage from '../assets/biketribe-twitter-sharing-600x314.jpg';
-
 /////////////////////////////////////////////////////////
 // This file contains configs that affect branding     //
 // NOTE: these are just some of the relevant configs   //
@@ -53,12 +49,14 @@ export const logoSettings = {
 // Used on AuthenticationPage, EmailVerificationPage, PasswordRecoveryPage, PasswordResetPage etc.
 // NOTE: Those pages use ResponsiveBackgroundImageContainer component,
 //       it's possible to include more image variants to make image fetching more performant.
-export const brandImageURL = brandImage;
+// NOTE: In production, this is overridden by the loginBackgroundImage from the hosted branding asset.
+export const brandImageURL = null;
 
 // Default images for social media sharing
 // These can be overwritten per page
+// NOTE: In production, these are overridden by socialSharingImage from the hosted branding asset.
 
 // For Facebook, the aspect ratio should be 1200x630 (otherwise, the image is cropped)
-export const facebookImageURL = facebookImage;
+export const facebookImageURL = null;
 // For Twitter, the aspect ratio should be 600x314 (otherwise, the image is cropped)
-export const twitterImageURL = twitterImage;
+export const twitterImageURL = null;

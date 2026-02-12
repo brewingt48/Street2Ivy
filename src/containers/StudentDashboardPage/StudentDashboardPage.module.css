@@ -36,6 +36,66 @@
   font-weight: var(--s2i-font-semibold);
 }
 
+/* ================ Error Banner ================ */
+
+.errorBanner {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--s2i-space-4);
+  background: var(--s2i-red-50, #fef2f2);
+  border: 1px solid var(--s2i-red-200, #fecaca);
+  border-radius: var(--s2i-radius-xl);
+  padding: var(--s2i-space-4) var(--s2i-space-5);
+  margin-bottom: var(--s2i-space-6);
+}
+
+.errorBannerContent {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--s2i-space-3);
+  flex: 1;
+}
+
+.errorBannerIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--s2i-red-600, #dc2626);
+  color: white;
+  font-size: 14px;
+  font-weight: var(--s2i-font-bold, 700);
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.errorBannerText {
+  font-size: 14px;
+  color: var(--s2i-red-700, #b91c1c);
+  margin: 0;
+  line-height: 1.5;
+  padding-top: 1px;
+}
+
+.errorBannerDismiss {
+  background: none;
+  border: none;
+  color: var(--s2i-red-400, #f87171);
+  font-size: 20px;
+  cursor: pointer;
+  padding: 0 4px;
+  line-height: 1;
+  flex-shrink: 0;
+  transition: color 0.15s ease;
+}
+
+.errorBannerDismiss:hover {
+  color: var(--s2i-red-700, #b91c1c);
+}
+
 /* ================ Dashboard Header ================ */
 
 .header {

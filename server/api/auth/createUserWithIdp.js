@@ -25,8 +25,12 @@ const httpsAgent = new https.Agent({ keepAlive: true });
 const baseUrl = BASE_URL ? { baseUrl: BASE_URL } : {};
 
 module.exports = (req, res) => {
+  // SECURITY: Use tenant-specific credentials when available, fall back to env vars
+  const tenantClientId = req.tenant?.sharetribe?.clientId || CLIENT_ID;
+  const tenantClientSecret = req.tenant?.sharetribe?.clientSecret || CLIENT_SECRET;
+
   const tokenStore = sharetribeSdk.tokenStore.expressCookieStore({
-    clientId: CLIENT_ID,
+    clientId: tenantClientId,
     req,
     res,
     secure: USING_SSL,
@@ -34,8 +38,8 @@ module.exports = (req, res) => {
 
   const sdk = sharetribeSdk.createInstance({
     transitVerbose: TRANSIT_VERBOSE,
-    clientId: CLIENT_ID,
-    clientSecret: CLIENT_SECRET,
+    clientId: tenantClientId,
+    clientSecret: tenantClientSecret,
     httpAgent,
     httpsAgent,
     tokenStore,
@@ -43,7 +47,11 @@ module.exports = (req, res) => {
     ...baseUrl,
   });
 
-  const { idpToken, idpId, ...rest } = req.body || {};
+  const { idpId, ...rest } = req.body || {};
+
+  // Read the sensitive idpToken from the HttpOnly cookie (not from the request body)
+  const tokenCookie = req.cookies?.['st-authinfo-token'];
+  const idpToken = tokenCookie?.idpToken || req.body?.idpToken;
 
   // Enforce tenant email domain for student signups
   const tenantDomain = req.tenant?.institutionDomain;
@@ -85,6 +93,7 @@ module.exports = (req, res) => {
       const { status, statusText, data } = apiResponse;
       res
         .clearCookie('st-authinfo')
+        .clearCookie('st-authinfo-token')
         .status(status)
         .set('Content-Type', 'application/transit+json')
         .send(

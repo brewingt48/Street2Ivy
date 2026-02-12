@@ -51,6 +51,9 @@ const defaultPublicPaths = {
   signup: { url: '/signup' },
   login: { url: '/login' },
   search: { url: '/s' },
+  blog: { url: '/blog' },
+  forUniversities: { url: '/for-universities' },
+  legal: { url: '/legal' },
 };
 
 // Time-to-live (ttl) is set to one day aka 86400 seconds

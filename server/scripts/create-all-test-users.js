@@ -7,12 +7,15 @@
  * Usage:
  *   node server/scripts/create-all-test-users.js
  *
- * This will create the following accounts:
- *   1. Student           - test-student@test.edu           / TestStudent123!
- *   2. Corporate Partner  - test-corporate@acmecorp.com    / TestCorporate123!
- *   3. Educational Inst.  - test-edu-institution@testuniversity.edu / TestEduInst123!
- *   4. Educational Admin  - test-edu-admin@testuniversity.edu / TestEduAdmin123!
- *   5. System Admin       - test-sysadmin@street2ivy.com   / TestSysAdmin123!
+ * This will create the following accounts (passwords are randomly generated):
+ *   1. Student           - test-student@test.edu
+ *   2. Corporate Partner  - test-corporate@acmecorp.com
+ *   3. Educational Inst.  - test-edu-institution@testuniversity.edu
+ *   4. Educational Admin  - test-edu-admin@testuniversity.edu
+ *   5. System Admin       - test-sysadmin@street2ivy.com
+ *
+ * NOTE: Randomly generated passwords are printed to the console after creation.
+ * Copy them from the output.
  *
  * Prerequisites:
  *   - SHARETRIBE_INTEGRATION_API_CLIENT_ID and SHARETRIBE_INTEGRATION_API_CLIENT_SECRET
@@ -21,6 +24,7 @@
 
 require('dotenv').config();
 
+const crypto = require('crypto');
 const sharetribeSdk = require('sharetribe-flex-integration-sdk');
 
 const clientId = process.env.SHARETRIBE_INTEGRATION_API_CLIENT_ID || process.env.SHARETRIBE_INTEGRATION_CLIENT_ID;
@@ -41,13 +45,14 @@ const integrationSdk = sharetribeSdk.createInstance({
 
 // =============================================
 // Test user definitions for all 5 user types
+// Generated passwords are printed to console — see script output
 // =============================================
 
 const testUsers = [
   {
     label: 'Student',
     email: 'test-student@test.edu',
-    password: 'TestStudent123!',
+    password: crypto.randomBytes(16).toString('hex') + 'A1!',
     firstName: 'Test',
     lastName: 'Student',
     displayName: 'Test Student',
@@ -69,7 +74,7 @@ const testUsers = [
   {
     label: 'Corporate Partner',
     email: 'test-corporate@acmecorp.com',
-    password: 'TestCorporate123!',
+    password: crypto.randomBytes(16).toString('hex') + 'A1!',
     firstName: 'Test',
     lastName: 'Corporate',
     displayName: 'Test Corporate',
@@ -91,7 +96,7 @@ const testUsers = [
   {
     label: 'Educational Institution',
     email: 'test-edu-institution@testuniversity.edu',
-    password: 'TestEduInst123!',
+    password: crypto.randomBytes(16).toString('hex') + 'A1!',
     firstName: 'Test',
     lastName: 'Institution',
     displayName: 'Test Institution',
@@ -110,7 +115,7 @@ const testUsers = [
   {
     label: 'Educational Admin',
     email: 'test-edu-admin@testuniversity.edu',
-    password: 'TestEduAdmin123!',
+    password: crypto.randomBytes(16).toString('hex') + 'A1!',
     firstName: 'Test',
     lastName: 'EduAdmin',
     displayName: 'Test EduAdmin',
@@ -129,7 +134,7 @@ const testUsers = [
   {
     label: 'System Admin',
     email: 'test-sysadmin@street2ivy.com',
-    password: 'TestSysAdmin123!',
+    password: crypto.randomBytes(16).toString('hex') + 'A1!',
     firstName: 'Test',
     lastName: 'Admin',
     displayName: 'Test Admin',

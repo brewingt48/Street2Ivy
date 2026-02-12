@@ -24,8 +24,18 @@ const isBanned = currentUser => {
 
 const canShowComponent = props => {
   const { isAuthenticated, currentUser, route, accountMarkedDeleted } = props;
-  const { auth } = route;
-  return !auth || (isAuthenticated && !isBanned(currentUser) && !accountMarkedDeleted);
+  const { auth, allowedRoles } = route;
+  const basicAuth = !auth || (isAuthenticated && !isBanned(currentUser) && !accountMarkedDeleted);
+
+  // SECURITY: If route specifies allowedRoles, check user's role
+  if (basicAuth && allowedRoles && Array.isArray(allowedRoles) && currentUser?.id) {
+    const userType = currentUser?.attributes?.profile?.publicData?.userType;
+    // System admins can access any role-restricted page
+    if (userType === 'system-admin') return true;
+    return allowedRoles.includes(userType);
+  }
+
+  return basicAuth;
 };
 
 const callLoadData = props => {

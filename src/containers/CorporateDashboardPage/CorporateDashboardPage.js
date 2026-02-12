@@ -93,7 +93,7 @@ const ClickableStatCard = ({ value, label, onClick, hasData }) => {
       onClick={isClickable ? onClick : undefined}
       role={isClickable ? 'button' : undefined}
       tabIndex={isClickable ? 0 : undefined}
-      onKeyPress={isClickable ? (e) => e.key === 'Enter' && onClick() : undefined}
+      onKeyDown={isClickable ? (e) => e.key === 'Enter' && onClick() : undefined}
     >
       <div className={css.statValue}>{value}</div>
       <div className={css.statLabel}>{label}</div>

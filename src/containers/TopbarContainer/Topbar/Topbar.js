@@ -206,7 +206,6 @@ const TopbarComponent = props => {
         window.location = path;
       }
 
-      console.log('logged out'); // eslint-disable-line
     });
   };
 

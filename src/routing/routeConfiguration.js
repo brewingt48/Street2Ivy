@@ -9,6 +9,17 @@ import PreviewResolverPage from '../containers/PreviewResolverPage/PreviewResolv
 // Otherwise, components will import form container eventually and
 // at that point css bundling / imports will happen in wrong order.
 import { NamedRedirect } from '../components';
+import { connect } from 'react-redux';
+
+// Role-aware inbox redirect: students see "orders", corporate partners see "sales"
+const InboxRedirectComponent = ({ currentUser }) => {
+  const userType = currentUser?.attributes?.profile?.publicData?.userType;
+  const tab = userType === 'student' ? 'orders' : 'sales';
+  return <NamedRedirect name="InboxPage" params={{ tab }} />;
+};
+const InboxRedirect = connect(state => ({
+  currentUser: state.user?.currentUser,
+}))(InboxRedirectComponent);
 
 const pageDataLoadingAPI = getPageDataLoadingAPI();
 
@@ -273,7 +284,7 @@ const routeConfiguration = (layoutConfig, accessControlConfig) => {
       name: 'InboxBasePage',
       auth: true,
       authPage: 'LoginPage',
-      component: () => <NamedRedirect name="InboxPage" params={{ tab: 'sales' }} />,
+      component: InboxRedirect,
     },
     {
       path: '/inbox/:tab',
@@ -322,6 +333,7 @@ const routeConfiguration = (layoutConfig, accessControlConfig) => {
       name: 'CorporateDashboardPage',
       auth: true,
       authPage: 'LoginPage',
+      allowedRoles: ['corporate-partner'],
       component: CorporateDashboardPage,
       loadData: pageDataLoadingAPI.CorporateDashboardPage.loadData,
     },
@@ -330,6 +342,7 @@ const routeConfiguration = (layoutConfig, accessControlConfig) => {
       name: 'ApplicationsPage',
       auth: true,
       authPage: 'LoginPage',
+      allowedRoles: ['corporate-partner'],
       component: ApplicationsPage,
     },
     {
@@ -361,6 +374,7 @@ const routeConfiguration = (layoutConfig, accessControlConfig) => {
       name: 'StudentDashboardPage',
       auth: true,
       authPage: 'LoginPage',
+      allowedRoles: ['student'],
       component: StudentDashboardPage,
     },
     {
@@ -368,6 +382,7 @@ const routeConfiguration = (layoutConfig, accessControlConfig) => {
       name: 'EducationDashboardPage',
       auth: true,
       authPage: 'LoginPage',
+      allowedRoles: ['educational-admin'],
       component: EducationDashboardPage,
       loadData: pageDataLoadingAPI.EducationDashboardPage.loadData,
     },
@@ -381,6 +396,7 @@ const routeConfiguration = (layoutConfig, accessControlConfig) => {
       name: 'AdminDashboardPage',
       auth: true,
       authPage: 'LoginPage',
+      allowedRoles: ['system-admin'],
       component: AdminDashboardPage,
       loadData: pageDataLoadingAPI.AdminDashboardPage.loadData,
     },
@@ -389,6 +405,7 @@ const routeConfiguration = (layoutConfig, accessControlConfig) => {
       name: 'AdminDashboardTabPage',
       auth: true,
       authPage: 'LoginPage',
+      allowedRoles: ['system-admin'],
       component: AdminDashboardPage,
       loadData: pageDataLoadingAPI.AdminDashboardPage.loadData,
     },
@@ -490,31 +507,36 @@ const routeConfiguration = (layoutConfig, accessControlConfig) => {
     {
       path: '/styleguide',
       name: 'Styleguide',
-      ...authForPrivateMarketplace,
+      auth: true,
+      allowedRoles: ['system-admin'],
       component: StyleguidePage,
     },
     {
       path: '/styleguide/g/:group',
       name: 'StyleguideGroup',
-      ...authForPrivateMarketplace,
+      auth: true,
+      allowedRoles: ['system-admin'],
       component: StyleguidePage,
     },
     {
       path: '/styleguide/c/:component',
       name: 'StyleguideComponent',
-      ...authForPrivateMarketplace,
+      auth: true,
+      allowedRoles: ['system-admin'],
       component: StyleguidePage,
     },
     {
       path: '/styleguide/c/:component/:example',
       name: 'StyleguideComponentExample',
-      ...authForPrivateMarketplace,
+      auth: true,
+      allowedRoles: ['system-admin'],
       component: StyleguidePage,
     },
     {
       path: '/styleguide/c/:component/:example/raw',
       name: 'StyleguideComponentExampleRaw',
-      ...authForPrivateMarketplace,
+      auth: true,
+      allowedRoles: ['system-admin'],
       component: StyleguidePage,
       extraProps: { raw: true },
     },

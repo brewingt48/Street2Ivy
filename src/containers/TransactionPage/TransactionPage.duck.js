@@ -82,7 +82,7 @@ const refreshTransactionEntity = (sdk, txId, dispatch) => {
     })
     .catch(e => {
       // refresh failed, but we don't act upon it.
-      console.log('error', e);
+      // Token refresh failed silently
     });
 };
 
@@ -283,7 +283,7 @@ const fetchTransactionPayloadCreator = (
           fetchMonthlyTimeSlots(dispatch, listing);
         }
       } catch (error) {
-        console.log(`transaction process (${processName}) was not recognized`);
+        // Transaction process not recognized - continue without timeslot fetch
       }
 
       return response;

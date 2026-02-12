@@ -20,6 +20,21 @@ const httpsAgent = new https.Agent({ keepAlive: true });
 
 const baseUrl = BASE_URL ? { baseUrl: BASE_URL } : {};
 
+/**
+ * SECURITY: Validate redirect path to prevent open redirect attacks.
+ * Ensures the 'from' parameter is a relative path within the application.
+ */
+const validateRedirectPath = (path) => {
+  if (!path || typeof path !== 'string') return false;
+  // Block protocol-relative URLs, javascript:, data:, and absolute URLs
+  if (/^\/\//.test(path)) return false;
+  if (/^[a-z]+:/i.test(path)) return false;
+  if (/[\\]/.test(path)) return false;
+  if (path.includes('@')) return false;
+  // Must start with /
+  return path.startsWith('/');
+};
+
 module.exports = (err, user, req, res, idpClientId, idpId) => {
   if (err) {
     log.error(err, 'fetching-user-data-from-idp-failed');
@@ -72,8 +87,12 @@ module.exports = (err, user, req, res, idpClientId, idpId) => {
 
   const { from, defaultReturn, defaultConfirm, userType } = user;
 
+  // SECURITY: Use tenant-specific credentials when available
+  const tenantClientId = req.tenant?.sharetribe?.clientId || CLIENT_ID;
+  const tenantClientSecret = req.tenant?.sharetribe?.clientSecret || CLIENT_SECRET;
+
   const tokenStore = sharetribeSdk.tokenStore.expressCookieStore({
-    clientId: CLIENT_ID,
+    clientId: tenantClientId,
     req,
     res,
     secure: USING_SSL,
@@ -81,8 +100,8 @@ module.exports = (err, user, req, res, idpClientId, idpId) => {
 
   const sdk = sharetribeSdk.createInstance({
     transitVerbose: TRANSIT_VERBOSE,
-    clientId: CLIENT_ID,
-    clientSecret: CLIENT_SECRET,
+    clientId: tenantClientId,
+    clientSecret: tenantClientSecret,
     httpAgent,
     httpsAgent,
     tokenStore,
@@ -102,31 +121,30 @@ module.exports = (err, user, req, res, idpClientId, idpId) => {
         // We need to add # to the end of the URL because otherwise Facebook
         // login will add their defaul #_#_ which breaks the routing in frontend.
 
-        if (from) {
+        // SECURITY: Validate redirect paths to prevent open redirects
+        if (from && validateRedirectPath(from)) {
           res.redirect(`${rootUrl}${from}#`);
-        } else {
+        } else if (defaultReturn && validateRedirectPath(defaultReturn)) {
           res.redirect(`${rootUrl}${defaultReturn}#`);
+        } else {
+          res.redirect(`${rootUrl}/#`);
         }
       }
     })
     .catch(() => {
-      console.log(
-        'Authenticating with idp failed. User needs to confirm creating sign up in frontend.'
-      );
-
       // If authentication fails, we want to create a new user with idp
       // For this we will need to pass some information to frontend so
       // that we can use that information in createUserWithIdp api call.
       // The createUserWithIdp api call is triggered from frontend
       // after showing a confirm page to user
 
+      // Set non-sensitive user info in a cookie the frontend can read
       res.cookie(
         'st-authinfo',
         {
           email: user.email,
           firstName: user.firstName,
           lastName: user.lastName,
-          idpToken: user.idpToken,
           idpId,
           from,
           userType,
@@ -134,6 +152,20 @@ module.exports = (err, user, req, res, idpClientId, idpId) => {
         {
           maxAge: 15 * 60 * 1000, // 15 minutes
           httpOnly: false, // Frontend needs to read this for signup flow
+          secure: USING_SSL,
+          sameSite: 'lax',
+        }
+      );
+
+      // Store the sensitive IDP token in an HttpOnly cookie inaccessible to client-side JS
+      res.cookie(
+        'st-authinfo-token',
+        {
+          idpToken: user.idpToken,
+        },
+        {
+          maxAge: 15 * 60 * 1000, // 15 minutes
+          httpOnly: true,
           secure: USING_SSL,
           sameSite: 'lax',
         }

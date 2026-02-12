@@ -7,19 +7,40 @@
  * - How It Works steps
  * - Testimonials (text and video)
  * - CTA sections
+ *
+ * Persistence: SQLite via server/api-util/db.js
  */
 
-const fs = require('fs');
-const path = require('path');
-const { verifySystemAdmin, auditLog, getClientIP } = require('../../api-util/security');
+const db = require('../../api-util/db');
+const { verifySystemAdmin, auditLog, getClientIP, sanitizeString } = require('../../api-util/security');
 
-// Content storage file path
-const CONTENT_FILE = path.join(__dirname, '../../data/landing-content.json');
-
-// Ensure data directory exists
-const dataDir = path.join(__dirname, '../../data');
-if (!fs.existsSync(dataDir)) {
-  fs.mkdirSync(dataDir, { recursive: true });
+/**
+ * SECURITY: Recursively sanitize content strings to prevent stored XSS.
+ */
+function sanitizeContentValue(value) {
+  if (typeof value === 'string') {
+    return value
+      .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+      .replace(/<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi, '')
+      .replace(/<object\b[^<]*(?:(?!<\/object>)<[^<]*)*<\/object>/gi, '')
+      .replace(/<embed\b[^>]*\/?>/gi, '')
+      .replace(/<svg\b[^<]*(?:(?!<\/svg>)<[^<]*)*<\/svg>/gi, '')
+      .replace(/on\w+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi, '')
+      .replace(/javascript\s*:/gi, '')
+      .replace(/data\s*:\s*text\/html/gi, '')
+      .replace(/vbscript\s*:/gi, '');
+  }
+  if (Array.isArray(value)) {
+    return value.map(sanitizeContentValue);
+  }
+  if (value && typeof value === 'object') {
+    const sanitized = {};
+    for (const [k, v] of Object.entries(value)) {
+      sanitized[k] = sanitizeContentValue(v);
+    }
+    return sanitized;
+  }
+  return value;
 }
 
 // Default content structure
@@ -28,20 +49,19 @@ const defaultContent = {
     id: 'branding',
     section: 'branding',
     logoUrl: null,
-    logoHeight: 36, // 24, 36, 48, 60, or 72
+    logoHeight: 36,
     tagline: 'Connecting Ivy League Talent with Industry Leaders',
-    taglineColor: null, // Custom color for tagline (hex or rgba)
-    siteDescription: null, // Additional description text below the hero subtitle
-    siteDescriptionColor: null, // Custom color for site description
+    taglineColor: null,
+    siteDescription: null,
+    siteDescriptionColor: null,
     faviconUrl: null,
-    // Social media links
     socialFacebook: null,
     socialTwitter: null,
     socialInstagram: null,
     socialLinkedin: null,
     socialYoutube: null,
     socialTiktok: null,
-    socialIconSize: 24, // 18, 24, 32, or 40
+    socialIconSize: 24,
     isActive: true,
     updatedAt: new Date().toISOString(),
     updatedBy: null,
@@ -50,19 +70,19 @@ const defaultContent = {
     id: 'hero',
     section: 'hero',
     title: 'Connect Ivy League Talent with Industry Leaders',
-    titleColor: null, // Custom color for hero title
+    titleColor: null,
     subtitle:
       'Campus2Career bridges the gap between elite university students and Fortune 500 companies through meaningful project-based collaborations.',
-    subtitleColor: null, // Custom color for hero subtitle
+    subtitleColor: null,
     primaryButtonText: 'Get Started',
-    primaryButtonBgColor: null, // Custom background color for primary button
-    primaryButtonTextColor: null, // Custom text color for primary button
+    primaryButtonBgColor: null,
+    primaryButtonTextColor: null,
     secondaryButtonText: 'Sign In',
-    secondaryButtonBorderColor: null, // Custom border color for secondary button
-    secondaryButtonTextColor: null, // Custom text color for secondary button
+    secondaryButtonBorderColor: null,
+    secondaryButtonTextColor: null,
     backgroundImage: null,
     backgroundVideo: null,
-    backgroundType: 'image', // 'image' or 'video'
+    backgroundType: 'image',
     isActive: true,
     updatedAt: new Date().toISOString(),
     updatedBy: null,
@@ -144,61 +164,14 @@ const defaultContent = {
     id: 'testimonials',
     section: 'testimonials',
     sectionTitle: 'What People Are Saying',
+    disclaimer: 'Testimonials represent typical user experiences and may be paraphrased for clarity.',
     items: [
-      {
-        id: 'testimonial-1',
-        quote:
-          'Campus2Career connected me with an amazing internship opportunity at a Fortune 500 company. The experience was invaluable!',
-        author: 'Sarah Chen',
-        role: 'Harvard University, Class of 2024',
-        initials: 'SC',
-        avatarUrl: null,
-      },
-      {
-        id: 'testimonial-2',
-        quote:
-          'The quality of talent we found through Campus2Career exceeded our expectations. These students brought fresh perspectives to our projects.',
-        author: 'Michael Roberts',
-        role: 'VP of Innovation, Tech Corp',
-        initials: 'MR',
-        avatarUrl: null,
-      },
-      {
-        id: 'testimonial-3',
-        quote:
-          'As a first-generation college student, Campus2Career gave me access to opportunities I never knew existed.',
-        author: 'James Williams',
-        role: 'Yale University, Class of 2025',
-        initials: 'JW',
-        avatarUrl: null,
-      },
-      {
-        id: 'testimonial-4',
-        quote:
-          "We've hired three full-time employees from Campus2Career projects. It's become our primary talent pipeline.",
-        author: 'Emily Thompson',
-        role: 'HR Director, Global Finance Inc',
-        initials: 'ET',
-        avatarUrl: null,
-      },
-      {
-        id: 'testimonial-5',
-        quote:
-          'The platform made it easy to showcase my skills and connect with companies that value diversity and fresh thinking.',
-        author: 'David Park',
-        role: 'Princeton University, Class of 2024',
-        initials: 'DP',
-        avatarUrl: null,
-      },
-      {
-        id: 'testimonial-6',
-        quote:
-          "Campus2Career's vetting process ensures we only work with the most motivated and talented students.",
-        author: 'Lisa Anderson',
-        role: 'CEO, StartUp Ventures',
-        initials: 'LA',
-        avatarUrl: null,
-      },
+      { id: 'testimonial-1', quote: 'Campus2Career connected me with an amazing internship opportunity at a Fortune 500 company. The experience was invaluable!', author: 'Sarah Chen', role: 'Harvard University, Class of 2024', initials: 'SC', avatarUrl: null },
+      { id: 'testimonial-2', quote: 'The quality of talent we found through Campus2Career exceeded our expectations. These students brought fresh perspectives to our projects.', author: 'Michael Roberts', role: 'VP of Innovation, Tech Corp', initials: 'MR', avatarUrl: null },
+      { id: 'testimonial-3', quote: 'As a first-generation college student, Campus2Career gave me access to opportunities I never knew existed.', author: 'James Williams', role: 'Yale University, Class of 2025', initials: 'JW', avatarUrl: null },
+      { id: 'testimonial-4', quote: "We've hired three full-time employees from Campus2Career projects. It's become our primary talent pipeline.", author: 'Emily Thompson', role: 'HR Director, Global Finance Inc', initials: 'ET', avatarUrl: null },
+      { id: 'testimonial-5', quote: 'The platform made it easy to showcase my skills and connect with companies that value diversity and fresh thinking.', author: 'David Park', role: 'Princeton University, Class of 2024', initials: 'DP', avatarUrl: null },
+      { id: 'testimonial-6', quote: "Campus2Career's vetting process ensures we only work with the most motivated and talented students.", author: 'Lisa Anderson', role: 'CEO, StartUp Ventures', initials: 'LA', avatarUrl: null },
     ],
     isActive: true,
     updatedAt: new Date().toISOString(),
@@ -232,75 +205,45 @@ const defaultContent = {
   legalPages: {
     id: 'legalPages',
     section: 'legalPages',
-    privacyPolicy: {
-      title: 'Privacy Policy',
-      content: '',
-      lastUpdated: null,
-      isActive: true,
-    },
-    termsOfService: {
-      title: 'Terms of Service',
-      content: '',
-      lastUpdated: null,
-      isActive: true,
-    },
-    cookiePolicy: {
-      title: 'Cookie Policy',
-      content: '',
-      lastUpdated: null,
-      isActive: true,
-    },
-    disclaimer: {
-      title: 'Disclaimer',
-      content: '',
-      lastUpdated: null,
-      isActive: false,
-    },
-    acceptableUse: {
-      title: 'Acceptable Use Policy',
-      content: '',
-      lastUpdated: null,
-      isActive: false,
-    },
-    refundPolicy: {
-      title: 'Refund Policy',
-      content: '',
-      lastUpdated: null,
-      isActive: false,
-    },
+    privacyPolicy: { title: 'Privacy Policy', content: '', lastUpdated: null, isActive: true },
+    termsOfService: { title: 'Terms of Service', content: '', lastUpdated: null, isActive: true },
+    cookiePolicy: { title: 'Cookie Policy', content: '', lastUpdated: null, isActive: true },
+    disclaimer: { title: 'Disclaimer', content: '', lastUpdated: null, isActive: false },
+    acceptableUse: { title: 'Acceptable Use Policy', content: '', lastUpdated: null, isActive: false },
+    refundPolicy: { title: 'Refund Policy', content: '', lastUpdated: null, isActive: false },
     isActive: true,
     updatedAt: new Date().toISOString(),
     updatedBy: null,
   },
 };
 
+// Seed default content if table is empty
+(function seedDefaults() {
+  const existing = db.landingContent.getAll();
+  if (Object.keys(existing).length === 0) {
+    db.landingContent.setAll(defaultContent);
+  }
+})();
+
 /**
- * Load content from file or return defaults
+ * Load content from SQLite or return defaults
  * Merges saved content with defaults to ensure new sections are always available
  */
 function loadContent() {
-  try {
-    if (fs.existsSync(CONTENT_FILE)) {
-      const data = fs.readFileSync(CONTENT_FILE, 'utf8');
-      const savedContent = JSON.parse(data);
-      // Merge with defaults to ensure new sections (like branding) are available
-      return { ...defaultContent, ...savedContent };
-    }
-  } catch (error) {
-    console.error('Error loading content file:', error);
-  }
-  return defaultContent;
+  const savedContent = db.landingContent.getAll();
+  // Merge with defaults to ensure new sections (like branding) are available
+  return { ...defaultContent, ...savedContent };
 }
 
 /**
- * Save content to file
+ * Save content to SQLite
  */
 function saveContent(content) {
   try {
-    fs.writeFileSync(CONTENT_FILE, JSON.stringify(content, null, 2), 'utf8');
+    db.landingContent.setAll(content);
     return true;
   } catch (error) {
-    console.error('Error saving content file:', error);
+    console.error('Error saving content:', error);
     return false;
   }
 }
@@ -312,7 +255,6 @@ function saveContent(content) {
  */
 const getContent = async (req, res) => {
   try {
-    // Verify system admin authentication
     const currentUser = await verifySystemAdmin(req, res);
     if (!currentUser) {
       auditLog('UNAUTHORIZED_CONTENT_ACCESS', {
@@ -327,7 +269,6 @@ const getContent = async (req, res) => {
     }
 
     const content = loadContent();
-    // Safely compute lastUpdated — some sections may not have updatedAt
     let lastUpdated = '1970-01-01';
     try {
       Object.values(content).forEach(section => {
@@ -358,7 +299,6 @@ const getContent = async (req, res) => {
  */
 const getSection = async (req, res) => {
   try {
-    // Verify system admin authentication
     const currentUser = await verifySystemAdmin(req, res);
     if (!currentUser) {
       auditLog('UNAUTHORIZED_CONTENT_ACCESS', {
@@ -394,7 +334,6 @@ const getSection = async (req, res) => {
  */
 const updateSection = async (req, res) => {
   try {
-    // Verify system admin authentication
     const currentUser = await verifySystemAdmin(req, res);
     if (!currentUser) {
       auditLog('UNAUTHORIZED_CONTENT_MODIFICATION', {
@@ -410,14 +349,14 @@ const updateSection = async (req, res) => {
     }
 
     const { section } = req.params;
-    const updates = req.body;
+    // SECURITY: Sanitize all input to prevent stored XSS
+    const updates = sanitizeContentValue(req.body);
     const content = loadContent();
 
     if (!content[section]) {
       return res.status(404).json({ error: 'Section not found' });
     }
 
-    // Get user info from authenticated user
     const userId = currentUser.id?.uuid || 'system';
 
     // Merge updates with existing content
@@ -430,7 +369,6 @@ const updateSection = async (req, res) => {
       updatedBy: userId,
     };
 
-    // Save to file
     if (!saveContent(content)) {
       return res.status(500).json({ error: 'Failed to save content' });
     }
@@ -458,7 +396,6 @@ const updateSection = async (req, res) => {
  */
 const addItem = async (req, res) => {
   try {
-    // Verify system admin authentication
     const currentUser = await verifySystemAdmin(req, res);
     if (!currentUser) {
       auditLog('UNAUTHORIZED_CONTENT_MODIFICATION', {
@@ -487,7 +424,6 @@ const addItem = async (req, res) => {
 
     const userId = currentUser.id?.uuid || 'system';
 
-    // Generate unique ID for new item
     const itemId = `${section}-item-${Date.now()}`;
     const item = {
       ...newItem,
@@ -526,7 +462,6 @@ const addItem = async (req, res) => {
  */
 const updateItem = async (req, res) => {
   try {
-    // Verify system admin authentication
     const currentUser = await verifySystemAdmin(req, res);
     if (!currentUser) {
       auditLog('UNAUTHORIZED_CONTENT_MODIFICATION', {
@@ -597,7 +532,6 @@ const updateItem = async (req, res) => {
  */
 const deleteItem = async (req, res) => {
   try {
-    // Verify system admin authentication
     const currentUser = await verifySystemAdmin(req, res);
     if (!currentUser) {
       auditLog('UNAUTHORIZED_CONTENT_MODIFICATION', {
@@ -663,7 +597,6 @@ const deleteItem = async (req, res) => {
  */
 const resetContent = async (req, res) => {
   try {
-    // Verify system admin authentication
     const currentUser = await verifySystemAdmin(req, res);
     if (!currentUser) {
       auditLog('UNAUTHORIZED_CONTENT_RESET', {
@@ -686,6 +619,7 @@ const resetContent = async (req, res) => {
       resetData[section].updatedBy = userId;
     });
 
+    db.landingContent.deleteAll();
     if (!saveContent(resetData)) {
       return res.status(500).json({ error: 'Failed to reset content' });
     }
@@ -789,7 +723,7 @@ const getLegalPagesList = (req, res) => {
           key: pageType,
           title: pageData.title,
           lastUpdated: pageData.lastUpdated,
-          slug: pageType.replace(/([A-Z])/g, '-$1').toLowerCase(), // privacyPolicy -> privacy-policy
+          slug: pageType.replace(/([A-Z])/g, '-$1').toLowerCase(),
         });
       }
     });

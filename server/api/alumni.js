@@ -7,8 +7,8 @@
  * - Alumni profiles are searchable once registered
  */
 
-const { getIntegrationSdk } = require('../api-util/integrationSdk');
-const { handleError, serialize } = require('../api-util/sdk');
+const { getIntegrationSdk, getIntegrationSdkForTenant } = require('../api-util/integrationSdk');
+const { handleError, serialize, getSdk } = require('../api-util/sdk');
 
 /**
  * Search alumni directory
@@ -26,7 +26,12 @@ const { handleError, serialize } = require('../api-util/sdk');
  */
 async function searchAlumni(req, res) {
   try {
-    const integrationSdk = getIntegrationSdk();
+    // SECURITY: Verify user is authenticated before exposing user directory
+    const sdk = getSdk(req, res);
+    await sdk.currentUser.show();
+
+    // Use tenant-scoped SDK for proper data isolation
+    const integrationSdk = getIntegrationSdkForTenant(req.tenant);
 
     const {
       university,
@@ -98,7 +103,7 @@ async function searchAlumni(req, res) {
  */
 async function inviteAlumni(req, res) {
   try {
-    const integrationSdk = getIntegrationSdk();
+    const integrationSdk = getIntegrationSdkForTenant(req.tenant);
 
     // Verify caller is an educational admin
     const sdk = require('../api-util/sdk').getSdk(req, res);
@@ -164,7 +169,12 @@ async function inviteAlumni(req, res) {
  */
 async function getAlumniProfile(req, res) {
   try {
-    const integrationSdk = getIntegrationSdk();
+    // SECURITY: Verify user is authenticated
+    const sdk = getSdk(req, res);
+    await sdk.currentUser.show();
+
+    // Use tenant-scoped SDK for proper data isolation
+    const integrationSdk = getIntegrationSdkForTenant(req.tenant);
     const { userId } = req.params;
 
     const result = await integrationSdk.users.show({ id: userId });

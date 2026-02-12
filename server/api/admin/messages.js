@@ -1,53 +1,31 @@
-const fs = require('fs');
-const path = require('path');
+/**
+ * Admin Messages API
+ *
+ * Allows system admins to send messages to educational admins, students,
+ * and corporate partners. Recipients can view and mark messages as read.
+ *
+ * Persistence: SQLite via server/api-util/db.js
+ */
+
+const db = require('../../api-util/db');
 const { getIntegrationSdkForTenant } = require('../../api-util/integrationSdk');
 const { getSdk, handleError } = require('../../api-util/sdk');
 
-// Persistent storage for admin messages
-// Uses file-based storage for persistence across server restarts
-const MESSAGES_FILE = path.join(__dirname, '../../data/admin-messages.json');
-
-// Ensure data directory exists
-const dataDir = path.join(__dirname, '../../data');
-if (!fs.existsSync(dataDir)) {
-  fs.mkdirSync(dataDir, { recursive: true });
-}
-
-/**
- * Load messages from persistent storage
- */
-function loadMessages() {
-  try {
-    if (fs.existsSync(MESSAGES_FILE)) {
-      const data = fs.readFileSync(MESSAGES_FILE, 'utf8');
-      const parsed = JSON.parse(data);
-      return {
-        messages: parsed.messages || [],
-        messageIdCounter: parsed.messageIdCounter || 1,
-      };
+// Message ID counter - seeded from existing DB records
+let messageIdCounter = (() => {
+  const all = db.adminMessages.getAll();
+  if (all.length === 0) return 1;
+  // Extract max numeric suffix from existing IDs like "admin-msg-42"
+  let max = 0;
+  all.forEach(m => {
+    const match = m.id.match(/admin-msg-(\d+)/);
+    if (match) {
+      const n = parseInt(match[1], 10);
+      if (n > max) max = n;
     }
-  } catch (error) {
-    console.error('Error loading admin messages file:', error);
-  }
-  return { messages: [], messageIdCounter: 1 };
-}
-
-/**
- * Save messages to persistent storage
- */
-function saveMessages(messages, messageIdCounter) {
-  try {
-    const data = { messages, messageIdCounter, lastUpdated: new Date().toISOString() };
-    fs.writeFileSync(MESSAGES_FILE, JSON.stringify(data, null, 2), 'utf8');
-    return true;
-  } catch (error) {
-    console.error('Error saving admin messages file:', error);
-    return false;
-  }
-}
-
-// Initialize from persistent storage
-let { messages: adminMessages, messageIdCounter } = loadMessages();
+  });
+  return max + 1;
+})();
 
 /**
  * Verify the current user is a system admin
@@ -152,13 +130,8 @@ async function sendMessage(req, res) {
       read: false,
     };
 
-    // Store the message
-    adminMessages.push(message);
-
-    // Persist to storage
-    if (!saveMessages(adminMessages, messageIdCounter)) {
-      console.error('Warning: Failed to persist admin message to storage');
-    }
+    // Store the message in SQLite
+    db.adminMessages.create(message);
 
     res.status(201).json({
       success: true,
@@ -195,21 +168,21 @@ async function listMessages(req, res) {
 
     if (userType === 'system-admin') {
       // System admins see all messages they've sent
-      filteredMessages = adminMessages.filter(m => m.senderId === currentUser.id.uuid);
+      filteredMessages = db.adminMessages.getBySenderId(currentUser.id.uuid);
     } else if (
       userType === 'educational-admin' ||
       userType === 'student' ||
       userType === 'corporate-partner'
     ) {
       // Educational admins, students, and corporate partners see messages addressed to them
-      filteredMessages = adminMessages.filter(m => m.recipientId === currentUser.id.uuid);
+      filteredMessages = db.adminMessages.getByRecipientId(currentUser.id.uuid);
     } else {
       return res.status(403).json({
         error: 'Access denied.',
       });
     }
 
-    // Sort by date (newest first)
+    // Sort by date (newest first) - already sorted by DB, but ensure
     filteredMessages.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
     // Pagination
@@ -252,13 +225,11 @@ async function markAsRead(req, res) {
     const currentUser = currentUserResponse.data.data;
 
     // Find the message
-    const messageIndex = adminMessages.findIndex(m => m.id === messageId);
+    const message = db.adminMessages.getById(messageId);
 
-    if (messageIndex === -1) {
+    if (!message) {
       return res.status(404).json({ error: 'Message not found.' });
     }
-
-    const message = adminMessages[messageIndex];
 
     // Verify the user is the recipient
     if (message.recipientId !== currentUser.id.uuid) {
@@ -266,12 +237,7 @@ async function markAsRead(req, res) {
     }
 
     // Mark as read
-    adminMessages[messageIndex].read = true;
-
-    // Persist to storage
-    if (!saveMessages(adminMessages, messageIdCounter)) {
-      console.error('Warning: Failed to persist message read status to storage');
-    }
+    db.adminMessages.markRead(messageId);
 
     res.status(200).json({
       success: true,
@@ -304,8 +270,7 @@ async function getUnreadCount(req, res) {
       return res.status(200).json({ unreadCount: 0 });
     }
 
-    const unreadCount = adminMessages.filter(m => m.recipientId === currentUser.id.uuid && !m.read)
-      .length;
+    const unreadCount = db.adminMessages.getUnreadCountByRecipient(currentUser.id.uuid);
 
     res.status(200).json({ unreadCount });
   } catch (error) {

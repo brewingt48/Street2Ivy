@@ -57,9 +57,9 @@
   * In the future, we are planning to bring more --marketplace* CSS Properties
   * from hosted assets, which means that they could be managed through Console.
   */
-  --marketplaceColor: #2c5282; /* Street2Ivy professional blue */
-  --marketplaceColorLight: #2a4a72; /* darker variant */
-  --marketplaceColorDark: #3a6ba5; /* lighter variant */
+  --marketplaceColor: #2c5282; /* Campus2Career professional blue */
+  --marketplaceColorLight: #3a6ba5; /* lighter variant for hover/backgrounds */
+  --marketplaceColorDark: #2a4a72; /* darker variant for active/pressed states */
 
   /** 
    * The fill color used by <PrimaryButton>

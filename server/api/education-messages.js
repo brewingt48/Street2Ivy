@@ -9,47 +9,13 @@
  * And receive messages from:
  * - System administrators
  * - Students
+ *
+ * Persistence: SQLite via server/api-util/db.js
  */
 
-const fs = require('fs');
-const path = require('path');
+const db = require('../api-util/db');
 const { getSdk, handleError } = require('../api-util/sdk');
 const { getIntegrationSdkForTenant } = require('../api-util/integrationSdk');
-
-// File-based persistence for education messages
-const MESSAGES_FILE = path.join(__dirname, '../data/education-messages.json');
-let educationMessages = [];
-
-function loadMessages() {
-  try {
-    if (fs.existsSync(MESSAGES_FILE)) {
-      const data = fs.readFileSync(MESSAGES_FILE, 'utf8');
-      educationMessages = JSON.parse(data);
-      console.log(`Loaded ${educationMessages.length} education messages from file`);
-      return;
-    }
-  } catch (error) {
-    console.error('Error loading education messages:', error);
-  }
-  educationMessages = [];
-}
-
-function saveMessages() {
-  try {
-    const dataDir = path.dirname(MESSAGES_FILE);
-    if (!fs.existsSync(dataDir)) {
-      fs.mkdirSync(dataDir, { recursive: true });
-    }
-    fs.writeFileSync(MESSAGES_FILE, JSON.stringify(educationMessages, null, 2), 'utf8');
-    return true;
-  } catch (error) {
-    console.error('Error saving education messages:', error);
-    return false;
-  }
-}
-
-// Load messages on startup
-loadMessages();
 
 /**
  * Verify the current user is an educational admin and get their info
@@ -139,8 +105,7 @@ async function sendMessage(req, res) {
       read: false,
     };
 
-    educationMessages.push(message);
-    saveMessages();
+    db.educationMessages.create(message);
 
     console.log('Educational admin message sent:', {
       id: message.id,
@@ -177,19 +142,10 @@ async function listMessages(req, res) {
     const userId = adminInfo.user.id.uuid;
 
     // Get messages sent by this admin
-    const sentMessages = educationMessages
-      .filter(msg => msg.senderId === userId)
-      .sort((a, b) => new Date(b.sentAt) - new Date(a.sentAt));
+    const sentMessages = db.educationMessages.getBySenderId(userId);
 
     // Get messages received by this admin (from system admin or students)
-    // In a real system, these would be stored with recipientId === userId
-    // For demo purposes, we'll create some sample received messages
-    const receivedMessages = educationMessages
-      .filter(msg =>
-        msg.recipientId === userId ||
-        (msg.recipientType === 'educational-admin' && msg.senderId !== userId)
-      )
-      .sort((a, b) => new Date(b.sentAt) - new Date(a.sentAt));
+    const receivedMessages = db.educationMessages.getReceivedByUser(userId);
 
     // Also include any messages sent TO educational admins (from system admin messages)
     // This would come from the admin messages system
@@ -241,8 +197,7 @@ function addReceivedMessage(toUserId, fromUserId, fromName, fromType, subject, c
     receivedAt: new Date().toISOString(),
     read: false,
   };
-  educationMessages.push(message);
-  saveMessages();
+  db.educationMessages.create(message);
   return message;
 }
 

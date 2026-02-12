@@ -5,42 +5,26 @@
  * Schools must pay for membership before their students can access the platform.
  *
  * Only system admins can manage institutions.
+ *
+ * Persistence: SQLite via server/api-util/db.js
  */
 
-const fs = require('fs');
-const path = require('path');
+const db = require('../../api-util/db');
 const { getIntegrationSdkForTenant } = require('../../api-util/integrationSdk');
 const { handleError, serialize } = require('../../api-util/sdk');
 
-// In-memory store for institutions (in production, use a database)
-// This maps email domains to institution membership data
-let institutionMemberships = new Map();
-
-// Institutions data file for persistence
-const INSTITUTIONS_FILE = path.join(__dirname, '../../data/institutions.json');
-
-// Load institutions from file
-function loadInstitutions() {
-  try {
-    if (fs.existsSync(INSTITUTIONS_FILE)) {
-      const data = fs.readFileSync(INSTITUTIONS_FILE, 'utf8');
-      const institutions = JSON.parse(data);
-      institutionMemberships.clear();
-      institutions.forEach(inst => {
-        institutionMemberships.set(inst.domain, inst);
-      });
-      console.log(`Loaded ${institutions.length} institutions from file`);
-      return;
-    }
-  } catch (error) {
-    console.error('Error loading institutions:', error);
+// Seed dev-only institutions on first startup (only when table is empty in dev)
+(function seedDevInstitutions() {
+  const existing = db.institutions.getAll();
+  if (existing.length > 0) {
+    console.log(`Loaded ${existing.length} institutions from database`);
+    return;
   }
 
-  // Only initialize with test data in development
   if (process.env.NODE_ENV === 'development') {
     console.log('Development mode: Initializing with test institutions');
-
-    institutionMemberships.set('test.edu', {
+    const now = new Date().toISOString();
+    db.institutions.upsert({
       domain: 'test.edu',
       name: 'Test University',
       membershipStatus: 'active',
@@ -48,11 +32,10 @@ function loadInstitutions() {
       membershipEndDate: '2026-12-31',
       aiCoachingEnabled: true,
       aiCoachingUrl: 'https://coaching.street2ivy.com/test',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
+      createdAt: now,
+      updatedAt: now,
     });
-
-    institutionMemberships.set('gmail.com', {
+    db.institutions.upsert({
       domain: 'gmail.com',
       name: 'Gmail Test Institution (DEV ONLY)',
       membershipStatus: 'active',
@@ -60,35 +43,13 @@ function loadInstitutions() {
       membershipEndDate: '2026-12-31',
       aiCoachingEnabled: true,
       aiCoachingUrl: 'https://coaching.street2ivy.com/test',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
+      createdAt: now,
+      updatedAt: now,
     });
-
-    // Save initial dev data to file
-    saveInstitutions();
   } else {
     console.log('Production mode: No test institutions loaded. Add institutions via Admin Dashboard.');
   }
-}
-
-// Save institutions to file
-function saveInstitutions() {
-  try {
-    const dataDir = path.dirname(INSTITUTIONS_FILE);
-    if (!fs.existsSync(dataDir)) {
-      fs.mkdirSync(dataDir, { recursive: true });
-    }
-    const institutions = Array.from(institutionMemberships.values());
-    fs.writeFileSync(INSTITUTIONS_FILE, JSON.stringify(institutions, null, 2), 'utf8');
-    return true;
-  } catch (error) {
-    console.error('Error saving institutions:', error);
-    return false;
-  }
-}
-
-// Load institutions on startup
-loadInstitutions();
+})();
 
 /**
  * Helper to verify user is a system admin
@@ -114,10 +75,7 @@ async function listInstitutions(req, res) {
     const sdk = getIntegrationSdkForTenant(req.tenant);
     await verifySystemAdmin(sdk);
 
-    const institutions = Array.from(institutionMemberships.values());
-
-    // Sort by name
-    institutions.sort((a, b) => a.name.localeCompare(b.name));
+    const institutions = db.institutions.getAll();
 
     res.status(200).json({
       data: institutions,
@@ -140,7 +98,7 @@ async function getInstitution(req, res) {
     const { domain } = req.params;
     const normalizedDomain = domain.toLowerCase();
 
-    const institution = institutionMemberships.get(normalizedDomain);
+    const institution = db.institutions.getByDomain(normalizedDomain);
 
     if (!institution) {
       return res.status(404).json({ error: 'Institution not found' });
@@ -155,16 +113,6 @@ async function getInstitution(req, res) {
 /**
  * Create or update institution membership
  * POST /api/admin/institutions
- *
- * Body: {
- *   domain: 'harvard.edu',
- *   name: 'Harvard University',
- *   membershipStatus: 'active' | 'inactive' | 'pending',
- *   membershipStartDate: '2024-01-01',
- *   membershipEndDate: '2025-12-31',
- *   aiCoachingEnabled: true,
- *   aiCoachingUrl: 'https://...'
- * }
  */
 async function createOrUpdateInstitution(req, res) {
   try {
@@ -187,13 +135,13 @@ async function createOrUpdateInstitution(req, res) {
 
     const normalizedDomain = domain.toLowerCase();
 
-    // Validate domain format (should be a valid .edu domain or similar)
+    // Validate domain format
     const domainRegex = /^[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?(\.[a-zA-Z]{2,})+$/;
     if (!domainRegex.test(normalizedDomain)) {
       return res.status(400).json({ error: 'Invalid domain format' });
     }
 
-    const existingInstitution = institutionMemberships.get(normalizedDomain);
+    const existingInstitution = db.institutions.getByDomain(normalizedDomain);
     const now = new Date().toISOString();
 
     const institution = {
@@ -208,8 +156,7 @@ async function createOrUpdateInstitution(req, res) {
       updatedAt: now,
     };
 
-    institutionMemberships.set(normalizedDomain, institution);
-    saveInstitutions(); // Persist to file
+    db.institutions.upsert(institution);
 
     res.status(200).json({
       data: institution,
@@ -223,8 +170,6 @@ async function createOrUpdateInstitution(req, res) {
 /**
  * Update institution membership status
  * POST /api/admin/institutions/:domain/status
- *
- * Body: { membershipStatus: 'active' | 'inactive' | 'pending' }
  */
 async function updateInstitutionStatus(req, res) {
   try {
@@ -235,7 +180,7 @@ async function updateInstitutionStatus(req, res) {
     const { membershipStatus } = req.body;
     const normalizedDomain = domain.toLowerCase();
 
-    const institution = institutionMemberships.get(normalizedDomain);
+    const institution = db.institutions.getByDomain(normalizedDomain);
 
     if (!institution) {
       return res.status(404).json({ error: 'Institution not found' });
@@ -247,9 +192,7 @@ async function updateInstitutionStatus(req, res) {
 
     institution.membershipStatus = membershipStatus;
     institution.updatedAt = new Date().toISOString();
-
-    institutionMemberships.set(normalizedDomain, institution);
-    saveInstitutions(); // Persist to file
+    db.institutions.upsert(institution);
 
     res.status(200).json({
       data: institution,
@@ -263,8 +206,6 @@ async function updateInstitutionStatus(req, res) {
 /**
  * Update AI coaching settings for an institution
  * POST /api/admin/institutions/:domain/coaching
- *
- * Body: { aiCoachingEnabled: true, aiCoachingUrl: 'https://...' }
  */
 async function updateCoachingSettings(req, res) {
   try {
@@ -275,7 +216,7 @@ async function updateCoachingSettings(req, res) {
     const { aiCoachingEnabled, aiCoachingUrl } = req.body;
     const normalizedDomain = domain.toLowerCase();
 
-    const institution = institutionMemberships.get(normalizedDomain);
+    const institution = db.institutions.getByDomain(normalizedDomain);
 
     if (!institution) {
       return res.status(404).json({ error: 'Institution not found' });
@@ -288,9 +229,7 @@ async function updateCoachingSettings(req, res) {
       institution.aiCoachingUrl = aiCoachingUrl;
     }
     institution.updatedAt = new Date().toISOString();
-
-    institutionMemberships.set(normalizedDomain, institution);
-    saveInstitutions(); // Persist to file
+    db.institutions.upsert(institution);
 
     res.status(200).json({
       data: institution,
@@ -313,12 +252,11 @@ async function deleteInstitution(req, res) {
     const { domain } = req.params;
     const normalizedDomain = domain.toLowerCase();
 
-    if (!institutionMemberships.has(normalizedDomain)) {
+    if (!db.institutions.getByDomain(normalizedDomain)) {
       return res.status(404).json({ error: 'Institution not found' });
     }
 
-    institutionMemberships.delete(normalizedDomain);
-    saveInstitutions(); // Persist to file
+    db.institutions.delete(normalizedDomain);
 
     res.status(200).json({ message: 'Institution deleted' });
   } catch (e) {
@@ -329,15 +267,13 @@ async function deleteInstitution(req, res) {
 /**
  * Check institution membership (public endpoint for signup validation)
  * GET /api/institutions/check/:domain
- *
- * Returns membership status without requiring admin auth
  */
 async function checkInstitutionMembership(req, res) {
   try {
     const { domain } = req.params;
     const normalizedDomain = domain.toLowerCase();
 
-    const institution = institutionMemberships.get(normalizedDomain);
+    const institution = db.institutions.getByDomain(normalizedDomain);
 
     if (!institution) {
       return res.status(200).json({
@@ -354,7 +290,6 @@ async function checkInstitutionMembership(req, res) {
       : null;
     const endDate = institution.membershipEndDate ? new Date(institution.membershipEndDate) : null;
 
-    // Check if membership is within valid dates
     const isWithinDates = (!startDate || now >= startDate) && (!endDate || now <= endDate);
     const isMember = isActive && isWithinDates;
 
@@ -375,8 +310,6 @@ async function checkInstitutionMembership(req, res) {
 /**
  * Get current user's institution info (for students)
  * GET /api/institutions/my-institution
- *
- * Returns the institution info based on the logged-in student's email domain
  */
 async function getMyInstitution(req, res) {
   try {
@@ -395,7 +328,7 @@ async function getMyInstitution(req, res) {
       return res.status(400).json({ error: 'Email domain not found' });
     }
 
-    const institution = institutionMemberships.get(emailDomain);
+    const institution = db.institutions.getByDomain(emailDomain);
 
     if (!institution) {
       return res.status(200).json({
@@ -428,9 +361,14 @@ async function getMyInstitution(req, res) {
   }
 }
 
-// Export the in-memory store for use by other modules (e.g., middleware)
+// Export a helper for other modules (e.g., middleware) that need institution lookups.
+// Now returns the db accessor instead of an in-memory Map.
 function getInstitutionMemberships() {
-  return institutionMemberships;
+  // Return a Map-like object backed by the database for backward compatibility
+  const institutions = db.institutions.getAll();
+  const map = new Map();
+  institutions.forEach(inst => map.set(inst.domain, inst));
+  return map;
 }
 
 module.exports = {

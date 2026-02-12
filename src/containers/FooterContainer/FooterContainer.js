@@ -79,7 +79,17 @@ const FooterComponent = () => {
     socialIconSize: socialIconSize,
   };
 
-  return <SectionBuilder sections={[footerSection]} />;
+  return (
+    <>
+      <SectionBuilder sections={[footerSection]} />
+      {/* SECURITY: Fallback legal links - always present regardless of CMS config */}
+      <div className={css.legalFallback}>
+        <a href="/terms-of-service">Terms of Service</a>
+        <span className={css.legalSeparator}>·</span>
+        <a href="/privacy-policy">Privacy Policy</a>
+      </div>
+    </>
+  );
 };
 
 // NOTE: if you want to add dynamic data to FooterComponent,

@@ -7,6 +7,13 @@
  * Usage:
  *   node server/scripts/create-test-edu-admin.js
  *
+ * Options:
+ *   --email <email>       Custom email (default: test-edu-admin@testuniversity.edu)
+ *   --password <password> Custom password (default: randomly generated)
+ *
+ * NOTE: When no --password is provided, a random password is generated and
+ * printed to the console. Copy it from the output.
+ *
  * Prerequisites:
  *   - SHARETRIBE_INTEGRATION_API_CLIENT_ID and SHARETRIBE_INTEGRATION_API_CLIENT_SECRET
  *     must be set in your .env file
@@ -14,6 +21,7 @@
 
 require('dotenv').config();
 
+const crypto = require('crypto');
 const sharetribeSdk = require('sharetribe-flex-integration-sdk');
 
 const clientId = process.env.SHARETRIBE_INTEGRATION_API_CLIENT_ID || process.env.SHARETRIBE_INTEGRATION_CLIENT_ID;
@@ -32,11 +40,32 @@ const integrationSdk = sharetribeSdk.createInstance({
   clientSecret,
 });
 
+// Parse command line arguments
+function parseArgs() {
+  const args = process.argv.slice(2);
+  // Generated passwords are printed to console — see script output
+  const options = {
+    email: 'test-edu-admin@testuniversity.edu',
+    password: crypto.randomBytes(16).toString('hex') + 'A1!',
+  };
+
+  for (let i = 0; i < args.length; i++) {
+    if (args[i] === '--email' && args[i + 1]) {
+      options.email = args[++i];
+    } else if (args[i] === '--password' && args[i + 1]) {
+      options.password = args[++i];
+    }
+  }
+
+  return options;
+}
+
 async function createTestEduAdmin() {
-  const testEmail = 'test-edu-admin@testuniversity.edu';
-  const testPassword = 'TestEduAdmin123!';
+  const options = parseArgs();
+  const testEmail = options.email;
+  const testPassword = options.password;
   const institutionName = 'Test University';
-  const emailDomain = 'testuniversity.edu';
+  const emailDomain = testEmail.split('@')[1] || 'testuniversity.edu';
 
   console.log('\n========================================');
   console.log('Creating Test Educational Admin Account');

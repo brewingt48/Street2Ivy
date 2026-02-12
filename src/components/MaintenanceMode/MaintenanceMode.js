@@ -41,7 +41,7 @@ const MaintenanceMode = props => {
             <p>
               <FormattedMessage
                 id="MaintenanceMode.howToProceed"
-                defaultMessage="Try refreshing the page and if that does not solve the issue, contact the marketplace admins."
+                defaultMessage="Try refreshing the page and if that does not solve the issue, contact Campus2Career support."
               />
             </p>
           )}

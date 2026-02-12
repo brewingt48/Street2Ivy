@@ -1,18 +1,19 @@
-const fs = require('fs');
-const path = require('path');
+const db = require('../../api-util/db');
 const { getSdk } = require('../../api-util/sdk');
 
-// Blog data file path
-const BLOG_DATA_FILE = path.join(__dirname, '../../data/blog-posts.json');
-
-// Security: Sanitize HTML content to prevent XSS
+// SECURITY: Sanitize HTML content to prevent XSS
 const sanitizeHtml = (html) => {
   if (!html) return '';
-  // Basic sanitization - remove script tags and event handlers
   return html
     .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
-    .replace(/on\w+\s*=\s*["'][^"']*["']/gi, '')
-    .replace(/javascript:/gi, '');
+    .replace(/<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi, '')
+    .replace(/<object\b[^<]*(?:(?!<\/object>)<[^<]*)*<\/object>/gi, '')
+    .replace(/<embed\b[^>]*\/?>/gi, '')
+    .replace(/<svg\b[^<]*(?:(?!<\/svg>)<[^<]*)*<\/svg>/gi, '')
+    .replace(/on\w+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi, '')
+    .replace(/javascript\s*:/gi, '')
+    .replace(/vbscript\s*:/gi, '')
+    .replace(/data\s*:\s*text\/html/gi, '');
 };
 
 // Generate URL-friendly slug from title
@@ -29,50 +30,23 @@ const generateId = () => {
   return `blog-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
 };
 
-// Initialize blog data file if it doesn't exist
-const initBlogDataFile = () => {
-  const dataDir = path.dirname(BLOG_DATA_FILE);
-  if (!fs.existsSync(dataDir)) {
-    fs.mkdirSync(dataDir, { recursive: true });
+// Seed default categories if none exist
+(function seedDefaults() {
+  const cats = db.blogCategories.getAll();
+  if (cats.length === 0) {
+    ['News', 'Tips & Advice', 'Success Stories', 'Industry Insights', 'Platform Updates'].forEach(c =>
+      db.blogCategories.add(c)
+    );
   }
-  if (!fs.existsSync(BLOG_DATA_FILE)) {
-    const initialData = {
-      posts: [],
-      categories: ['News', 'Tips & Advice', 'Success Stories', 'Industry Insights', 'Platform Updates'],
-      settings: {
-        postsPerPage: 10,
-        enableComments: false,
-        moderateComments: true,
-      },
-      updatedAt: new Date().toISOString(),
-    };
-    fs.writeFileSync(BLOG_DATA_FILE, JSON.stringify(initialData, null, 2));
+  const settings = db.blogSettings.getAll();
+  if (Object.keys(settings).length === 0) {
+    db.blogSettings.setMany({
+      postsPerPage: 10,
+      enableComments: false,
+      moderateComments: true,
+    });
   }
-};
-
-// Read blog data
-const readBlogData = () => {
-  initBlogDataFile();
-  try {
-    const data = fs.readFileSync(BLOG_DATA_FILE, 'utf8');
-    return JSON.parse(data);
-  } catch (error) {
-    console.error('Error reading blog data:', error);
-    return { posts: [], categories: [], settings: {} };
-  }
-};
-
-// Write blog data
-const writeBlogData = (data) => {
-  try {
-    data.updatedAt = new Date().toISOString();
-    fs.writeFileSync(BLOG_DATA_FILE, JSON.stringify(data, null, 2));
-    return true;
-  } catch (error) {
-    console.error('Error writing blog data:', error);
-    return false;
-  }
-};
+})();
 
 /**
  * Verify the current user is a system admin
@@ -92,15 +66,6 @@ async function verifySystemAdmin(req, res) {
 
 /**
  * GET /api/admin/blog/posts
- *
- * List all blog posts (admin view - includes drafts)
- *
- * Query params:
- *   page     - Pagination page (default: 1)
- *   perPage  - Results per page (default: 20)
- *   status   - Filter by status (draft, published, archived)
- *   category - Filter by category
- *   search   - Search in title and content
  */
 async function listPosts(req, res) {
   const { page = '1', perPage = '20', status, category, search } = req.query;
@@ -113,8 +78,7 @@ async function listPosts(req, res) {
       });
     }
 
-    const blogData = readBlogData();
-    let posts = [...blogData.posts];
+    let posts = db.blogPosts.getAll();
 
     // Apply filters
     if (status) {
@@ -132,7 +96,7 @@ async function listPosts(req, res) {
       );
     }
 
-    // Sort by date (newest first)
+    // Sort by date (newest first) — already sorted by db query, but re-sort after filtering
     posts.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
     // Pagination
@@ -142,9 +106,11 @@ async function listPosts(req, res) {
     const endIndex = startIndex + perPageNum;
     const paginatedPosts = posts.slice(startIndex, endIndex);
 
+    const categories = db.blogCategories.getAll();
+
     res.status(200).json({
       posts: paginatedPosts,
-      categories: blogData.categories,
+      categories,
       pagination: {
         totalItems: posts.length,
         totalPages: Math.ceil(posts.length / perPageNum),
@@ -160,8 +126,6 @@ async function listPosts(req, res) {
 
 /**
  * GET /api/admin/blog/posts/:postId
- *
- * Get a single blog post by ID
  */
 async function getPost(req, res) {
   const { postId } = req.params;
@@ -178,8 +142,7 @@ async function getPost(req, res) {
       });
     }
 
-    const blogData = readBlogData();
-    const post = blogData.posts.find(p => p.id === postId);
+    const post = db.blogPosts.getById(postId);
 
     if (!post) {
       return res.status(404).json({ error: 'Post not found.' });
@@ -194,18 +157,6 @@ async function getPost(req, res) {
 
 /**
  * POST /api/admin/blog/posts
- *
- * Create a new blog post
- *
- * Body:
- *   title       - Post title (required)
- *   content     - Post content (HTML)
- *   excerpt     - Short excerpt for previews
- *   category    - Post category
- *   tags        - Array of tags
- *   status      - draft, published, archived
- *   featuredImage - URL to featured image
- *   publishedAt - Publication date (defaults to now if published)
  */
 async function createPost(req, res) {
   const {
@@ -235,8 +186,6 @@ async function createPost(req, res) {
       });
     }
 
-    const blogData = readBlogData();
-
     const newPost = {
       id: generateId(),
       title: title.trim(),
@@ -255,8 +204,7 @@ async function createPost(req, res) {
       viewCount: 0,
     };
 
-    blogData.posts.unshift(newPost);
-    writeBlogData(blogData);
+    db.blogPosts.create(newPost);
 
     res.status(201).json({
       success: true,
@@ -271,8 +219,6 @@ async function createPost(req, res) {
 
 /**
  * PUT /api/admin/blog/posts/:postId
- *
- * Update an existing blog post
  */
 async function updatePost(req, res) {
   const { postId } = req.params;
@@ -290,20 +236,17 @@ async function updatePost(req, res) {
       });
     }
 
-    const blogData = readBlogData();
-    const postIndex = blogData.posts.findIndex(p => p.id === postId);
+    const existingPost = db.blogPosts.getById(postId);
 
-    if (postIndex === -1) {
+    if (!existingPost) {
       return res.status(404).json({ error: 'Post not found.' });
     }
 
-    const existingPost = blogData.posts[postIndex];
     const wasPublished = existingPost.status === 'published';
     const isNowPublished = updates.status === 'published';
 
-    // Apply updates
-    const updatedPost = {
-      ...existingPost,
+    // Build update object
+    const updateObj = {
       ...(updates.title && { title: updates.title.trim(), slug: generateSlug(updates.title) }),
       ...(updates.content !== undefined && { content: sanitizeHtml(updates.content) }),
       ...(updates.excerpt !== undefined && { excerpt: updates.excerpt?.trim() || '' }),
@@ -316,12 +259,11 @@ async function updatePost(req, res) {
     };
 
     // Set publishedAt when first published
-    if (!wasPublished && isNowPublished && !updatedPost.publishedAt) {
-      updatedPost.publishedAt = new Date().toISOString();
+    if (!wasPublished && isNowPublished && !existingPost.publishedAt) {
+      updateObj.publishedAt = new Date().toISOString();
     }
 
-    blogData.posts[postIndex] = updatedPost;
-    writeBlogData(blogData);
+    const updatedPost = db.blogPosts.update(postId, updateObj);
 
     res.status(200).json({
       success: true,
@@ -336,8 +278,6 @@ async function updatePost(req, res) {
 
 /**
  * DELETE /api/admin/blog/posts/:postId
- *
- * Delete a blog post
  */
 async function deletePost(req, res) {
   const { postId } = req.params;
@@ -354,15 +294,12 @@ async function deletePost(req, res) {
       });
     }
 
-    const blogData = readBlogData();
-    const postIndex = blogData.posts.findIndex(p => p.id === postId);
-
-    if (postIndex === -1) {
+    const post = db.blogPosts.getById(postId);
+    if (!post) {
       return res.status(404).json({ error: 'Post not found.' });
     }
 
-    blogData.posts.splice(postIndex, 1);
-    writeBlogData(blogData);
+    db.blogPosts.delete(postId);
 
     res.status(200).json({
       success: true,
@@ -376,8 +313,6 @@ async function deletePost(req, res) {
 
 /**
  * GET /api/admin/blog/categories
- *
- * List all blog categories
  */
 async function listCategories(req, res) {
   try {
@@ -388,8 +323,8 @@ async function listCategories(req, res) {
       });
     }
 
-    const blogData = readBlogData();
-    res.status(200).json({ categories: blogData.categories });
+    const categories = db.blogCategories.getAll();
+    res.status(200).json({ categories });
   } catch (error) {
     console.error('List categories error:', error);
     res.status(500).json({ error: 'Failed to fetch categories.' });
@@ -398,8 +333,6 @@ async function listCategories(req, res) {
 
 /**
  * POST /api/admin/blog/categories
- *
- * Add a new category
  */
 async function addCategory(req, res) {
   const { category } = req.body;
@@ -416,19 +349,16 @@ async function addCategory(req, res) {
       });
     }
 
-    const blogData = readBlogData();
-
-    if (blogData.categories.includes(category.trim())) {
+    if (db.blogCategories.exists(category.trim())) {
       return res.status(400).json({ error: 'Category already exists.' });
     }
 
-    blogData.categories.push(category.trim());
-    writeBlogData(blogData);
+    db.blogCategories.add(category.trim());
 
     res.status(201).json({
       success: true,
       message: 'Category added successfully.',
-      categories: blogData.categories,
+      categories: db.blogCategories.getAll(),
     });
   } catch (error) {
     console.error('Add category error:', error);
@@ -438,8 +368,6 @@ async function addCategory(req, res) {
 
 /**
  * DELETE /api/admin/blog/categories/:category
- *
- * Delete a category
  */
 async function deleteCategory(req, res) {
   const { category } = req.params;
@@ -456,20 +384,17 @@ async function deleteCategory(req, res) {
       });
     }
 
-    const blogData = readBlogData();
-    const categoryIndex = blogData.categories.indexOf(decodeURIComponent(category));
-
-    if (categoryIndex === -1) {
+    const decodedCategory = decodeURIComponent(category);
+    if (!db.blogCategories.exists(decodedCategory)) {
       return res.status(404).json({ error: 'Category not found.' });
     }
 
-    blogData.categories.splice(categoryIndex, 1);
-    writeBlogData(blogData);
+    db.blogCategories.delete(decodedCategory);
 
     res.status(200).json({
       success: true,
       message: 'Category deleted successfully.',
-      categories: blogData.categories,
+      categories: db.blogCategories.getAll(),
     });
   } catch (error) {
     console.error('Delete category error:', error);
@@ -479,8 +404,6 @@ async function deleteCategory(req, res) {
 
 /**
  * PUT /api/admin/blog/settings
- *
- * Update blog settings
  */
 async function updateSettings(req, res) {
   const settings = req.body;
@@ -493,17 +416,12 @@ async function updateSettings(req, res) {
       });
     }
 
-    const blogData = readBlogData();
-    blogData.settings = {
-      ...blogData.settings,
-      ...settings,
-    };
-    writeBlogData(blogData);
+    db.blogSettings.setMany(settings);
 
     res.status(200).json({
       success: true,
       message: 'Settings updated successfully.',
-      settings: blogData.settings,
+      settings: db.blogSettings.getAll(),
     });
   } catch (error) {
     console.error('Update settings error:', error);
@@ -515,15 +433,12 @@ async function updateSettings(req, res) {
 
 /**
  * GET /api/blog/posts
- *
- * List published blog posts (public)
  */
 async function listPublicPosts(req, res) {
   const { page = '1', perPage = '10', category, tag, search } = req.query;
 
   try {
-    const blogData = readBlogData();
-    let posts = blogData.posts.filter(p => p.status === 'published');
+    let posts = db.blogPosts.getAll().filter(p => p.status === 'published');
 
     // Apply filters
     if (category) {
@@ -553,9 +468,11 @@ async function listPublicPosts(req, res) {
     // Remove full content from list view for performance
     const postsForList = paginatedPosts.map(({ content, ...rest }) => rest);
 
+    const categories = db.blogCategories.getAll();
+
     res.status(200).json({
       posts: postsForList,
-      categories: blogData.categories,
+      categories,
       pagination: {
         totalItems: posts.length,
         totalPages: Math.ceil(posts.length / perPageNum),
@@ -571,8 +488,6 @@ async function listPublicPosts(req, res) {
 
 /**
  * GET /api/blog/posts/:slug
- *
- * Get a single published blog post by slug (public)
  */
 async function getPublicPost(req, res) {
   const { slug } = req.params;
@@ -582,21 +497,18 @@ async function getPublicPost(req, res) {
   }
 
   try {
-    const blogData = readBlogData();
-    const post = blogData.posts.find(p => p.slug === slug && p.status === 'published');
+    const post = db.blogPosts.getBySlug(slug);
 
-    if (!post) {
+    if (!post || post.status !== 'published') {
       return res.status(404).json({ error: 'Post not found.' });
     }
 
     // Increment view count
-    const postIndex = blogData.posts.findIndex(p => p.id === post.id);
-    if (postIndex !== -1) {
-      blogData.posts[postIndex].viewCount = (blogData.posts[postIndex].viewCount || 0) + 1;
-      writeBlogData(blogData);
-    }
+    db.blogPosts.incrementViewCount(post.id);
 
-    res.status(200).json({ post });
+    // Return with updated view count
+    const updated = db.blogPosts.getById(post.id);
+    res.status(200).json({ post: updated });
   } catch (error) {
     console.error('Get public blog post error:', error);
     res.status(500).json({ error: 'Failed to fetch blog post.' });

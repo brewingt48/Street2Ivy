@@ -3,49 +3,12 @@
  *
  * Manages students who attempted to register from non-partner institutions.
  * This data is valuable for institutional outreach and sales.
+ *
+ * Persistence: SQLite via server/api-util/db.js
  */
 
-const fs = require('fs');
-const path = require('path');
+const db = require('../../api-util/db');
 const { verifySystemAdmin, auditLog, getClientIP, sanitizeString, isValidEmail } = require('../../api-util/security');
-
-// Waitlist data file path
-const WAITLIST_FILE = path.join(__dirname, '../../data/student-waitlist.json');
-
-// Ensure data directory exists
-const dataDir = path.join(__dirname, '../../data');
-if (!fs.existsSync(dataDir)) {
-  fs.mkdirSync(dataDir, { recursive: true });
-}
-
-/**
- * Load waitlist from file
- */
-function loadWaitlist() {
-  try {
-    if (fs.existsSync(WAITLIST_FILE)) {
-      const data = fs.readFileSync(WAITLIST_FILE, 'utf8');
-      return JSON.parse(data);
-    }
-  } catch (error) {
-    console.error('Error loading student waitlist:', error);
-  }
-  return { entries: [], lastUpdated: null };
-}
-
-/**
- * Save waitlist to file
- */
-function saveWaitlist(waitlist) {
-  try {
-    waitlist.lastUpdated = new Date().toISOString();
-    fs.writeFileSync(WAITLIST_FILE, JSON.stringify(waitlist, null, 2), 'utf8');
-    return true;
-  } catch (error) {
-    console.error('Error saving student waitlist:', error);
-    return false;
-  }
-}
 
 /**
  * Extract institution name from email domain (best effort)
@@ -53,13 +16,10 @@ function saveWaitlist(waitlist) {
 function guessInstitutionName(domain) {
   if (!domain) return 'Unknown';
 
-  // Remove common TLDs and known suffixes
   let name = domain
     .replace(/\.(edu|ac\.uk|ac\.jp|edu\.au|edu\.cn)$/i, '')
     .replace(/\.(com|org|net)$/i, '');
 
-  // Convert domain style to readable name
-  // e.g., "mit" -> "MIT", "stanfordonline" -> "Stanford Online"
   name = name
     .split(/[-_.]/)
     .map(part => part.charAt(0).toUpperCase() + part.slice(1))
@@ -76,33 +36,30 @@ async function addToWaitlist(req, res) {
   try {
     const { email, firstName, lastName } = req.body;
 
-    // Validate email
     if (!email || !isValidEmail(email)) {
       return res.status(400).json({ error: 'Valid email address is required' });
     }
 
-    // Extract domain from email
     const emailParts = email.toLowerCase().split('@');
     if (emailParts.length !== 2) {
       return res.status(400).json({ error: 'Invalid email format' });
     }
     const domain = emailParts[1];
 
-    // Sanitize inputs
     const sanitizedFirstName = sanitizeString(firstName, { maxLength: 100 }) || '';
     const sanitizedLastName = sanitizeString(lastName, { maxLength: 100 }) || '';
 
-    const waitlist = loadWaitlist();
-
     // Check if email already exists
-    const existingIndex = waitlist.entries.findIndex(e => e.email.toLowerCase() === email.toLowerCase());
+    const existing = db.waitlist.getByEmail(email.toLowerCase());
 
-    if (existingIndex !== -1) {
+    if (existing) {
       // Update existing entry
-      waitlist.entries[existingIndex].attempts = (waitlist.entries[existingIndex].attempts || 1) + 1;
-      waitlist.entries[existingIndex].lastAttemptAt = new Date().toISOString();
-      if (sanitizedFirstName) waitlist.entries[existingIndex].firstName = sanitizedFirstName;
-      if (sanitizedLastName) waitlist.entries[existingIndex].lastName = sanitizedLastName;
+      db.waitlist.update(existing.id, {
+        attempts: (existing.attempts || 1) + 1,
+        lastAttemptAt: new Date().toISOString(),
+        firstName: sanitizedFirstName || existing.firstName,
+        lastName: sanitizedLastName || existing.lastName,
+      });
     } else {
       // Add new entry
       const entry = {
@@ -118,11 +75,7 @@ async function addToWaitlist(req, res) {
         contacted: false,
         notes: '',
       };
-      waitlist.entries.unshift(entry);
-    }
-
-    if (!saveWaitlist(waitlist)) {
-      return res.status(500).json({ error: 'Failed to save to waitlist' });
+      db.waitlist.create(entry);
     }
 
     res.status(201).json({
@@ -156,8 +109,7 @@ async function listWaitlist(req, res) {
 
     const { page = '1', perPage = '50', domain, search, contacted } = req.query;
 
-    const waitlist = loadWaitlist();
-    let entries = [...waitlist.entries];
+    let entries = db.waitlist.getAll();
 
     // Apply filters
     if (domain) {
@@ -178,7 +130,7 @@ async function listWaitlist(req, res) {
       entries = entries.filter(e => !e.contacted);
     }
 
-    // Sort by date (newest first)
+    // Sort by date (newest first) - already sorted by DB, but ensure
     entries.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
     // Pagination
@@ -187,9 +139,10 @@ async function listWaitlist(req, res) {
     const startIndex = (pageNum - 1) * perPageNum;
     const paginatedEntries = entries.slice(startIndex, startIndex + perPageNum);
 
-    // Aggregate stats by domain
+    // Aggregate stats by domain (use full list before filtering)
+    const allEntries = db.waitlist.getAll();
     const domainStats = {};
-    waitlist.entries.forEach(e => {
+    allEntries.forEach(e => {
       if (!domainStats[e.domain]) {
         domainStats[e.domain] = {
           domain: e.domain,
@@ -215,7 +168,7 @@ async function listWaitlist(req, res) {
         perPage: perPageNum,
       },
       stats: {
-        totalEntries: waitlist.entries.length,
+        totalEntries: allEntries.length,
         uniqueDomains: Object.keys(domainStats).length,
         topDomains,
       },
@@ -243,27 +196,20 @@ async function updateWaitlistEntry(req, res) {
     const { entryId } = req.params;
     const { contacted, notes, institutionName } = req.body;
 
-    const waitlist = loadWaitlist();
-    const entryIndex = waitlist.entries.findIndex(e => e.id === entryId);
-
-    if (entryIndex === -1) {
+    const entry = db.waitlist.getById(entryId);
+    if (!entry) {
       return res.status(404).json({ error: 'Waitlist entry not found' });
     }
 
-    const entry = waitlist.entries[entryIndex];
+    const updates = {
+      updatedAt: new Date().toISOString(),
+      updatedBy: currentUser.id?.uuid,
+    };
+    if (contacted !== undefined) updates.contacted = !!contacted;
+    if (notes !== undefined) updates.notes = sanitizeString(notes, { maxLength: 1000 }) || '';
+    if (institutionName !== undefined) updates.institutionName = sanitizeString(institutionName, { maxLength: 200 }) || entry.institutionName;
 
-    if (contacted !== undefined) entry.contacted = !!contacted;
-    if (notes !== undefined) entry.notes = sanitizeString(notes, { maxLength: 1000 }) || '';
-    if (institutionName !== undefined) entry.institutionName = sanitizeString(institutionName, { maxLength: 200 }) || entry.institutionName;
-
-    entry.updatedAt = new Date().toISOString();
-    entry.updatedBy = currentUser.id?.uuid;
-
-    waitlist.entries[entryIndex] = entry;
-
-    if (!saveWaitlist(waitlist)) {
-      return res.status(500).json({ error: 'Failed to update waitlist entry' });
-    }
+    const updated = db.waitlist.update(entryId, updates);
 
     auditLog('WAITLIST_ENTRY_UPDATED', {
       entryId,
@@ -272,7 +218,7 @@ async function updateWaitlistEntry(req, res) {
     });
 
     res.status(200).json({
-      data: entry,
+      data: updated,
       message: 'Waitlist entry updated successfully',
     });
   } catch (error) {
@@ -297,18 +243,11 @@ async function deleteWaitlistEntry(req, res) {
 
     const { entryId } = req.params;
 
-    const waitlist = loadWaitlist();
-    const entryIndex = waitlist.entries.findIndex(e => e.id === entryId);
-
-    if (entryIndex === -1) {
+    if (!db.waitlist.getById(entryId)) {
       return res.status(404).json({ error: 'Waitlist entry not found' });
     }
 
-    waitlist.entries.splice(entryIndex, 1);
-
-    if (!saveWaitlist(waitlist)) {
-      return res.status(500).json({ error: 'Failed to delete waitlist entry' });
-    }
+    db.waitlist.delete(entryId);
 
     auditLog('WAITLIST_ENTRY_DELETED', {
       entryId,

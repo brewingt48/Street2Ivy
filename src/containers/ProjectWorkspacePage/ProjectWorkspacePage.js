@@ -30,20 +30,20 @@ const AccessDeniedView = ({ reason, depositConfirmed, transactionState }) => {
 
   switch (reason) {
     case 'not_accepted':
-      icon = '';
+      icon = '\u23F3';
       title = 'Awaiting Acceptance';
       message =
         'You have not been accepted for this project yet. The corporate partner is reviewing your application. You will gain access to the project details once you are accepted.';
       break;
     case 'deposit_pending':
-      icon = '';
+      icon = '\u2709';
       title = 'Confirmation Pending';
       message =
         "Great news — you've been accepted for this project! However, access to the project details is pending until the corporate partner's confirmation is complete. You will receive a notification once you have full access.";
       break;
     case 'unauthorized':
     default:
-      icon = '';
+      icon = '\uD83D\uDD12';
       title = 'Access Restricted';
       message = 'You do not have permission to access this project.';
       break;

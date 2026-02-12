@@ -7,6 +7,7 @@
  *   1. A tenant entry in tenants.json (using the default Sharetribe credentials)
  *   2. An educational admin user for the school
  *   3. Two corporate partner users — one pending, one approved
+ *   4. A test student user
  *
  * Since this reuses the same Sharetribe account (default credentials),
  * all users are in the same marketplace. The tenant just provides
@@ -20,6 +21,9 @@
  *   --school <name>      School name (default: Test School University)
  *   --domain <domain>    Institution email domain (default: testschool.edu)
  *
+ * NOTE: All test user passwords are randomly generated and printed to the
+ * console after creation. Copy them from the output.
+ *
  * Prerequisites:
  *   - SHARETRIBE_INTEGRATION_API_CLIENT_ID and SHARETRIBE_INTEGRATION_API_CLIENT_SECRET
  *     must be set in your .env file
@@ -31,6 +35,7 @@
 
 require('dotenv').config();
 
+const crypto = require('crypto');
 const marketplaceSdkLib = require('sharetribe-flex-sdk');
 const integrationSdkLib = require('sharetribe-flex-integration-sdk');
 const path = require('path');
@@ -177,7 +182,8 @@ async function setupTestTenant() {
   console.log('Step 2: Creating educational admin...');
 
   const eduAdminEmail = `admin@${domain}`;
-  const eduAdminPassword = 'TestEduAdmin123!';
+  // Generated passwords are printed to console — see script output
+  const eduAdminPassword = crypto.randomBytes(16).toString('hex') + 'A1!';
 
   const eduAdminResult = await findOrCreateUser(
     eduAdminEmail,
@@ -201,7 +207,7 @@ async function setupTestTenant() {
   console.log('Step 3: Creating PENDING corporate partner...');
 
   const pendingPartnerEmail = `pending-partner@${subdomain}corp.com`;
-  const pendingPartnerPassword = 'TestPending123!';
+  const pendingPartnerPassword = crypto.randomBytes(16).toString('hex') + 'A1!';
 
   const pendingResult = await findOrCreateUser(
     pendingPartnerEmail,
@@ -228,7 +234,7 @@ async function setupTestTenant() {
   console.log('Step 4: Creating APPROVED corporate partner...');
 
   const approvedPartnerEmail = `approved-partner@${subdomain}corp.com`;
-  const approvedPartnerPassword = 'TestApproved123!';
+  const approvedPartnerPassword = crypto.randomBytes(16).toString('hex') + 'A1!';
 
   const approvedResult = await findOrCreateUser(
     approvedPartnerEmail,
@@ -265,7 +271,7 @@ async function setupTestTenant() {
   console.log('Step 5: Creating test student...');
 
   const studentEmail = `student@${domain}`;
-  const studentPassword = 'TestStudent123!';
+  const studentPassword = crypto.randomBytes(16).toString('hex') + 'A1!';
 
   await findOrCreateUser(studentEmail, studentPassword, 'Test', 'Student', {
     userType: 'student',

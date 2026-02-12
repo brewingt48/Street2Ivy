@@ -742,6 +742,9 @@ const LandingPageComponent = props => {
                           </div>
                         ))}
                       </div>
+                      <p className={css.testimonialsDisclaimer}>
+                        {intl.formatMessage({ id: 'LandingPage.testimonialsDisclaimer' })}
+                      </p>
                     </div>
                   </div>
                 </section>
@@ -947,6 +950,13 @@ const LandingPageComponent = props => {
                   </div>
                 </section>
                 )}
+
+                {/* ════════════════════════════════════════════════════════════
+                    DISCLAIMER
+                    ════════════════════════════════════════════════════════════ */}
+                <p className={css.disclaimer}>
+                  {intl.formatMessage({ id: 'LandingPage.disclaimer' })}
+                </p>
 
               </Main>
               <Footer>

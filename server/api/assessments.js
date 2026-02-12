@@ -1,150 +1,64 @@
-const fs = require('fs');
-const path = require('path');
+const db = require('../api-util/db');
 const { getIntegrationSdkForTenant } = require('../api-util/integrationSdk');
 const { getSdk, handleError } = require('../api-util/sdk');
 
 /**
  * Assessment criteria configuration
  * Rating scale: 1-5
- * 1 = Below Expectations
- * 2 = Needs Improvement
- * 3 = Meets Expectations
- * 4 = Exceeds Expectations
- * 5 = Outstanding
  */
 const ASSESSMENT_CRITERIA = {
   workQuality: {
     title: 'Work Quality',
     criteria: [
-      {
-        key: 'deliverableQuality',
-        label: 'Deliverable Quality',
-        description: 'Met specifications and success criteria',
-      },
-      {
-        key: 'accuracy',
-        label: 'Accuracy',
-        description: 'Work was thorough and error-free',
-      },
-      {
-        key: 'criticalThinking',
-        label: 'Critical Thinking',
-        description: 'Demonstrated analysis and judgment',
-      },
-      {
-        key: 'creativityInitiative',
-        label: 'Creativity/Initiative',
-        description: 'Brought fresh ideas or went beyond basics',
-      },
+      { key: 'deliverableQuality', label: 'Deliverable Quality', description: 'Met specifications and success criteria' },
+      { key: 'accuracy', label: 'Accuracy', description: 'Work was thorough and error-free' },
+      { key: 'criticalThinking', label: 'Critical Thinking', description: 'Demonstrated analysis and judgment' },
+      { key: 'creativityInitiative', label: 'Creativity/Initiative', description: 'Brought fresh ideas or went beyond basics' },
     ],
   },
   communication: {
     title: 'Communication',
     criteria: [
-      {
-        key: 'writtenCommunication',
-        label: 'Written Communication',
-        description: 'Clear, professional written correspondence',
-      },
-      {
-        key: 'verbalCommunication',
-        label: 'Verbal Communication',
-        description: 'Articulate in meetings and discussions',
-      },
-      {
-        key: 'responsiveness',
-        label: 'Responsiveness',
-        description: 'Timely replies and follow-ups',
-      },
-      {
-        key: 'activeListening',
-        label: 'Active Listening',
-        description: 'Understood instructions and feedback',
-      },
+      { key: 'writtenCommunication', label: 'Written Communication', description: 'Clear, professional written correspondence' },
+      { key: 'verbalCommunication', label: 'Verbal Communication', description: 'Articulate in meetings and discussions' },
+      { key: 'responsiveness', label: 'Responsiveness', description: 'Timely replies and follow-ups' },
+      { key: 'activeListening', label: 'Active Listening', description: 'Understood instructions and feedback' },
     ],
   },
   professionalism: {
     title: 'Professionalism',
     criteria: [
-      {
-        key: 'reliability',
-        label: 'Reliability',
-        description: 'Met deadlines and commitments',
-      },
-      {
-        key: 'adaptability',
-        label: 'Adaptability',
-        description: 'Adjusted to changes and feedback',
-      },
-      {
-        key: 'teamwork',
-        label: 'Teamwork',
-        description: 'Collaborated effectively with others',
-      },
-      {
-        key: 'professionalConduct',
-        label: 'Professional Conduct',
-        description: 'Appropriate behavior and attitude',
-      },
+      { key: 'reliability', label: 'Reliability', description: 'Met deadlines and commitments' },
+      { key: 'adaptability', label: 'Adaptability', description: 'Adjusted to changes and feedback' },
+      { key: 'teamwork', label: 'Teamwork', description: 'Collaborated effectively with others' },
+      { key: 'professionalConduct', label: 'Professional Conduct', description: 'Appropriate behavior and attitude' },
     ],
   },
   overallPerformance: {
     title: 'Overall Performance',
     criteria: [
-      {
-        key: 'overallRating',
-        label: 'Overall Performance Rating',
-        description: 'Holistic assessment of student contribution',
-      },
+      { key: 'overallRating', label: 'Overall Performance Rating', description: 'Holistic assessment of student contribution' },
     ],
   },
 };
 
-// File-based persistence for assessments
-const ASSESSMENTS_FILE = path.join(__dirname, '../data/assessments.json');
-let assessments = [];
-let assessmentIdCounter = 1;
-
-function loadAssessments() {
-  try {
-    if (fs.existsSync(ASSESSMENTS_FILE)) {
-      const data = JSON.parse(fs.readFileSync(ASSESSMENTS_FILE, 'utf8'));
-      assessments = data.assessments || [];
-      assessmentIdCounter = data.nextId || (assessments.length + 1);
-      console.log(`Loaded ${assessments.length} assessments from file`);
-      return;
+// Track ID counter in memory (seeded from DB on startup)
+let assessmentIdCounter = (function () {
+  const all = db.assessments.getAll();
+  if (all.length === 0) return 1;
+  // Parse highest numeric suffix from existing IDs like "assessment-5"
+  let max = 0;
+  for (const a of all) {
+    const match = a.id?.match(/assessment-(\d+)/);
+    if (match) {
+      max = Math.max(max, parseInt(match[1], 10));
     }
-  } catch (error) {
-    console.error('Error loading assessments:', error);
   }
-  assessments = [];
-  assessmentIdCounter = 1;
-}
-
-function saveAssessments() {
-  try {
-    const dataDir = path.dirname(ASSESSMENTS_FILE);
-    if (!fs.existsSync(dataDir)) {
-      fs.mkdirSync(dataDir, { recursive: true });
-    }
-    fs.writeFileSync(
-      ASSESSMENTS_FILE,
-      JSON.stringify({ assessments, nextId: assessmentIdCounter }, null, 2),
-      'utf8'
-    );
-    return true;
-  } catch (error) {
-    console.error('Error saving assessments:', error);
-    return false;
-  }
-}
-
-// Load assessments on startup
-loadAssessments();
+  return max + 1;
+})();
 
 /**
  * GET /api/assessments/criteria
- * Returns the assessment criteria configuration
  */
 async function getAssessmentCriteria(req, res) {
   res.status(200).json({
@@ -161,15 +75,6 @@ async function getAssessmentCriteria(req, res) {
 
 /**
  * POST /api/assessments
- * Submit a student performance assessment
- *
- * Body:
- *   transactionId - The completed transaction ID
- *   studentId     - The student being assessed
- *   ratings       - Object with criterion keys and numeric ratings (1-5)
- *   comments      - Object with criterion keys and optional comments
- *   overallComments - General feedback for the student
- *   recommendForFuture - Boolean, would recommend for future projects
  */
 async function submitAssessment(req, res) {
   const {
@@ -274,9 +179,8 @@ async function submitAssessment(req, res) {
       sentToStudent: false,
     };
 
-    // Store the assessment
-    assessments.push(assessment);
-    saveAssessments();
+    // Store the assessment in SQLite
+    db.assessments.create(assessment);
 
     // Update the student's profile with the assessment (add to their track record)
     try {
@@ -304,11 +208,11 @@ async function submitAssessment(req, res) {
       });
     } catch (updateError) {
       console.error('Failed to update student profile with assessment summary:', updateError);
-      // Continue - don't fail the whole request if this fails
     }
 
     // Mark as sent to student
     assessment.sentToStudent = true;
+    db.assessments.updateSentToStudent(assessment.id, true);
 
     res.status(201).json({
       success: true,
@@ -323,7 +227,6 @@ async function submitAssessment(req, res) {
 
 /**
  * GET /api/assessments/transaction/:transactionId
- * Get assessment for a specific transaction
  */
 async function getAssessmentByTransaction(req, res) {
   const { transactionId } = req.params;
@@ -333,7 +236,7 @@ async function getAssessmentByTransaction(req, res) {
     const currentUserResponse = await sdk.currentUser.show();
     const currentUser = currentUserResponse.data.data;
 
-    const assessment = assessments.find(a => a.transactionId === transactionId);
+    const assessment = db.assessments.getByTransactionId(transactionId);
 
     if (!assessment) {
       return res.status(404).json({ error: 'Assessment not found.' });
@@ -353,7 +256,6 @@ async function getAssessmentByTransaction(req, res) {
 
 /**
  * GET /api/assessments/student/:studentId
- * Get all assessments for a student (for their portfolio)
  */
 async function getStudentAssessments(req, res) {
   const { studentId } = req.params;
@@ -370,12 +272,7 @@ async function getStudentAssessments(req, res) {
       return res.status(403).json({ error: 'Access denied.' });
     }
 
-    const studentAssessments = assessments.filter(
-      a => a.studentId === studentId && a.sentToStudent
-    );
-
-    // Sort by date, newest first
-    studentAssessments.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    const studentAssessments = db.assessments.getByStudentId(studentId);
 
     res.status(200).json({
       assessments: studentAssessments,
@@ -396,7 +293,6 @@ async function getStudentAssessments(req, res) {
 
 /**
  * GET /api/assessments/pending
- * Get transactions that need assessments (completed but not assessed)
  */
 async function getPendingAssessments(req, res) {
   try {
@@ -423,7 +319,7 @@ async function getPendingAssessments(req, res) {
     const completedTransactions = txResponse.data.data || [];
 
     // Filter out transactions that already have assessments
-    const assessedTxIds = assessments.map(a => a.transactionId);
+    const assessedTxIds = db.assessments.getAllTransactionIds();
     const pendingTransactions = completedTransactions.filter(
       tx => !assessedTxIds.includes(tx.id.uuid)
     );

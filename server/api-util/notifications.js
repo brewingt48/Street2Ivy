@@ -7,14 +7,14 @@
  * - Messages from corporate partners
  * - Assessment completions
  *
- * Uses Sharetribe's built-in email system through the Integration API.
+ * Persistence: SQLite via server/api-util/db.js
  */
 
+const db = require('./db');
 const { getIntegrationSdk } = require('./sdk');
 
 // Email notification types
 const NOTIFICATION_TYPES = {
-  // Student notifications
   APPLICATION_RECEIVED: 'application-received',
   APPLICATION_ACCEPTED: 'application-accepted',
   APPLICATION_DECLINED: 'application-declined',
@@ -22,13 +22,9 @@ const NOTIFICATION_TYPES = {
   INVITE_RECEIVED: 'invite-received',
   NEW_MESSAGE: 'new-message',
   ASSESSMENT_RECEIVED: 'assessment-received',
-
-  // Corporate partner notifications
   NEW_APPLICATION: 'new-application',
   STUDENT_ACCEPTED_INVITE: 'student-accepted-invite',
   DELIVERABLE_SUBMITTED: 'deliverable-submitted',
-
-  // Educational admin notifications
   STUDENT_PROJECT_UPDATE: 'student-project-update',
   ADMIN_MESSAGE: 'admin-message',
 };
@@ -54,9 +50,8 @@ const NOTIFICATION_TEMPLATES = {
       The Street2Ivy Team
     `,
   },
-
   [NOTIFICATION_TYPES.APPLICATION_ACCEPTED]: {
-    subject: '🎉 Congratulations! Your Application Was Accepted',
+    subject: 'Congratulations! Your Application Was Accepted',
     getContent: (data) => `
       Hi {studentName},
 
@@ -75,7 +70,6 @@ const NOTIFICATION_TEMPLATES = {
       The Street2Ivy Team
     `,
   },
-
   [NOTIFICATION_TYPES.APPLICATION_DECLINED]: {
     subject: 'Application Update - {projectTitle}',
     getContent: (data) => `
@@ -93,9 +87,8 @@ const NOTIFICATION_TEMPLATES = {
       The Street2Ivy Team
     `,
   },
-
   [NOTIFICATION_TYPES.PROJECT_COMPLETED]: {
-    subject: '🏆 Project Completed - {projectTitle}',
+    subject: 'Project Completed - {projectTitle}',
     getContent: (data) => `
       Hi {studentName},
 
@@ -112,9 +105,8 @@ const NOTIFICATION_TEMPLATES = {
       The Street2Ivy Team
     `,
   },
-
   [NOTIFICATION_TYPES.INVITE_RECEIVED]: {
-    subject: '📩 New Project Invitation from {companyName}',
+    subject: 'New Project Invitation from {companyName}',
     getContent: (data) => `
       Hi {studentName},
 
@@ -133,7 +125,6 @@ const NOTIFICATION_TEMPLATES = {
       The Street2Ivy Team
     `,
   },
-
   [NOTIFICATION_TYPES.NEW_MESSAGE]: {
     subject: 'New Message from {senderName}',
     getContent: (data) => `
@@ -148,9 +139,8 @@ const NOTIFICATION_TEMPLATES = {
       The Street2Ivy Team
     `,
   },
-
   [NOTIFICATION_TYPES.NEW_APPLICATION]: {
-    subject: '📬 New Application for {projectTitle}',
+    subject: 'New Application for {projectTitle}',
     getContent: (data) => `
       Hi {companyName} Team,
 
@@ -165,7 +155,6 @@ const NOTIFICATION_TEMPLATES = {
       The Street2Ivy Team
     `,
   },
-
   [NOTIFICATION_TYPES.ASSESSMENT_RECEIVED]: {
     subject: 'Assessment Received for {projectTitle}',
     getContent: (data) => `
@@ -185,13 +174,6 @@ const NOTIFICATION_TEMPLATES = {
 
 /**
  * Send an email notification
- *
- * @param {Object} options
- * @param {string} options.type - Notification type from NOTIFICATION_TYPES
- * @param {string} options.recipientId - Sharetribe user ID of the recipient
- * @param {string} options.recipientEmail - Email address of the recipient
- * @param {Object} options.data - Data to populate the email template
- * @returns {Promise<Object>} - Result of the notification send attempt
  */
 async function sendNotification({ type, recipientId, recipientEmail, data }) {
   try {
@@ -201,19 +183,13 @@ async function sendNotification({ type, recipientId, recipientEmail, data }) {
       return { success: false, error: 'Unknown notification type' };
     }
 
-    // Interpolate data into template
     const subject = interpolateTemplate(template.subject, data);
     const content = interpolateTemplate(template.getContent(data), data);
 
-    // Log the notification (for debugging and audit purposes)
     console.log(`[Notification] Sending ${type} to ${recipientEmail}`);
     console.log(`[Notification] Subject: ${subject}`);
 
-    // For now, we'll log the notification since Sharetribe's email sending
-    // is handled through their built-in notification system
-    // In production, you could integrate with SendGrid, Mailgun, etc.
-
-    // Store notification for in-app notification center
+    // Store notification in SQLite for in-app notification center
     await storeNotification({
       recipientId,
       type,
@@ -232,78 +208,50 @@ async function sendNotification({ type, recipientId, recipientEmail, data }) {
 }
 
 /**
- * Store notification in memory/database for in-app notification center
- * In production, this would store to a database
+ * Store notification in SQLite for in-app notification center
  */
-const notificationStore = new Map();
-
 async function storeNotification(notification) {
   const { recipientId } = notification;
-  const userNotifications = notificationStore.get(recipientId) || [];
-  userNotifications.unshift({
+
+  db.notifications.create({
     id: `notif_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-    ...notification,
+    recipientId,
+    type: notification.type,
+    subject: notification.subject,
+    content: notification.content,
+    data: notification.data,
+    read: notification.read || false,
+    readAt: null,
+    createdAt: notification.createdAt || new Date().toISOString(),
   });
-
-  // Keep only last 50 notifications per user
-  if (userNotifications.length > 50) {
-    userNotifications.length = 50;
-  }
-
-  notificationStore.set(recipientId, userNotifications);
 }
 
 /**
  * Get notifications for a user
  */
 async function getNotifications(userId, { limit = 20, unreadOnly = false } = {}) {
-  const userNotifications = notificationStore.get(userId) || [];
-
-  let filtered = unreadOnly
-    ? userNotifications.filter(n => !n.read)
-    : userNotifications;
-
-  return filtered.slice(0, limit);
+  return db.notifications.getByUserId(userId, { limit, unreadOnly });
 }
 
 /**
  * Mark notification as read
  */
 async function markNotificationRead(userId, notificationId) {
-  const userNotifications = notificationStore.get(userId) || [];
-  const notification = userNotifications.find(n => n.id === notificationId);
-
-  if (notification) {
-    notification.read = true;
-    notification.readAt = new Date().toISOString();
-  }
-
-  return notification;
+  return db.notifications.markRead(userId, notificationId);
 }
 
 /**
  * Mark all notifications as read
  */
 async function markAllNotificationsRead(userId) {
-  const userNotifications = notificationStore.get(userId) || [];
-  const now = new Date().toISOString();
-
-  userNotifications.forEach(n => {
-    if (!n.read) {
-      n.read = true;
-      n.readAt = now;
-    }
-  });
-
-  return userNotifications.filter(n => n.readAt === now).length;
+  return db.notifications.markAllRead(userId);
 }
 
 /**
  * Get unread notification count
  */
 async function getUnreadCount(userId) {
-  const userNotifications = notificationStore.get(userId) || [];
-  return userNotifications.filter(n => !n.read).length;
+  return db.notifications.getUnreadCount(userId);
 }
 
 /**
@@ -317,7 +265,6 @@ function interpolateTemplate(template, data) {
 
 /**
  * Send notification for transaction state change
- * This is the main entry point for transaction-related notifications
  */
 async function notifyTransactionStateChange({
   transaction,
@@ -339,7 +286,6 @@ async function notifyTransactionStateChange({
 
   switch (transitionName) {
     case 'request-project-application':
-      // Student applied - notify the corporate partner
       await sendNotification({
         type: NOTIFICATION_TYPES.NEW_APPLICATION,
         recipientId: providerId,
@@ -354,7 +300,6 @@ async function notifyTransactionStateChange({
         },
       });
 
-      // Also notify the student that their application was received
       await sendNotification({
         type: NOTIFICATION_TYPES.APPLICATION_RECEIVED,
         recipientId: customerId,
@@ -369,7 +314,6 @@ async function notifyTransactionStateChange({
       break;
 
     case 'accept':
-      // Application accepted - notify the student
       await sendNotification({
         type: NOTIFICATION_TYPES.APPLICATION_ACCEPTED,
         recipientId: customerId,
@@ -383,7 +327,6 @@ async function notifyTransactionStateChange({
       break;
 
     case 'decline':
-      // Application declined - notify the student
       await sendNotification({
         type: NOTIFICATION_TYPES.APPLICATION_DECLINED,
         recipientId: customerId,
@@ -398,7 +341,6 @@ async function notifyTransactionStateChange({
       break;
 
     case 'complete':
-      // Project completed - notify the student
       await sendNotification({
         type: NOTIFICATION_TYPES.PROJECT_COMPLETED,
         recipientId: customerId,
@@ -412,7 +354,6 @@ async function notifyTransactionStateChange({
       break;
 
     default:
-      // No notification for other transitions
       break;
   }
 }

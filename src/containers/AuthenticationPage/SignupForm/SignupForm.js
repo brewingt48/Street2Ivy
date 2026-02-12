@@ -108,11 +108,16 @@ const SignupFormComponent = props => (
         passwordMaxLengthMessage,
         validators.PASSWORD_MAX_LENGTH
       );
+      const passwordComplexityMessage = intl.formatMessage({
+        id: 'SignupForm.passwordComplexity',
+      });
+      const passwordComplexity = validators.passwordComplexity(passwordComplexityMessage);
       const passwordRequired = validators.requiredStringNoTrim(passwordRequiredMessage);
       const passwordValidators = validators.composeValidators(
         passwordRequired,
         passwordMinLength,
-        passwordMaxLength
+        passwordMaxLength,
+        passwordComplexity
       );
 
       // Custom user fields. Since user types are not supported here,

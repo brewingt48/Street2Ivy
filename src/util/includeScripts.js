@@ -3,6 +3,7 @@ import { Helmet } from 'react-helmet-async';
 
 import { useRouteConfiguration } from '../context/routeConfigurationContext';
 import { matchPathname } from '../util/routes';
+import CookieConsent from '../components/CookieConsent/CookieConsent';
 
 const MAPBOX_SCRIPT_ID = 'mapbox_GL_JS';
 const GOOGLE_MAPS_SCRIPT_ID = 'GoogleMapsApi';
@@ -103,7 +104,10 @@ export const IncludeScripts = props => {
     );
   }
 
-  if (googleAnalyticsId && hasGoogleAnalyticsv4Id) {
+  // COMPLIANCE: Gate analytics scripts behind cookie consent (GDPR/CCPA)
+  const hasAnalyticsConsent = typeof window !== 'undefined' && CookieConsent.hasConsent();
+
+  if (googleAnalyticsId && hasGoogleAnalyticsv4Id && hasAnalyticsConsent) {
     // Google Analytics: gtag.js
     // NOTE: This template is a single-page application (SPA).
     //       gtag.js sends initial page_view event after page load.
@@ -131,7 +135,7 @@ export const IncludeScripts = props => {
     }
   }
 
-  if (plausibleDomains) {
+  if (plausibleDomains && hasAnalyticsConsent) {
     // If plausibleDomains is not an empty string, include their script too.
     analyticsLibraries.push(
       <script

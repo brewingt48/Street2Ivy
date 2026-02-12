@@ -4,18 +4,40 @@
  * Allows educational administrators to customize the landing page
  * for their institution's subdomain (e.g., howard.street2ivy.com).
  *
- * Customizations stored per-domain in server/data/tenant-content/<domain>.json
+ * Persistence: SQLite via server/api-util/db.js
  */
 
-const fs = require('fs');
-const path = require('path');
+const db = require('../api-util/db');
 const { getSdk, handleError } = require('../api-util/sdk');
 
-const TENANT_CONTENT_DIR = path.join(__dirname, '../data/tenant-content');
-
-// Ensure tenant content directory exists
-if (!fs.existsSync(TENANT_CONTENT_DIR)) {
-  fs.mkdirSync(TENANT_CONTENT_DIR, { recursive: true });
+/**
+ * SECURITY: Recursively sanitize content strings to prevent stored XSS.
+ * Strips dangerous HTML tags and event handlers from string values.
+ */
+function sanitizeContentValue(value) {
+  if (typeof value === 'string') {
+    return value
+      .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+      .replace(/<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi, '')
+      .replace(/<object\b[^<]*(?:(?!<\/object>)<[^<]*)*<\/object>/gi, '')
+      .replace(/<embed\b[^>]*\/?>/gi, '')
+      .replace(/<svg\b[^<]*(?:(?!<\/svg>)<[^<]*)*<\/svg>/gi, '')
+      .replace(/on\w+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi, '')
+      .replace(/javascript\s*:/gi, '')
+      .replace(/data\s*:\s*text\/html/gi, '')
+      .replace(/vbscript\s*:/gi, '');
+  }
+  if (Array.isArray(value)) {
+    return value.map(sanitizeContentValue);
+  }
+  if (value && typeof value === 'object') {
+    const sanitized = {};
+    for (const [k, v] of Object.entries(value)) {
+      sanitized[k] = sanitizeContentValue(v);
+    }
+    return sanitized;
+  }
+  return value;
 }
 
 // Default tenant content template
@@ -60,33 +82,20 @@ const defaultTenantContent = {
 };
 
 /**
- * Load tenant content from file
+ * SECURITY: Validate domain string to prevent path traversal attacks.
+ * Only allows alphanumeric chars, dots, and hyphens (valid domain characters).
+ *
+ * Defense-in-depth: SQL injection is not possible with parameterized queries,
+ * but this validation remains as an extra safety layer.
  */
-function loadTenantContent(domain) {
-  const filePath = path.join(TENANT_CONTENT_DIR, `${domain}.json`);
-  try {
-    if (fs.existsSync(filePath)) {
-      const data = fs.readFileSync(filePath, 'utf8');
-      return JSON.parse(data);
-    }
-  } catch (error) {
-    console.error(`Error loading tenant content for ${domain}:`, error);
-  }
-  return null;
-}
-
-/**
- * Save tenant content to file
- */
-function saveTenantContent(domain, content) {
-  const filePath = path.join(TENANT_CONTENT_DIR, `${domain}.json`);
-  try {
-    fs.writeFileSync(filePath, JSON.stringify(content, null, 2), 'utf8');
-    return true;
-  } catch (error) {
-    console.error(`Error saving tenant content for ${domain}:`, error);
+function isValidDomainString(domain) {
+  if (!domain || typeof domain !== 'string') return false;
+  // Reject path traversal sequences, null bytes, and non-domain characters
+  if (domain.includes('..') || domain.includes('/') || domain.includes('\\') || domain.includes('\0')) {
     return false;
   }
+  // Only allow valid domain characters: alphanumeric, dots, hyphens
+  return /^[a-z0-9][a-z0-9.-]*[a-z0-9]$/i.test(domain) && domain.length <= 253;
 }
 
 /**
@@ -118,7 +127,12 @@ async function getMyTenantContent(req, res) {
     const sdk = getSdk(req, res);
     const { domain } = await verifyEducationalAdmin(sdk);
 
-    const content = loadTenantContent(domain);
+    // SECURITY: Defense-in-depth domain validation
+    if (!isValidDomainString(domain)) {
+      return res.status(400).json({ error: 'Invalid institution domain' });
+    }
+
+    const content = db.tenantContent.getByDomain(domain);
 
     res.status(200).json({
       data: content || { ...defaultTenantContent, branding: { ...defaultTenantContent.branding } },
@@ -141,8 +155,14 @@ async function updateMyTenantContent(req, res) {
     const sdk = getSdk(req, res);
     const { currentUser, domain } = await verifyEducationalAdmin(sdk);
 
-    const existingContent = loadTenantContent(domain) || { ...defaultTenantContent };
-    const updates = req.body;
+    // SECURITY: Defense-in-depth domain validation
+    if (!isValidDomainString(domain)) {
+      return res.status(400).json({ error: 'Invalid institution domain' });
+    }
+
+    const existingContent = db.tenantContent.getByDomain(domain) || { ...defaultTenantContent };
+    // SECURITY: Sanitize all input to prevent stored XSS
+    const updates = sanitizeContentValue(req.body);
 
     // Merge updates into existing content
     const updatedContent = {
@@ -158,10 +178,7 @@ async function updateMyTenantContent(req, res) {
       updatedBy: currentUser.id.uuid,
     };
 
-    const saved = saveTenantContent(domain, updatedContent);
-    if (!saved) {
-      return res.status(500).json({ error: 'Failed to save tenant content' });
-    }
+    db.tenantContent.set(domain, updatedContent, currentUser.id.uuid);
 
     res.status(200).json({
       data: updatedContent,
@@ -189,16 +206,8 @@ async function getPublicTenantContent(req, res) {
 
     const normalizedSlug = slug.toLowerCase();
 
-    // Load institutions to find the matching domain
-    const institutionsFile = path.join(__dirname, '../data/institutions.json');
-    let institutions = [];
-    try {
-      if (fs.existsSync(institutionsFile)) {
-        institutions = JSON.parse(fs.readFileSync(institutionsFile, 'utf8'));
-      }
-    } catch (err) {
-      console.error('Error reading institutions file:', err);
-    }
+    // Load institutions from SQLite
+    const institutions = db.institutions.getAll();
 
     // Find institution whose domain matches the slug
     // e.g., slug "howard" matches "howard.edu"
@@ -221,7 +230,7 @@ async function getPublicTenantContent(req, res) {
       });
     }
 
-    const content = loadTenantContent(matchedInstitution.domain);
+    const content = db.tenantContent.getByDomain(matchedInstitution.domain);
 
     res.status(200).json({
       data: content || null,
@@ -246,10 +255,12 @@ async function resetMyTenantContent(req, res) {
     const sdk = getSdk(req, res);
     const { domain } = await verifyEducationalAdmin(sdk);
 
-    const filePath = path.join(TENANT_CONTENT_DIR, `${domain}.json`);
-    if (fs.existsSync(filePath)) {
-      fs.unlinkSync(filePath);
+    // SECURITY: Defense-in-depth domain validation
+    if (!isValidDomainString(domain)) {
+      return res.status(400).json({ error: 'Invalid institution domain' });
     }
+
+    db.tenantContent.delete(domain);
 
     res.status(200).json({
       message: 'Tenant content reset to defaults',

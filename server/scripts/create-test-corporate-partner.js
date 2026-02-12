@@ -9,8 +9,11 @@
  *
  * Options:
  *   --email <email>       Custom email (default: partner@testcompany.com)
- *   --password <password> Custom password (default: TestPartner123!)
+ *   --password <password> Custom password (default: randomly generated)
  *   --approved            Create as already approved (default: pending)
+ *
+ * NOTE: When no --password is provided, a random password is generated and
+ * printed to the console. Copy it from the output.
  *
  * Prerequisites:
  *   - REACT_APP_SHARETRIBE_SDK_CLIENT_ID and SHARETRIBE_INTEGRATION_API_CLIENT_ID
@@ -19,6 +22,7 @@
 
 require('dotenv').config();
 
+const crypto = require('crypto');
 const marketplaceSdk = require('sharetribe-flex-sdk');
 const integrationSdkLib = require('sharetribe-flex-integration-sdk');
 
@@ -51,9 +55,10 @@ const integrationSdk = integrationSdkLib.createInstance({
 // Parse command line arguments
 function parseArgs() {
   const args = process.argv.slice(2);
+  // Generated passwords are printed to console — see script output
   const options = {
     email: 'partner@testcompany.com',
-    password: 'TestPartner123!',
+    password: crypto.randomBytes(16).toString('hex') + 'A1!',
     firstName: 'Test',
     lastName: 'Partner',
     approved: false,

@@ -3,21 +3,13 @@
  *
  * Manages global AI coaching platform settings that apply across all institutions.
  * Allows system admins to configure the external AI coaching platform connection.
+ *
+ * Persistence: SQLite via server/api-util/db.js
  */
 
-const fs = require('fs');
-const path = require('path');
+const db = require('../../api-util/db');
 const { getSdk } = require('../../api-util/sdk');
 const { verifySystemAdmin, auditLog, getClientIP } = require('../../api-util/security');
-
-// Configuration file path
-const CONFIG_FILE = path.join(__dirname, '../../data/coaching-config.json');
-
-// Ensure data directory exists
-const dataDir = path.join(__dirname, '../../data');
-if (!fs.existsSync(dataDir)) {
-  fs.mkdirSync(dataDir, { recursive: true });
-}
 
 // Default configuration
 const defaultConfig = {
@@ -31,28 +23,28 @@ const defaultConfig = {
   updatedBy: null,
 };
 
+// Seed defaults into DB if no config exists
+(function seedDefaults() {
+  const existing = db.coachingConfig.getAll();
+  if (Object.keys(existing).length === 0) {
+    db.coachingConfig.setMany(defaultConfig);
+  }
+})();
+
 /**
- * Load configuration from file
+ * Load configuration from SQLite, filling in defaults for missing keys
  */
 function loadConfig() {
-  try {
-    if (fs.existsSync(CONFIG_FILE)) {
-      const data = fs.readFileSync(CONFIG_FILE, 'utf8');
-      const saved = JSON.parse(data);
-      return { ...defaultConfig, ...saved };
-    }
-  } catch (error) {
-    console.error('Error loading coaching config:', error);
-  }
-  return { ...defaultConfig };
+  const saved = db.coachingConfig.getAll();
+  return { ...defaultConfig, ...saved };
 }
 
 /**
- * Save configuration to file
+ * Save configuration to SQLite
  */
 function saveConfig(config) {
   try {
-    fs.writeFileSync(CONFIG_FILE, JSON.stringify(config, null, 2), 'utf8');
+    db.coachingConfig.setMany(config);
     return true;
   } catch (error) {
     console.error('Error saving coaching config:', error);

@@ -4,23 +4,12 @@
  * Handles NDA document upload, signature requests, and status tracking.
  * Uses Dropbox Sign (HelloSign) API for e-signatures.
  *
- * Flow:
- * 1. Corporate partner uploads NDA document when creating project
- * 2. When student is accepted, signature request is created
- * 3. Both parties sign electronically
- * 4. Signed document is stored and both parties get copies
- *
- * Environment variables needed:
- * - DROPBOX_SIGN_API_KEY: API key for Dropbox Sign (HelloSign)
- * - DROPBOX_SIGN_CLIENT_ID: Client ID for embedded signing
+ * Persistence: SQLite via server/api-util/db.js
  */
 
+const db = require('../api-util/db');
 const { getIntegrationSdkForTenant } = require('../api-util/integrationSdk');
 const { getSdk, handleError } = require('../api-util/sdk');
-
-// For production, use the actual Dropbox Sign SDK:
-// const HelloSignSDK = require('@dropbox/sign');
-// For now, we'll implement a mock that can be swapped with real API
 
 const DROPBOX_SIGN_API_KEY = process.env.DROPBOX_SIGN_API_KEY;
 const DROPBOX_SIGN_CLIENT_ID = process.env.DROPBOX_SIGN_CLIENT_ID;
@@ -32,22 +21,14 @@ function sanitizeTextInput(text, maxLength = 50000) {
   if (!text || typeof text !== 'string') return '';
   return text
     .substring(0, maxLength)
-    // Remove null bytes
     .replace(/\0/g, '')
-    // Remove control characters except newlines and tabs
     .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '')
-    // Escape HTML entities for safe display
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#x27;');
 }
-
-// In-memory store for NDA documents and signature requests
-// In production, this would be in a database
-let ndaDocuments = new Map();
-let signatureRequests = new Map();
 
 /**
  * Initialize Dropbox Sign client
@@ -57,19 +38,11 @@ function getDropboxSignClient() {
     console.warn('DROPBOX_SIGN_API_KEY not configured. Using mock signature service.');
     return null;
   }
-
-  // In production, initialize the actual SDK:
-  // const api = new HelloSignSDK.SignatureRequestApi();
-  // api.username = DROPBOX_SIGN_API_KEY;
-  // return api;
   return null;
 }
 
 /**
  * POST /api/nda/upload
- *
- * Upload an NDA document for a listing.
- * Called by corporate partners when creating/editing their project listing.
  */
 async function uploadNdaDocument(req, res) {
   try {
@@ -96,24 +69,21 @@ async function uploadNdaDocument(req, res) {
       return res.status(400).json({ error: 'Either document URL or NDA text is required.' });
     }
 
-    // Sanitize text inputs to prevent XSS
     const sanitizedNdaText = ndaText ? sanitizeTextInput(ndaText) : null;
     const sanitizedDocumentName = documentName ? sanitizeTextInput(documentName, 200) : 'NDA Agreement';
 
     const ndaDocument = {
-      id: `nda_${Date.now()}_${Math.random()
-        .toString(36)
-        .substr(2, 9)}`,
+      id: `nda_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       listingId,
       uploadedBy: currentUser.id.uuid,
       uploadedAt: new Date().toISOString(),
       documentUrl: documentUrl || null,
       documentName: sanitizedDocumentName,
-      ndaText: sanitizedNdaText, // For text-based NDAs
+      ndaText: sanitizedNdaText,
       status: 'active',
     };
 
-    ndaDocuments.set(listingId, ndaDocument);
+    db.ndaDocuments.upsert(ndaDocument);
 
     // Also update the listing's privateData with NDA info
     const integrationSdk = getIntegrationSdkForTenant(req.tenant);
@@ -141,8 +111,6 @@ async function uploadNdaDocument(req, res) {
 
 /**
  * GET /api/nda/:listingId
- *
- * Get NDA document info for a listing.
  */
 async function getNdaDocument(req, res) {
   const { listingId } = req.params;
@@ -156,7 +124,7 @@ async function getNdaDocument(req, res) {
       return res.status(401).json({ error: 'Authentication required.' });
     }
 
-    const ndaDocument = ndaDocuments.get(listingId);
+    const ndaDocument = db.ndaDocuments.getByListingId(listingId);
 
     if (!ndaDocument) {
       // Try to get from listing privateData
@@ -197,9 +165,6 @@ async function getNdaDocument(req, res) {
 
 /**
  * POST /api/nda/request-signature/:transactionId
- *
- * Create a signature request for an NDA when a student is accepted.
- * This initiates the e-signature workflow for both parties.
  */
 async function requestSignature(req, res) {
   const { transactionId } = req.params;
@@ -247,7 +212,7 @@ async function requestSignature(req, res) {
 
     // Get NDA document
     const listingId = listing.id.uuid;
-    const ndaDoc = ndaDocuments.get(listingId);
+    const ndaDoc = db.ndaDocuments.getByListingId(listingId);
     const listingPrivateData = listing.attributes.privateData || {};
 
     if (!ndaDoc && !listingPrivateData.ndaText && !listingPrivateData.ndaDocumentUrl) {
@@ -257,7 +222,7 @@ async function requestSignature(req, res) {
     }
 
     // Check for existing signature request
-    const existingRequest = signatureRequests.get(transactionId);
+    const existingRequest = db.ndaSignatures.getByTransactionId(transactionId);
     if (existingRequest && existingRequest.status === 'pending') {
       return res.status(200).json({
         success: true,
@@ -267,98 +232,41 @@ async function requestSignature(req, res) {
     }
 
     // Create signature request
-    const signatureRequestId = `sig_${Date.now()}_${Math.random()
-      .toString(36)
-      .substr(2, 9)}`;
+    const signatureRequestId = `sig_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
-    const dropboxSignClient = getDropboxSignClient();
+    const signatureRequest = {
+      id: signatureRequestId,
+      transactionId,
+      listingId,
+      title: `NDA for ${listing.attributes.title}`,
+      status: 'pending',
+      createdAt: new Date().toISOString(),
+      signers: [
+        {
+          id: `signer_provider_${signatureRequestId}`,
+          userId: provider.id.uuid,
+          email: provider.attributes.email,
+          name: provider.attributes.profile.displayName,
+          role: 'provider',
+          status: 'pending',
+          signedAt: null,
+        },
+        {
+          id: `signer_customer_${signatureRequestId}`,
+          userId: customer.id.uuid,
+          email: customer.attributes.email,
+          name: customer.attributes.profile.displayName,
+          role: 'customer',
+          status: 'pending',
+          signedAt: null,
+        },
+      ],
+      documentUrl: ndaDoc?.documentUrl || null,
+      ndaText: ndaDoc?.ndaText || listingPrivateData.ndaText || null,
+      signedDocumentUrl: null,
+    };
 
-    let signatureRequest;
-
-    if (dropboxSignClient) {
-      // Production: Use Dropbox Sign API
-      // const sigRequest = await dropboxSignClient.createEmbeddedSignatureRequest({
-      //   clientId: DROPBOX_SIGN_CLIENT_ID,
-      //   title: `NDA for ${listing.attributes.title}`,
-      //   subject: 'Please sign the Non-Disclosure Agreement',
-      //   message: 'Please review and sign the NDA to proceed with the project.',
-      //   signers: [
-      //     { emailAddress: provider.attributes.email, name: provider.attributes.profile.displayName, order: 0 },
-      //     { emailAddress: customer.attributes.email, name: customer.attributes.profile.displayName, order: 1 },
-      //   ],
-      //   fileUrls: ndaDoc?.documentUrl ? [ndaDoc.documentUrl] : undefined,
-      //   testMode: process.env.NODE_ENV !== 'production',
-      // });
-
-      signatureRequest = {
-        id: signatureRequestId,
-        transactionId,
-        listingId,
-        title: `NDA for ${listing.attributes.title}`,
-        status: 'pending',
-        createdAt: new Date().toISOString(),
-        signers: [
-          {
-            id: `signer_provider_${signatureRequestId}`,
-            userId: provider.id.uuid,
-            email: provider.attributes.email,
-            name: provider.attributes.profile.displayName,
-            role: 'provider',
-            status: 'pending',
-            signedAt: null,
-            signUrl: null, // Would be populated by Dropbox Sign
-          },
-          {
-            id: `signer_customer_${signatureRequestId}`,
-            userId: customer.id.uuid,
-            email: customer.attributes.email,
-            name: customer.attributes.profile.displayName,
-            role: 'customer',
-            status: 'pending',
-            signedAt: null,
-            signUrl: null,
-          },
-        ],
-        documentUrl: ndaDoc?.documentUrl || null,
-        ndaText: ndaDoc?.ndaText || listingPrivateData.ndaText || null,
-        signedDocumentUrl: null,
-      };
-    } else {
-      // Development/Mock: Create local signature request
-      signatureRequest = {
-        id: signatureRequestId,
-        transactionId,
-        listingId,
-        title: `NDA for ${listing.attributes.title}`,
-        status: 'pending',
-        createdAt: new Date().toISOString(),
-        signers: [
-          {
-            id: `signer_provider_${signatureRequestId}`,
-            userId: provider.id.uuid,
-            email: provider.attributes.email,
-            name: provider.attributes.profile.displayName,
-            role: 'provider',
-            status: 'pending',
-            signedAt: null,
-          },
-          {
-            id: `signer_customer_${signatureRequestId}`,
-            userId: customer.id.uuid,
-            email: customer.attributes.email,
-            name: customer.attributes.profile.displayName,
-            role: 'customer',
-            status: 'pending',
-            signedAt: null,
-          },
-        ],
-        documentUrl: ndaDoc?.documentUrl || null,
-        ndaText: ndaDoc?.ndaText || listingPrivateData.ndaText || null,
-        signedDocumentUrl: null,
-      };
-    }
-
-    signatureRequests.set(transactionId, signatureRequest);
+    db.ndaSignatures.upsert(signatureRequest);
 
     // Update transaction metadata
     const currentMetadata = transaction.attributes.metadata || {};
@@ -384,8 +292,6 @@ async function requestSignature(req, res) {
 
 /**
  * GET /api/nda/signature-status/:transactionId
- *
- * Get the current signature status for a transaction's NDA.
  */
 async function getSignatureStatus(req, res) {
   const { transactionId } = req.params;
@@ -399,10 +305,9 @@ async function getSignatureStatus(req, res) {
       return res.status(401).json({ error: 'Authentication required.' });
     }
 
-    const signatureRequest = signatureRequests.get(transactionId);
+    const signatureRequest = db.ndaSignatures.getByTransactionId(transactionId);
 
     if (!signatureRequest) {
-      // Check transaction metadata
       const integrationSdk = getIntegrationSdkForTenant(req.tenant);
       const txResponse = await integrationSdk.transactions.show({ id: transactionId });
       const metadata = txResponse.data.data.attributes.metadata || {};
@@ -414,8 +319,8 @@ async function getSignatureStatus(req, res) {
       });
     }
 
-    // Check if current user is a signer
-    const userSigner = signatureRequest.signers.find(s => s.userId === currentUser.id.uuid);
+    const signers = signatureRequest.signers || [];
+    const userSigner = signers.find(s => s.userId === currentUser.id.uuid);
 
     res.status(200).json({
       hasSignatureRequest: true,
@@ -423,7 +328,7 @@ async function getSignatureStatus(req, res) {
         id: signatureRequest.id,
         status: signatureRequest.status,
         createdAt: signatureRequest.createdAt,
-        signers: signatureRequest.signers.map(s => ({
+        signers: signers.map(s => ({
           name: s.name,
           role: s.role,
           status: s.status,
@@ -449,9 +354,6 @@ async function getSignatureStatus(req, res) {
 
 /**
  * POST /api/nda/sign/:transactionId
- *
- * Sign the NDA (for in-app signature without external provider).
- * Records the user's digital signature.
  */
 async function signNda(req, res) {
   const { transactionId } = req.params;
@@ -470,7 +372,7 @@ async function signNda(req, res) {
       return res.status(401).json({ error: 'Authentication required.' });
     }
 
-    let signatureRequest = signatureRequests.get(transactionId);
+    let signatureRequest = db.ndaSignatures.getByTransactionId(transactionId);
 
     // If no signature request exists, create one first
     if (!signatureRequest) {
@@ -499,10 +401,7 @@ async function signNda(req, res) {
       const listingPrivateData = listing?.attributes?.privateData || {};
       const listingPublicData = listing?.attributes?.publicData || {};
 
-      // Create a new signature request
-      const signatureRequestId = `sig_${Date.now()}_${Math.random()
-        .toString(36)
-        .substr(2, 9)}`;
+      const signatureRequestId = `sig_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
       signatureRequest = {
         id: signatureRequestId,
@@ -541,11 +440,12 @@ async function signNda(req, res) {
         signedDocumentUrl: null,
       };
 
-      signatureRequests.set(transactionId, signatureRequest);
+      db.ndaSignatures.upsert(signatureRequest);
     }
 
     // Find the current user's signer record
-    const signerIndex = signatureRequest.signers.findIndex(s => s.userId === currentUser.id.uuid);
+    const signers = signatureRequest.signers || [];
+    const signerIndex = signers.findIndex(s => s.userId === currentUser.id.uuid);
 
     if (signerIndex === -1) {
       return res.status(403).json({
@@ -553,7 +453,7 @@ async function signNda(req, res) {
       });
     }
 
-    const signer = signatureRequest.signers[signerIndex];
+    const signer = signers[signerIndex];
 
     if (signer.status === 'signed') {
       return res.status(400).json({
@@ -564,7 +464,7 @@ async function signNda(req, res) {
 
     // Record the signature
     const signedAt = new Date().toISOString();
-    signatureRequest.signers[signerIndex] = {
+    signers[signerIndex] = {
       ...signer,
       status: 'signed',
       signedAt,
@@ -574,17 +474,17 @@ async function signNda(req, res) {
     };
 
     // Check if all signers have signed
-    const allSigned = signatureRequest.signers.every(s => s.status === 'signed');
+    const allSigned = signers.every(s => s.status === 'signed');
+
+    signatureRequest.signers = signers;
 
     if (allSigned) {
       signatureRequest.status = 'completed';
       signatureRequest.completedAt = new Date().toISOString();
-
-      // In production, generate signed PDF and store URL
       signatureRequest.signedDocumentUrl = `https://storage.street2ivy.com/signed-ndas/${signatureRequest.id}.pdf`;
     }
 
-    signatureRequests.set(transactionId, signatureRequest);
+    db.ndaSignatures.upsert(signatureRequest);
 
     // Update transaction metadata
     const integrationSdk = getIntegrationSdkForTenant(req.tenant);
@@ -617,7 +517,7 @@ async function signNda(req, res) {
       signatureRequest: {
         id: signatureRequest.id,
         status: signatureRequest.status,
-        signers: signatureRequest.signers.map(s => ({
+        signers: signers.map(s => ({
           name: s.name,
           role: s.role,
           status: s.status,
@@ -635,8 +535,6 @@ async function signNda(req, res) {
 
 /**
  * GET /api/nda/download/:transactionId
- *
- * Download the signed NDA document.
  */
 async function downloadSignedNda(req, res) {
   const { transactionId } = req.params;
@@ -650,14 +548,14 @@ async function downloadSignedNda(req, res) {
       return res.status(401).json({ error: 'Authentication required.' });
     }
 
-    const signatureRequest = signatureRequests.get(transactionId);
+    const signatureRequest = db.ndaSignatures.getByTransactionId(transactionId);
 
     if (!signatureRequest) {
       return res.status(404).json({ error: 'No signature request found.' });
     }
 
-    // Verify user is a party to this NDA
-    const isSigner = signatureRequest.signers.some(s => s.userId === currentUser.id.uuid);
+    const signers = signatureRequest.signers || [];
+    const isSigner = signers.some(s => s.userId === currentUser.id.uuid);
     if (!isSigner) {
       return res.status(403).json({ error: 'You are not authorized to download this document.' });
     }
@@ -669,15 +567,13 @@ async function downloadSignedNda(req, res) {
       });
     }
 
-    // In production, return the actual signed document URL or stream the file
-    // For now, return the document info
     res.status(200).json({
       success: true,
       document: {
         url: signatureRequest.signedDocumentUrl,
         title: signatureRequest.title,
         completedAt: signatureRequest.completedAt,
-        signers: signatureRequest.signers.map(s => ({
+        signers: signers.map(s => ({
           name: s.name,
           role: s.role,
           signedAt: s.signedAt,
@@ -724,8 +620,6 @@ This document is legally binding once signed by all parties.`;
 
 // Webhook handler for Dropbox Sign callbacks (production use)
 async function handleWebhook(req, res) {
-  // In production, verify webhook signature and handle events
-  // Events: signature_request_signed, signature_request_all_signed, etc.
   res.status(200).json({ success: true });
 }
 

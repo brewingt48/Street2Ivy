@@ -18,9 +18,28 @@ async function verifySystemAdmin(req, res) {
 }
 
 /**
+ * Build a tenant scope object from req.tenant (if present).
+ * System admins without a tenant see all data (scope = null).
+ */
+function getTenantScope(req) {
+  if (!req.tenant) return null;
+  const scope = {};
+  if (req.tenant.corporatePartnerIds && req.tenant.corporatePartnerIds.length > 0) {
+    scope.corporatePartnerIds = req.tenant.corporatePartnerIds;
+  }
+  if (req.tenant.institutionDomain) {
+    scope.institutionDomain = req.tenant.institutionDomain.toLowerCase();
+  }
+  return Object.keys(scope).length > 0 ? scope : null;
+}
+
+/**
  * GET /api/admin/reports/:type
  *
  * Generate comprehensive reports for system administrators.
+ * When accessed through a tenant (req.tenant), results are scoped to
+ * that tenant's corporatePartnerIds and/or institutionDomain.
+ * System admins without a tenant restriction see all data.
  *
  * Report types:
  *   - overview: Platform-wide statistics
@@ -47,21 +66,22 @@ async function getReport(req, res) {
     }
 
     const integrationSdk = getIntegrationSdkForTenant(req.tenant);
+    const tenantScope = getTenantScope(req);
 
     let report;
 
     switch (type) {
       case 'overview':
-        report = await generateOverviewReport(integrationSdk);
+        report = await generateOverviewReport(integrationSdk, tenantScope);
         break;
       case 'users':
-        report = await generateUsersReport(integrationSdk);
+        report = await generateUsersReport(integrationSdk, tenantScope);
         break;
       case 'institutions':
-        report = await generateInstitutionsReport(integrationSdk);
+        report = await generateInstitutionsReport(integrationSdk, tenantScope);
         break;
       case 'transactions':
-        report = await generateTransactionsReport(integrationSdk);
+        report = await generateTransactionsReport(integrationSdk, tenantScope);
         break;
       default:
         report = {};
@@ -70,6 +90,7 @@ async function getReport(req, res) {
     res.status(200).json({
       type,
       generatedAt: new Date().toISOString(),
+      tenantScoped: !!tenantScope,
       ...report,
     });
   } catch (error) {
@@ -79,23 +100,50 @@ async function getReport(req, res) {
 }
 
 /**
- * Generate platform overview report
+ * Generate platform overview report.
+ * When tenantScope is provided, filters users by institutionDomain
+ * and only counts corporate partners in corporatePartnerIds.
  */
-async function generateOverviewReport(integrationSdk) {
+async function generateOverviewReport(integrationSdk, tenantScope) {
+  // Build user query params scoped to tenant when applicable
+  const studentQuery = { pub_userType: 'student', perPage: 1 };
+  const corporateQuery = { pub_userType: 'corporate-partner', perPage: 1 };
+  const eduAdminQuery = { pub_userType: 'educational-admin', perPage: 1 };
+
+  if (tenantScope?.institutionDomain) {
+    studentQuery.pub_emailDomain = tenantScope.institutionDomain;
+    eduAdminQuery.pub_institutionDomain = tenantScope.institutionDomain;
+  }
+
   // Count users by type
   const [studentsRes, corporatesRes, eduAdminsRes] = await Promise.all([
-    integrationSdk.users.query({ pub_userType: 'student', perPage: 1 }),
-    integrationSdk.users.query({ pub_userType: 'corporate-partner', perPage: 1 }),
-    integrationSdk.users.query({ pub_userType: 'educational-admin', perPage: 1 }),
+    integrationSdk.users.query(studentQuery),
+    integrationSdk.users.query(corporateQuery),
+    integrationSdk.users.query(eduAdminQuery),
   ]);
+
+  let corporateCount = corporatesRes.data.meta.totalItems;
+
+  // If tenant has specific corporate partner IDs, count only those
+  if (tenantScope?.corporatePartnerIds) {
+    const partnerResults = await Promise.all(
+      tenantScope.corporatePartnerIds.map(id =>
+        integrationSdk.users
+          .show({ id })
+          .then(() => 1)
+          .catch(() => 0)
+      )
+    );
+    corporateCount = partnerResults.reduce((sum, v) => sum + v, 0);
+  }
 
   const userCounts = {
     students: studentsRes.data.meta.totalItems,
-    corporatePartners: corporatesRes.data.meta.totalItems,
+    corporatePartners: corporateCount,
     educationalAdmins: eduAdminsRes.data.meta.totalItems,
     total:
       studentsRes.data.meta.totalItems +
-      corporatesRes.data.meta.totalItems +
+      corporateCount +
       eduAdminsRes.data.meta.totalItems,
   };
 
@@ -111,8 +159,20 @@ async function generateOverviewReport(integrationSdk) {
       perPage: 100,
     });
 
-    const transactions = txResponse.data.data;
-    transactionStats.total = txResponse.data.meta.totalItems;
+    let transactions = txResponse.data.data;
+    let totalItems = txResponse.data.meta.totalItems;
+
+    // Filter transactions by tenant corporate partner IDs when scoped
+    if (tenantScope?.corporatePartnerIds) {
+      const partnerIdSet = new Set(tenantScope.corporatePartnerIds);
+      transactions = transactions.filter(tx => {
+        const providerId = tx.relationships?.provider?.data?.id?.uuid || tx.relationships?.customer?.data?.id?.uuid;
+        return providerId && partnerIdSet.has(providerId);
+      });
+      totalItems = transactions.length;
+    }
+
+    transactionStats.total = totalItems;
 
     const now = new Date();
     const oneWeekAgo = new Date(now - 7 * 24 * 60 * 60 * 1000);
@@ -150,20 +210,40 @@ async function generateOverviewReport(integrationSdk) {
 }
 
 /**
- * Generate users report with breakdown by type
+ * Generate users report with breakdown by type.
+ * When tenantScope is provided, filters students by institutionDomain
+ * and corporate partners by corporatePartnerIds.
  */
-async function generateUsersReport(integrationSdk) {
+async function generateUsersReport(integrationSdk, tenantScope) {
   const userTypes = ['student', 'corporate-partner', 'educational-admin'];
   const breakdown = {};
 
   for (const userType of userTypes) {
-    const response = await integrationSdk.users.query({
+    const queryParams = {
       pub_userType: userType,
       perPage: 100,
-    });
+    };
 
-    const users = response.data.data;
-    const total = response.data.meta.totalItems;
+    // Apply tenant-scoped filters
+    if (tenantScope?.institutionDomain) {
+      if (userType === 'student') {
+        queryParams.pub_emailDomain = tenantScope.institutionDomain;
+      } else if (userType === 'educational-admin') {
+        queryParams.pub_institutionDomain = tenantScope.institutionDomain;
+      }
+    }
+
+    const response = await integrationSdk.users.query(queryParams);
+
+    let users = response.data.data;
+    let total = response.data.meta.totalItems;
+
+    // For corporate partners, filter by tenant's allowed partner IDs
+    if (userType === 'corporate-partner' && tenantScope?.corporatePartnerIds) {
+      const partnerIdSet = new Set(tenantScope.corporatePartnerIds);
+      users = users.filter(u => partnerIdSet.has(u.id?.uuid));
+      total = users.length;
+    }
 
     // Count active vs banned
     const active = users.filter(u => !u.attributes.banned && !u.attributes.deleted).length;
@@ -196,14 +276,23 @@ async function generateUsersReport(integrationSdk) {
 }
 
 /**
- * Generate institutions report
+ * Generate institutions report.
+ * When tenantScope is provided with institutionDomain, only that
+ * institution is included in the report.
  */
-async function generateInstitutionsReport(integrationSdk) {
+async function generateInstitutionsReport(integrationSdk, tenantScope) {
   // Get all educational admins to find institutions
-  const eduAdminsResponse = await integrationSdk.users.query({
+  const eduAdminQuery = {
     pub_userType: 'educational-admin',
     perPage: 100,
-  });
+  };
+
+  // If tenant-scoped, only query admins for this institution
+  if (tenantScope?.institutionDomain) {
+    eduAdminQuery.pub_institutionDomain = tenantScope.institutionDomain;
+  }
+
+  const eduAdminsResponse = await integrationSdk.users.query(eduAdminQuery);
 
   const eduAdmins = eduAdminsResponse.data.data;
 
@@ -266,16 +355,28 @@ async function generateInstitutionsReport(integrationSdk) {
 }
 
 /**
- * Generate transactions report
+ * Generate transactions report.
+ * When tenantScope is provided with corporatePartnerIds, only
+ * transactions involving those partners are included.
  */
-async function generateTransactionsReport(integrationSdk) {
+async function generateTransactionsReport(integrationSdk, tenantScope) {
   const txResponse = await integrationSdk.transactions.query({
     perPage: 100,
     include: ['listing'],
   });
 
-  const transactions = txResponse.data.data;
-  const totalTransactions = txResponse.data.meta.totalItems;
+  let transactions = txResponse.data.data;
+  let totalTransactions = txResponse.data.meta.totalItems;
+
+  // Filter transactions by tenant corporate partner IDs when scoped
+  if (tenantScope?.corporatePartnerIds) {
+    const partnerIdSet = new Set(tenantScope.corporatePartnerIds);
+    transactions = transactions.filter(tx => {
+      const providerId = tx.relationships?.provider?.data?.id?.uuid || tx.relationships?.customer?.data?.id?.uuid;
+      return providerId && partnerIdSet.has(providerId);
+    });
+    totalTransactions = transactions.length;
+  }
 
   // Aggregate by state
   const byState = {

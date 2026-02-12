@@ -3,47 +3,13 @@
  *
  * Handles applications from university career services staff
  * who want to become educational administrators on Street2Ivy.
+ *
+ * Persistence: SQLite via server/api-util/db.js
  */
 
-const fs = require('fs');
-const path = require('path');
+const db = require('../api-util/db');
 const { getIntegrationSdkForTenant } = require('../api-util/integrationSdk');
 const { handleError } = require('../api-util/sdk');
-
-// File-based persistence for educational admin applications
-const APPLICATIONS_FILE = path.join(__dirname, '../data/educational-admin-applications.json');
-let applications = [];
-
-function loadApplications() {
-  try {
-    if (fs.existsSync(APPLICATIONS_FILE)) {
-      const data = fs.readFileSync(APPLICATIONS_FILE, 'utf8');
-      applications = JSON.parse(data);
-      console.log(`Loaded ${applications.length} educational admin applications from file`);
-      return;
-    }
-  } catch (error) {
-    console.error('Error loading educational admin applications:', error);
-  }
-  applications = [];
-}
-
-function saveApplications() {
-  try {
-    const dataDir = path.dirname(APPLICATIONS_FILE);
-    if (!fs.existsSync(dataDir)) {
-      fs.mkdirSync(dataDir, { recursive: true });
-    }
-    fs.writeFileSync(APPLICATIONS_FILE, JSON.stringify(applications, null, 2), 'utf8');
-    return true;
-  } catch (error) {
-    console.error('Error saving educational admin applications:', error);
-    return false;
-  }
-}
-
-// Load applications on startup
-loadApplications();
 
 /**
  * POST /api/educational-admin/apply
@@ -85,9 +51,7 @@ async function submitApplication(req, res) {
   const emailDomain = email.split('@')[1]?.toLowerCase();
 
   // Check for duplicate applications
-  const existingApplication = applications.find(
-    app => app.email.toLowerCase() === email.toLowerCase()
-  );
+  const existingApplication = db.eduAdminApplications.getByEmail(email.toLowerCase());
 
   if (existingApplication) {
     return res.status(409).json({
@@ -139,8 +103,7 @@ async function submitApplication(req, res) {
       notes: null,
     };
 
-    applications.push(application);
-    saveApplications();
+    db.eduAdminApplications.create(application);
 
     console.log('Educational Admin Application received:', {
       id: application.id,
@@ -168,14 +131,16 @@ async function listApplications(req, res) {
   const { status, page = '1', perPage = '20' } = req.query;
 
   try {
+    // Fetch all applications from SQLite
+    let allApplications = db.eduAdminApplications.getAll();
+
     // Filter by status if specified
-    let filteredApplications = applications;
     if (status) {
-      filteredApplications = applications.filter(app => app.status === status);
+      allApplications = allApplications.filter(app => app.status === status);
     }
 
-    // Sort by submission date (newest first)
-    filteredApplications.sort((a, b) =>
+    // Sort by submission date (newest first) - already sorted by DB, but ensure
+    allApplications.sort((a, b) =>
       new Date(b.submittedAt) - new Date(a.submittedAt)
     );
 
@@ -183,13 +148,13 @@ async function listApplications(req, res) {
     const pageNum = parseInt(page, 10);
     const perPageNum = parseInt(perPage, 10);
     const startIndex = (pageNum - 1) * perPageNum;
-    const paginatedApplications = filteredApplications.slice(startIndex, startIndex + perPageNum);
+    const paginatedApplications = allApplications.slice(startIndex, startIndex + perPageNum);
 
     res.status(200).json({
       applications: paginatedApplications,
       pagination: {
-        totalItems: filteredApplications.length,
-        totalPages: Math.ceil(filteredApplications.length / perPageNum),
+        totalItems: allApplications.length,
+        totalPages: Math.ceil(allApplications.length / perPageNum),
         page: pageNum,
         perPage: perPageNum,
       },
@@ -209,7 +174,7 @@ async function approveApplication(req, res) {
   const { id } = req.params;
 
   try {
-    const application = applications.find(app => app.id === id);
+    const application = db.eduAdminApplications.getById(id);
 
     if (!application) {
       return res.status(404).json({ error: 'Application not found.' });
@@ -230,18 +195,21 @@ async function approveApplication(req, res) {
 
     if (usersResponse.data.data.length === 0) {
       // User hasn't signed up yet - mark as approved pending signup
-      application.status = 'approved-pending-signup';
-      application.reviewedAt = new Date().toISOString();
-      saveApplications();
+      db.eduAdminApplications.update(id, {
+        status: 'approved-pending-signup',
+        reviewedAt: new Date().toISOString(),
+      });
+
+      const updated = db.eduAdminApplications.getById(id);
 
       return res.status(200).json({
         success: true,
         message: 'Application approved. The user will be promoted to Educational Administrator when they sign up.',
         application: {
-          id: application.id,
-          status: application.status,
-          email: application.email,
-          institutionName: application.institutionName,
+          id: updated.id,
+          status: updated.status,
+          email: updated.email,
+          institutionName: updated.institutionName,
         },
       });
     }
@@ -268,18 +236,21 @@ async function approveApplication(req, res) {
     });
 
     // Update application status
-    application.status = 'approved';
-    application.reviewedAt = new Date().toISOString();
-    saveApplications();
+    db.eduAdminApplications.update(id, {
+      status: 'approved',
+      reviewedAt: new Date().toISOString(),
+    });
+
+    const updated = db.eduAdminApplications.getById(id);
 
     res.status(200).json({
       success: true,
       message: 'Application approved. User has been promoted to Educational Administrator.',
       application: {
-        id: application.id,
-        status: application.status,
-        email: application.email,
-        institutionName: application.institutionName,
+        id: updated.id,
+        status: updated.status,
+        email: updated.email,
+        institutionName: updated.institutionName,
       },
     });
   } catch (error) {
@@ -298,7 +269,7 @@ async function rejectApplication(req, res) {
   const { reason } = req.body;
 
   try {
-    const application = applications.find(app => app.id === id);
+    const application = db.eduAdminApplications.getById(id);
 
     if (!application) {
       return res.status(404).json({ error: 'Application not found.' });
@@ -309,18 +280,21 @@ async function rejectApplication(req, res) {
     }
 
     // Update application status
-    application.status = 'rejected';
-    application.reviewedAt = new Date().toISOString();
-    application.notes = reason || null;
-    saveApplications();
+    db.eduAdminApplications.update(id, {
+      status: 'rejected',
+      reviewedAt: new Date().toISOString(),
+      notes: reason || null,
+    });
+
+    const updated = db.eduAdminApplications.getById(id);
 
     res.status(200).json({
       success: true,
       message: 'Application has been rejected.',
       application: {
-        id: application.id,
-        status: application.status,
-        email: application.email,
+        id: updated.id,
+        status: updated.status,
+        email: updated.email,
       },
     });
   } catch (error) {
@@ -336,12 +310,14 @@ async function rejectApplication(req, res) {
  */
 async function getApplicationStats(req, res) {
   try {
+    const allApplications = db.eduAdminApplications.getAll();
+
     const stats = {
-      total: applications.length,
-      pending: applications.filter(a => a.status === 'pending').length,
-      approved: applications.filter(a => a.status === 'approved').length,
-      approvedPendingSignup: applications.filter(a => a.status === 'approved-pending-signup').length,
-      rejected: applications.filter(a => a.status === 'rejected').length,
+      total: allApplications.length,
+      pending: allApplications.filter(a => a.status === 'pending').length,
+      approved: allApplications.filter(a => a.status === 'approved').length,
+      approvedPendingSignup: allApplications.filter(a => a.status === 'approved-pending-signup').length,
+      rejected: allApplications.filter(a => a.status === 'rejected').length,
     };
 
     res.status(200).json({ stats });

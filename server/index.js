@@ -80,6 +80,72 @@ const checkEnvVariables = variables => {
 };
 checkEnvVariables(MANDATORY_ENV_VARIABLES);
 
+// =========================================================================
+// Production deployment warnings (M-10, M-11, M-15, M-21)
+// Log warnings at startup if critical production env vars are missing.
+// These are not mandatory (the app can run without them), but they are
+// strongly recommended for production Heroku deployments.
+// =========================================================================
+const RECOMMENDED_PRODUCTION_VARS = [
+  {
+    name: 'REACT_APP_CSP',
+    value: CSP,
+    recommendedValue: 'block',
+    auditId: 'M-11',
+    message:
+      'Content Security Policy is not set to "block". Set REACT_APP_CSP=block for production to enforce CSP headers.',
+  },
+  {
+    name: 'REACT_APP_SHARETRIBE_USING_SSL / SERVER_SHARETRIBE_REDIRECT_SSL',
+    value: REDIRECT_SSL,
+    recommendedValue: true,
+    auditId: 'M-15',
+    message:
+      'SSL redirect is not enabled. Set REACT_APP_SHARETRIBE_USING_SSL=true (or SERVER_SHARETRIBE_REDIRECT_SSL=true) to redirect HTTP to HTTPS.',
+  },
+  {
+    name: 'SERVER_SHARETRIBE_TRUST_PROXY',
+    value: TRUST_PROXY,
+    recommendedValue: 'true',
+    auditId: 'M-15',
+    message:
+      'Trust proxy is not configured. Set SERVER_SHARETRIBE_TRUST_PROXY=true when running behind a reverse proxy (e.g., Heroku).',
+  },
+  {
+    name: 'REACT_APP_SENTRY_DSN',
+    value: process.env.REACT_APP_SENTRY_DSN,
+    auditId: 'M-21',
+    message:
+      'Sentry DSN is not set. Set REACT_APP_SENTRY_DSN to enable error tracking in production.',
+  },
+  {
+    name: 'GENERATE_SOURCEMAP',
+    value: process.env.GENERATE_SOURCEMAP,
+    recommendedValue: 'false',
+    auditId: 'M-10',
+    message:
+      'GENERATE_SOURCEMAP is not set to "false". Set GENERATE_SOURCEMAP=false to disable source maps in production builds.',
+  },
+];
+
+if (!dev) {
+  const warnings = RECOMMENDED_PRODUCTION_VARS.filter(v => {
+    if (v.recommendedValue !== undefined) {
+      return v.value !== v.recommendedValue;
+    }
+    // For vars that just need to exist (like Sentry DSN)
+    return isEmpty(v.value);
+  });
+
+  if (warnings.length > 0) {
+    console.warn('\n========== PRODUCTION CONFIGURATION WARNINGS ==========');
+    warnings.forEach(w => {
+      console.warn(`  [${w.auditId}] ${w.message}`);
+    });
+    console.warn('========================================================\n');
+  }
+}
+
 const app = express();
 
 const errorPage500 = fs.readFileSync(path.join(buildPath, '500.html'), 'utf-8');

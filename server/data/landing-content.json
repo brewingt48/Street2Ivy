@@ -103,6 +103,7 @@
     "id": "testimonials",
     "section": "testimonials",
     "sectionTitle": "What People Are Saying",
+    "disclaimer": "Testimonials represent typical user experiences and may be paraphrased for clarity.",
     "items": [
       {
         "id": "testimonial-1",

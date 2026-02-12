@@ -12,7 +12,7 @@ const fallbackTerms = `
 The web app couldn\'t reach the backend to fetch the Term of Service page.
 
 ## Possible actions
-Please refresh the page and, if that doesn't help, contact the marketplace administrators.
+Please refresh the page and, if that doesn't help, contact Campus2Career support.
 `;
 
 // Create fallback content (array of sections) in page asset format:

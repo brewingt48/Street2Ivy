@@ -43,10 +43,10 @@ const SectionMaintenanceMode = props => {
         <div className={css.content}>
           <h2>Oops, something went wrong!</h2>
           <p>
-            The marketplace is not fully operational at the moment.
+            The platform is not fully operational at the moment.
             <br />
-            Try refreshing the page and if that does not solve the issue, contact the marketplace
-            admins.
+            Try refreshing the page and if that does not solve the issue, contact Campus2Career
+            support.
           </p>
         </div>
       ) : (

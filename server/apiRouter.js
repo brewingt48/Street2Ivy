@@ -14,6 +14,7 @@ const {
   strictRateLimit,
   securityHeaders,
   responseSanitizer,
+  csrfProtection,
   getCSRFToken,
   getAuditLogs,
   validatePassword,
@@ -40,6 +41,9 @@ const educationStudentTransactions = require('./api/education-student-transactio
 const educationalAdminApplication = require('./api/educational-admin-application');
 const educationMessages = require('./api/education-messages');
 
+// Student Dashboard query endpoints
+const studentDashboard = require('./api/student-dashboard');
+
 // Corporate Dashboard enhanced stats
 const corporateDashboardStats = require('./api/corporate-dashboard-stats');
 const corporateApplications = require('./api/corporate-applications');
@@ -61,6 +65,7 @@ const adminCoachingConfig = require('./api/admin/coaching-config');
 const adminStudentCoachingAccess = require('./api/admin/student-coaching-access');
 const studentWaitlist = require('./api/admin/student-waitlist');
 const tenantContent = require('./api/tenant-content');
+const tenantListingFilters = require('./api/tenant-listing-filters');
 const alumni = require('./api/alumni');
 const adminTenants = require('./api/admin/tenants');
 
@@ -99,6 +104,28 @@ router.use(standardRateLimit);
 
 // SECURITY: Sanitize API responses to remove sensitive data
 router.use(responseSanitizer);
+
+// SECURITY: Apply CSRF protection to state-changing requests (POST, PUT, DELETE)
+// Skips: OAuth callbacks, webhooks, and public form submissions that use their own validation
+const csrfExemptPaths = [
+  '/auth/create-user-with-idp',
+  '/auth/facebook',
+  '/auth/facebook/callback',
+  '/auth/google',
+  '/auth/google/callback',
+  '/auth/validate-signup-email',
+  '/nda/webhook',
+  '/student-waitlist',
+  '/educational-admin/apply',
+  '/validate-password',
+];
+router.use((req, res, next) => {
+  // Skip CSRF for exempt paths
+  if (csrfExemptPaths.some(p => req.path === p || req.path.startsWith(p))) {
+    return next();
+  }
+  return csrfProtection(req, res, next);
+});
 
 // Parse JSON bodies (for custom API endpoints like search-users)
 router.use(bodyParser.json({ limit: '1mb' })); // SECURITY: Limit body size
@@ -181,6 +208,10 @@ router.post('/delete-account', strictRateLimit, deleteAccount); // SECURITY: str
 // Street2Ivy: User search and invitation endpoints
 router.get('/search-users', searchUsers);
 router.post('/invite-to-apply', inviteToApply);
+
+// Street2Ivy: Student Dashboard query endpoints (listings & transactions)
+router.get('/listings/query', studentDashboard.queryListings);
+router.get('/transactions/query', studentDashboard.queryTransactions);
 
 // Street2Ivy: Company/Corporate partner listings (for student search)
 router.get('/company/:authorId/listings', companyListings);
@@ -345,6 +376,9 @@ router.post('/admin/student-coaching-access/unblock', adminStudentCoachingAccess
 router.get('/admin/student-coaching-access/check/:userId', adminStudentCoachingAccess.checkAccess);
 router.get('/admin/institutions-coaching-summary', adminStudentCoachingAccess.getInstitutionsSummary);
 router.get('/admin/institution/:domain/students', adminStudentCoachingAccess.getInstitutionStudents);
+
+// Street2Ivy: Tenant Listing Filters (scopes search results to tenant's corporate partners)
+router.get('/tenant/listing-filters', tenantListingFilters);
 
 // Street2Ivy: Tenant Landing Page Customization
 router.get('/tenant-content/my-institution', tenantContent.getMyContent);

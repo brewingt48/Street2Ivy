@@ -4,7 +4,7 @@ import { extractYouTubeID } from './string';
 
 const { LatLng, Money } = sdkTypes;
 
-export const PASSWORD_MIN_LENGTH = 8;
+export const PASSWORD_MIN_LENGTH = 12;
 export const PASSWORD_MAX_LENGTH = 256;
 
 const isNonEmptyString = val => {
@@ -89,6 +89,16 @@ export const maxLength = (message, maximumLength) => value => {
   }
   const hasLength = value && typeof value.length === 'number';
   return hasLength && value.length <= maximumLength ? VALID : message;
+};
+
+export const passwordComplexity = message => value => {
+  if (!value || typeof value !== 'string') {
+    return message;
+  }
+  const hasUppercase = /[A-Z]/.test(value);
+  const hasLowercase = /[a-z]/.test(value);
+  const hasNumber = /[0-9]/.test(value);
+  return hasUppercase && hasLowercase && hasNumber ? VALID : message;
 };
 
 export const nonEmptyArray = message => value => {

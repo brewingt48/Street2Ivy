@@ -3,50 +3,14 @@
  *
  * Allows system admins to manage individual student access to AI coaching.
  * Students can be individually blocked from AI coaching even if their institution has it enabled.
+ *
+ * Persistence: SQLite via server/api-util/db.js
  */
 
-const fs = require('fs');
-const path = require('path');
+const db = require('../../api-util/db');
 const { getIntegrationSdkForTenant } = require('../../api-util/integrationSdk');
 const { handleError, getSdk } = require('../../api-util/sdk');
 const { verifySystemAdmin: verifySystemAdminAuth } = require('../../api-util/security');
-
-// Data file for blocked students
-const BLOCKED_STUDENTS_FILE = path.join(__dirname, '../../data/blocked-coaching-students.json');
-
-// Ensure data directory exists
-const dataDir = path.join(__dirname, '../../data');
-if (!fs.existsSync(dataDir)) {
-  fs.mkdirSync(dataDir, { recursive: true });
-}
-
-/**
- * Load blocked students from file
- */
-function loadBlockedStudents() {
-  try {
-    if (fs.existsSync(BLOCKED_STUDENTS_FILE)) {
-      const data = fs.readFileSync(BLOCKED_STUDENTS_FILE, 'utf8');
-      return JSON.parse(data);
-    }
-  } catch (error) {
-    console.error('Error loading blocked students:', error);
-  }
-  return { blockedStudents: [] };
-}
-
-/**
- * Save blocked students to file
- */
-function saveBlockedStudents(data) {
-  try {
-    fs.writeFileSync(BLOCKED_STUDENTS_FILE, JSON.stringify(data, null, 2), 'utf8');
-    return true;
-  } catch (error) {
-    console.error('Error saving blocked students:', error);
-    return false;
-  }
-}
 
 /**
  * Helper to verify user is a system admin
@@ -70,8 +34,7 @@ async function listBlockedStudents(req, res) {
     const sdk = getIntegrationSdkForTenant(req.tenant);
     await verifySystemAdmin(req, res);
 
-    const data = loadBlockedStudents();
-    const blockedStudents = data.blockedStudents || [];
+    const blockedStudents = db.blockedStudents.getAll();
 
     // Enrich with student details from Sharetribe
     const enrichedStudents = [];
@@ -136,12 +99,8 @@ async function blockStudent(req, res) {
       return res.status(400).json({ error: 'Can only block students from AI coaching' });
     }
 
-    const data = loadBlockedStudents();
-    const blockedStudents = data.blockedStudents || [];
-
     // Check if already blocked
-    const existingIndex = blockedStudents.findIndex(s => s.userId === userId);
-    if (existingIndex >= 0) {
+    if (db.blockedStudents.isBlocked(userId)) {
       return res.status(400).json({ error: 'Student is already blocked from AI coaching' });
     }
 
@@ -153,12 +112,7 @@ async function blockStudent(req, res) {
       blockedBy: adminUser.id.uuid,
     };
 
-    blockedStudents.push(blockEntry);
-    data.blockedStudents = blockedStudents;
-
-    if (!saveBlockedStudents(data)) {
-      return res.status(500).json({ error: 'Failed to save blocked student' });
-    }
+    db.blockedStudents.block(blockEntry);
 
     res.status(200).json({
       data: blockEntry,
@@ -186,20 +140,11 @@ async function unblockStudent(req, res) {
       return res.status(400).json({ error: 'userId is required' });
     }
 
-    const data = loadBlockedStudents();
-    const blockedStudents = data.blockedStudents || [];
-
-    const existingIndex = blockedStudents.findIndex(s => s.userId === userId);
-    if (existingIndex < 0) {
+    if (!db.blockedStudents.isBlocked(userId)) {
       return res.status(404).json({ error: 'Student is not currently blocked' });
     }
 
-    blockedStudents.splice(existingIndex, 1);
-    data.blockedStudents = blockedStudents;
-
-    if (!saveBlockedStudents(data)) {
-      return res.status(500).json({ error: 'Failed to save changes' });
-    }
+    db.blockedStudents.unblock(userId);
 
     res.status(200).json({
       message: 'Student unblocked from AI coaching',
@@ -220,10 +165,7 @@ async function checkStudentAccess(req, res) {
 
     const { userId } = req.params;
 
-    const data = loadBlockedStudents();
-    const blockedStudents = data.blockedStudents || [];
-
-    const blocked = blockedStudents.find(s => s.userId === userId);
+    const blocked = db.blockedStudents.getByUserId(userId);
 
     res.status(200).json({
       isBlocked: !!blocked,
@@ -250,20 +192,15 @@ async function getInstitutionsCoachingSummary(req, res) {
     const institutions = Array.from(institutionMemberships.values());
 
     // Get blocked students data
-    const blockedData = loadBlockedStudents();
-    const blockedStudents = blockedData.blockedStudents || [];
+    const blockedStudents = db.blockedStudents.getAll();
 
     // For each institution, get student count and blocked count
     const institutionSummaries = [];
 
     for (const institution of institutions) {
-      // Query students by email domain
-      let studentCount = 0;
       let blockedCount = 0;
 
       try {
-        // Note: In production, you'd want to cache this or use a more efficient query
-        // For now, we'll count blocked students by their email domain
         const domainBlockedStudents = [];
 
         for (const blocked of blockedStudents) {
@@ -326,18 +263,13 @@ async function getInstitutionStudents(req, res) {
     const { page = 1, perPage = 50 } = req.query;
 
     // Get blocked students data
-    const blockedData = loadBlockedStudents();
-    const blockedStudents = blockedData.blockedStudents || [];
+    const blockedStudents = db.blockedStudents.getAll();
     const blockedUserIds = new Set(blockedStudents.map(s => s.userId));
 
     // Query users with this email domain
-    // Note: Sharetribe doesn't support querying by publicData fields directly,
-    // so we need to fetch all students and filter
-    // In production, you'd want a more efficient solution
-
     const usersRes = await sdk.users.query({
       pub_userType: 'student',
-      perPage: 100, // Get more to filter
+      perPage: 100,
       page: 1,
     });
 
@@ -389,9 +321,7 @@ async function getInstitutionStudents(req, res) {
  * Returns true if the student has access, false if blocked
  */
 function hasCoachingAccess(userId) {
-  const data = loadBlockedStudents();
-  const blockedStudents = data.blockedStudents || [];
-  return !blockedStudents.some(s => s.userId === userId);
+  return !db.blockedStudents.isBlocked(userId);
 }
 
 module.exports = {

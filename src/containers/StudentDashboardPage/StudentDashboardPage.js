@@ -836,6 +836,7 @@ const StudentDashboardPageComponent = props => {
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingProjects, setIsLoadingProjects] = useState(true);
   const [hasAppliedToProject, setHasAppliedToProject] = useState(false);
+  const [error, setError] = useState(null);
 
   // Fetch institution info to check AI coaching access
   useEffect(() => {
@@ -849,8 +850,9 @@ const StudentDashboardPageComponent = props => {
           const data = await response.json();
           setInstitutionInfo(data);
         }
-      } catch (error) {
-        console.error('Failed to fetch institution info:', error);
+      } catch (err) {
+        console.error('Failed to fetch institution info:', err);
+        setError('Unable to load your institution information. Some features may be unavailable.');
       } finally {
         setIsLoadingInstitution(false);
       }
@@ -880,8 +882,9 @@ const StudentDashboardPageComponent = props => {
           // If the API call fails, default to empty but do not block the user
           setAvailableProjects([]);
         }
-      } catch (error) {
-        console.error('Failed to fetch available projects:', error);
+      } catch (err) {
+        console.error('Failed to fetch available projects:', err);
+        setError('Unable to load available projects. Please try refreshing the page.');
         setAvailableProjects([]);
       } finally {
         setIsLoadingProjects(false);
@@ -941,8 +944,9 @@ const StudentDashboardPageComponent = props => {
           setProjects({ active, invites, history: completed });
           setMessages(txList); // Use transactions as messages for the messages tab
         }
-      } catch (error) {
-        console.error('Failed to fetch student transactions:', error);
+      } catch (err) {
+        console.error('Failed to fetch student transactions:', err);
+        setError('Unable to load your projects and messages. Please try refreshing the page.');
         setProjects({ active: [], invites: [], history: [] });
         setMessages([]);
       } finally {
@@ -991,9 +995,10 @@ const StudentDashboardPageComponent = props => {
         // Redirect to project details
         history.push(`/project-workspace/${project.transactionId}`);
       }
-    } catch (error) {
-      console.error('Failed to accept invite:', error);
-      throw error;
+    } catch (err) {
+      console.error('Failed to accept invite:', err);
+      setError('Failed to accept the invite. Please try again.');
+      throw err;
     }
   };
 
@@ -1013,9 +1018,10 @@ const StudentDashboardPageComponent = props => {
           invites: prev.invites.filter(p => p.id !== project.id),
         }));
       }
-    } catch (error) {
-      console.error('Failed to decline invite:', error);
-      throw error;
+    } catch (err) {
+      console.error('Failed to decline invite:', err);
+      setError('Failed to decline the invite. Please try again.');
+      throw err;
     }
   };
 
@@ -1033,7 +1039,7 @@ const StudentDashboardPageComponent = props => {
         onClick={handleClick}
         role="button"
         tabIndex={0}
-        onKeyPress={(e) => e.key === 'Enter' && handleClick()}
+        onKeyDown={(e) => e.key === 'Enter' && handleClick()}
       >
         <div className={css.statDetailProjectInfo}>
           <span className={css.statDetailProjectTitle}>{project.title}</span>
@@ -1159,6 +1165,23 @@ const StudentDashboardPageComponent = props => {
     <Page title={title} scrollingDisabled={scrollingDisabled}>
       <LayoutSingleColumn topbar={<TopbarContainer />} footer={<FooterContainer />}>
         <div className={css.pageContent}>
+          {/* Error Banner */}
+          {error && (
+            <div className={css.errorBanner}>
+              <div className={css.errorBannerContent}>
+                <span className={css.errorBannerIcon}>!</span>
+                <p className={css.errorBannerText}>{error}</p>
+              </div>
+              <button
+                className={css.errorBannerDismiss}
+                onClick={() => setError(null)}
+                aria-label="Dismiss error"
+              >
+                &times;
+              </button>
+            </div>
+          )}
+
           {/* Header Section */}
           <div className={css.header}>
             <div className={css.headerContent}>

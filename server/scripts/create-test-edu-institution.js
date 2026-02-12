@@ -12,9 +12,12 @@
  *
  * Options:
  *   --email <email>       Custom email (default: test-edu-institution@testuniversity.edu)
- *   --password <password> Custom password (default: TestEduInst123!)
+ *   --password <password> Custom password (default: randomly generated)
  *   --firstName <name>    Custom first name (default: Test)
  *   --lastName <name>     Custom last name (default: Institution)
+ *
+ * NOTE: When no --password is provided, a random password is generated and
+ * printed to the console. Copy it from the output.
  *
  * Prerequisites:
  *   - SHARETRIBE_INTEGRATION_API_CLIENT_ID and SHARETRIBE_INTEGRATION_API_CLIENT_SECRET
@@ -23,6 +26,7 @@
 
 require('dotenv').config();
 
+const crypto = require('crypto');
 const sharetribeSdk = require('sharetribe-flex-integration-sdk');
 
 const clientId = process.env.SHARETRIBE_INTEGRATION_API_CLIENT_ID || process.env.SHARETRIBE_INTEGRATION_CLIENT_ID;
@@ -44,9 +48,10 @@ const integrationSdk = sharetribeSdk.createInstance({
 // Parse command line arguments
 function parseArgs() {
   const args = process.argv.slice(2);
+  // Generated passwords are printed to console — see script output
   const options = {
     email: 'test-edu-institution@testuniversity.edu',
-    password: 'TestEduInst123!',
+    password: crypto.randomBytes(16).toString('hex') + 'A1!',
     firstName: 'Test',
     lastName: 'Institution',
   };
