@@ -6,7 +6,7 @@ import { useIntl } from '../../util/reactIntl';
 import { useConfiguration } from '../../context/configurationContext';
 import { isScrollingDisabled } from '../../ducks/ui.duck';
 import { getOwnListingsById } from './CorporateDashboardPage.duck';
-import { fetchPendingAssessments, exportCorporateReport, closeProjectListing, reopenProjectListing, fetchMyReviews } from '../../util/api';
+import { fetchPendingAssessments, exportCorporateReport, closeProjectListing, reopenProjectListing } from '../../util/api';
 
 import { Page, LayoutSingleColumn, NamedLink, H3, StudentAssessmentForm, OnboardingChecklist } from '../../components';
 
@@ -365,116 +365,7 @@ const SentInvitesPanel = ({ invites, stats, isLoading, onRefresh }) => {
 
 // ================ Reviews Panel ================ //
 
-const ReviewsPanel = () => {
-  const [reviews, setReviews] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('about');
-
-  useEffect(() => {
-    fetchMyReviews()
-      .then(data => {
-        setReviews(data);
-        setLoading(false);
-      })
-      .catch(err => {
-        console.error('Failed to fetch reviews:', err);
-        setLoading(false);
-      });
-  }, []);
-
-  const formatDate = dateString => {
-    return new Date(dateString).toLocaleDateString([], {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-    });
-  };
-
-  const renderStars = rating => {
-    return Array.from({ length: 5 }, (_, i) => (
-      <span key={i} className={i < rating ? css.starFilled : css.starEmpty}>
-        ★
-      </span>
-    ));
-  };
-
-  if (loading) {
-    return <div className={css.loading}>Loading reviews...</div>;
-  }
-
-  if (!reviews || (reviews.totalAbout === 0 && reviews.totalBy === 0)) {
-    return (
-      <div className={css.noAssessments}>
-        <span className={css.noAssessmentsIcon}>★</span>
-        <p>No reviews yet. Reviews will appear here after projects are completed and reviewed.</p>
-      </div>
-    );
-  }
-
-  const activeReviews = activeTab === 'about' ? reviews.reviewsAboutUser : reviews.reviewsByUser;
-
-  return (
-    <div className={css.reviewsPanel}>
-      {reviews.averageRating && (
-        <div className={css.reviewsSummary}>
-          <div className={css.reviewsAvgRating}>
-            <span className={css.reviewsAvgNumber}>{reviews.averageRating}</span>
-            <div className={css.reviewsAvgStars}>{renderStars(Math.round(parseFloat(reviews.averageRating)))}</div>
-          </div>
-          <span className={css.reviewsCount}>{reviews.totalAbout} review{reviews.totalAbout !== 1 ? 's' : ''} received</span>
-        </div>
-      )}
-
-      <div className={css.reviewsTabs}>
-        <button
-          className={classNames(css.reviewsTab, { [css.reviewsTabActive]: activeTab === 'about' })}
-          onClick={() => setActiveTab('about')}
-        >
-          Reviews About Me ({reviews.totalAbout})
-        </button>
-        <button
-          className={classNames(css.reviewsTab, { [css.reviewsTabActive]: activeTab === 'by' })}
-          onClick={() => setActiveTab('by')}
-        >
-          Reviews I Wrote ({reviews.totalBy})
-        </button>
-      </div>
-
-      <div className={css.reviewsList}>
-        {activeReviews.length === 0 ? (
-          <p className={css.reviewsEmpty}>
-            {activeTab === 'about' ? 'No reviews received yet.' : 'You haven\'t written any reviews yet.'}
-          </p>
-        ) : (
-          activeReviews.map(review => (
-            <div key={review.id} className={css.reviewCard}>
-              <div className={css.reviewCardHeader}>
-                <div className={css.reviewCardUser}>
-                  <div className={css.reviewCardAvatar}>
-                    {(activeTab === 'about' ? review.author?.displayName : review.subject?.displayName || '?').charAt(0).toUpperCase()}
-                  </div>
-                  <div className={css.reviewCardUserInfo}>
-                    <span className={css.reviewCardName}>
-                      {activeTab === 'about' ? review.author?.displayName : review.subject?.displayName}
-                    </span>
-                    <span className={css.reviewCardProject}>{review.projectTitle}</span>
-                  </div>
-                </div>
-                <div className={css.reviewCardMeta}>
-                  <div className={css.reviewCardStars}>{renderStars(review.rating)}</div>
-                  <span className={css.reviewCardDate}>{formatDate(review.createdAt)}</span>
-                </div>
-              </div>
-              {review.content && (
-                <p className={css.reviewCardContent}>{review.content}</p>
-              )}
-            </div>
-          ))
-        )}
-      </div>
-    </div>
-  );
-};
+// ReviewsPanel removed in v53 — reviews are now handled via TransactionPage/Inbox
 
 // ================ Project Card ================ //
 
@@ -632,10 +523,10 @@ export const CorporateDashboardPageComponent = props => {
       id: 'review-applicants',
       label: 'Review student applications',
       description: hasReceivedApplication
-        ? 'Review and manage student applications'
+        ? 'Review and manage student applications in your Inbox'
         : 'No applications yet - search for students to invite',
       completed: hasReceivedApplication,
-      link: { name: 'ApplicationsPage' },
+      link: { name: 'InboxPage', params: { tab: 'sales' } },
     },
     {
       id: 'search-students',
@@ -649,7 +540,7 @@ export const CorporateDashboardPageComponent = props => {
       label: 'Accept a student for a project',
       description: 'Connect with talented students for real project work',
       completed: hasAcceptedStudent,
-      link: hasAcceptedStudent ? undefined : { name: 'ApplicationsPage' },
+      link: hasAcceptedStudent ? undefined : { name: 'InboxPage', params: { tab: 'sales' } },
     },
   ];
 
@@ -920,27 +811,18 @@ export const CorporateDashboardPageComponent = props => {
           {/* Enhanced Stats Section */}
           {dashboardStats && (
             <>
-              {/* Application Summary Card - Links to dedicated Applications Page */}
+              {/* Application Inbox Card - Links to Sharetribe Inbox for managing applications */}
               <div className={css.applicationsSummarySection}>
                 <div className={css.applicationsSummaryCard}>
                   <div className={css.applicationsSummaryContent}>
                     <div className={css.applicationsSummaryInfo}>
                       <h3 className={css.sectionTitle}>Student Applications</h3>
-                      <p className={css.sectionDescription}>Review and manage student applications for your posted projects.</p>
-                      <div className={css.applicationsSummaryStats}>
-                        <span className={css.applicationStatItem}>
-                          <strong>{dashboardStats.applicationStats?.total || 0}</strong> Total
-                        </span>
-                        <span className={css.applicationStatItem}>
-                          <strong>{dashboardStats.applicationStats?.pending || 0}</strong> Pending
-                        </span>
-                        <span className={css.applicationStatItem}>
-                          <strong>{dashboardStats.applicationStats?.accepted || 0}</strong> Accepted
-                        </span>
-                      </div>
+                      <p className={css.sectionDescription}>
+                        Review applications, accept or decline students, message them, and leave reviews — all in your Inbox.
+                      </p>
                     </div>
-                    <NamedLink name="ApplicationsPage" className={css.viewApplicationsButton}>
-                      Review Applications →
+                    <NamedLink name="InboxPage" params={{ tab: 'sales' }} className={css.viewApplicationsButton}>
+                      Open Inbox →
                     </NamedLink>
                   </div>
                 </div>
@@ -1029,12 +911,7 @@ export const CorporateDashboardPageComponent = props => {
             <PendingAssessmentsPanel intl={intl} />
           </div>
 
-          {/* Reviews Section */}
-          <div className={css.assessmentsSection}>
-            <h3 className={css.sectionTitle}>Reviews</h3>
-            <p className={css.sectionDescription}>View reviews exchanged between you and students after completing projects.</p>
-            <ReviewsPanel />
-          </div>
+          {/* Reviews - Available in each project's conversation via Inbox */}
 
           {/* Active Projects */}
           <div className={css.projectsSection}>

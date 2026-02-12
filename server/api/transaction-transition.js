@@ -10,8 +10,7 @@
 const { getSdk, handleError, serialize } = require('../api-util/sdk');
 const { types: sdkTypes } = require('sharetribe-flex-sdk');
 const { UUID } = sdkTypes;
-const { sendNotification, NOTIFICATION_TYPES } = require('../api-util/notifications');
-const { getIntegrationSdkForTenant } = require('../api-util/integrationSdk');
+const db = require('../api-util/db');
 
 module.exports = (req, res) => {
   const { transactionId, transition, params = {} } = req.body || {};
@@ -59,35 +58,25 @@ module.exports = (req, res) => {
     .then(async response => {
       const { status, statusText, data } = response;
 
-      // Send notification when a project is marked as completed
-      if (transition === 'transition/mark-completed') {
+      // Sync SQLite project_applications status when transition matches
+      const txIdStr = typeof transactionId === 'string' ? transactionId : transactionId?.uuid || transactionId;
+      const statusMap = {
+        'transition/accept': 'accepted',
+        'transition/decline': 'declined',
+        'transition/mark-completed': 'completed',
+      };
+
+      const newStatus = statusMap[transition];
+      if (newStatus) {
         try {
-          const integrationSdk = getIntegrationSdkForTenant(req.tenant);
-          const txData = data?.data;
-          const customerId = txData?.relationships?.customer?.data?.id?.uuid;
-          const listingId = txData?.relationships?.listing?.data?.id?.uuid;
-
-          if (customerId && listingId) {
-            // Fetch listing and customer info for notification (Integration SDK accepts plain string IDs)
-            const [listingRes, customerRes] = await Promise.all([
-              integrationSdk.listings.show({ id: listingId }),
-              integrationSdk.users.show({ id: customerId }),
-            ]);
-            const projectTitle = listingRes?.data?.data?.attributes?.title || 'Unknown Project';
-            const studentName = customerRes?.data?.data?.attributes?.profile?.displayName || 'Student';
-
-            await sendNotification({
-              type: NOTIFICATION_TYPES.PROJECT_COMPLETED,
-              recipientId: customerId,
-              data: {
-                projectTitle,
-                studentName,
-                message: `The project "${projectTitle}" has been marked as completed! You can now leave a review for the corporate partner.`,
-              },
-            });
+          const app = db.projectApplications.getByTransactionId(txIdStr);
+          if (app) {
+            db.projectApplications.updateStatus(app.id, newStatus);
+            console.log(`[TransactionTransition] Synced SQLite: application ${app.id} → ${newStatus}`);
           }
-        } catch (notifyErr) {
-          console.error('[TransactionTransition] Failed to send completion notification:', notifyErr);
+        } catch (dbErr) {
+          // Non-critical: SQLite sync failure should not block the transition response
+          console.error('[TransactionTransition] Failed to sync SQLite:', dbErr.message);
         }
       }
 

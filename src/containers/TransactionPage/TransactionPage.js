@@ -304,6 +304,8 @@ export const TransactionPageComponent = props => {
     nextTransitions,
     callSetInitialValues,
     onInitializeCardPaymentData,
+    applicationData,
+    fetchApplicationDataInProgress,
     ...restOfProps
   } = props;
 
@@ -685,6 +687,8 @@ export const TransactionPageComponent = props => {
       showBookingLocation={showBookingLocation}
       hasViewingRights={hasViewingRights}
       showListingImage={showListingImage}
+      applicationData={applicationData}
+      fetchApplicationDataInProgress={fetchApplicationDataInProgress}
       actionButtons={containerId => (
         <ActionButtons
           containerId={containerId}
@@ -920,6 +924,8 @@ const mapStateToProps = state => {
     lineItems,
     fetchLineItemsInProgress,
     fetchLineItemsError,
+    applicationData,
+    fetchApplicationDataInProgress,
   } = state.TransactionPage;
   const { currentUser } = state.user;
 
@@ -950,6 +956,8 @@ const mapStateToProps = state => {
     lineItems, // for OrderPanel
     fetchLineItemsInProgress, // for OrderPanel
     fetchLineItemsError, // for OrderPanel
+    applicationData,
+    fetchApplicationDataInProgress,
   };
 };
 

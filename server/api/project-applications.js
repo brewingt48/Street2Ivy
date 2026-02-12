@@ -1,8 +1,7 @@
 const crypto = require('crypto');
 const db = require('../api-util/db');
 const { getSdk, handleError, serialize } = require('../api-util/sdk');
-const { sendNotification, NOTIFICATION_TYPES } = require('../api-util/notifications');
-const { getIntegrationSdkForTenant } = require('../api-util/integrationSdk');
+// v53: sendNotification and Integration SDK removed — notifications handled by Sharetribe's built-in system
 
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
@@ -154,66 +153,7 @@ const submitApplication = async (req, res) => {
       }
     }
 
-    // Send notification to corporate partner about new application
-    try {
-      const integrationSdk = getIntegrationSdkForTenant(req.tenant);
-      console.log('[ProjectApplications] Sending notifications for application', applicationId, 'listingId:', listingIdStr);
-
-      // Get listing details for notification (Integration SDK accepts plain string IDs)
-      const listingResponse = await integrationSdk.listings.show({ id: listingIdStr });
-      const listing = listingResponse.data.data;
-      const projectTitle = listing?.attributes?.title || 'Project';
-      const providerId = listing?.relationships?.author?.data?.id?.uuid;
-      console.log('[ProjectApplications] Listing found:', projectTitle, 'providerId:', providerId);
-
-      // Get provider details
-      if (providerId) {
-        const providerResponse = await integrationSdk.users.show({ id: providerId });
-        const provider = providerResponse.data.data;
-        const providerEmail = provider?.attributes?.email;
-        const providerName = provider?.attributes?.profile?.displayName || 'Company';
-
-        const studentName = currentUser?.attributes?.profile?.displayName || 'Student';
-        const studentUniversity = currentUser?.attributes?.profile?.publicData?.university || 'Not specified';
-        const studentMajor = currentUser?.attributes?.profile?.publicData?.major || 'Not specified';
-        const baseUrl = process.env.REACT_APP_MARKETPLACE_ROOT_URL || 'https://street2ivy.com';
-
-        // Notify corporate partner
-        await sendNotification({
-          type: NOTIFICATION_TYPES.NEW_APPLICATION,
-          recipientId: providerId,
-          recipientEmail: providerEmail,
-          data: {
-            companyName: providerName,
-            projectTitle,
-            studentName,
-            studentUniversity,
-            studentMajor,
-            applicationUrl: `${baseUrl}/dashboard/applications`,
-          },
-        });
-        console.log('[ProjectApplications] ✓ Sent NEW_APPLICATION notification to provider:', providerId);
-
-        // Notify student (confirmation)
-        await sendNotification({
-          type: NOTIFICATION_TYPES.APPLICATION_RECEIVED,
-          recipientId: studentId,
-          recipientEmail: currentUser?.attributes?.email,
-          data: {
-            studentName,
-            projectTitle,
-            companyName: providerName,
-            timeline: listing?.attributes?.publicData?.timeline || 'See project details',
-          },
-        });
-        console.log('[ProjectApplications] ✓ Sent APPLICATION_RECEIVED notification to student:', studentId);
-      } else {
-        console.warn('[ProjectApplications] No providerId found for listing', listingIdStr);
-      }
-    } catch (notifErr) {
-      console.error('[ProjectApplications] Failed to send application notifications:', notifErr.message || notifErr);
-      // Don't fail the request if notification fails
-    }
+    // v53: Custom notifications removed — Sharetribe's Inbox/Transaction system handles notifications natively
 
     res.status(201).json({
       success: true,
@@ -448,34 +388,7 @@ const acceptApplication = async (req, res) => {
       }
     }
 
-    // Notify student that their application was accepted
-    try {
-      const integrationSdk = getIntegrationSdkForTenant(req.tenant);
-      const studentResponse = await integrationSdk.users.show({ id: application.studentId });
-      const student = studentResponse.data.data;
-      const studentName = student?.attributes?.profile?.displayName || 'Student';
-      const studentEmail = student?.attributes?.email;
-
-      const listingResponse = await integrationSdk.listings.show({ id: application.listingId });
-      const listing = listingResponse.data.data;
-      const projectTitle = listing?.attributes?.title || 'Project';
-
-      const currentUserResponse = await sdk.currentUser.show();
-      const companyName = currentUserResponse.data.data?.attributes?.profile?.displayName || 'Company';
-
-      await sendNotification({
-        type: NOTIFICATION_TYPES.APPLICATION_ACCEPTED,
-        recipientId: application.studentId,
-        recipientEmail: studentEmail,
-        data: {
-          studentName,
-          projectTitle,
-          companyName,
-        },
-      });
-    } catch (notifErr) {
-      console.error('Failed to send acceptance notification:', notifErr);
-    }
+    // v53: Acceptance notification removed — Sharetribe's Inbox/Transaction system handles this
 
     res.status(200).json({
       success: true,
@@ -534,36 +447,7 @@ const declineApplication = async (req, res) => {
       }
     }
 
-    // Notify student that their application was declined
-    try {
-      const integrationSdk = getIntegrationSdkForTenant(req.tenant);
-      const studentResponse = await integrationSdk.users.show({ id: application.studentId });
-      const student = studentResponse.data.data;
-      const studentName = student?.attributes?.profile?.displayName || 'Student';
-      const studentEmail = student?.attributes?.email;
-
-      const listingResponse = await integrationSdk.listings.show({ id: application.listingId });
-      const listing = listingResponse.data.data;
-      const projectTitle = listing?.attributes?.title || 'Project';
-
-      const currentUserResponse = await sdk.currentUser.show();
-      const companyName = currentUserResponse.data.data?.attributes?.profile?.displayName || 'Company';
-      const baseUrl = process.env.REACT_APP_MARKETPLACE_ROOT_URL || 'https://street2ivy.com';
-
-      await sendNotification({
-        type: NOTIFICATION_TYPES.APPLICATION_DECLINED,
-        recipientId: application.studentId,
-        recipientEmail: studentEmail,
-        data: {
-          studentName,
-          projectTitle,
-          companyName,
-          browseProjectsUrl: `${baseUrl}/s`,
-        },
-      });
-    } catch (notifErr) {
-      console.error('Failed to send decline notification:', notifErr);
-    }
+    // v53: Decline notification removed — Sharetribe's Inbox/Transaction system handles this
 
     res.status(200).json({
       success: true,

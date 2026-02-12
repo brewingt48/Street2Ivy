@@ -25,6 +25,7 @@ import FeedSection from './FeedSection';
 import DiminishedActionButtonMaybe from './DiminishedActionButtonMaybe';
 import PanelHeading from './PanelHeading';
 import WorkspaceLinkMaybe from './WorkspaceLinkMaybe';
+import ApplicationDetailSection from './ApplicationDetailSection';
 
 import css from './TransactionPanel.module.css';
 
@@ -195,6 +196,8 @@ export class TransactionPanelComponent extends Component {
       orderPanel,
       config,
       hasViewingRights,
+      applicationData,
+      fetchApplicationDataInProgress,
     } = this.props;
 
     const hasTransitions = transitions.length > 0;
@@ -324,6 +327,12 @@ export class TransactionPanelComponent extends Component {
                 </NamedLink>
               </div>
             )}
+
+            {/* Application Details - Show for corporate partners (providers) on project application transactions */}
+            <ApplicationDetailSection
+              applicationData={applicationData}
+              isLoading={fetchApplicationDataInProgress}
+            />
 
             {requestQuote}
             {offer}

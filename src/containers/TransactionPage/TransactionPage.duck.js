@@ -10,7 +10,7 @@ import {
   stringifyDateToISO8601,
 } from '../../util/dates';
 import { isTransactionsTransitionInvalidTransition, storableError } from '../../util/errors';
-import { transactionLineItems, transitionPrivileged } from '../../util/api';
+import { transactionLineItems, transitionPrivileged, fetchApplicationByTransaction } from '../../util/api';
 import * as log from '../../util/log';
 import {
   updatedEntities,
@@ -576,6 +576,29 @@ export const fetchNextTransitions = id => dispatch => {
   return dispatch(fetchTransitionsThunk({ id }));
 };
 
+///////////////////////////
+// FetchApplicationData //
+///////////////////////////
+
+// Fetch application details from SQLite by transaction ID
+// Used to show full application info (skills, GPA, resume, etc.) on TransactionPage
+export const fetchApplicationDataThunk = createAsyncThunk(
+  'TransactionPage/fetchApplicationData',
+  async ({ transactionId }, { rejectWithValue }) => {
+    try {
+      const txIdStr = typeof transactionId === 'string' ? transactionId : transactionId?.uuid;
+      const response = await fetchApplicationByTransaction(txIdStr);
+      return response?.application || null;
+    } catch (e) {
+      // 404 is expected for non-application transactions — return null silently
+      if (e?.status === 404 || e?.statusCode === 404) {
+        return null;
+      }
+      return rejectWithValue(storableError(e));
+    }
+  }
+);
+
 ////////////////////
 // FetchLineItems //
 ////////////////////
@@ -648,6 +671,9 @@ const initialState = {
   lineItems: null,
   fetchLineItemsInProgress: false,
   fetchLineItemsError: null,
+  applicationData: null,
+  fetchApplicationDataInProgress: false,
+  fetchApplicationDataError: null,
 };
 
 // Merge entity arrays using ids, so that conflicting items in newer array (b) overwrite old values (a).
@@ -827,6 +853,19 @@ const transactionPageSlice = createSlice({
             fetchTimeSlotsError: error,
           };
         }
+      })
+      // fetchApplicationData cases
+      .addCase(fetchApplicationDataThunk.pending, state => {
+        state.fetchApplicationDataInProgress = true;
+        state.fetchApplicationDataError = null;
+      })
+      .addCase(fetchApplicationDataThunk.fulfilled, (state, action) => {
+        state.fetchApplicationDataInProgress = false;
+        state.applicationData = action.payload;
+      })
+      .addCase(fetchApplicationDataThunk.rejected, (state, action) => {
+        state.fetchApplicationDataInProgress = false;
+        state.fetchApplicationDataError = action.payload;
       });
   },
 });
@@ -856,9 +895,11 @@ export const loadData = (params, search, config) => (dispatch, getState) => {
   dispatch(setInitialValues(initialValues));
 
   // Sale / order (i.e. transaction entity in API)
+  // Also fetch application data from SQLite (returns null for non-application transactions)
   return Promise.all([
     dispatch(fetchTransactionThunk({ id: txId, txRole, config })),
     dispatch(fetchMessagesThunk({ txId, page: 1, config })),
     dispatch(fetchTransitionsThunk({ id: txId })),
+    dispatch(fetchApplicationDataThunk({ transactionId: params.id })),
   ]);
 };

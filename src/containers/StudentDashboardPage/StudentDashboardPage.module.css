@@ -1261,6 +1261,50 @@
   transform: translateY(-1px);
 }
 
+/* ================ Inbox Link Card ================ */
+
+.inboxLinkCard {
+  padding: 32px;
+  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+  border: 1px solid #7dd3fc;
+  border-radius: 12px;
+  text-align: center;
+}
+
+.inboxLinkTitle {
+  font-size: 20px;
+  font-weight: 600;
+  color: #0369a1;
+  margin: 0 0 8px 0;
+}
+
+.inboxLinkDescription {
+  font-size: 15px;
+  color: #0c4a6e;
+  margin: 0 0 20px 0;
+  line-height: 1.5;
+  max-width: 480px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.inboxLinkButton {
+  display: inline-block;
+  padding: 12px 28px;
+  font-size: 15px;
+  font-weight: 500;
+  color: white;
+  background-color: #0284c7;
+  border-radius: 6px;
+  text-decoration: none;
+  transition: background-color 0.2s;
+}
+
+.inboxLinkButton:hover {
+  background-color: #0369a1;
+  text-decoration: none;
+}
+
 /* ================ Empty State ================ */
 
 .emptyState {
