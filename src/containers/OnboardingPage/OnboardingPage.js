@@ -18,14 +18,6 @@ import css from './OnboardingPage.module.css';
 const getOnboardingSteps = (userType, intl) => {
   const baseSteps = [
     {
-      id: 'verify-email',
-      title: intl.formatMessage({ id: 'OnboardingPage.step.verifyEmail.title' }),
-      description: intl.formatMessage({ id: 'OnboardingPage.step.verifyEmail.description' }),
-      icon: '✉️',
-      action: 'verify-email',
-      link: null,
-    },
-    {
       id: 'complete-profile',
       title: intl.formatMessage({ id: 'OnboardingPage.step.completeProfile.title' }),
       description: intl.formatMessage({ id: 'OnboardingPage.step.completeProfile.description' }),
@@ -113,11 +105,6 @@ const calculateProgress = (currentUser, currentUserHasListings, currentUserHasOr
   const completed = [];
   const userType = currentUser.attributes?.profile?.publicData?.userType;
 
-  // Check email verification
-  if (currentUser.attributes?.emailVerified) {
-    completed.push('verify-email');
-  }
-
   // Check profile completion (has bio and essential fields)
   const profile = currentUser.attributes?.profile || {};
   const publicData = profile.publicData || {};
@@ -153,7 +140,7 @@ const calculateProgress = (currentUser, currentUserHasListings, currentUserHasOr
   }
 
   // Calculate percentage based on user type
-  const totalSteps = userType === 'student' || userType === 'corporate-partner' ? 5 : 4;
+  const totalSteps = userType === 'student' || userType === 'corporate-partner' ? 4 : 3;
   const percentage = Math.round((completed.length / totalSteps) * 100);
 
   return { completed, percentage };

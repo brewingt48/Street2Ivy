@@ -34,12 +34,12 @@
 }
 
 .item {
-  padding: 4px 0 2px 0;
+  padding: 3px 0 1px 0;
 
   /* Fix broken multi-column layout in Chrome */
   page-break-inside: avoid;
 
   @media (--viewportMedium) {
-    padding: 4px 0;
+    padding: 2px 0;
   }
 }

@@ -199,6 +199,30 @@ export const inviteToApply = body => {
   return post('/api/invite-to-apply', body);
 };
 
+// Street2Ivy: Student Invites
+//
+// Fetch invitations that corporate partners have sent to the current student.
+export const fetchStudentInvites = (params = {}) => {
+  const queryString = Object.entries(params)
+    .filter(([, v]) => v != null && v !== '')
+    .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`)
+    .join('&');
+  return request(
+    `/api/student/invites${queryString ? `?${queryString}` : ''}`,
+    { method: 'GET', headers: { 'Content-Type': 'application/json' } }
+  );
+};
+
+// Accept a corporate partner's invitation
+export const acceptStudentInvite = inviteId => {
+  return post(`/api/student/invites/${inviteId}/accept`, {});
+};
+
+// Decline a corporate partner's invitation
+export const declineStudentInvite = inviteId => {
+  return post(`/api/student/invites/${inviteId}/decline`, {});
+};
+
 // Street2Ivy: Fetch company listings (open projects)
 //
 // Fetch published listings for a corporate partner (by author ID)

@@ -65,7 +65,7 @@ const MAX_MOBILE_SCREEN_WIDTH = 768;
 const MIN_LENGTH_FOR_LONG_WORDS = 20;
 
 export const AsideContent = props => {
-  const { user, displayName, showLinkToProfileSettingsPage } = props;
+  const { user, displayName, showLinkToProfileSettingsPage, currentUserType } = props;
   const publicData = user?.attributes?.profile?.publicData || {};
   const isCorporatePartner = publicData?.userType === 'corporate-partner';
   const isEducationalAdmin = publicData?.userType === 'educational-admin';
@@ -126,6 +126,22 @@ export const AsideContent = props => {
             <FormattedMessage id="ProfilePage.editProfileLinkDesktop" />
           </NamedLink>
         </>
+      ) : null}
+      {currentUserType ? (
+        <NamedLink
+          className={css.backToDashboard}
+          name={
+            currentUserType === 'corporate-partner'
+              ? 'CorporateDashboardPage'
+              : currentUserType === 'educational-admin'
+              ? 'EducationDashboardPage'
+              : currentUserType === 'admin' || currentUserType === 'system-admin'
+              ? 'AdminDashboardPage'
+              : 'StudentDashboardPage'
+          }
+        >
+          ← Back to Dashboard
+        </NamedLink>
       ) : null}
     </div>
   );
@@ -650,6 +666,7 @@ export const ProfilePageComponent = props => {
             user={profileUser}
             showLinkToProfileSettingsPage={mounted && isCurrentUser}
             displayName={displayName}
+            currentUserType={currentUser?.attributes?.profile?.publicData?.userType}
           />
         }
         footer={<FooterContainer />}

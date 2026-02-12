@@ -7,7 +7,7 @@
   border-bottom: 1px solid var(--colorGrey100);
 
   @media (--viewportMedium) {
-    padding-top: 16px;
+    padding-top: 10px;
     padding-bottom: 0;
     border-bottom: 0;
   }
@@ -64,13 +64,14 @@
 .labelSelected {
   composes: marketplaceSmallFontStyles from global;
   font-weight: var(--fontWeightBold);
+  font-size: 13px;
 
   /* Baseline adjustment for label text */
   margin-top: 0;
   margin-bottom: 12px;
 
   @media (--viewportMedium) {
-    margin-bottom: 8px;
+    margin-bottom: 4px;
   }
 }
 
@@ -121,7 +122,7 @@
   display: none;
 
   @media (--viewportMedium) {
-    padding-bottom: 16px;
+    padding-bottom: 8px;
   }
 }
 

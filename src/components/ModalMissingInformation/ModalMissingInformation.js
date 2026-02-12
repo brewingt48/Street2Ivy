@@ -68,21 +68,9 @@ class ModalMissingInformation extends Component {
     // Is the reminder already shown on current page
     const showOnPathChange = notRemindedYet || pathChanged;
 
-    if (!isPageWhitelisted && showOnPathChange) {
-      // Emails are sent when order is initiated
-      // Customer is likely to get email soon when she books something
-      // Provider email should work - she should get an email when someone books a listing
-      const hasOrders = currentUserHasOrders === true;
-      const hasListingsOrOrders = currentUserHasListings || hasOrders;
-
-      const emailUnverified = !!currentUser.id && !currentUser.attributes.emailVerified;
-      const emailVerificationNeeded = hasListingsOrOrders && emailUnverified;
-
-      // Show reminder
-      if (emailVerificationNeeded) {
-        this.setState({ showMissingInformationReminder: EMAIL_VERIFICATION });
-      }
-    }
+    // Email verification reminders are disabled — users can verify via
+    // their account settings if they choose to.
+    // if (!isPageWhitelisted && showOnPathChange) { ... }
   }
 
   render() {

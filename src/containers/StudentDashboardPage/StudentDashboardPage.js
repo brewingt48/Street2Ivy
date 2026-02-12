@@ -4,7 +4,7 @@ import { compose } from 'redux';
 import { useHistory } from 'react-router-dom';
 import { FormattedMessage, useIntl } from '../../util/reactIntl';
 import { isScrollingDisabled } from '../../ducks/ui.duck';
-import { apiBaseUrl, transitionTransaction } from '../../util/api';
+import { apiBaseUrl, transitionTransaction, fetchStudentInvites, acceptStudentInvite, declineStudentInvite } from '../../util/api';
 import { types as sdkTypes } from '../../util/sdkLoader';
 import classNames from 'classnames';
 
@@ -894,25 +894,32 @@ const StudentDashboardPageComponent = props => {
     fetchAvailableProjects();
   }, []);
 
-  // Fetch student's transactions (applications/orders)
+  // Fetch student's transactions (applications/orders) and invites
   useEffect(() => {
-    const fetchStudentTransactions = async () => {
+    const fetchStudentData = async () => {
       setIsLoading(true);
       try {
         const baseUrl = apiBaseUrl();
-        // Fetch student's transactions (as customer)
-        const response = await fetch(`${baseUrl}/api/transactions/query?only=order&perPage=50`, {
-          credentials: 'include',
-        });
-        if (response.ok) {
-          const data = await response.json();
+
+        // Fetch transactions and invites in parallel
+        const [txResponse, invitesData] = await Promise.all([
+          fetch(`${baseUrl}/api/transactions/query?only=order&perPage=50`, {
+            credentials: 'include',
+          }),
+          fetchStudentInvites({ status: 'pending' }).catch(err => {
+            console.error('Failed to fetch invites:', err);
+            return { data: { invites: [] } };
+          }),
+        ]);
+
+        // Process transactions
+        const active = [];
+        const completed = [];
+
+        if (txResponse.ok) {
+          const data = await txResponse.json();
           const txList = data.data || [];
           setTransactions(txList);
-
-          // Process transactions into active, invites, and history
-          const active = [];
-          const invites = [];
-          const completed = [];
 
           txList.forEach(tx => {
             const lastTransition = tx.attributes?.lastTransition || '';
@@ -923,8 +930,7 @@ const StudentDashboardPageComponent = props => {
               companyName: tx.provider?.attributes?.profile?.displayName || 'Unknown Company',
               description: tx.listing?.attributes?.description || '',
               status: lastTransition.includes('accept') ? 'active' :
-                      lastTransition.includes('complete') ? 'completed' :
-                      lastTransition.includes('invite') ? 'invited' : 'pending',
+                      lastTransition.includes('complete') ? 'completed' : 'pending',
               startDate: tx.attributes?.createdAt,
               compensation: tx.listing?.attributes?.publicData?.compensation || '',
             };
@@ -933,19 +939,32 @@ const StudentDashboardPageComponent = props => {
               completed.push({ ...projectData, status: 'completed' });
             } else if (lastTransition.includes('accept')) {
               active.push({ ...projectData, status: 'active' });
-            } else if (lastTransition.includes('invite')) {
-              invites.push({ ...projectData, status: 'invited' });
-            } else if (lastTransition.includes('request-project-application') || lastTransition.includes('inquire')) {
+            } else if (lastTransition.includes('request-project-application') || lastTransition.includes('inquire') || lastTransition.includes('apply')) {
               active.push({ ...projectData, status: 'pending' });
               setHasAppliedToProject(true);
             }
           });
 
-          setProjects({ active, invites, history: completed });
-          setMessages(txList); // Use transactions as messages for the messages tab
+          setMessages(txList);
         }
+
+        // Process invites from the corporate_invites table
+        const rawInvites = invitesData?.data?.invites || invitesData?.invites || [];
+        const invites = rawInvites.map(inv => ({
+          id: inv.id,
+          inviteId: inv.id,
+          listingId: inv.listingId,
+          title: inv.projectTitle || 'Project Invitation',
+          companyName: inv.corporatePartnerId ? 'Company' : 'Unknown Company',
+          description: inv.message || '',
+          status: 'invited',
+          startDate: inv.sentAt,
+          compensation: '',
+        }));
+
+        setProjects({ active, invites, history: completed });
       } catch (err) {
-        console.error('Failed to fetch student transactions:', err);
+        console.error('Failed to fetch student data:', err);
         setError('Unable to load your projects and messages. Please try refreshing the page.');
         setProjects({ active: [], invites: [], history: [] });
         setMessages([]);
@@ -955,7 +974,7 @@ const StudentDashboardPageComponent = props => {
     };
 
     if (currentUser) {
-      fetchStudentTransactions();
+      fetchStudentData();
     }
   }, [currentUser]);
 
@@ -979,11 +998,8 @@ const StudentDashboardPageComponent = props => {
   // Handle accepting an invite
   const handleAcceptInvite = async (project) => {
     try {
-      // Use the transitionTransaction API to accept the invite
-      const response = await transitionTransaction({
-        transactionId: project.transactionId,
-        transition: 'transition/accept',
-      });
+      const inviteId = project.inviteId || project.id;
+      const response = await acceptStudentInvite(inviteId);
 
       if (response) {
         // Move the project from invites to active
@@ -992,8 +1008,11 @@ const StudentDashboardPageComponent = props => {
           invites: prev.invites.filter(p => p.id !== project.id),
           active: [...prev.active, { ...project, status: 'active' }],
         }));
-        // Redirect to project details
-        history.push(`/project-workspace/${project.transactionId}`);
+        // Redirect to the listing page so the student can apply
+        const listingId = response?.data?.listingId || project.listingId;
+        if (listingId) {
+          history.push(`/l/${listingId}`);
+        }
       }
     } catch (err) {
       console.error('Failed to accept invite:', err);
@@ -1005,19 +1024,14 @@ const StudentDashboardPageComponent = props => {
   // Handle declining an invite
   const handleDeclineInvite = async (project) => {
     try {
-      // Use the transitionTransaction API to decline the invite
-      const response = await transitionTransaction({
-        transactionId: project.transactionId,
-        transition: 'transition/decline',
-      });
+      const inviteId = project.inviteId || project.id;
+      await declineStudentInvite(inviteId);
 
-      if (response) {
-        // Remove the project from invites
-        setProjects(prev => ({
-          ...prev,
-          invites: prev.invites.filter(p => p.id !== project.id),
-        }));
-      }
+      // Remove the project from invites
+      setProjects(prev => ({
+        ...prev,
+        invites: prev.invites.filter(p => p.id !== project.id),
+      }));
     } catch (err) {
       console.error('Failed to decline invite:', err);
       setError('Failed to decline the invite. Please try again.');

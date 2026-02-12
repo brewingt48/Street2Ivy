@@ -1182,6 +1182,30 @@ const corporateInvites = {
     return row ? corporateInvites._fromRow(row) : null;
   },
 
+  getByStudentId(studentId, { status, limit = 50 } = {}) {
+    let sql = 'SELECT * FROM corporate_invites WHERE student_id = ?';
+    const params = [studentId];
+    if (status) {
+      sql += ' AND status = ?';
+      params.push(status);
+    }
+    sql += ' ORDER BY sent_at DESC';
+    if (limit) {
+      sql += ' LIMIT ?';
+      params.push(limit);
+    }
+    return sqlite.prepare(sql).all(...params).map(corporateInvites._fromRow);
+  },
+
+  updateStatusById(inviteId, status) {
+    const now = new Date().toISOString();
+    sqlite.prepare(
+      'UPDATE corporate_invites SET status = ?, responded_at = ? WHERE id = ?'
+    ).run(status, now, inviteId);
+    const row = sqlite.prepare('SELECT * FROM corporate_invites WHERE id = ?').get(inviteId);
+    return row ? corporateInvites._fromRow(row) : null;
+  },
+
   create(invite) {
     sqlite.prepare(`
       INSERT INTO corporate_invites

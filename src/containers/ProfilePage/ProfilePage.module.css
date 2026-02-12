@@ -89,6 +89,27 @@
   }
 }
 
+.backToDashboard {
+  display: block;
+  margin-top: 16px;
+  padding: 10px 16px;
+  border-radius: var(--s2i-radius-md);
+  background: var(--s2i-slate-50);
+  color: var(--s2i-navy-700);
+  font-size: 14px;
+  font-weight: var(--s2i-font-medium);
+  text-align: center;
+  text-decoration: none;
+  transition: var(--s2i-transition-colors);
+  width: 100%;
+
+  &:hover {
+    background: var(--s2i-teal-50);
+    color: var(--s2i-teal-700);
+    text-decoration: none;
+  }
+}
+
 .editLinkDesktop {
   display: none;
   color: var(--s2i-teal-600);
@@ -333,8 +354,8 @@
 }
 
 .detailsRow {
-  display: inline-flex;
-  justify-content: space-between;
+  display: flex;
+  justify-content: flex-start;
   width: 100%;
   list-style: none;
   font-weight: var(--fontWeightRegular);
@@ -357,6 +378,13 @@
   font-weight: var(--s2i-font-semibold);
   color: var(--s2i-navy-900);
   letter-spacing: -0.09px;
+  flex-shrink: 0;
+  min-width: 140px;
+}
+
+.detailValue {
+  color: var(--s2i-slate-700);
+  word-break: break-word;
 }
 
 /* ================ Video ================ */

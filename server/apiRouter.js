@@ -87,6 +87,9 @@ const notifications = require('./api/notifications');
 // Message Attachments
 const messageAttachments = require('./api/message-attachments');
 
+// Student Invites (accept/decline corporate invitations)
+const studentInvites = require('./api/student-invites');
+
 const createUserWithIdp = require('./api/auth/createUserWithIdp');
 
 const { authenticateFacebook, authenticateFacebookCallback } = require('./api/auth/facebook');
@@ -118,6 +121,15 @@ const csrfExemptPaths = [
   '/student-waitlist',
   '/educational-admin/apply',
   '/validate-password',
+  // Admin upload endpoints — already protected by verifySystemAdmin auth middleware
+  '/admin/upload/logo',
+  '/admin/upload/favicon',
+  '/admin/upload/hero-image',
+  '/admin/upload/hero-video',
+  // Invite endpoint — protected by SDK session auth
+  '/invite-to-apply',
+  // Student invite actions — protected by SDK session auth
+  '/student/invites',
 ];
 router.use((req, res, next) => {
   // Skip CSRF for exempt paths
@@ -212,6 +224,11 @@ router.post('/invite-to-apply', inviteToApply);
 // Street2Ivy: Student Dashboard query endpoints (listings & transactions)
 router.get('/listings/query', studentDashboard.queryListings);
 router.get('/transactions/query', studentDashboard.queryTransactions);
+
+// Street2Ivy: Student Invites (view, accept, decline corporate invitations)
+router.get('/student/invites', studentInvites.listStudentInvites);
+router.post('/student/invites/:inviteId/accept', studentInvites.acceptInvite);
+router.post('/student/invites/:inviteId/decline', studentInvites.declineInvite);
 
 // Street2Ivy: Company/Corporate partner listings (for student search)
 router.get('/company/:authorId/listings', companyListings);
