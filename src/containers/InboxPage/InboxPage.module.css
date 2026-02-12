@@ -1,6 +1,6 @@
 @import '../../styles/customMediaQueries.css';
 
-/* ================ Modern Inbox Design System ================ */
+/* ================ Email-Style Inbox ================ */
 
 .mobileTopbar {
   width: 100%;
@@ -26,7 +26,7 @@
   box-shadow: none;
 
   @media (--viewportLarge) {
-    box-shadow: var(--s2i-shadow-sm);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
   }
 }
 
@@ -38,11 +38,9 @@
   flex-wrap: wrap;
   justify-content: space-between;
   padding: 29px 24px 0 24px;
-  border-top-width: 1px;
-  border-top-color: var(--s2i-slate-200);
-  border-top-style: solid;
+  border-top: 1px solid var(--s2i-slate-200);
   background-color: white;
-  box-shadow: var(--s2i-shadow-sm);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
 
   @media (--viewportMedium) {
     padding: 24px 24px 0 24px;
@@ -66,22 +64,22 @@
 .dashboardLink {
   display: block;
   width: 100%;
-  padding: 12px 0;
-  margin-bottom: 16px;
-  font-size: 14px;
+  padding: 10px 0;
+  margin-bottom: 14px;
+  font-size: 13px;
   font-weight: var(--s2i-font-medium);
   color: var(--s2i-teal-600);
   text-decoration: none;
-  border-bottom: 1px solid var(--s2i-slate-200);
-  transition: var(--s2i-transition-colors);
+  border-bottom: 1px solid var(--s2i-slate-100);
+  transition: color 0.15s ease;
 
   &:hover {
     color: var(--s2i-teal-700);
-    text-decoration: underline;
+    text-decoration: none;
   }
 
   @media (--viewportLarge) {
-    margin-bottom: 24px;
+    margin-bottom: 20px;
   }
 }
 
@@ -92,6 +90,7 @@
   margin-bottom: 0;
   font-family: 'Playfair Display', Georgia, serif;
   font-weight: 700;
+  font-size: 24px;
   color: var(--s2i-navy-900);
 
   @media (--viewportMedium) {
@@ -139,16 +138,16 @@
 .inboxHeader {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  padding: 24px 24px 20px;
-  background: linear-gradient(135deg, #f8fafc 0%, #f0f9ff 100%);
+  gap: 12px;
+  padding: 20px 24px 16px;
+  background: white;
   border-bottom: 1px solid var(--s2i-slate-200);
 
   @media (--viewportMedium) {
     flex-direction: row;
     align-items: flex-end;
     justify-content: space-between;
-    padding: 28px 32px 24px;
+    padding: 24px 28px 20px;
   }
 }
 
@@ -157,40 +156,45 @@
 }
 
 .inboxHeaderTitle {
-  font-size: 22px;
+  font-size: 20px;
   font-weight: 700;
   color: var(--s2i-navy-900);
-  margin: 0 0 4px 0;
+  margin: 0 0 2px 0;
   font-family: 'Playfair Display', Georgia, serif;
 
   @media (--viewportMedium) {
-    font-size: 26px;
+    font-size: 24px;
   }
 }
 
 .inboxHeaderSubtitle {
-  font-size: 14px;
+  font-size: 13px;
   color: var(--s2i-slate-500);
   margin: 0;
   line-height: 1.4;
 }
 
-/* ================ Transaction Count ================ */
+/* ================ Message Count Bar ================ */
 
 .inboxCount {
-  padding: 12px 24px;
-  font-size: 13px;
+  padding: 10px 24px;
+  font-size: 12px;
   font-weight: var(--s2i-font-medium);
   color: var(--s2i-slate-500);
+  background: var(--s2i-slate-50, #f8fafc);
   border-bottom: 1px solid var(--s2i-slate-100);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 
   @media (--viewportMedium) {
-    padding: 12px 32px;
+    padding: 10px 28px;
   }
 }
 
 .inboxCountTotal {
   color: var(--s2i-slate-400);
+  text-transform: none;
+  letter-spacing: normal;
 }
 
 /* ================ Error State ================ */
@@ -213,7 +217,7 @@
   padding: 14px 18px;
   background: #fef2f2;
   border: 1px solid #fecaca;
-  border-radius: 10px;
+  border-radius: 8px;
   color: #b91c1c;
   font-size: 14px;
   font-weight: var(--s2i-font-medium);
@@ -230,28 +234,28 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 64px 32px;
+  padding: 80px 32px;
   text-align: center;
 }
 
 .emptyStateIcon {
   font-size: 48px;
   margin-bottom: 16px;
-  opacity: 0.8;
+  opacity: 0.6;
 }
 
 .emptyStateTitle {
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 600;
   color: var(--s2i-navy-900);
   margin: 0 0 8px 0;
 }
 
 .emptyStateText {
-  font-size: 15px;
+  font-size: 14px;
   color: var(--s2i-slate-500);
   margin: 0;
-  max-width: 400px;
+  max-width: 380px;
   line-height: 1.5;
 }
 
@@ -267,7 +271,7 @@
 }
 
 .loadingText {
-  font-size: 14px;
+  font-size: 13px;
   color: var(--s2i-slate-400);
 }
 
@@ -299,7 +303,7 @@
 
 .itemList {
   margin: 0;
-  padding: 8px 0;
+  padding: 0;
   list-style: none;
 }
 
@@ -315,38 +319,41 @@
   }
 }
 
-/* ================ Modern Card-Based Inbox Item ================ */
+/* ================ Email-Style Inbox Item ================ */
 
 .listItem {
-  padding: 0 16px;
-
-  @media (--viewportMedium) {
-    padding: 0 24px;
-  }
+  padding: 0;
 }
 
 .itemCard {
   position: relative;
   display: block;
-  padding: 16px;
-  margin: 4px 0;
+  padding: 14px 20px 14px 24px;
+  margin: 0;
   background: white;
-  border: 1px solid var(--s2i-slate-100);
-  border-radius: 12px;
+  border-bottom: 1px solid var(--s2i-slate-100);
+  border-radius: 0;
   text-decoration: none;
-  transition: all 0.2s ease;
+  transition: background-color 0.15s ease;
   overflow: hidden;
 
   &:hover {
     text-decoration: none;
-    border-color: var(--s2i-teal-200);
-    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
-    transform: translateY(-1px);
+    background-color: #f8fafc;
   }
 
   @media (--viewportMedium) {
-    padding: 18px 20px;
-    margin: 6px 0;
+    padding: 16px 28px 16px 28px;
+  }
+}
+
+/* Unread message styling — subtle left tint */
+.itemCardUnread {
+  background: linear-gradient(90deg, #eff8ff 0%, #ffffff 50%);
+  border-left: 3px solid var(--s2i-teal-500);
+
+  &:hover {
+    background: linear-gradient(90deg, #e0f2fe 0%, #f8fafc 50%);
   }
 }
 
@@ -354,16 +361,20 @@
   position: absolute;
   top: 0;
   left: 0;
-  width: 4px;
+  width: 3px;
   height: 100%;
-  background: linear-gradient(180deg, var(--s2i-coral-400) 0%, var(--s2i-coral-500) 100%);
-  border-radius: 4px 0 0 4px;
+  background: var(--s2i-coral-500);
 }
 
 .itemCardContent {
   display: flex;
-  align-items: center;
-  gap: 14px;
+  align-items: flex-start;
+  gap: 12px;
+
+  @media (--viewportMedium) {
+    align-items: center;
+    gap: 16px;
+  }
 }
 
 /* ================ Avatar ================ */
@@ -371,16 +382,21 @@
 .itemAvatarWrapper {
   position: relative;
   flex-shrink: 0;
+  margin-top: 2px;
+
+  @media (--viewportMedium) {
+    margin-top: 0;
+  }
 }
 
 .itemAvatarImg {
-  width: 44px;
-  height: 44px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
 
   @media (--viewportMedium) {
-    width: 48px;
-    height: 48px;
+    width: 44px;
+    height: 44px;
   }
 }
 
@@ -388,9 +404,9 @@
   position: absolute;
   bottom: -1px;
   right: -1px;
-  width: 14px;
-  height: 14px;
-  background: linear-gradient(135deg, var(--s2i-coral-400) 0%, var(--s2i-coral-500) 100%);
+  width: 12px;
+  height: 12px;
+  background: var(--s2i-teal-500);
   border: 2px solid white;
   border-radius: 50%;
 }
@@ -429,11 +445,11 @@
   align-items: baseline;
   justify-content: space-between;
   gap: 8px;
-  margin-bottom: 2px;
+  margin-bottom: 1px;
 }
 
 .itemUserName {
-  font-size: 15px;
+  font-size: 14px;
   font-weight: var(--s2i-font-semibold);
   color: var(--s2i-navy-900);
   white-space: nowrap;
@@ -442,20 +458,30 @@
 }
 
 .itemTimestamp {
-  font-size: 12px;
+  font-size: 11px;
   color: var(--s2i-slate-400);
   white-space: nowrap;
   flex-shrink: 0;
 }
 
 .itemProjectTitle {
-  font-size: 14px;
-  color: var(--s2i-slate-600);
+  font-size: 13px;
+  color: var(--s2i-slate-700);
+  font-weight: var(--s2i-font-medium);
   line-height: 1.3;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  margin-bottom: 2px;
+  margin-bottom: 1px;
+}
+
+.itemPreview {
+  font-size: 12px;
+  color: var(--s2i-slate-400);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.4;
 }
 
 .itemMeta {
@@ -468,15 +494,17 @@
 .itemStatusArea {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   flex-shrink: 0;
   margin-left: auto;
 }
 
 .itemArrow {
-  font-size: 16px;
+  font-size: 20px;
   color: var(--s2i-slate-300);
-  transition: color 0.2s, transform 0.2s;
+  transition: color 0.15s, transform 0.15s;
+  line-height: 1;
+  font-weight: 300;
 }
 
 .itemCard:hover .itemArrow {
@@ -488,30 +516,28 @@
 
 .stateName {
   display: inline-block;
-  padding: 4px 10px;
-  font-size: 12px;
+  padding: 3px 8px;
+  font-size: 11px;
   font-weight: var(--s2i-font-semibold);
-  border-radius: 20px;
+  border-radius: 4px;
   white-space: nowrap;
-  letter-spacing: 0.2px;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
 }
 
 .stateActionNeeded {
-  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  background: #fef3c7;
   color: #92400e;
-  border: 1px solid #fcd34d;
 }
 
 .stateNoActionNeeded {
-  background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+  background: #ecfdf5;
   color: #065f46;
-  border: 1px solid #6ee7b7;
 }
 
 .stateConcluded {
   background: var(--s2i-slate-100);
   color: var(--s2i-slate-500);
-  border: 1px solid var(--s2i-slate-200);
 }
 
 /* ================ Pagination ================ */
@@ -523,6 +549,8 @@
 /* ================ Banned user ================ */
 
 .bannedUserLink {
+  opacity: 0.5;
+
   & .itemUserName,
   &:hover .itemUserName,
   & .stateName {
@@ -567,7 +595,7 @@
   width: 100%;
   height: 100%;
   border-radius: 50%;
-  background: linear-gradient(135deg, var(--s2i-coral-500) 0%, var(--s2i-coral-600) 100%);
+  background: var(--s2i-coral-500);
 }
 
 .itemUsername {
@@ -577,7 +605,7 @@
   color: var(--s2i-navy-900);
   margin-top: 0;
   margin-bottom: 0;
-  transition: var(--s2i-transition-colors);
+  transition: color 0.15s ease;
 }
 
 .itemTitle {

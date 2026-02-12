@@ -218,13 +218,33 @@ export const InboxItem = props => {
   const lastTransitionedAt = tx.attributes?.lastTransitionedAt;
   const timeAgo = lastTransitionedAt ? formatRelativeTime(lastTransitionedAt) : '';
 
+  // Generate an email-like preview snippet based on state
+  const getPreviewSnippet = () => {
+    if (processName === 'default-project-application') {
+      if (processState === 'applied' && !isCustomer) return 'New application received — tap to review';
+      if (processState === 'applied' && isCustomer) return 'Application submitted — waiting for response';
+      if (processState === 'accepted' && isCustomer) return 'Congratulations! Your application was accepted';
+      if (processState === 'accepted' && !isCustomer) return 'You accepted this application';
+      if (processState === 'declined') return 'This application was declined';
+      if (processState === 'completed') return 'Project completed — leave a review';
+      if (processState?.includes('reviewed')) return 'Review submitted';
+    }
+    return null;
+  };
+  const previewSnippet = getPreviewSnippet();
+
+  const cardClasses = classNames(css.itemCard, {
+    [css.itemCardUnread]: actionNeeded,
+    [css.bannedUserLink]: isOtherUserBanned,
+  });
+
   return (
     <NamedLink
-      className={css.itemCard}
+      className={cardClasses}
       name={isCustomer ? 'OrderDetailsPage' : 'SaleDetailsPage'}
       params={{ id: tx.id.uuid }}
     >
-      {/* Notification indicator bar */}
+      {/* Unread indicator bar */}
       {(isSaleNotification || isOrderNotification) && <div className={css.itemNotificationBar} />}
 
       <div className={css.itemCardContent}>
@@ -234,28 +254,32 @@ export const InboxItem = props => {
           {actionNeeded && <div className={css.itemAvatarBadge} />}
         </div>
 
-        {/* Center: Info */}
+        {/* Center: Sender, subject, preview */}
         <div className={css.itemInfo}>
           <div className={css.itemInfoTop}>
             <span className={css.itemUserName}>{otherUserDisplayName}</span>
             <span className={css.itemTimestamp}>{timeAgo}</span>
           </div>
           <div className={css.itemProjectTitle}>{listing?.attributes?.title}</div>
-          <div className={css.itemMeta}>
-            {isBooking ? (
-              <BookingTimeInfoMaybe transaction={tx} />
-            ) : isPurchase && hasPricingData && showStock ? (
-              <FormattedMessage id="InboxPage.quantity" values={{ quantity }} />
-            ) : null}
-            {availabilityType == AVAILABILITY_MULTIPLE_SEATS && unitLineItem?.seats ? (
-              <span>
-                <FormattedMessage id="InboxPage.seats" values={{ seats: unitLineItem.seats }} />
-              </span>
-            ) : null}
-          </div>
+          {previewSnippet ? (
+            <div className={css.itemPreview}>{previewSnippet}</div>
+          ) : (
+            <div className={css.itemMeta}>
+              {isBooking ? (
+                <BookingTimeInfoMaybe transaction={tx} />
+              ) : isPurchase && hasPricingData && showStock ? (
+                <FormattedMessage id="InboxPage.quantity" values={{ quantity }} />
+              ) : null}
+              {availabilityType == AVAILABILITY_MULTIPLE_SEATS && unitLineItem?.seats ? (
+                <span>
+                  <FormattedMessage id="InboxPage.seats" values={{ seats: unitLineItem.seats }} />
+                </span>
+              ) : null}
+            </div>
+          )}
         </div>
 
-        {/* Right: Status badge */}
+        {/* Right: Status badge + chevron */}
         <div className={css.itemStatusArea}>
           <div className={stateClasses}>
             <FormattedMessage
@@ -263,7 +287,7 @@ export const InboxItem = props => {
               values={{ transactionRole }}
             />
           </div>
-          <span className={css.itemArrow}>→</span>
+          <span className={css.itemArrow}>›</span>
         </div>
       </div>
     </NamedLink>
@@ -399,12 +423,14 @@ export const InboxPageComponent = props => {
   const hasTransactions =
     !fetchInProgress && hasOrderOrSaleTransactions(transactions, isOrders, currentUser);
 
+  // Build tabs — only show both tabs if user has both roles
+  // Use role-aware labels instead of marketplace "orders/sales" language
   const ordersTabMaybe = isCustomerUserType
     ? [
         {
           text: (
             <span>
-              <FormattedMessage id="InboxPage.ordersTabTitle" />
+              {isStudent ? 'My Applications' : <FormattedMessage id="InboxPage.ordersTabTitle" />}
               {customerNotificationCount > 0 ? (
                 <NotificationBadge count={customerNotificationCount} />
               ) : null}
@@ -424,7 +450,7 @@ export const InboxPageComponent = props => {
         {
           text: (
             <span>
-              <FormattedMessage id="InboxPage.salesTabTitle" />
+              {isCorporatePartner ? 'Applications' : <FormattedMessage id="InboxPage.salesTabTitle" />}
               {providerNotificationCount > 0 ? (
                 <NotificationBadge count={providerNotificationCount} />
               ) : null}
@@ -471,18 +497,22 @@ export const InboxPageComponent = props => {
         }
         footer={<FooterContainer />}
       >
-        {/* Modern Inbox Header */}
+        {/* Email-style Inbox Header */}
         <div className={css.inboxHeader}>
           <div className={css.inboxHeaderInfo}>
             <h2 className={css.inboxHeaderTitle}>
-              {isOrders
-                ? intl.formatMessage({ id: 'InboxPage.ordersHeading' })
-                : intl.formatMessage({ id: 'InboxPage.salesHeading' })}
+              {isStudent && isOrders
+                ? 'My Applications & Messages'
+                : isCorporatePartner && !isOrders
+                ? 'Student Applications & Messages'
+                : intl.formatMessage({ id: isOrders ? 'InboxPage.ordersHeading' : 'InboxPage.salesHeading' })}
             </h2>
             <p className={css.inboxHeaderSubtitle}>
-              {isOrders
-                ? intl.formatMessage({ id: 'InboxPage.ordersSubtitle' })
-                : intl.formatMessage({ id: 'InboxPage.salesSubtitle' })}
+              {isStudent && isOrders
+                ? 'Track your project applications, communicate with partners, and leave reviews'
+                : isCorporatePartner && !isOrders
+                ? 'Review student applications, accept or decline, and communicate with students'
+                : intl.formatMessage({ id: isOrders ? 'InboxPage.ordersSubtitle' : 'InboxPage.salesSubtitle' })}
             </p>
           </div>
           <InboxSearchForm
@@ -495,12 +525,12 @@ export const InboxPageComponent = props => {
           />
         </div>
 
-        {/* Transaction count */}
+        {/* Message count bar */}
         {!fetchInProgress && transactions.length > 0 && (
           <div className={css.inboxCount}>
-            {transactions.length} {transactions.length === 1 ? 'conversation' : 'conversations'}
+            {transactions.length} {transactions.length === 1 ? 'message' : 'messages'}
             {pagination?.totalItems > INBOX_PAGE_SIZE && (
-              <span className={css.inboxCountTotal}> of {pagination.totalItems}</span>
+              <span className={css.inboxCountTotal}> of {pagination.totalItems} total</span>
             )}
           </div>
         )}

@@ -278,11 +278,11 @@ const TopbarDesktop = props => {
   const giveSpaceForSearch = customLinks == null || customLinks?.length === 0;
   const classes = classNames(rootClassName || css.root, className);
 
-  // For corporate partners, students, and admin users, hide inbox link
-  // (they have messages in their respective dashboards)
+  // Show Inbox link for all authenticated users (including corporate partners and students)
+  // Admins still access their admin dashboards directly
   const inboxLinkMaybe = authenticatedOnClientSide ? (
-    isAdmin || isCorporatePartner || isStudent ? (
-      null // These users access their messages via their dashboards
+    isAdmin ? (
+      null // Admin users access messages via their admin dashboards
     ) : (
       <InboxLink notificationCount={notificationCount} inboxTab={inboxTab} />
     )
