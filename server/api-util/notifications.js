@@ -171,6 +171,20 @@ const NOTIFICATION_TEMPLATES = {
       The Street2Ivy Team
     `,
   },
+  [NOTIFICATION_TYPES.STUDENT_ACCEPTED_INVITE]: {
+    subject: '{studentName} Accepted Your Invitation for {projectTitle}',
+    getContent: (data) => `
+      Hi {companyName} Team,
+
+      Great news! {studentName} has accepted your invitation to apply for "{projectTitle}".
+
+      They may submit their full application soon. Keep an eye on your inbox for their application details.
+
+      View your applications: {applicationUrl}
+
+      The Campus2Career Team
+    `,
+  },
 };
 
 /**

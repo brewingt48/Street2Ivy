@@ -1,5 +1,7 @@
 const { getSdk, handleError, serialize } = require('../api-util/sdk');
 const db = require('../api-util/db');
+const { getIntegrationSdkForTenant } = require('../api-util/integrationSdk');
+const { sendNotification, NOTIFICATION_TYPES } = require('../api-util/notifications');
 
 /**
  * GET /api/student/invites
@@ -74,6 +76,7 @@ const acceptInvite = async (req, res) => {
     // Update the invite status
     const updated = db.corporateInvites.updateStatusById(inviteId, 'accepted');
 
+    // Send response immediately
     res
       .status(200)
       .set('Content-Type', 'application/transit+json')
@@ -89,6 +92,60 @@ const acceptInvite = async (req, res) => {
         })
       )
       .end();
+
+    // Notify the corporate partner that the student accepted their invite (non-blocking)
+    try {
+      const studentName = currentUser.attributes?.profile?.displayName || 'A student';
+      const baseUrl = process.env.REACT_APP_MARKETPLACE_ROOT_URL || 'https://street2ivy.com';
+
+      // Look up the corporate partner's email via Integration SDK
+      const integrationSdk = getIntegrationSdkForTenant(req.tenant);
+      let providerEmail = null;
+      let providerName = 'Team';
+      let projectTitle = invite.projectTitle || 'your project';
+
+      if (invite.corporatePartnerId) {
+        try {
+          const sharetribeSdk = require('sharetribe-flex-sdk');
+          const { UUID } = sharetribeSdk.types;
+          const userResponse = await integrationSdk.users.show({
+            id: new UUID(invite.corporatePartnerId),
+          });
+          providerEmail = userResponse.data.data.attributes?.email;
+          providerName = userResponse.data.data.attributes?.profile?.displayName || 'Team';
+        } catch (userErr) {
+          console.error('[StudentInvites] Could not fetch corporate partner:', userErr.message);
+        }
+      }
+
+      // Fetch listing title if we have a listingId but no projectTitle
+      if (invite.listingId && (!invite.projectTitle || invite.projectTitle === 'your project')) {
+        try {
+          const sharetribeSdk = require('sharetribe-flex-sdk');
+          const { UUID } = sharetribeSdk.types;
+          const listingResponse = await integrationSdk.listings.show({
+            id: new UUID(invite.listingId),
+          });
+          projectTitle = listingResponse.data.data.attributes?.title || projectTitle;
+        } catch (listErr) {
+          // Non-critical
+        }
+      }
+
+      await sendNotification({
+        type: NOTIFICATION_TYPES.STUDENT_ACCEPTED_INVITE,
+        recipientId: invite.corporatePartnerId,
+        recipientEmail: providerEmail,
+        data: {
+          companyName: providerName,
+          studentName,
+          projectTitle,
+          applicationUrl: `${baseUrl}/inbox/sales`,
+        },
+      });
+    } catch (notifError) {
+      console.error('[StudentInvites] Accept notification error:', notifError.message);
+    }
   } catch (e) {
     console.error('Error accepting invite:', e);
     handleError(res, e);

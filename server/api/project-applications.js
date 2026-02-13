@@ -1,7 +1,8 @@
 const crypto = require('crypto');
 const db = require('../api-util/db');
 const { getSdk, handleError, serialize } = require('../api-util/sdk');
-// v53: sendNotification and Integration SDK removed — notifications handled by Sharetribe's built-in system
+const { getIntegrationSdkForTenant } = require('../api-util/integrationSdk');
+const { notifyTransactionStateChange } = require('../api-util/notifications');
 
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
@@ -153,8 +154,7 @@ const submitApplication = async (req, res) => {
       }
     }
 
-    // v53: Custom notifications removed — Sharetribe's Inbox/Transaction system handles notifications natively
-
+    // Send response immediately so the student isn't waiting on notifications
     res.status(201).json({
       success: true,
       application: {
@@ -164,6 +164,40 @@ const submitApplication = async (req, res) => {
         submittedAt: application.submittedAt,
       },
     });
+
+    // Send email/in-app notifications asynchronously (non-blocking)
+    if (transactionId) {
+      try {
+        const integrationSdk = getIntegrationSdkForTenant(req.tenant);
+        const sharetribeSdk = require('sharetribe-flex-sdk');
+        const { UUID } = sharetribeSdk.types;
+
+        const fullTxResponse = await integrationSdk.transactions.show({
+          id: new UUID(transactionId),
+          include: ['listing', 'customer', 'provider'],
+        });
+
+        const transaction = fullTxResponse.data.data;
+        const included = fullTxResponse.data.included || [];
+        const listing = included.find(i => i.type === 'listing');
+        const customer = included.find(
+          i => i.type === 'user' && i.id.uuid === transaction.relationships?.customer?.data?.id?.uuid
+        );
+        const provider = included.find(
+          i => i.type === 'user' && i.id.uuid === transaction.relationships?.provider?.data?.id?.uuid
+        );
+
+        await notifyTransactionStateChange({
+          transaction,
+          transition: 'transition/inquire-without-payment',
+          customer,
+          provider,
+          listing,
+        });
+      } catch (notifError) {
+        console.error('[ProjectApplications] Notification error:', notifError.message);
+      }
+    }
   } catch (e) {
     console.error('Error submitting project application:', e);
     handleError(res, e);
@@ -388,12 +422,42 @@ const acceptApplication = async (req, res) => {
       }
     }
 
-    // v53: Acceptance notification removed — Sharetribe's Inbox/Transaction system handles this
-
+    // Send response immediately
     res.status(200).json({
       success: true,
       application: updated,
     });
+
+    // Send email/in-app notification asynchronously
+    if (application.transactionId) {
+      try {
+        const integrationSdk = getIntegrationSdkForTenant(req.tenant);
+        const fullTxResponse = await integrationSdk.transactions.show({
+          id: new UUID(application.transactionId),
+          include: ['listing', 'customer', 'provider'],
+        });
+
+        const transaction = fullTxResponse.data.data;
+        const included = fullTxResponse.data.included || [];
+        const listing = included.find(i => i.type === 'listing');
+        const customer = included.find(
+          i => i.type === 'user' && i.id.uuid === transaction.relationships?.customer?.data?.id?.uuid
+        );
+        const provider = included.find(
+          i => i.type === 'user' && i.id.uuid === transaction.relationships?.provider?.data?.id?.uuid
+        );
+
+        await notifyTransactionStateChange({
+          transaction,
+          transition: 'transition/accept',
+          customer,
+          provider,
+          listing,
+        });
+      } catch (notifError) {
+        console.error('[ProjectApplications] Accept notification error:', notifError.message);
+      }
+    }
   } catch (e) {
     console.error('Error accepting application:', e);
     handleError(res, e);
@@ -447,12 +511,42 @@ const declineApplication = async (req, res) => {
       }
     }
 
-    // v53: Decline notification removed — Sharetribe's Inbox/Transaction system handles this
-
+    // Send response immediately
     res.status(200).json({
       success: true,
       application: updated,
     });
+
+    // Send email/in-app notification asynchronously
+    if (application.transactionId) {
+      try {
+        const integrationSdk = getIntegrationSdkForTenant(req.tenant);
+        const fullTxResponse = await integrationSdk.transactions.show({
+          id: new UUID(application.transactionId),
+          include: ['listing', 'customer', 'provider'],
+        });
+
+        const transaction = fullTxResponse.data.data;
+        const included = fullTxResponse.data.included || [];
+        const listing = included.find(i => i.type === 'listing');
+        const customer = included.find(
+          i => i.type === 'user' && i.id.uuid === transaction.relationships?.customer?.data?.id?.uuid
+        );
+        const provider = included.find(
+          i => i.type === 'user' && i.id.uuid === transaction.relationships?.provider?.data?.id?.uuid
+        );
+
+        await notifyTransactionStateChange({
+          transaction,
+          transition: 'transition/decline',
+          customer,
+          provider,
+          listing,
+        });
+      } catch (notifError) {
+        console.error('[ProjectApplications] Decline notification error:', notifError.message);
+      }
+    }
   } catch (e) {
     console.error('Error declining application:', e);
     handleError(res, e);

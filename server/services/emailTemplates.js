@@ -467,6 +467,50 @@ function newMessage(data) {
   });
 }
 
+/**
+ * STUDENT_ACCEPTED_INVITE — sent to corporate partner when student accepts invite
+ */
+function studentAcceptedInvite(data) {
+  const subject = `${data.studentName} Accepted Your Invitation for ${data.projectTitle}`;
+  const body = `
+    <td style="padding:0;">
+      <!-- Success Banner -->
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+        <tr>
+          <td style="padding:24px 32px;background-color:#E6FBFA;text-align:center;">
+            <span style="font-size:32px;">&#9989;</span>
+            <h1 style="margin:8px 0 0 0;font-size:22px;color:#004D47;font-weight:700;">Invitation Accepted!</h1>
+          </td>
+        </tr>
+      </table>
+
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+        <tr>
+          <td style="padding:24px 32px 32px 32px;">
+            <p style="margin:0 0 4px 0;font-size:15px;color:#334155;">Hi ${escapeHtml(data.companyName)} Team,</p>
+            <p style="margin:0 0 24px 0;font-size:15px;color:#334155;line-height:1.6;"><strong>${escapeHtml(data.studentName)}</strong> has accepted your invitation to apply for <strong>"${escapeHtml(data.projectTitle)}"</strong>. They may submit their full application soon.</p>
+
+            <!-- Info Card -->
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#F8FAFC;border:1px solid #E2E8F0;border-radius:8px;margin-bottom:24px;">
+              <tr>
+                <td style="padding:20px;">
+                  <p style="margin:0 0 8px 0;font-size:14px;color:#0f172a;font-weight:600;">&#128203; What happens next</p>
+                  <p style="margin:0;font-size:14px;color:#334155;line-height:1.5;">The applicant will complete and submit their full application. You'll receive another notification when it arrives. Keep an eye on your inbox!</p>
+                </td>
+              </tr>
+            </table>
+
+            ${ctaButton('View Your Applications', data.applicationUrl || `${getBaseUrl()}/inbox/sales`)}
+          </td>
+        </tr>
+      </table>
+    </td>`;
+
+  return emailShell(subject, body, {
+    preheader: `${data.studentName} accepted your invitation for "${data.projectTitle}"`,
+  });
+}
+
 // ─── Template Registry ───────────────────────────────────────────────────────
 
 /**
@@ -482,6 +526,7 @@ const EMAIL_TEMPLATES = {
   'invite-received': inviteReceived,
   'assessment-received': assessmentReceived,
   'new-message': newMessage,
+  'student-accepted-invite': studentAcceptedInvite,
 };
 
 /**
