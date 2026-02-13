@@ -11,10 +11,9 @@ import PreviewResolverPage from '../containers/PreviewResolverPage/PreviewResolv
 import { NamedRedirect } from '../components';
 import { connect } from 'react-redux';
 
-// Role-aware inbox redirect: students see "applications", corporate partners see "received"
+// Unified inbox redirect: all users land on the "All Messages" view
 const InboxRedirectComponent = ({ currentUser }) => {
-  const userType = currentUser?.attributes?.profile?.publicData?.userType;
-  const tab = userType === 'student' ? 'applications' : 'received';
+  const tab = 'all';
   return <NamedRedirect name="InboxPage" params={{ tab }} />;
 };
 const InboxRedirect = connect(state => ({

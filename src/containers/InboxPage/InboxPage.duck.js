@@ -55,6 +55,7 @@ const loadDataPayloadCreator = ({ params, search }, { dispatch, rejectWithValue,
   // Map URL tab names to Sharetribe API filter values
   // "applications" = student's view (customer/order), "received" = corporate partner's view (provider/sale)
   const onlyFilterValues = {
+    all: 'all', // Unified view — fetches both orders and sales
     applications: 'order',
     received: 'sale',
     // Legacy tab names (for backward compatibility with old bookmarks)
@@ -70,8 +71,7 @@ const loadDataPayloadCreator = ({ params, search }, { dispatch, rejectWithValue,
   const { page = 1, sort } = parse(search);
   const processNames = getSupportedProcessesInfo().map(p => p.name);
 
-  const apiQueryParams = {
-    only: onlyFilter,
+  const commonParams = {
     processNames,
     include: [
       'listing',
@@ -93,9 +93,59 @@ const loadDataPayloadCreator = ({ params, search }, { dispatch, rejectWithValue,
     'fields.listing': ['title', 'availabilityPlan', 'publicData.listingType'],
     'fields.user': ['profile.displayName', 'profile.abbreviatedName', 'deleted', 'banned'],
     'fields.image': ['variants.square-small', 'variants.square-small2x'],
+    ...getValidInboxSort(sort),
+  };
+
+  // "All" tab: fire two parallel API calls and merge results client-side
+  if (onlyFilter === 'all') {
+    return Promise.all([
+      sdk.transactions.query({ ...commonParams, only: 'order', page, perPage: INBOX_PAGE_SIZE }),
+      sdk.transactions.query({ ...commonParams, only: 'sale', page, perPage: INBOX_PAGE_SIZE }),
+    ])
+      .then(([ordersResponse, salesResponse]) => {
+        // Dispatch marketplace entities for both responses
+        dispatch(addMarketplaceEntities(ordersResponse));
+        dispatch(addMarketplaceEntities(salesResponse));
+
+        // Merge and sort by lastTransitionedAt (newest first)
+        const allTransactions = [
+          ...ordersResponse.data.data,
+          ...salesResponse.data.data,
+        ].sort((a, b) => {
+          const dateA = new Date(a.attributes.lastTransitionedAt);
+          const dateB = new Date(b.attributes.lastTransitionedAt);
+          return dateB - dateA;
+        });
+
+        // Build combined pagination meta
+        const ordersMeta = ordersResponse.data.meta;
+        const salesMeta = salesResponse.data.meta;
+        const combinedMeta = {
+          totalItems: (ordersMeta.totalItems || 0) + (salesMeta.totalItems || 0),
+          totalPages: Math.max(ordersMeta.totalPages || 1, salesMeta.totalPages || 1),
+          page: page,
+          perPage: INBOX_PAGE_SIZE,
+        };
+
+        // Return in the same shape as a single-tab response
+        return {
+          data: {
+            data: allTransactions,
+            meta: combinedMeta,
+          },
+        };
+      })
+      .catch(e => {
+        return rejectWithValue(storableError(e));
+      });
+  }
+
+  // Single-tab fetch (applications or received)
+  const apiQueryParams = {
+    only: onlyFilter,
+    ...commonParams,
     page,
     perPage: INBOX_PAGE_SIZE,
-    ...getValidInboxSort(sort),
   };
 
   return sdk.transactions

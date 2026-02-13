@@ -457,6 +457,19 @@
   text-overflow: ellipsis;
 }
 
+/* Mobile-only timestamp (visible on mobile, hidden on desktop where date column shows) */
+.itemTimestampMobile {
+  font-size: 11px;
+  color: var(--s2i-slate-400);
+  white-space: nowrap;
+  flex-shrink: 0;
+
+  @media (--viewportMedium) {
+    display: none;
+  }
+}
+
+/* Legacy class */
 .itemTimestamp {
   font-size: 11px;
   color: var(--s2i-slate-400);
@@ -538,6 +551,106 @@
 .stateConcluded {
   background: var(--s2i-slate-100);
   color: var(--s2i-slate-500);
+}
+
+/* ================ Column Headers (desktop only) ================ */
+
+.columnHeaders {
+  display: none;
+
+  @media (--viewportMedium) {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 8px 28px;
+    background: var(--s2i-slate-50, #f8fafc);
+    border-bottom: 1px solid var(--s2i-slate-200);
+    font-size: 10px;
+    font-weight: var(--s2i-font-semibold);
+    color: var(--s2i-slate-400);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+  }
+}
+
+.columnHeaderAvatar {
+  flex-shrink: 0;
+  width: 44px;
+}
+
+.columnHeaderFrom {
+  flex: 1;
+  min-width: 0;
+}
+
+.columnHeaderProject {
+  flex: 1;
+  min-width: 0;
+  display: none;
+
+  @media (--viewportLarge) {
+    display: block;
+  }
+}
+
+.columnHeaderStatus {
+  width: 110px;
+  flex-shrink: 0;
+  text-align: center;
+}
+
+.columnHeaderDate {
+  width: 80px;
+  flex-shrink: 0;
+  text-align: right;
+}
+
+/* ================ Direction Badges ================ */
+
+.directionBadgeSent {
+  display: inline-block;
+  padding: 1px 6px;
+  margin-left: 6px;
+  font-size: 10px;
+  font-weight: var(--s2i-font-semibold);
+  border-radius: 3px;
+  white-space: nowrap;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+  vertical-align: middle;
+  background: #ccfbf1;
+  color: #0d9488;
+}
+
+.directionBadgeReceived {
+  display: inline-block;
+  padding: 1px 6px;
+  margin-left: 6px;
+  font-size: 10px;
+  font-weight: var(--s2i-font-semibold);
+  border-radius: 3px;
+  white-space: nowrap;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+  vertical-align: middle;
+  background: var(--s2i-slate-100);
+  color: var(--s2i-slate-500);
+}
+
+/* ================ Date Column (desktop) ================ */
+
+.itemDateColumn {
+  display: none;
+
+  @media (--viewportMedium) {
+    display: block;
+    width: 80px;
+    flex-shrink: 0;
+    text-align: right;
+    font-size: 11px;
+    color: var(--s2i-slate-400);
+    white-space: nowrap;
+  }
 }
 
 /* ================ Pagination ================ */

@@ -153,6 +153,11 @@ describe('InboxPage', () => {
       });
 
       await waitFor(() => {
+        // Has "All Messages" tab
+        const allMessagesTab = screen.getByRole('link', { name: 'InboxPage.allMessagesTab' });
+        expect(allMessagesTab).toBeInTheDocument();
+        expect(allMessagesTab.getAttribute('href')).toContain('/inbox/all');
+
         // Has links to orders tab
         const ordersTabTitle = screen.getByRole('link', { name: 'InboxPage.ordersTabTitle' });
         expect(ordersTabTitle).toBeInTheDocument();
@@ -168,12 +173,12 @@ describe('InboxPage', () => {
         expect(items).toHaveLength(2);
 
         const item1 = items[0];
-        expect(item1.getAttribute('href')).toContain('/order/order1');
+        expect(item1.getAttribute('href')).toContain('/application/order1');
         const status1 = within(item1).getByText('InboxPage.default-purchase.purchased.status');
         expect(status1).toBeInTheDocument();
 
         const item2 = items[1];
-        expect(item2.getAttribute('href')).toContain('/order/order2');
+        expect(item2.getAttribute('href')).toContain('/application/order2');
         const status2 = within(item2).getByText('InboxPage.default-purchase.purchased.status');
         expect(status2).toBeInTheDocument();
       });
@@ -250,6 +255,11 @@ describe('InboxPage', () => {
       });
 
       await waitFor(() => {
+        // Has "All Messages" tab
+        const allMessagesTab = screen.getByRole('link', { name: 'InboxPage.allMessagesTab' });
+        expect(allMessagesTab).toBeInTheDocument();
+        expect(allMessagesTab.getAttribute('href')).toContain('/inbox/all');
+
         // Has links to orders tab
         const ordersTabTitle = screen.getByRole('link', { name: 'InboxPage.ordersTabTitle' });
         expect(ordersTabTitle).toBeInTheDocument();
@@ -265,12 +275,12 @@ describe('InboxPage', () => {
         expect(items).toHaveLength(2);
 
         const item1 = items[0];
-        expect(item1.getAttribute('href')).toContain('/sale/sale1');
+        expect(item1.getAttribute('href')).toContain('/review/sale1');
         const status1 = within(item1).getByText('InboxPage.default-purchase.purchased.status');
         expect(status1).toBeInTheDocument();
 
         const item2 = items[1];
-        expect(item2.getAttribute('href')).toContain('/sale/sale2');
+        expect(item2.getAttribute('href')).toContain('/review/sale2');
         const status2 = within(item2).getByText('InboxPage.default-purchase.purchased.status');
         expect(status2).toBeInTheDocument();
       });

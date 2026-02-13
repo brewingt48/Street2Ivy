@@ -5,7 +5,7 @@ Campus2Career's messaging system is built on Sharetribe's transaction-based mess
 ## Architecture
 
 ```
-InboxPage (/inbox/applications or /inbox/received)
+InboxPage (/inbox/all, /inbox/applications, or /inbox/received)
   └─ InboxItem (email-client-style card per transaction)
        └─ NamedLink → TransactionPage
             ├─ ActivityFeed (messages + transitions)
@@ -17,8 +17,8 @@ InboxPage (/inbox/applications or /inbox/received)
 
 | File | Purpose |
 |------|---------|
-| `src/containers/InboxPage/InboxPage.js` | Email-style inbox with tabs for applications/received |
-| `src/containers/InboxPage/InboxPage.duck.js` | Redux state — fetches transactions list |
+| `src/containers/InboxPage/InboxPage.js` | Email-style inbox with tabs: All Messages, Applications, Received |
+| `src/containers/InboxPage/InboxPage.duck.js` | Redux state — fetches transactions list (dual-fetch for "All" tab) |
 | `src/containers/InboxPage/InboxPage.stateData.js` | Resolves transaction state for display |
 | `src/containers/InboxPage/InboxSearchForm/` | Sort/filter controls |
 | `src/containers/TransactionPage/TransactionPage.js` | Individual transaction view |
@@ -26,11 +26,13 @@ InboxPage (/inbox/applications or /inbox/received)
 | `src/containers/TransactionPage/ActivityFeed/` | Message + transition timeline |
 | `src/containers/TransactionPage/SendMessageForm/` | Message composition form |
 | `src/containers/TransactionPage/TransactionPanel/` | Main panel with all sections |
+| `server/api/email-status.js` | Admin-only Mailgun verification endpoints |
 
 ## URL Structure
 
 | URL | Who sees it | Purpose |
 |-----|------------|---------|
+| `/inbox/all` | All users (default) | "All Messages" — unified view of sent & received |
 | `/inbox/applications` | Students | "My Applications" — track submitted applications |
 | `/inbox/received` | Corporate Partners | "Applications" — review received applications |
 | `/application/:id` | Students | View transaction details as applicant |
@@ -43,21 +45,29 @@ Legacy URLs (`/inbox/orders`, `/inbox/sales`, `/order/:id`, `/sale/:id`) redirec
 ### Student (Customer) Flow
 
 1. **Apply to project** → Creates transaction with `transition/inquire-without-payment`
-2. **View inbox** → `/inbox/applications` shows "My Applications" tab
-3. **Click transaction** → Opens TransactionPage with full conversation
-4. **Send messages** → Uses SendMessageForm in TransactionPage
-5. **Receive updates** → Status badges update automatically (Applied → Accepted → Completed)
+2. **View inbox** → `/inbox/all` shows "All Messages" tab (default landing)
+3. **Filter view** → `/inbox/applications` shows "My Applications" tab only
+4. **Click transaction** → Opens TransactionPage with full conversation
+5. **Send messages** → Uses SendMessageForm in TransactionPage
+6. **Receive updates** → Status badges update automatically (Applied → Accepted → Completed)
 
 ### Corporate Partner (Provider) Flow
 
-1. **Receive application** → Transaction appears in `/inbox/received` as "Applications" tab
-2. **Review application** → TransactionPage shows ApplicationDetailSection (skills, GPA, resume, etc.)
-3. **Accept/Decline** → Action buttons in TransactionPage trigger transitions
-4. **Communicate** → Send messages through the transaction thread
-5. **Complete project** → Mark as completed, leave review
+1. **Receive application** → Transaction appears in inbox
+2. **View inbox** → `/inbox/all` shows unified view with "Received" direction badges
+3. **Filter view** → `/inbox/received` shows only received applications
+4. **Review application** → TransactionPage shows ApplicationDetailSection (skills, GPA, resume, etc.)
+5. **Accept/Decline** → Action buttons in TransactionPage trigger transitions
+6. **Communicate** → Send messages through the transaction thread
+7. **Complete project** → Mark as completed, leave review
 
 ## InboxPage Features
 
+- **Unified "All Messages" tab** — shows both sent and received conversations in one view
+- **Dual-fetch pattern** — "All" tab fetches both orders AND sales via `Promise.all()`, merges client-side
+- **Per-transaction role resolution** — on "All" tab, each item dynamically resolves customer/provider role
+- **Direction badges** — "Sent" (teal) and "Received" (slate) pills on "All Messages" tab
+- **Column headers** — desktop table-like layout: From/To | Project | Status | Date
 - **Email-client style cards** with avatar, name, timestamp, project title, preview snippet, status badge
 - **Unread indicators** — blue dot badge on avatar, left-side notification bar
 - **Relative timestamps** — "Just now", "5m ago", "3d ago", "2w ago"
@@ -96,10 +106,23 @@ InboxPage.stateDataProjectApplication.js
 All user-facing strings are in `src/translations/en.json` under `InboxPage.*` keys:
 
 - Status labels: `InboxPage.{process}.{state}.status`
-- Tab titles: `InboxPage.ordersTabTitle`, `InboxPage.salesTabTitle`
+- Tab titles: `InboxPage.allMessagesTab`, `InboxPage.ordersTabTitle`, `InboxPage.salesTabTitle`
 - Role-specific: `InboxPage.studentOrdersTab`, `InboxPage.corporateSalesTab`
+- Direction badges: `InboxPage.directionSent`, `InboxPage.directionReceived`
+- Column headers: `InboxPage.columnFrom`, `InboxPage.columnProject`, `InboxPage.columnStatus`, `InboxPage.columnDate`
 - Preview snippets: `InboxPage.previewAppliedProvider`, etc.
 - Time formatting: `InboxPage.timeJustNow`, `InboxPage.timeMinutesAgo`, etc.
+
+## Email Verification (Admin)
+
+Admin-only endpoints for verifying Mailgun email delivery:
+
+| Endpoint | Method | Purpose |
+|----------|--------|---------|
+| `/api/email-status` | GET | Returns Mailgun config status, domain, diagnostics |
+| `/api/email-test` | POST | Sends test email to admin's address |
+
+Both endpoints require system-admin authentication.
 
 ## Removed Components (v53)
 

@@ -169,6 +169,7 @@ const handleSortSelect = (tab, routeConfiguration, history) => urlParam => {
  * @param {propTypes.transaction} props.tx - The transaction
  * @param {intlShape} props.intl - The intl object
  * @param {stateDataShape} props.stateData - The state data
+ * @param {boolean} [props.showDirection] - Whether to show Sent/Received direction badge
  * @returns {JSX.Element} inbox item component
  */
 export const InboxItem = props => {
@@ -181,6 +182,7 @@ export const InboxItem = props => {
     isPurchase,
     availabilityType,
     stockType = STOCK_MULTIPLE_ITEMS,
+    showDirection = false,
   } = props;
   const { customer, provider, listing } = tx;
   const {
@@ -238,6 +240,15 @@ export const InboxItem = props => {
     [css.bannedUserLink]: isOtherUserBanned,
   });
 
+  // Direction badge for the "All Messages" tab
+  const directionBadge = showDirection ? (
+    <span className={isCustomer ? css.directionBadgeSent : css.directionBadgeReceived}>
+      {isCustomer
+        ? intl.formatMessage({ id: 'InboxPage.directionSent' })
+        : intl.formatMessage({ id: 'InboxPage.directionReceived' })}
+    </span>
+  ) : null;
+
   return (
     <NamedLink
       className={cardClasses}
@@ -257,8 +268,11 @@ export const InboxItem = props => {
         {/* Center: Sender, subject, preview */}
         <div className={css.itemInfo}>
           <div className={css.itemInfoTop}>
-            <span className={css.itemUserName}>{otherUserDisplayName}</span>
-            <span className={css.itemTimestamp}>{timeAgo}</span>
+            <span className={css.itemUserName}>
+              {otherUserDisplayName}
+              {directionBadge}
+            </span>
+            <span className={css.itemTimestampMobile}>{timeAgo}</span>
           </div>
           <div className={css.itemProjectTitle}>{listing?.attributes?.title}</div>
           {previewSnippet ? (
@@ -279,7 +293,7 @@ export const InboxItem = props => {
           )}
         </div>
 
-        {/* Right: Status badge + chevron */}
+        {/* Right: Status badge + date column + chevron */}
         <div className={css.itemStatusArea}>
           <div className={stateClasses}>
             <FormattedMessage
@@ -287,6 +301,7 @@ export const InboxItem = props => {
               values={{ transactionRole }}
             />
           </div>
+          <span className={css.itemDateColumn}>{timeAgo}</span>
           <span className={css.itemArrow}>›</span>
         </div>
       </div>
@@ -330,12 +345,13 @@ export const InboxPageComponent = props => {
     transactions,
   } = props;
   const { tab } = params;
-  const validTab = tab === 'applications' || tab === 'received' || tab === 'orders' || tab === 'sales';
+  const validTab = tab === 'all' || tab === 'applications' || tab === 'received' || tab === 'orders' || tab === 'sales';
   if (!validTab) {
     return <NotFoundPage staticContext={props.staticContext} />;
   }
 
   // Normalize legacy tab names → new names
+  const isAllTab = tab === 'all';
   const isApplicationsTab = tab === 'applications' || tab === 'orders';
   const isReceivedTab = tab === 'received' || tab === 'sales';
 
@@ -373,7 +389,8 @@ export const InboxPageComponent = props => {
   const hasNoResults = !fetchInProgress && transactions.length === 0 && !fetchOrdersOrSalesError;
   const ordersTitle = intl.formatMessage({ id: 'InboxPage.ordersTitle' });
   const salesTitle = intl.formatMessage({ id: 'InboxPage.salesTitle' });
-  const title = isApplicationsTab ? ordersTitle : salesTitle;
+  const allTitle = intl.formatMessage({ id: 'InboxPage.allMessagesHeading' });
+  const title = isAllTab ? allTitle : isApplicationsTab ? ordersTitle : salesTitle;
   const search = parse(location.search);
 
   const pickType = lt => conf => conf.listingType === lt;
@@ -384,7 +401,16 @@ export const InboxPageComponent = props => {
     return foundConfig;
   };
   const toTxItem = tx => {
-    const transactionRole = isApplicationsTab ? TX_TRANSITION_ACTOR_CUSTOMER : TX_TRANSITION_ACTOR_PROVIDER;
+    // For the "All" tab, resolve role per-transaction based on who the current user is
+    let transactionRole;
+    if (isAllTab) {
+      transactionRole = tx.customer?.id?.uuid === currentUser?.id?.uuid
+        ? TX_TRANSITION_ACTOR_CUSTOMER
+        : TX_TRANSITION_ACTOR_PROVIDER;
+    } else {
+      transactionRole = isApplicationsTab ? TX_TRANSITION_ACTOR_CUSTOMER : TX_TRANSITION_ACTOR_PROVIDER;
+    }
+
     let stateData = null;
     try {
       stateData = getStateData({ transaction: tx, transactionRole, intl });
@@ -413,6 +439,7 @@ export const InboxPageComponent = props => {
           availabilityType={availabilityType}
           isBooking={isBooking}
           isPurchase={isPurchase}
+          showDirection={isAllTab}
         />
       </li>
     ) : null;
@@ -423,10 +450,31 @@ export const InboxPageComponent = props => {
       ? user?.id && tx && tx.length > 0 && tx[0].customer.id.uuid === user?.id?.uuid
       : user?.id && tx && tx.length > 0 && tx[0].provider.id.uuid === user?.id?.uuid;
   };
-  const hasTransactions =
-    !fetchInProgress && hasOrderOrSaleTransactions(transactions, isApplicationsTab, currentUser);
 
-  // Build tabs — only show both tabs if user has both roles
+  // For the "All" tab, just check if there are any transactions
+  const hasTransactions = isAllTab
+    ? !fetchInProgress && transactions.length > 0
+    : !fetchInProgress && hasOrderOrSaleTransactions(transactions, isApplicationsTab, currentUser);
+
+  // Build tabs — "All Messages" is always visible, role-specific tabs based on user roles
+  const totalNotifications = customerNotificationCount + providerNotificationCount;
+
+  const allMessagesTab = {
+    text: (
+      <span>
+        <FormattedMessage id="InboxPage.allMessagesTab" />
+        {totalNotifications > 0 ? (
+          <NotificationBadge count={totalNotifications} />
+        ) : null}
+      </span>
+    ),
+    selected: isAllTab,
+    linkProps: {
+      name: 'InboxPage',
+      params: { tab: 'all' },
+    },
+  };
+
   // Use role-aware labels with education-appropriate tab names
   const applicationsTabMaybe = isCustomerUserType
     ? [
@@ -468,7 +516,31 @@ export const InboxPageComponent = props => {
       ]
     : [];
 
-  const tabs = [...applicationsTabMaybe, ...receivedTabMaybe];
+  const tabs = [allMessagesTab, ...applicationsTabMaybe, ...receivedTabMaybe];
+
+  // Determine heading and subtitle based on active tab
+  const getHeading = () => {
+    if (isAllTab) return intl.formatMessage({ id: 'InboxPage.allMessagesHeading' });
+    if (isStudent && isApplicationsTab) return intl.formatMessage({ id: 'InboxPage.studentOrdersHeading' });
+    if (isCorporatePartner && isReceivedTab) return intl.formatMessage({ id: 'InboxPage.corporateSalesHeading' });
+    return intl.formatMessage({ id: isApplicationsTab ? 'InboxPage.ordersHeading' : 'InboxPage.salesHeading' });
+  };
+  const getSubtitle = () => {
+    if (isAllTab) return intl.formatMessage({ id: 'InboxPage.allMessagesSubtitle' });
+    if (isStudent && isApplicationsTab) return intl.formatMessage({ id: 'InboxPage.studentOrdersSubtitle' });
+    if (isCorporatePartner && isReceivedTab) return intl.formatMessage({ id: 'InboxPage.corporateSalesSubtitle' });
+    return intl.formatMessage({ id: isApplicationsTab ? 'InboxPage.ordersSubtitle' : 'InboxPage.salesSubtitle' });
+  };
+
+  // Determine empty state messages based on tab
+  const getEmptyStateTitle = () => {
+    if (isAllTab) return 'InboxPage.noAllMessagesTitle';
+    return isApplicationsTab ? 'InboxPage.noOrdersTitle' : 'InboxPage.noSalesTitle';
+  };
+  const getEmptyStateText = () => {
+    if (isAllTab) return 'InboxPage.noAllMessagesFound';
+    return isApplicationsTab ? 'InboxPage.noOrdersFound' : 'InboxPage.noSalesFound';
+  };
 
   return (
     <Page title={title} scrollingDisabled={scrollingDisabled}>
@@ -503,20 +575,8 @@ export const InboxPageComponent = props => {
         {/* Email-style Inbox Header */}
         <div className={css.inboxHeader}>
           <div className={css.inboxHeaderInfo}>
-            <h2 className={css.inboxHeaderTitle}>
-              {isStudent && isApplicationsTab
-                ? intl.formatMessage({ id: 'InboxPage.studentOrdersHeading' })
-                : isCorporatePartner && !isApplicationsTab
-                ? intl.formatMessage({ id: 'InboxPage.corporateSalesHeading' })
-                : intl.formatMessage({ id: isApplicationsTab ? 'InboxPage.ordersHeading' : 'InboxPage.salesHeading' })}
-            </h2>
-            <p className={css.inboxHeaderSubtitle}>
-              {isStudent && isApplicationsTab
-                ? intl.formatMessage({ id: 'InboxPage.studentOrdersSubtitle' })
-                : isCorporatePartner && !isApplicationsTab
-                ? intl.formatMessage({ id: 'InboxPage.corporateSalesSubtitle' })
-                : intl.formatMessage({ id: isApplicationsTab ? 'InboxPage.ordersSubtitle' : 'InboxPage.salesSubtitle' })}
-            </p>
+            <h2 className={css.inboxHeaderTitle}>{getHeading()}</h2>
+            <p className={css.inboxHeaderSubtitle}>{getSubtitle()}</p>
           </div>
           <InboxSearchForm
             onSubmit={() => {}}
@@ -547,6 +607,25 @@ export const InboxPageComponent = props => {
           </div>
         ) : null}
 
+        {/* Column headers (desktop only) */}
+        {!fetchInProgress && transactions.length > 0 && (
+          <div className={css.columnHeaders}>
+            <span className={css.columnHeaderAvatar}></span>
+            <span className={css.columnHeaderFrom}>
+              <FormattedMessage id="InboxPage.columnFrom" />
+            </span>
+            <span className={css.columnHeaderProject}>
+              <FormattedMessage id="InboxPage.columnProject" />
+            </span>
+            <span className={css.columnHeaderStatus}>
+              <FormattedMessage id="InboxPage.columnStatus" />
+            </span>
+            <span className={css.columnHeaderDate}>
+              <FormattedMessage id="InboxPage.columnDate" />
+            </span>
+          </div>
+        )}
+
         <div className={css.itemList}>
           {!fetchInProgress ? (
             transactions.map(toTxItem)
@@ -562,14 +641,10 @@ export const InboxPageComponent = props => {
             <div className={css.emptyState}>
               <div className={css.emptyStateIcon}>📬</div>
               <h3 className={css.emptyStateTitle}>
-                <FormattedMessage
-                  id={isApplicationsTab ? 'InboxPage.noOrdersTitle' : 'InboxPage.noSalesTitle'}
-                />
+                <FormattedMessage id={getEmptyStateTitle()} />
               </h3>
               <p className={css.emptyStateText}>
-                <FormattedMessage
-                  id={isApplicationsTab ? 'InboxPage.noOrdersFound' : 'InboxPage.noSalesFound'}
-                />
+                <FormattedMessage id={getEmptyStateText()} />
               </p>
             </div>
           ) : null}

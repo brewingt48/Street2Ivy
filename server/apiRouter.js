@@ -93,6 +93,9 @@ const studentInvites = require('./api/student-invites');
 // Project Applications (student submit, corporate review)
 const projectApplications = require('./api/project-applications');
 
+// Email Status & Test (admin-only diagnostics)
+const emailStatus = require('./api/email-status');
+
 // Listing Management (close/reopen projects)
 const listingManagement = require('./api/listing-management');
 
@@ -480,6 +483,10 @@ router.get('/notifications', notifications.list);
 router.get('/notifications/unread-count', notifications.unreadCount);
 router.post('/notifications/:notificationId/read', notifications.markRead);
 router.post('/notifications/read-all', notifications.markAllRead);
+
+// Street2Ivy: Email Status & Test (admin-only Mailgun diagnostics)
+router.get('/email-status', emailStatus.getEmailStatus);
+router.post('/email-test', emailStatus.sendTestEmail);
 
 // Street2Ivy: Message Attachments
 router.post('/attachments/upload', messageAttachments.uploadAttachment);
