@@ -158,11 +158,13 @@ const csrfExemptPaths = [
   '/transaction-transition',
   // Admin endpoints — all protected by verifySystemAdmin auth middleware
   '/admin/coaching-config',
+  '/admin/content',
   '/admin/institutions',
   '/admin/student-coaching-access',
   '/admin/student-waitlist',
   '/admin/educational-admin-applications',
   '/admin/educational-admins',
+  '/admin/blog',
   // Compose message & direct messages — protected by SDK session auth
   '/compose',
   '/direct-messages',
