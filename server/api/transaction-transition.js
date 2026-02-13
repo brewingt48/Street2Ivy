@@ -11,6 +11,8 @@ const { getSdk, handleError, serialize } = require('../api-util/sdk');
 const { types: sdkTypes } = require('sharetribe-flex-sdk');
 const { UUID } = sdkTypes;
 const db = require('../api-util/db');
+const { getIntegrationSdkForTenant } = require('../api-util/integrationSdk');
+const { notifyTransactionStateChange } = require('../api-util/notifications');
 
 module.exports = (req, res) => {
   const { transactionId, transition, params = {} } = req.body || {};
@@ -80,6 +82,7 @@ module.exports = (req, res) => {
         }
       }
 
+      // Send response immediately
       res
         .status(status)
         .set('Content-Type', 'application/transit+json')
@@ -91,6 +94,41 @@ module.exports = (req, res) => {
           })
         )
         .end();
+
+      // Send email/in-app notifications asynchronously (don't block the response)
+      try {
+        const integrationSdk = getIntegrationSdkForTenant(req.tenant);
+        const fullTxResponse = await integrationSdk.transactions.show({
+          id: txId,
+          include: ['listing', 'customer', 'provider'],
+        });
+
+        const transaction = fullTxResponse.data.data;
+        const included = fullTxResponse.data.included || [];
+
+        const listing = included.find(i => i.type === 'listing');
+        const customer = included.find(
+          i =>
+            i.type === 'user' &&
+            i.id.uuid === transaction.relationships?.customer?.data?.id?.uuid
+        );
+        const provider = included.find(
+          i =>
+            i.type === 'user' &&
+            i.id.uuid === transaction.relationships?.provider?.data?.id?.uuid
+        );
+
+        await notifyTransactionStateChange({
+          transaction,
+          transition,
+          customer,
+          provider,
+          listing,
+        });
+      } catch (notifError) {
+        // Non-critical: notification failure should not affect the transition response
+        console.error('[TransactionTransition] Notification error:', notifError.message);
+      }
     })
     .catch(e => {
       handleError(res, e);

@@ -12,6 +12,7 @@
 
 const db = require('./db');
 const { getIntegrationSdk } = require('./sdk');
+const { sendEmail } = require('../services/email');
 
 // Email notification types
 const NOTIFICATION_TYPES = {
@@ -200,6 +201,28 @@ async function sendNotification({ type, recipientId, recipientEmail, data }) {
       read: false,
     });
 
+    // Send email via Mailgun (non-blocking — email failure should not break notification)
+    if (recipientEmail) {
+      try {
+        const emailResult = await sendEmail({
+          to: recipientEmail,
+          subject,
+          text: content,
+          tags: { 'o:tag': [type] },
+        });
+        if (emailResult.success) {
+          console.log(`[Notification] Email sent for ${type} to ${recipientEmail}`);
+        } else {
+          console.warn(`[Notification] Email skipped for ${type}: ${emailResult.error}`);
+        }
+      } catch (emailError) {
+        // Non-critical: email failure should not break the notification flow
+        console.error(`[Notification] Email error for ${type}:`, emailError.message);
+      }
+    } else {
+      console.log(`[Notification] No email address for ${type} — in-app only`);
+    }
+
     return { success: true };
   } catch (error) {
     console.error(`[Notification] Error sending ${type}:`, error);
@@ -285,6 +308,9 @@ async function notifyTransactionStateChange({
   const baseUrl = process.env.REACT_APP_MARKETPLACE_ROOT_URL || 'https://street2ivy.com';
 
   switch (transitionName) {
+    // Initial application — the process uses 'transition/inquire-without-payment'
+    // Also handle legacy 'request-project-application' for backward compatibility
+    case 'inquire-without-payment':
     case 'request-project-application':
       await sendNotification({
         type: NOTIFICATION_TYPES.NEW_APPLICATION,
@@ -340,6 +366,9 @@ async function notifyTransactionStateChange({
       });
       break;
 
+    // Project marked as completed — the process uses 'transition/mark-completed'
+    // Also handle legacy 'complete' for backward compatibility
+    case 'mark-completed':
     case 'complete':
       await sendNotification({
         type: NOTIFICATION_TYPES.PROJECT_COMPLETED,

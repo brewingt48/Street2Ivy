@@ -1,6 +1,7 @@
 const db = require('../api-util/db');
 const { getIntegrationSdkForTenant } = require('../api-util/integrationSdk');
 const { getSdk, handleError } = require('../api-util/sdk');
+const { notifyAssessmentSubmitted } = require('../api-util/notifications');
 
 /**
  * Assessment criteria configuration
@@ -213,6 +214,21 @@ async function submitAssessment(req, res) {
     // Mark as sent to student
     assessment.sentToStudent = true;
     db.assessments.updateSentToStudent(assessment.id, true);
+
+    // Send email + in-app notification to the student
+    try {
+      await notifyAssessmentSubmitted({
+        studentId,
+        studentEmail: student.attributes.email,
+        studentName: student.attributes.profile.displayName,
+        companyName: currentUser.attributes.profile.publicData?.companyName || currentUser.attributes.profile.displayName,
+        projectTitle: listing?.attributes?.title || 'Unknown Project',
+        transactionId,
+      });
+    } catch (notifError) {
+      // Non-critical: notification failure should not block the assessment response
+      console.error('[Assessment] Failed to send notification:', notifError.message);
+    }
 
     res.status(201).json({
       success: true,
