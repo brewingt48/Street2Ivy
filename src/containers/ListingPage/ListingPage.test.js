@@ -232,9 +232,8 @@ describe('ListingPage variants', () => {
     );
 
     await waitFor(() => {
-      // Has main search in Topbar and it's a location search.
-      expect(getByPlaceholderText('TopbarSearchForm.placeholder')).toBeInTheDocument();
-      expect(screen.getByTestId('location-search')).toBeInTheDocument();
+      // Street2Ivy: Search form is intentionally hidden (showSearchForm = false in Topbar)
+      // so we skip topbar search assertions.
 
       // Has hero (coverPhoto) section
       expect(screen.getByTestId('hero')).toBeInTheDocument();
@@ -287,9 +286,8 @@ describe('ListingPage variants', () => {
       }
     );
     await waitFor(() => {
-      // Has main search in Topbar and it's a location search.
-      expect(getByPlaceholderText('TopbarSearchForm.placeholder')).toBeInTheDocument();
-      expect(screen.getByTestId('location-search')).toBeInTheDocument();
+      // Street2Ivy: Search form is intentionally hidden (showSearchForm = false in Topbar)
+      // so we skip topbar search assertions.
 
       // Does not have hero (coverPhoto) section on carousel mode
       expect(screen.getByTestId('carousel')).toBeInTheDocument();

@@ -7,6 +7,21 @@ import LandingPage from './LandingPage';
 
 const { waitFor, screen } = testingLibrary;
 
+// Mock IntersectionObserver (not available in jsdom)
+beforeAll(() => {
+  global.IntersectionObserver = class IntersectionObserver {
+    constructor() {}
+    disconnect() { return null; }
+    observe() { return null; }
+    takeRecords() { return []; }
+    unobserve() { return null; }
+  };
+});
+
+afterAll(() => {
+  delete global.IntersectionObserver;
+});
+
 describe('LandingPage', () => {
   it('renders the custom Street2Ivy landing page without errors', async () => {
     // Test that the page renders without throwing

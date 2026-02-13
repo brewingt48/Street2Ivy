@@ -381,13 +381,12 @@ describe('InboxPage', () => {
         />
       );
       expect(tree.asFragment().firstChild).toMatchSnapshot();
-      const quantityFound = screen.queryAllByText('InboxPage.quantity');
-      const expected = tr !== 'transition/inquire' ? 1 : 0;
-      expect(quantityFound).toHaveLength(expected);
+      // Email-table row layout no longer renders quantity inline
+      // Quantity/booking metadata is visible in the transaction detail view
     });
 
     // This is quite small component what comes to rendered HTML
-    // For now, we rely on snapshot-testing and checking quantity.
+    // For now, we rely on snapshot-testing.
     it('InboxItem with stockType "oneItem" matches snapshot of purchase sale', () => {
       const sale = createTransaction({
         id: 'oneItem-sale',
@@ -478,10 +477,8 @@ describe('InboxPage', () => {
         />
       );
       expect(tree.asFragment().firstChild).toMatchSnapshot();
-
-      const quantityFound = screen.queryAllByText('Jun 14, 2022');
-      const expected = tr !== 'transition/inquire' ? 1 : 0;
-      expect(quantityFound).toHaveLength(expected);
+      // Email-table row layout no longer renders booking dates inline
+      // Booking metadata is visible in the transaction detail view
     });
   });
 
@@ -542,10 +539,9 @@ describe('InboxPage', () => {
           isPurchase={false}
         />
       );
-
-      const quantityFound = screen.queryAllByText('Jun 14 – 16');
-      const expected = tr !== 'transition/inquire' ? 1 : 0;
-      expect(quantityFound).toHaveLength(expected);
+      expect(tree.asFragment().firstChild).toMatchSnapshot();
+      // Email-table row layout no longer renders booking dates inline
+      // Booking metadata is visible in the transaction detail view
     });
   });
 
@@ -607,10 +603,8 @@ describe('InboxPage', () => {
         />
       );
       expect(tree.asFragment().firstChild).toMatchSnapshot();
-
-      const quantityFound = screen.queryAllByText('Jun 14, 2022, 10:00 AM - 1:00 PM');
-      const expected = tr !== 'transition/inquire' ? 1 : 0;
-      expect(quantityFound).toHaveLength(expected);
+      // Email-table row layout no longer renders booking time ranges inline
+      // Booking metadata is visible in the transaction detail view
     });
   });
 

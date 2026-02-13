@@ -3,8 +3,10 @@ import { storableError } from '../../util/errors';
 import { parse, getValidInboxSort } from '../../util/urlHelpers';
 import { getSupportedProcessesInfo } from '../../transactions/transaction';
 import { addMarketplaceEntities } from '../../ducks/marketplaceData.duck';
+import { fetchMessageInbox } from '../../util/api';
 
 const INBOX_PAGE_SIZE = 10;
+const MESSAGES_PAGE_SIZE = 20;
 
 // ================ Helper functions ================ //
 
@@ -23,6 +25,9 @@ const inboxPageSlice = createSlice({
     fetchOrdersOrSalesError: null,
     pagination: null,
     transactionRefs: [],
+    // Custom messaging state (for the "messages" tab)
+    conversations: [],
+    conversationsPagination: null,
   },
   reducers: {},
   extraReducers: builder => {
@@ -32,10 +37,23 @@ const inboxPageSlice = createSlice({
         state.fetchOrdersOrSalesError = null;
       })
       .addCase(loadDataThunk.fulfilled, (state, action) => {
-        const transactions = action.payload.data.data;
+        const { isMessagesTab } = action.meta.arg;
         state.fetchInProgress = false;
-        state.transactionRefs = entityRefs(transactions);
-        state.pagination = action.payload.data.meta;
+
+        if (isMessagesTab) {
+          // Custom messaging data from our API
+          state.conversations = action.payload.conversations || [];
+          state.conversationsPagination = action.payload.pagination || null;
+          state.transactionRefs = [];
+          state.pagination = null;
+        } else {
+          // Sharetribe transaction data
+          const transactions = action.payload.data.data;
+          state.transactionRefs = entityRefs(transactions);
+          state.pagination = action.payload.data.meta;
+          state.conversations = [];
+          state.conversationsPagination = null;
+        }
       })
       .addCase(loadDataThunk.rejected, (state, action) => {
         console.error(action.payload || action.error); // eslint-disable-line
@@ -49,8 +67,22 @@ export default inboxPageSlice.reducer;
 
 // ================ Load data ================ //
 
-const loadDataPayloadCreator = ({ params, search }, { dispatch, rejectWithValue, extra: sdk }) => {
+const loadDataPayloadCreator = ({ params, search, isMessagesTab }, { dispatch, rejectWithValue, extra: sdk }) => {
   const { tab } = params;
+
+  // "messages" tab: fetch from our custom messaging API
+  if (isMessagesTab || tab === 'messages') {
+    const { page = 1 } = parse(search);
+    const offset = (page - 1) * MESSAGES_PAGE_SIZE;
+
+    return fetchMessageInbox({ limit: MESSAGES_PAGE_SIZE, offset })
+      .then(response => {
+        return response;
+      })
+      .catch(e => {
+        return rejectWithValue(storableError(e));
+      });
+  }
 
   // Map URL tab names to Sharetribe API filter values
   // "applications" = student's view (customer/order), "received" = corporate partner's view (provider/sale)
@@ -163,5 +195,6 @@ export const loadDataThunk = createAsyncThunk('InboxPage/loadData', loadDataPayl
 
 // Backward compatible wrapper for the thunk
 export const loadData = (params, search) => (dispatch, getState, sdk) => {
-  return dispatch(loadDataThunk({ params, search }));
+  const isMessagesTab = params.tab === 'messages';
+  return dispatch(loadDataThunk({ params, search, isMessagesTab }));
 };

@@ -19,6 +19,8 @@ const NOTIFICATION_TYPES = {
   APPLICATION_RECEIVED: 'application-received',
   APPLICATION_ACCEPTED: 'application-accepted',
   APPLICATION_DECLINED: 'application-declined',
+  APPLICATION_WITHDRAWN: 'application-withdrawn',
+  INVITATION_DECLINED: 'invitation-declined',
   PROJECT_COMPLETED: 'project-completed',
   INVITE_RECEIVED: 'invite-received',
   NEW_MESSAGE: 'new-message',
@@ -181,6 +183,34 @@ const NOTIFICATION_TEMPLATES = {
       They may submit their full application soon. Keep an eye on your inbox for their application details.
 
       View your applications: {applicationUrl}
+
+      The Campus2Career Team
+    `,
+  },
+  [NOTIFICATION_TYPES.APPLICATION_WITHDRAWN]: {
+    subject: 'Application Withdrawn - {projectTitle}',
+    getContent: (data) => `
+      Hi {companyName} Team,
+
+      {studentName} has withdrawn their application for "{projectTitle}".
+
+      This application has been removed from your active applications list. No further action is needed.
+
+      View your applications: {applicationUrl}
+
+      The Campus2Career Team
+    `,
+  },
+  [NOTIFICATION_TYPES.INVITATION_DECLINED]: {
+    subject: 'Invitation Declined - {projectTitle}',
+    getContent: (data) => `
+      Hi {companyName} Team,
+
+      {studentName} has decided not to pursue the invitation to apply for "{projectTitle}" at this time.
+
+      There are many other qualified students on Campus2Career. Browse student profiles to find the right match.
+
+      Browse students: {browseStudentsUrl}
 
       The Campus2Career Team
     `,
@@ -458,6 +488,153 @@ async function notifyAssessmentSubmitted({
   });
 }
 
+// ─── Convenience Methods for Application Messaging System ───────────────────
+
+/**
+ * Notify corporate partner when student withdraws their application.
+ */
+async function notifyApplicationWithdrawn(application) {
+  const baseUrl = process.env.REACT_APP_MARKETPLACE_ROOT_URL || 'https://street2ivy.com';
+
+  await sendNotification({
+    type: NOTIFICATION_TYPES.APPLICATION_WITHDRAWN,
+    recipientId: application.corporateId,
+    recipientEmail: application.corporateEmail,
+    data: {
+      companyName: application.corporateName || 'Corporate Partner',
+      studentName: application.studentName || 'Student',
+      projectTitle: application.listingTitle || 'Project',
+      applicationUrl: `${baseUrl}/inbox/received`,
+    },
+  });
+}
+
+/**
+ * Notify corporate partner when student declines their invitation.
+ */
+async function notifyInvitationDeclined(application) {
+  const baseUrl = process.env.REACT_APP_MARKETPLACE_ROOT_URL || 'https://street2ivy.com';
+
+  await sendNotification({
+    type: NOTIFICATION_TYPES.INVITATION_DECLINED,
+    recipientId: application.corporateId,
+    recipientEmail: application.corporateEmail,
+    data: {
+      companyName: application.corporateName || 'Corporate Partner',
+      studentName: application.studentName || 'Student',
+      projectTitle: application.listingTitle || 'Project',
+      browseStudentsUrl: `${baseUrl}/s?pub_userType=student`,
+    },
+  });
+}
+
+/**
+ * Notify the other party when a new message is sent in an application conversation.
+ */
+async function notifyNewApplicationMessage({ application, message, senderName, recipientId, recipientEmail, recipientName }) {
+  const baseUrl = process.env.REACT_APP_MARKETPLACE_ROOT_URL || 'https://street2ivy.com';
+
+  await sendNotification({
+    type: NOTIFICATION_TYPES.NEW_MESSAGE,
+    recipientId,
+    recipientEmail,
+    data: {
+      recipientName: recipientName || 'there',
+      senderName: senderName || 'Someone',
+      messagePreview: (message.content || '').substring(0, 100),
+      conversationUrl: `${baseUrl}/inbox/messages/${application.id}`,
+      companyContext: application.listingTitle ? ` regarding "${application.listingTitle}"` : '',
+    },
+  });
+}
+
+/**
+ * Notify when application status changes using cached application data.
+ * This is the preferred method for the new custom messaging system
+ * (vs notifyTransactionStateChange which requires Sharetribe transaction objects).
+ */
+async function notifyApplicationStatusChange(application, newStatus) {
+  const baseUrl = process.env.REACT_APP_MARKETPLACE_ROOT_URL || 'https://street2ivy.com';
+
+  switch (newStatus) {
+    case 'accepted':
+      await sendNotification({
+        type: NOTIFICATION_TYPES.APPLICATION_ACCEPTED,
+        recipientId: application.studentId,
+        recipientEmail: application.studentEmail,
+        data: {
+          studentName: application.studentName || 'Student',
+          projectTitle: application.listingTitle || 'Project',
+          companyName: application.corporateName || 'Corporate Partner',
+        },
+      });
+      break;
+
+    case 'rejected':
+      await sendNotification({
+        type: NOTIFICATION_TYPES.APPLICATION_DECLINED,
+        recipientId: application.studentId,
+        recipientEmail: application.studentEmail,
+        data: {
+          studentName: application.studentName || 'Student',
+          projectTitle: application.listingTitle || 'Project',
+          companyName: application.corporateName || 'Corporate Partner',
+          browseProjectsUrl: `${baseUrl}/s`,
+        },
+      });
+      break;
+
+    case 'student_accepted':
+      await sendNotification({
+        type: NOTIFICATION_TYPES.STUDENT_ACCEPTED_INVITE,
+        recipientId: application.corporateId,
+        recipientEmail: application.corporateEmail,
+        data: {
+          companyName: application.corporateName || 'Corporate Partner',
+          studentName: application.studentName || 'Student',
+          projectTitle: application.listingTitle || 'Project',
+          applicationUrl: `${baseUrl}/inbox/received`,
+        },
+      });
+      break;
+
+    case 'withdrawn':
+      await notifyApplicationWithdrawn(application);
+      break;
+
+    case 'declined':
+      await notifyInvitationDeclined(application);
+      break;
+
+    case 'completed':
+      // Notify both parties
+      await sendNotification({
+        type: NOTIFICATION_TYPES.PROJECT_COMPLETED,
+        recipientId: application.studentId,
+        recipientEmail: application.studentEmail,
+        data: {
+          studentName: application.studentName || 'Student',
+          projectTitle: application.listingTitle || 'Project',
+          companyName: application.corporateName || 'Corporate Partner',
+        },
+      });
+      await sendNotification({
+        type: NOTIFICATION_TYPES.PROJECT_COMPLETED,
+        recipientId: application.corporateId,
+        recipientEmail: application.corporateEmail,
+        data: {
+          studentName: application.corporateName || 'Corporate Partner',
+          projectTitle: application.listingTitle || 'Project',
+          companyName: application.studentName || 'Student',
+        },
+      });
+      break;
+
+    default:
+      break;
+  }
+}
+
 module.exports = {
   NOTIFICATION_TYPES,
   sendNotification,
@@ -468,4 +645,8 @@ module.exports = {
   notifyTransactionStateChange,
   notifyInviteToApply,
   notifyAssessmentSubmitted,
+  notifyApplicationWithdrawn,
+  notifyInvitationDeclined,
+  notifyNewApplicationMessage,
+  notifyApplicationStatusChange,
 };

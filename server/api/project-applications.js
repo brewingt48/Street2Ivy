@@ -2,7 +2,13 @@ const crypto = require('crypto');
 const db = require('../api-util/db');
 const { getSdk, handleError, serialize } = require('../api-util/sdk');
 const { getIntegrationSdkForTenant } = require('../api-util/integrationSdk');
-const { sendNotification, NOTIFICATION_TYPES, notifyTransactionStateChange } = require('../api-util/notifications');
+const {
+  sendNotification,
+  NOTIFICATION_TYPES,
+  notifyTransactionStateChange,
+  notifyApplicationWithdrawn,
+  notifyApplicationStatusChange,
+} = require('../api-util/notifications');
 
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
@@ -650,6 +656,117 @@ const declineApplication = async (req, res) => {
   }
 };
 
+/**
+ * POST /api/project-applications/:applicationId/withdraw
+ *
+ * Student withdraws their own application.
+ */
+const withdrawApplication = async (req, res) => {
+  try {
+    const sdk = getSdk(req, res);
+    const currentUserResponse = await sdk.currentUser.show();
+    const currentUser = currentUserResponse.data.data;
+    const userId = currentUser.id.uuid;
+
+    const { applicationId } = req.params;
+    const application = db.projectApplications.getById(applicationId);
+
+    if (!application) {
+      return res.status(404).json({ error: 'Application not found.' });
+    }
+
+    // Only the student who submitted can withdraw
+    if (application.studentId !== userId) {
+      return res.status(403).json({ error: 'Only the applicant can withdraw an application.' });
+    }
+
+    // Can only withdraw pending or invited applications
+    if (!['pending', 'invited'].includes(application.status)) {
+      return res.status(400).json({
+        error: `Cannot withdraw an application with status "${application.status}".`,
+      });
+    }
+
+    const updated = db.projectApplications.updateStatus(applicationId, 'withdrawn');
+
+    // Add system message to the conversation thread
+    db.applicationMessages.createSystemMessage(
+      applicationId,
+      `${currentUser.attributes?.profile?.displayName || 'The student'} withdrew this application.`
+    );
+
+    res.status(200).json({ success: true, application: updated });
+
+    // Send notification asynchronously
+    try {
+      // Backfill student data if not already stored
+      const enriched = {
+        ...updated,
+        studentName: updated.studentName || currentUser.attributes?.profile?.displayName || 'Student',
+        studentEmail: updated.studentEmail || currentUser.attributes?.email,
+      };
+      await notifyApplicationWithdrawn(enriched);
+    } catch (notifErr) {
+      console.error('[ProjectApplications] Withdraw notification error:', notifErr.message);
+    }
+  } catch (e) {
+    console.error('Error withdrawing application:', e);
+    handleError(res, e);
+  }
+};
+
+/**
+ * POST /api/project-applications/:applicationId/complete
+ *
+ * Corporate partner marks an accepted application as completed.
+ */
+const completeApplication = async (req, res) => {
+  try {
+    const sdk = getSdk(req, res);
+    const { applicationId } = req.params;
+
+    const application = db.projectApplications.getById(applicationId);
+    if (!application) {
+      return res.status(404).json({ error: 'Application not found.' });
+    }
+
+    // Verify listing ownership (corporate partner)
+    const sharetribeSdk = require('sharetribe-flex-sdk');
+    const { UUID } = sharetribeSdk.types;
+    try {
+      await sdk.ownListings.show({ id: new UUID(application.listingId) });
+    } catch (listingErr) {
+      return res.status(403).json({ error: 'You do not own this project.' });
+    }
+
+    if (application.status !== 'accepted' && application.status !== 'student_accepted') {
+      return res.status(400).json({
+        error: `Cannot complete an application with status "${application.status}". It must be accepted first.`,
+      });
+    }
+
+    const updated = db.projectApplications.updateStatus(applicationId, 'completed');
+
+    // Add system message
+    db.applicationMessages.createSystemMessage(
+      applicationId,
+      'This project has been marked as completed. Congratulations!'
+    );
+
+    res.status(200).json({ success: true, application: updated });
+
+    // Send notification asynchronously
+    try {
+      await notifyApplicationStatusChange(updated, 'completed');
+    } catch (notifErr) {
+      console.error('[ProjectApplications] Complete notification error:', notifErr.message);
+    }
+  } catch (e) {
+    console.error('Error completing application:', e);
+    handleError(res, e);
+  }
+};
+
 module.exports = {
   submitApplication,
   getApplication,
@@ -658,4 +775,6 @@ module.exports = {
   getStudentApplications,
   acceptApplication,
   declineApplication,
+  withdrawApplication,
+  completeApplication,
 };

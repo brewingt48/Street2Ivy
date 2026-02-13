@@ -268,6 +268,60 @@ export const declineProjectApplication = (applicationId, body = {}) => {
   return post(`/api/project-applications/${applicationId}/decline`, body);
 };
 
+// Withdraw a project application (student withdraws their own application)
+export const withdrawProjectApplication = (applicationId, body = {}) => {
+  return post(`/api/project-applications/${applicationId}/withdraw`, body);
+};
+
+// Complete a project application (corporate partner marks accepted application as completed)
+export const completeProjectApplication = (applicationId, body = {}) => {
+  return post(`/api/project-applications/${applicationId}/complete`, body);
+};
+
+// ─── Application Messaging (custom unified messaging system) ─────────────────
+
+// Fetch inbox conversation previews for the current user
+export const fetchMessageInbox = ({ limit = 20, offset = 0 } = {}) => {
+  return request(`/api/messages/inbox?limit=${limit}&offset=${offset}`, {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
+  });
+};
+
+// Fetch total unread message count for the current user
+export const fetchMessageUnreadCount = () => {
+  return request('/api/messages/unread-count', {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
+  });
+};
+
+// Fetch all messages in a conversation by application ID
+export const fetchConversationMessages = (applicationId, { limit = 50, offset = 0 } = {}) => {
+  return request(`/api/messages/${applicationId}?limit=${limit}&offset=${offset}`, {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
+  });
+};
+
+// Send a message in a conversation
+export const sendConversationMessage = (applicationId, content) => {
+  return request(`/api/messages/${applicationId}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ content }),
+  });
+};
+
+// Mark all messages in a conversation as read
+export const markConversationRead = (applicationId) => {
+  return request(`/api/messages/${applicationId}/read`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({}),
+  });
+};
+
 // Mark a project as completed (corporate partner transitions accepted → completed)
 export const markProjectCompleted = (transactionId) => {
   return request('/api/transaction-transition', {

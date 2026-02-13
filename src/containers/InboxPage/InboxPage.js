@@ -58,6 +58,7 @@ import { stateDataShape, getStateData } from './InboxPage.stateData';
 import css from './InboxPage.module.css';
 
 const INBOX_PAGE_SIZE = 10;
+const MESSAGES_PAGE_SIZE = 20;
 
 // Format a timestamp into a human-readable relative time (e.g. "2h ago", "3d ago")
 const formatRelativeTime = (dateString, intl) => {
@@ -161,7 +162,123 @@ const handleSortSelect = (tab, routeConfiguration, history) => urlParam => {
 };
 
 /**
- * The InboxItem component.
+ * ConversationItem — renders a single inbox row for custom messaging conversations.
+ * Used on the "Messages" tab which fetches from our custom API (not Sharetribe).
+ */
+const ConversationItem = ({ conversation, currentUserId, intl }) => {
+  const {
+    id,
+    studentId,
+    studentName,
+    corporateName,
+    listingTitle,
+    status,
+    lastMessageContent,
+    lastMessageSender,
+    lastMessageAt,
+    unreadCount,
+    totalMessages,
+    initiatedBy,
+  } = conversation;
+
+  const isStudent = studentId === currentUserId;
+  const otherPartyName = isStudent ? (corporateName || 'Corporate Partner') : (studentName || 'Student');
+
+  // Status badge styling
+  const statusBadgeClass = classNames(css.stateName, {
+    [css.stateActionNeeded]: status === 'pending' || status === 'invited',
+    [css.stateNoActionNeeded]: status === 'accepted' || status === 'student_accepted',
+    [css.stateConcluded]: status === 'completed' || status === 'withdrawn' || status === 'rejected' || status === 'declined',
+  });
+
+  // Status display text
+  const statusLabelMap = {
+    pending: 'Pending',
+    invited: 'Invited',
+    accepted: 'Accepted',
+    student_accepted: 'Accepted',
+    rejected: 'Declined',
+    declined: 'Declined',
+    withdrawn: 'Withdrawn',
+    completed: 'Completed',
+  };
+  const statusLabel = statusLabelMap[status] || status;
+
+  // Preview snippet: show last message or a placeholder
+  const preview = lastMessageContent
+    ? `${lastMessageSender ? lastMessageSender + ': ' : ''}${lastMessageContent.substring(0, 80)}${lastMessageContent.length > 80 ? '...' : ''}`
+    : totalMessages === 0
+    ? intl.formatMessage({ id: 'InboxPage.messagesNoMessagesYet' })
+    : '';
+
+  const timeAgo = lastMessageAt ? formatRelativeTime(lastMessageAt, intl) : formatRelativeTime(conversation.submittedAt, intl);
+
+  const rowClasses = classNames(css.emailRow, {
+    [css.emailRowUnread]: unreadCount > 0,
+  });
+
+  // Direction badge
+  const directionBadge = (
+    <span className={isStudent ? css.directionBadgeSent : css.directionBadgeReceived}>
+      {isStudent
+        ? intl.formatMessage({ id: 'InboxPage.directionSent' })
+        : intl.formatMessage({ id: 'InboxPage.directionReceived' })}
+    </span>
+  );
+
+  return (
+    <NamedLink
+      className={rowClasses}
+      name="ConversationPage"
+      params={{ id }}
+    >
+      {unreadCount > 0 && <div className={css.itemNotificationBar} />}
+
+      {/* From / To column */}
+      <div className={css.emailFrom}>
+        <div className={css.emailAvatar} style={{
+          width: 32, height: 32, borderRadius: '50%', background: 'var(--s2i-teal-500)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          color: 'white', fontSize: 14, fontWeight: 600, flexShrink: 0,
+        }}>
+          {(otherPartyName || '?')[0]?.toUpperCase()}
+        </div>
+        <div className={css.emailFromInfo}>
+          <span className={css.emailFromName}>
+            {otherPartyName}
+            {directionBadge}
+            {unreadCount > 0 && (
+              <span style={{
+                marginLeft: 6, background: 'var(--s2i-coral-500)', color: 'white',
+                fontSize: 10, fontWeight: 700, borderRadius: 8, padding: '1px 5px',
+              }}>
+                {unreadCount}
+              </span>
+            )}
+          </span>
+          <span className={css.emailFromProjectMobile}>{listingTitle || 'Project'}</span>
+        </div>
+      </div>
+
+      {/* Subject / Project column */}
+      <div className={css.emailSubject}>
+        <span className={css.emailSubjectTitle}>{listingTitle || 'Project'}</span>
+        {preview && <span className={css.emailSubjectPreview}>{preview}</span>}
+      </div>
+
+      {/* Status column */}
+      <div className={css.emailStatus}>
+        <div className={statusBadgeClass}>{statusLabel}</div>
+      </div>
+
+      {/* Date column */}
+      <div className={css.emailDate}>{timeAgo}</div>
+    </NamedLink>
+  );
+};
+
+/**
+ * The InboxItem component — email-table-row style matching admin MessagesPanel.
  *
  * @component
  * @param {Object} props
@@ -204,12 +321,6 @@ export const InboxItem = props => {
   const otherUserDisplayName = otherUser ? <UserDisplayName user={otherUser} intl={intl} /> : null;
   const isOtherUserBanned = otherUser?.attributes?.banned;
 
-  const rowNotificationDot =
-    isSaleNotification || isOrderNotification ? <div className={css.notificationDot} /> : null;
-
-  const linkClasses = classNames(css.itemLink, {
-    [css.bannedUserLink]: isOtherUserBanned,
-  });
   const stateClasses = classNames(css.stateName, {
     [css.stateConcluded]: isFinal,
     [css.stateActionNeeded]: actionNeeded,
@@ -220,7 +331,7 @@ export const InboxItem = props => {
   const lastTransitionedAt = tx.attributes?.lastTransitionedAt;
   const timeAgo = lastTransitionedAt ? formatRelativeTime(lastTransitionedAt, intl) : '';
 
-  // Generate an email-like preview snippet based on state
+  // Generate a preview snippet based on state
   const getPreviewSnippet = () => {
     if (processName === 'default-project-application') {
       if (processState === 'applied' && !isCustomer) return intl.formatMessage({ id: 'InboxPage.previewAppliedProvider' });
@@ -235,11 +346,6 @@ export const InboxItem = props => {
   };
   const previewSnippet = getPreviewSnippet();
 
-  const cardClasses = classNames(css.itemCard, {
-    [css.itemCardUnread]: actionNeeded,
-    [css.bannedUserLink]: isOtherUserBanned,
-  });
-
   // Direction badge for the "All Messages" tab
   const directionBadge = showDirection ? (
     <span className={isCustomer ? css.directionBadgeSent : css.directionBadgeReceived}>
@@ -249,62 +355,52 @@ export const InboxItem = props => {
     </span>
   ) : null;
 
+  const rowClasses = classNames(css.emailRow, {
+    [css.emailRowUnread]: actionNeeded,
+    [css.bannedUserLink]: isOtherUserBanned,
+  });
+
+  // On mobile: render as a card. On desktop: renders as a table row via CSS.
   return (
     <NamedLink
-      className={cardClasses}
+      className={rowClasses}
       name={isCustomer ? 'OrderDetailsPage' : 'SaleDetailsPage'}
       params={{ id: tx.id.uuid }}
     >
       {/* Unread indicator bar */}
       {(isSaleNotification || isOrderNotification) && <div className={css.itemNotificationBar} />}
 
-      <div className={css.itemCardContent}>
-        {/* Left: Avatar */}
-        <div className={css.itemAvatarWrapper}>
-          <Avatar user={otherUser} className={css.itemAvatarImg} />
-          {actionNeeded && <div className={css.itemAvatarBadge} />}
-        </div>
-
-        {/* Center: Sender, subject, preview */}
-        <div className={css.itemInfo}>
-          <div className={css.itemInfoTop}>
-            <span className={css.itemUserName}>
-              {otherUserDisplayName}
-              {directionBadge}
-            </span>
-            <span className={css.itemTimestampMobile}>{timeAgo}</span>
-          </div>
-          <div className={css.itemProjectTitle}>{listing?.attributes?.title}</div>
-          {previewSnippet ? (
-            <div className={css.itemPreview}>{previewSnippet}</div>
-          ) : (
-            <div className={css.itemMeta}>
-              {isBooking ? (
-                <BookingTimeInfoMaybe transaction={tx} />
-              ) : isPurchase && hasPricingData && showStock ? (
-                <FormattedMessage id="InboxPage.quantity" values={{ quantity }} />
-              ) : null}
-              {availabilityType == AVAILABILITY_MULTIPLE_SEATS && unitLineItem?.seats ? (
-                <span>
-                  <FormattedMessage id="InboxPage.seats" values={{ seats: unitLineItem.seats }} />
-                </span>
-              ) : null}
-            </div>
-          )}
-        </div>
-
-        {/* Right: Status badge + date column + chevron */}
-        <div className={css.itemStatusArea}>
-          <div className={stateClasses}>
-            <FormattedMessage
-              id={`InboxPage.${processName}.${processState}.status`}
-              values={{ transactionRole }}
-            />
-          </div>
-          <span className={css.itemDateColumn}>{timeAgo}</span>
-          <span className={css.itemArrow}>›</span>
+      {/* From / To column */}
+      <div className={css.emailFrom}>
+        <Avatar user={otherUser} className={css.emailAvatar} />
+        <div className={css.emailFromInfo}>
+          <span className={css.emailFromName}>
+            {otherUserDisplayName}
+            {directionBadge}
+          </span>
+          {/* Mobile-only: show project title under name */}
+          <span className={css.emailFromProjectMobile}>{listing?.attributes?.title}</span>
         </div>
       </div>
+
+      {/* Subject / Project column */}
+      <div className={css.emailSubject}>
+        <span className={css.emailSubjectTitle}>{listing?.attributes?.title}</span>
+        {previewSnippet && <span className={css.emailSubjectPreview}>{previewSnippet}</span>}
+      </div>
+
+      {/* Status column */}
+      <div className={css.emailStatus}>
+        <div className={stateClasses}>
+          <FormattedMessage
+            id={`InboxPage.${processName}.${processState}.status`}
+            values={{ transactionRole }}
+          />
+        </div>
+      </div>
+
+      {/* Date column */}
+      <div className={css.emailDate}>{timeAgo}</div>
     </NamedLink>
   );
 };
@@ -343,15 +439,18 @@ export const InboxPageComponent = props => {
     customerNotificationCount = 0,
     scrollingDisabled,
     transactions,
+    conversations = [],
+    conversationsPagination,
   } = props;
   const { tab } = params;
-  const validTab = tab === 'all' || tab === 'applications' || tab === 'received' || tab === 'orders' || tab === 'sales';
+  const validTab = tab === 'all' || tab === 'messages' || tab === 'applications' || tab === 'received' || tab === 'orders' || tab === 'sales';
   if (!validTab) {
     return <NotFoundPage staticContext={props.staticContext} />;
   }
 
   // Normalize legacy tab names → new names
   const isAllTab = tab === 'all';
+  const isMessagesTab = tab === 'messages';
   const isApplicationsTab = tab === 'applications' || tab === 'orders';
   const isReceivedTab = tab === 'received' || tab === 'sales';
 
@@ -386,11 +485,13 @@ export const InboxPageComponent = props => {
 
   const dashboardLink = getDashboardLink();
 
-  const hasNoResults = !fetchInProgress && transactions.length === 0 && !fetchOrdersOrSalesError;
+  const itemCount = isMessagesTab ? conversations.length : transactions.length;
+  const hasNoResults = !fetchInProgress && itemCount === 0 && !fetchOrdersOrSalesError;
   const ordersTitle = intl.formatMessage({ id: 'InboxPage.ordersTitle' });
   const salesTitle = intl.formatMessage({ id: 'InboxPage.salesTitle' });
   const allTitle = intl.formatMessage({ id: 'InboxPage.allMessagesHeading' });
-  const title = isAllTab ? allTitle : isApplicationsTab ? ordersTitle : salesTitle;
+  const messagesTitle = intl.formatMessage({ id: 'InboxPage.messagesHeading' });
+  const title = isMessagesTab ? messagesTitle : isAllTab ? allTitle : isApplicationsTab ? ordersTitle : salesTitle;
   const search = parse(location.search);
 
   const pickType = lt => conf => conf.listingType === lt;
@@ -452,7 +553,9 @@ export const InboxPageComponent = props => {
   };
 
   // For the "All" tab, just check if there are any transactions
-  const hasTransactions = isAllTab
+  const hasTransactions = isMessagesTab
+    ? !fetchInProgress && conversations.length > 0
+    : isAllTab
     ? !fetchInProgress && transactions.length > 0
     : !fetchInProgress && hasOrderOrSaleTransactions(transactions, isApplicationsTab, currentUser);
 
@@ -516,17 +619,32 @@ export const InboxPageComponent = props => {
       ]
     : [];
 
-  const tabs = [allMessagesTab, ...applicationsTabMaybe, ...receivedTabMaybe];
+  const messagesTab = {
+    text: (
+      <span>
+        <FormattedMessage id="InboxPage.messagesTab" />
+      </span>
+    ),
+    selected: isMessagesTab,
+    linkProps: {
+      name: 'InboxPage',
+      params: { tab: 'messages' },
+    },
+  };
+
+  const tabs = [allMessagesTab, messagesTab, ...applicationsTabMaybe, ...receivedTabMaybe];
 
   // Determine heading and subtitle based on active tab
   const getHeading = () => {
     if (isAllTab) return intl.formatMessage({ id: 'InboxPage.allMessagesHeading' });
+    if (isMessagesTab) return intl.formatMessage({ id: 'InboxPage.messagesHeading' });
     if (isStudent && isApplicationsTab) return intl.formatMessage({ id: 'InboxPage.studentOrdersHeading' });
     if (isCorporatePartner && isReceivedTab) return intl.formatMessage({ id: 'InboxPage.corporateSalesHeading' });
     return intl.formatMessage({ id: isApplicationsTab ? 'InboxPage.ordersHeading' : 'InboxPage.salesHeading' });
   };
   const getSubtitle = () => {
     if (isAllTab) return intl.formatMessage({ id: 'InboxPage.allMessagesSubtitle' });
+    if (isMessagesTab) return intl.formatMessage({ id: 'InboxPage.messagesSubtitle' });
     if (isStudent && isApplicationsTab) return intl.formatMessage({ id: 'InboxPage.studentOrdersSubtitle' });
     if (isCorporatePartner && isReceivedTab) return intl.formatMessage({ id: 'InboxPage.corporateSalesSubtitle' });
     return intl.formatMessage({ id: isApplicationsTab ? 'InboxPage.ordersSubtitle' : 'InboxPage.salesSubtitle' });
@@ -535,10 +653,12 @@ export const InboxPageComponent = props => {
   // Determine empty state messages based on tab
   const getEmptyStateTitle = () => {
     if (isAllTab) return 'InboxPage.noAllMessagesTitle';
+    if (isMessagesTab) return 'InboxPage.noMessagesTitle';
     return isApplicationsTab ? 'InboxPage.noOrdersTitle' : 'InboxPage.noSalesTitle';
   };
   const getEmptyStateText = () => {
     if (isAllTab) return 'InboxPage.noAllMessagesFound';
+    if (isMessagesTab) return 'InboxPage.noMessagesFound';
     return isApplicationsTab ? 'InboxPage.noOrdersFound' : 'InboxPage.noSalesFound';
   };
 
@@ -589,10 +709,10 @@ export const InboxPageComponent = props => {
         </div>
 
         {/* Message count bar */}
-        {!fetchInProgress && transactions.length > 0 && (
+        {!fetchInProgress && itemCount > 0 && (
           <div className={css.inboxCount}>
-            {intl.formatMessage({ id: 'InboxPage.messageCount' }, { count: transactions.length })}
-            {pagination?.totalItems > INBOX_PAGE_SIZE && (
+            {intl.formatMessage({ id: 'InboxPage.messageCount' }, { count: itemCount })}
+            {!isMessagesTab && pagination?.totalItems > INBOX_PAGE_SIZE && (
               <span className={css.inboxCountTotal}>
                 {intl.formatMessage({ id: 'InboxPage.messageCountTotal' }, { total: pagination.totalItems })}
               </span>
@@ -607,47 +727,61 @@ export const InboxPageComponent = props => {
           </div>
         ) : null}
 
-        {/* Column headers (desktop only) */}
-        {!fetchInProgress && transactions.length > 0 && (
-          <div className={css.columnHeaders}>
-            <span className={css.columnHeaderAvatar}></span>
-            <span className={css.columnHeaderFrom}>
-              <FormattedMessage id="InboxPage.columnFrom" />
-            </span>
-            <span className={css.columnHeaderProject}>
-              <FormattedMessage id="InboxPage.columnProject" />
-            </span>
-            <span className={css.columnHeaderStatus}>
-              <FormattedMessage id="InboxPage.columnStatus" />
-            </span>
-            <span className={css.columnHeaderDate}>
-              <FormattedMessage id="InboxPage.columnDate" />
-            </span>
-          </div>
-        )}
-
-        <div className={css.itemList}>
-          {!fetchInProgress ? (
-            transactions.map(toTxItem)
-          ) : (
-            <div className={css.loadingContainer}>
-              <IconSpinner />
-              <span className={css.loadingText}>
-                <FormattedMessage id="InboxPage.loading" />
-              </span>
+        {/* Email-table layout matching admin MessagesPanel */}
+        <div className={css.emailListContainer}>
+          {/* Table header row (desktop only) */}
+          {!fetchInProgress && itemCount > 0 && (
+            <div className={css.emailTableHeader}>
+              <div className={css.emailHeaderFrom}>
+                <FormattedMessage id="InboxPage.columnFrom" />
+              </div>
+              <div className={css.emailHeaderSubject}>
+                <FormattedMessage id="InboxPage.columnProject" />
+              </div>
+              <div className={css.emailHeaderStatus}>
+                <FormattedMessage id="InboxPage.columnStatus" />
+              </div>
+              <div className={css.emailHeaderDate}>
+                <FormattedMessage id="InboxPage.columnDate" />
+              </div>
             </div>
           )}
-          {hasNoResults ? (
-            <div className={css.emptyState}>
-              <div className={css.emptyStateIcon}>📬</div>
-              <h3 className={css.emptyStateTitle}>
-                <FormattedMessage id={getEmptyStateTitle()} />
-              </h3>
-              <p className={css.emptyStateText}>
-                <FormattedMessage id={getEmptyStateText()} />
-              </p>
-            </div>
-          ) : null}
+
+          <div className={css.emailListBody}>
+            {!fetchInProgress ? (
+              isMessagesTab ? (
+                conversations.map(conv => (
+                  <li key={conv.id} className={css.listItem}>
+                    <ConversationItem
+                      conversation={conv}
+                      currentUserId={currentUser?.id?.uuid}
+                      intl={intl}
+                    />
+                  </li>
+                ))
+              ) : (
+                transactions.map(toTxItem)
+              )
+            ) : (
+              <div className={css.loadingContainer}>
+                <IconSpinner />
+                <span className={css.loadingText}>
+                  <FormattedMessage id="InboxPage.loading" />
+                </span>
+              </div>
+            )}
+            {hasNoResults ? (
+              <div className={css.emptyState}>
+                <div className={css.emptyStateIcon}>📬</div>
+                <h3 className={css.emptyStateTitle}>
+                  <FormattedMessage id={getEmptyStateTitle()} />
+                </h3>
+                <p className={css.emptyStateText}>
+                  <FormattedMessage id={getEmptyStateText()} />
+                </p>
+              </div>
+            ) : null}
+          </div>
         </div>
 
         {hasTransactions && pagination && pagination.totalPages > 1 ? (
@@ -665,7 +799,14 @@ export const InboxPageComponent = props => {
 };
 
 const mapStateToProps = state => {
-  const { fetchInProgress, fetchOrdersOrSalesError, pagination, transactionRefs } = state.InboxPage;
+  const {
+    fetchInProgress,
+    fetchOrdersOrSalesError,
+    pagination,
+    transactionRefs,
+    conversations,
+    conversationsPagination,
+  } = state.InboxPage;
   const {
     currentUser,
     currentUserSaleNotificationCount,
@@ -680,6 +821,8 @@ const mapStateToProps = state => {
     customerNotificationCount: currentUserOrderNotificationCount,
     scrollingDisabled: isScrollingDisabled(state),
     transactions: getMarketplaceEntities(state, transactionRefs),
+    conversations,
+    conversationsPagination,
   };
 };
 

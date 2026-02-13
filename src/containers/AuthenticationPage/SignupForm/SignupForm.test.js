@@ -139,7 +139,7 @@ describe('SignupForm', () => {
     );
     await user.type(screen.getByRole('textbox', { name: 'SignupForm.firstNameLabel' }), 'Joe');
     await user.type(screen.getByRole('textbox', { name: 'SignupForm.lastNameLabel' }), 'Dunphy');
-    await user.type(screen.getByLabelText('SignupForm.passwordLabel'), 'secret-password');
+    await user.type(screen.getByLabelText('SignupForm.passwordLabel'), 'Secret1password');
     await user.type(screen.getByLabelText('Text Field'), 'Text value');
 
     // Test that sign up button is still disabled before clicking the checkbox

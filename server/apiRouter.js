@@ -90,8 +90,11 @@ const messageAttachments = require('./api/message-attachments');
 // Student Invites (accept/decline corporate invitations)
 const studentInvites = require('./api/student-invites');
 
-// Project Applications (student submit, corporate review)
+// Project Applications (student submit, corporate review, withdraw, complete)
 const projectApplications = require('./api/project-applications');
+
+// Application Messaging (inbox, conversations, send messages)
+const applicationMessaging = require('./api/application-messaging');
 
 // Email Status & Test (admin-only diagnostics)
 const emailStatus = require('./api/email-status');
@@ -144,6 +147,8 @@ const csrfExemptPaths = [
   '/student/invites',
   // Project application endpoints — protected by SDK session auth
   '/project-applications',
+  // Application messaging — protected by SDK session auth
+  '/messages',
   // Listing management — protected by SDK session auth
   '/listings',
   // Transaction transition — protected by SDK session auth
@@ -255,7 +260,16 @@ router.get('/project-applications/by-listing/:listingId', projectApplications.ge
 router.get('/project-applications/:applicationId', projectApplications.getApplication);
 router.post('/project-applications/:applicationId/accept', projectApplications.acceptApplication);
 router.post('/project-applications/:applicationId/decline', projectApplications.declineApplication);
+router.post('/project-applications/:applicationId/withdraw', projectApplications.withdrawApplication);
+router.post('/project-applications/:applicationId/complete', projectApplications.completeApplication);
 router.get('/student/applications', projectApplications.getStudentApplications);
+
+// Street2Ivy: Application Messaging (free-form conversations within applications)
+router.get('/messages/inbox', applicationMessaging.getInbox);
+router.get('/messages/unread-count', applicationMessaging.getUnreadCount);
+router.get('/messages/:applicationId', applicationMessaging.getMessages);
+router.post('/messages/:applicationId', applicationMessaging.sendMessage);
+router.post('/messages/:applicationId/read', applicationMessaging.markRead);
 
 // Street2Ivy: Listing Management (close/reopen projects)
 router.post('/listings/:listingId/close', listingManagement.closeListing);

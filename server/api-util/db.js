@@ -318,7 +318,63 @@ sqlite.exec(`
   CREATE INDEX IF NOT EXISTS idx_edu_admin_applications_email ON edu_admin_applications(email);
   CREATE INDEX IF NOT EXISTS idx_admin_messages_sender ON admin_messages(sender_id);
   CREATE INDEX IF NOT EXISTS idx_admin_messages_recipient ON admin_messages(recipient_id);
+
+  -- ---------------------------------------------------------------
+  -- Application Messages — free-form conversations tied to applications
+  -- ---------------------------------------------------------------
+  CREATE TABLE IF NOT EXISTS application_messages (
+    id TEXT PRIMARY KEY,
+    application_id TEXT NOT NULL,
+    sender_id TEXT NOT NULL,
+    sender_name TEXT,
+    sender_role TEXT,
+    content TEXT NOT NULL,
+    message_type TEXT DEFAULT 'user',
+    read_at TEXT,
+    created_at TEXT
+  );
+
+  CREATE INDEX IF NOT EXISTS idx_app_messages_application ON application_messages(application_id, created_at);
+  CREATE INDEX IF NOT EXISTS idx_app_messages_sender ON application_messages(sender_id);
+  CREATE INDEX IF NOT EXISTS idx_app_messages_unread ON application_messages(application_id, read_at);
 `);
+
+// -------------------------------------------------------------------
+// Safe schema migrations — add columns to existing tables
+// -------------------------------------------------------------------
+
+const safeAddColumn = (table, column, type) => {
+  try {
+    sqlite.exec(`ALTER TABLE ${table} ADD COLUMN ${column} ${type}`);
+  } catch (e) {
+    // Column already exists — ignore "duplicate column name" errors
+    if (!e.message.includes('duplicate column')) throw e;
+  }
+};
+
+// Extend project_applications with fields for the unified messaging system
+safeAddColumn('project_applications', 'corporate_id', 'TEXT');
+safeAddColumn('project_applications', 'corporate_name', 'TEXT');
+safeAddColumn('project_applications', 'corporate_email', 'TEXT');
+safeAddColumn('project_applications', 'student_name', 'TEXT');
+safeAddColumn('project_applications', 'student_email', 'TEXT');
+safeAddColumn('project_applications', 'listing_title', 'TEXT');
+safeAddColumn('project_applications', 'initiated_by', "TEXT DEFAULT 'student'");
+safeAddColumn('project_applications', 'invitation_message', 'TEXT');
+safeAddColumn('project_applications', 'rejection_reason', 'TEXT');
+safeAddColumn('project_applications', 'responded_at', 'TEXT');
+safeAddColumn('project_applications', 'completed_at', 'TEXT');
+safeAddColumn('project_applications', 'updated_at', 'TEXT');
+
+// Add indexes for the new columns (safe — IF NOT EXISTS)
+try {
+  sqlite.exec(`
+    CREATE INDEX IF NOT EXISTS idx_project_applications_corporate ON project_applications(corporate_id);
+    CREATE INDEX IF NOT EXISTS idx_project_applications_initiated_by ON project_applications(initiated_by);
+  `);
+} catch (e) {
+  // Indexes may already exist — ignore
+}
 
 // -------------------------------------------------------------------
 // JSON helpers
@@ -1542,7 +1598,7 @@ const adminMessages = {
 };
 
 // -------------------------------------------------------------------
-// Project Applications
+// Project Applications (extended for unified messaging system)
 // -------------------------------------------------------------------
 
 const projectApplications = {
@@ -1554,6 +1610,20 @@ const projectApplications = {
   getByStudentAndListing(studentId, listingId) {
     const row = sqlite.prepare(
       'SELECT * FROM project_applications WHERE student_id = ? AND listing_id = ? ORDER BY submitted_at DESC LIMIT 1'
+    ).get(studentId, listingId);
+    return row ? projectApplications._fromRow(row) : null;
+  },
+
+  /**
+   * Find active application for duplicate prevention.
+   * Excludes rejected, declined, withdrawn, cancelled.
+   */
+  findActiveByStudentAndListing(studentId, listingId) {
+    const row = sqlite.prepare(
+      `SELECT * FROM project_applications
+       WHERE student_id = ? AND listing_id = ?
+         AND status NOT IN ('rejected', 'declined', 'withdrawn', 'cancelled')
+       ORDER BY submitted_at DESC LIMIT 1`
     ).get(studentId, listingId);
     return row ? projectApplications._fromRow(row) : null;
   },
@@ -1588,6 +1658,44 @@ const projectApplications = {
     return sqlite.prepare(sql).all(...params).map(projectApplications._fromRow);
   },
 
+  getByCorporateId(corporateId, { status, limit = 50 } = {}) {
+    let sql = 'SELECT * FROM project_applications WHERE corporate_id = ?';
+    const params = [corporateId];
+    if (status) {
+      sql += ' AND status = ?';
+      params.push(status);
+    }
+    sql += ' ORDER BY submitted_at DESC';
+    if (limit) {
+      sql += ' LIMIT ?';
+      params.push(limit);
+    }
+    return sqlite.prepare(sql).all(...params).map(projectApplications._fromRow);
+  },
+
+  /**
+   * Get all applications for a given user (as student OR corporate partner).
+   * Used for the unified inbox.
+   */
+  getByUserId(userId, { status, limit = 50, offset = 0 } = {}) {
+    let sql = 'SELECT * FROM project_applications WHERE (student_id = ? OR corporate_id = ?)';
+    const params = [userId, userId];
+    if (status) {
+      sql += ' AND status = ?';
+      params.push(status);
+    }
+    sql += ' ORDER BY COALESCE(updated_at, submitted_at) DESC';
+    if (limit) {
+      sql += ' LIMIT ?';
+      params.push(limit);
+    }
+    if (offset) {
+      sql += ' OFFSET ?';
+      params.push(offset);
+    }
+    return sqlite.prepare(sql).all(...params).map(projectApplications._fromRow);
+  },
+
   getByTransactionId(transactionId) {
     const row = sqlite.prepare(
       'SELECT * FROM project_applications WHERE transaction_id = ?'
@@ -1595,15 +1703,32 @@ const projectApplications = {
     return row ? projectApplications._fromRow(row) : null;
   },
 
+  /**
+   * Count applications by status for a corporate partner (dashboard stats).
+   */
+  countByStatus(corporateId) {
+    const rows = sqlite.prepare(
+      'SELECT status, COUNT(*) as count FROM project_applications WHERE corporate_id = ? GROUP BY status'
+    ).all(corporateId);
+    const counts = {};
+    rows.forEach(r => { counts[r.status] = r.count; });
+    return counts;
+  },
+
   create(app) {
+    const now = new Date().toISOString();
     sqlite.prepare(`
       INSERT INTO project_applications
         (id, student_id, listing_id, transaction_id, invite_id,
          cover_letter, resume_attachment_id, availability_date,
          interest_reason, skills, relevant_coursework, gpa,
          hours_per_week, references_text, status, submitted_at,
-         reviewed_at, reviewer_notes)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+         reviewed_at, reviewer_notes,
+         corporate_id, corporate_name, corporate_email,
+         student_name, student_email, listing_title,
+         initiated_by, invitation_message, rejection_reason,
+         responded_at, completed_at, updated_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `).run(
       app.id,
       app.studentId,
@@ -1620,24 +1745,103 @@ const projectApplications = {
       app.hoursPerWeek || null,
       app.referencesText || '',
       app.status || 'pending',
-      app.submittedAt || new Date().toISOString(),
+      app.submittedAt || now,
       app.reviewedAt || null,
-      app.reviewerNotes || null
+      app.reviewerNotes || null,
+      app.corporateId || null,
+      app.corporateName || null,
+      app.corporateEmail || null,
+      app.studentName || null,
+      app.studentEmail || null,
+      app.listingTitle || null,
+      app.initiatedBy || 'student',
+      app.invitationMessage || null,
+      app.rejectionReason || null,
+      app.respondedAt || null,
+      app.completedAt || null,
+      app.updatedAt || now
     );
   },
 
-  updateStatus(id, status, reviewerNotes) {
+  updateStatus(id, status, metadata = {}) {
     const now = new Date().toISOString();
+    const { reviewerNotes, rejectionReason, respondedAt, completedAt } = metadata;
+
+    let setClauses = ['status = ?', 'updated_at = ?'];
+    const params = [status, now];
+
+    if (reviewerNotes !== undefined) {
+      setClauses.push('reviewer_notes = ?');
+      params.push(reviewerNotes);
+    }
+    if (rejectionReason !== undefined) {
+      setClauses.push('rejection_reason = ?');
+      params.push(rejectionReason);
+    }
+    if (respondedAt || status === 'accepted' || status === 'student_accepted' || status === 'rejected' || status === 'declined') {
+      setClauses.push('responded_at = ?');
+      params.push(respondedAt || now);
+    }
+    if (completedAt || status === 'completed') {
+      setClauses.push('completed_at = ?');
+      params.push(completedAt || now);
+    }
+    if (status === 'accepted' || status === 'rejected') {
+      setClauses.push('reviewed_at = ?');
+      params.push(now);
+    }
+
+    params.push(id);
     sqlite.prepare(
-      'UPDATE project_applications SET status = ?, reviewed_at = ?, reviewer_notes = ? WHERE id = ?'
-    ).run(status, now, reviewerNotes || null, id);
+      `UPDATE project_applications SET ${setClauses.join(', ')} WHERE id = ?`
+    ).run(...params);
     return projectApplications.getById(id);
   },
 
   updateTransactionId(id, transactionId) {
     sqlite.prepare(
-      'UPDATE project_applications SET transaction_id = ? WHERE id = ?'
-    ).run(transactionId, id);
+      'UPDATE project_applications SET transaction_id = ?, updated_at = ? WHERE id = ?'
+    ).run(transactionId, new Date().toISOString(), id);
+  },
+
+  update(id, data) {
+    const existing = projectApplications.getById(id);
+    if (!existing) return null;
+
+    const setClauses = [];
+    const params = [];
+
+    const fieldMap = {
+      corporateId: 'corporate_id',
+      corporateName: 'corporate_name',
+      corporateEmail: 'corporate_email',
+      studentName: 'student_name',
+      studentEmail: 'student_email',
+      listingTitle: 'listing_title',
+      initiatedBy: 'initiated_by',
+      invitationMessage: 'invitation_message',
+      transactionId: 'transaction_id',
+      inviteId: 'invite_id',
+      status: 'status',
+    };
+
+    Object.entries(fieldMap).forEach(([jsKey, dbCol]) => {
+      if (data[jsKey] !== undefined) {
+        setClauses.push(`${dbCol} = ?`);
+        params.push(data[jsKey]);
+      }
+    });
+
+    if (setClauses.length === 0) return existing;
+
+    setClauses.push('updated_at = ?');
+    params.push(new Date().toISOString());
+    params.push(id);
+
+    sqlite.prepare(
+      `UPDATE project_applications SET ${setClauses.join(', ')} WHERE id = ?`
+    ).run(...params);
+    return projectApplications.getById(id);
   },
 
   _fromRow(row) {
@@ -1666,6 +1870,215 @@ const projectApplications = {
       submittedAt: row.submitted_at,
       reviewedAt: row.reviewed_at,
       reviewerNotes: row.reviewer_notes,
+      // New unified messaging fields
+      corporateId: row.corporate_id || null,
+      corporateName: row.corporate_name || null,
+      corporateEmail: row.corporate_email || null,
+      studentName: row.student_name || null,
+      studentEmail: row.student_email || null,
+      listingTitle: row.listing_title || null,
+      initiatedBy: row.initiated_by || 'student',
+      invitationMessage: row.invitation_message || null,
+      rejectionReason: row.rejection_reason || null,
+      respondedAt: row.responded_at || null,
+      completedAt: row.completed_at || null,
+      updatedAt: row.updated_at || null,
+    };
+  },
+};
+
+// -------------------------------------------------------------------
+// Application Messages — free-form conversations tied to applications
+// -------------------------------------------------------------------
+
+const applicationMessages = {
+  /**
+   * Get messages for a specific application/conversation.
+   * Ordered by created_at ASC (oldest first, like a chat thread).
+   */
+  getByApplicationId(applicationId, { limit = 50, offset = 0 } = {}) {
+    let sql = 'SELECT * FROM application_messages WHERE application_id = ? ORDER BY created_at ASC';
+    const params = [applicationId];
+    if (limit) {
+      sql += ' LIMIT ?';
+      params.push(limit);
+    }
+    if (offset) {
+      sql += ' OFFSET ?';
+      params.push(offset);
+    }
+    return sqlite.prepare(sql).all(...params).map(applicationMessages._fromRow);
+  },
+
+  /**
+   * Get total unread messages across all applications for a given user.
+   * A message is unread if read_at IS NULL and sender_id != userId.
+   */
+  getUnreadCountByUser(userId) {
+    const row = sqlite.prepare(`
+      SELECT COUNT(*) as count FROM application_messages
+      WHERE application_id IN (
+        SELECT id FROM project_applications WHERE student_id = ? OR corporate_id = ?
+      )
+      AND sender_id != ?
+      AND read_at IS NULL
+    `).get(userId, userId, userId);
+    return row ? row.count : 0;
+  },
+
+  /**
+   * Get unread count for a specific application for a given user.
+   */
+  getUnreadCountByApplication(applicationId, userId) {
+    const row = sqlite.prepare(`
+      SELECT COUNT(*) as count FROM application_messages
+      WHERE application_id = ? AND sender_id != ? AND read_at IS NULL
+    `).get(applicationId, userId);
+    return row ? row.count : 0;
+  },
+
+  /**
+   * Get conversation previews for the inbox list view.
+   * Returns: application info + last message + unread count.
+   */
+  getConversationPreviews(userId, { limit = 20, offset = 0 } = {}) {
+    // Get all applications for this user with their latest message info
+    const sql = `
+      SELECT
+        pa.*,
+        lm.content AS last_message_content,
+        lm.sender_name AS last_message_sender,
+        lm.created_at AS last_message_at,
+        lm.message_type AS last_message_type,
+        (
+          SELECT COUNT(*) FROM application_messages am2
+          WHERE am2.application_id = pa.id
+            AND am2.sender_id != ?
+            AND am2.read_at IS NULL
+        ) AS unread_count,
+        (
+          SELECT COUNT(*) FROM application_messages am3
+          WHERE am3.application_id = pa.id
+        ) AS total_messages
+      FROM project_applications pa
+      LEFT JOIN (
+        SELECT am1.*
+        FROM application_messages am1
+        INNER JOIN (
+          SELECT application_id, MAX(created_at) AS max_created
+          FROM application_messages
+          GROUP BY application_id
+        ) latest ON am1.application_id = latest.application_id
+          AND am1.created_at = latest.max_created
+      ) lm ON lm.application_id = pa.id
+      WHERE pa.student_id = ? OR pa.corporate_id = ?
+      ORDER BY COALESCE(lm.created_at, pa.updated_at, pa.submitted_at) DESC
+      LIMIT ? OFFSET ?
+    `;
+    const rows = sqlite.prepare(sql).all(userId, userId, userId, limit, offset);
+    return rows.map(row => {
+      const app = projectApplications._fromRow(row);
+      return {
+        ...app,
+        lastMessageContent: row.last_message_content || null,
+        lastMessageSender: row.last_message_sender || null,
+        lastMessageAt: row.last_message_at || null,
+        lastMessageType: row.last_message_type || null,
+        unreadCount: row.unread_count || 0,
+        totalMessages: row.total_messages || 0,
+      };
+    });
+  },
+
+  /**
+   * Create a new message in an application conversation.
+   */
+  create(msg) {
+    sqlite.prepare(`
+      INSERT INTO application_messages
+        (id, application_id, sender_id, sender_name, sender_role,
+         content, message_type, read_at, created_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).run(
+      msg.id,
+      msg.applicationId,
+      msg.senderId,
+      msg.senderName || null,
+      msg.senderRole || null,
+      msg.content,
+      msg.messageType || 'user',
+      msg.readAt || null,
+      msg.createdAt || new Date().toISOString()
+    );
+
+    // Update the parent application's updated_at timestamp
+    sqlite.prepare(
+      'UPDATE project_applications SET updated_at = ? WHERE id = ?'
+    ).run(new Date().toISOString(), msg.applicationId);
+
+    return applicationMessages.getById(msg.id);
+  },
+
+  /**
+   * Get a single message by ID.
+   */
+  getById(id) {
+    const row = sqlite.prepare('SELECT * FROM application_messages WHERE id = ?').get(id);
+    return row ? applicationMessages._fromRow(row) : null;
+  },
+
+  /**
+   * Mark all messages in an application as read for a specific user.
+   * Only marks messages sent by the OTHER party.
+   */
+  markAsRead(applicationId, userId) {
+    const now = new Date().toISOString();
+    const info = sqlite.prepare(`
+      UPDATE application_messages
+      SET read_at = ?
+      WHERE application_id = ? AND sender_id != ? AND read_at IS NULL
+    `).run(now, applicationId, userId);
+    return info.changes;
+  },
+
+  /**
+   * Create a system message (for status change notifications in the thread).
+   */
+  createSystemMessage(applicationId, content) {
+    const id = `sys-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`;
+    return applicationMessages.create({
+      id,
+      applicationId,
+      senderId: 'system',
+      senderName: 'System',
+      senderRole: 'system',
+      content,
+      messageType: 'system',
+      readAt: null,
+    });
+  },
+
+  /**
+   * Get the total count of messages for an application.
+   */
+  getMessageCount(applicationId) {
+    const row = sqlite.prepare(
+      'SELECT COUNT(*) as count FROM application_messages WHERE application_id = ?'
+    ).get(applicationId);
+    return row ? row.count : 0;
+  },
+
+  _fromRow(row) {
+    return {
+      id: row.id,
+      applicationId: row.application_id,
+      senderId: row.sender_id,
+      senderName: row.sender_name,
+      senderRole: row.sender_role,
+      content: row.content,
+      messageType: row.message_type || 'user',
+      readAt: row.read_at,
+      createdAt: row.created_at,
     };
   },
 };
@@ -1708,4 +2121,5 @@ module.exports = {
   notifications,
   adminMessages,
   projectApplications,
+  applicationMessages,
 };

@@ -348,19 +348,17 @@ describe('EditListingPage', () => {
     };
 
     // Render the EditListingPage component with provided props and configurations
-    const { getByText, queryAllByText, getByRole, getByLabelText, queryAllByRole } = render(
-      <EditListingPage {...props} />,
-      {
+    const { getByText, queryAllByText, getAllByText, getByRole, getByLabelText, queryAllByRole } =
+      render(<EditListingPage {...props} />, {
         initialState: initialState(),
         config,
         routeConfiguration,
-      }
-    );
+      });
 
     await waitFor(() => {
-      // Navigation to tab
+      // Navigation to tab (may appear in both nav and step indicator)
       const tabLabel = 'EditListingWizard.tabLabelDetails';
-      expect(getByText(tabLabel)).toBeInTheDocument();
+      expect(getAllByText(tabLabel).length).toBeGreaterThanOrEqual(1);
 
       // Tab: panel title
       expect(getByText('EditListingDetailsPanel.createListingTitle')).toBeInTheDocument();
@@ -381,8 +379,9 @@ describe('EditListingPage', () => {
     expect(queryAllByText('EditListingDetailsForm.categoryLabel')).toHaveLength(2);
 
     // Simulate user selecting subcategory
-    // first combobox is location searc, second the first category, third the subcategory
-    const selectSubcategory = screen.getAllByRole('combobox')[2];
+    // Use the last combobox — the subcategory selector appears after parent category
+    const allComboboxes = screen.getAllByRole('combobox');
+    const selectSubcategory = allComboboxes[allComboboxes.length - 1];
     await user.selectOptions(selectSubcategory, screen.getByRole('option', { name: 'Adidas' }));
 
     expect(getByRole('option', { name: 'Adidas' }).selected).toBe(true);
@@ -423,7 +422,7 @@ describe('EditListingPage', () => {
     };
 
     // Render the EditListingPage component with provided props and configurations
-    const { getByText, getByRole, getByLabelText, queryAllByRole } = render(
+    const { getByText, getAllByText, getByRole, getByLabelText, queryAllByRole } = render(
       <EditListingPage {...props} />,
       {
         initialState: initialState(),
@@ -433,9 +432,9 @@ describe('EditListingPage', () => {
     );
 
     await waitFor(() => {
-      // Navigation to tab
+      // Navigation to tab (may appear in both nav and step indicator)
       const tabLabel = 'EditListingWizard.tabLabelDetails';
-      expect(getByText(tabLabel)).toBeInTheDocument();
+      expect(getAllByText(tabLabel).length).toBeGreaterThanOrEqual(1);
 
       // Tab: panel title
       expect(getByText('EditListingDetailsPanel.createListingTitle')).toBeInTheDocument();
@@ -482,18 +481,16 @@ describe('EditListingPage', () => {
       },
     };
 
-    const { getByText, getByRole, getByLabelText, queryAllByText, queryAllByRole } = render(
-      <EditListingPage {...props} />,
-      {
+    const { getByText, getAllByText, getByRole, getByLabelText, queryAllByText, queryAllByRole } =
+      render(<EditListingPage {...props} />, {
         initialState: initialState(listing),
         config,
         routeConfiguration,
-      }
-    );
+      });
     await waitFor(() => {
-      // Navigation to tab
+      // Navigation to tab (may appear in both nav and step indicator)
       const tabLabel = 'EditListingWizard.tabLabelDetails';
-      expect(getByText(tabLabel)).toBeInTheDocument();
+      expect(getAllByText(tabLabel).length).toBeGreaterThanOrEqual(1);
 
       // Tab: panel title
       expect(getByText('EditListingDetailsPanel.title')).toBeInTheDocument();
@@ -512,8 +509,9 @@ describe('EditListingPage', () => {
     expect(queryAllByText('EditListingDetailsForm.categoryLabel')).toHaveLength(2);
 
     // Simulate user interaction and select sub level category
-    // first combobox is location searc, second the first category, third the subcategory
-    const selectSubcategory = screen.getAllByRole('combobox')[2];
+    // Use the last combobox — the subcategory selector appears after parent category
+    const allComboboxes = screen.getAllByRole('combobox');
+    const selectSubcategory = allComboboxes[allComboboxes.length - 1];
     await user.selectOptions(selectSubcategory, screen.getByRole('option', { name: 'Adidas' }));
 
     expect(getByRole('option', { name: 'Adidas' }).selected).toBe(true);
@@ -549,7 +547,7 @@ describe('EditListingPage', () => {
       },
     };
 
-    const { getByText, getByRole, getByLabelText, queryAllByRole } = render(
+    const { getByText, getAllByText, getByRole, getByLabelText, queryAllByRole } = render(
       <EditListingPage {...props} />,
       {
         initialState: initialState(),
@@ -558,9 +556,9 @@ describe('EditListingPage', () => {
       }
     );
     await waitFor(() => {
-      // Navigation to tab
+      // Navigation to tab (may appear in both nav and step indicator)
       const tabLabel = 'EditListingWizard.tabLabelDetails';
-      expect(getByText(tabLabel)).toBeInTheDocument();
+      expect(getAllByText(tabLabel).length).toBeGreaterThanOrEqual(1);
 
       // Tab: panel title
       expect(getByText('EditListingDetailsPanel.createListingTitle')).toBeInTheDocument();
@@ -2282,16 +2280,29 @@ describe('EditListingPage', () => {
     });
   });
 
-  it('Inquiry: edit flow on details tab', async () => {
+  // Street2Ivy: default-inquiry process is filtered out in favor of project applications.
+  // These tests use default-project-application process instead to test edit flow.
+  it('Project: edit flow on details tab', async () => {
     const user = userEvent.setup();
-    const config = getConfig(listingTypesInquiry, listingFieldsInquiry);
+    const listingTypesProject = [
+      {
+        id: 'project',
+        label: 'Project',
+        transactionProcess: {
+          name: 'default-project-application',
+          alias: 'default-project-application/release-1',
+        },
+        unitType: 'inquiry',
+      },
+    ];
+    const config = getConfig(listingTypesProject, listingFieldsInquiry);
     const routeConfiguration = getRouteConfiguration(config.layout);
-    const listing = createOwnListing('listing-inquiry', {
+    const listing = createOwnListing('listing-project', {
       title: 'the listing',
       description: 'Lorem ipsum',
       publicData: {
-        listingType: 'inquiry',
-        transactionProcessAlias: 'default-inquiry/release-1',
+        listingType: 'project',
+        transactionProcessAlias: 'default-project-application/release-1',
         unitType: 'inquiry',
       },
     });
@@ -2306,7 +2317,7 @@ describe('EditListingPage', () => {
       },
     };
 
-    const { getByText, getByRole, getByLabelText } = render(<EditListingPage {...props} />, {
+    const { getByText, getByRole } = render(<EditListingPage {...props} />, {
       initialState: initialState(listing),
       config,
       routeConfiguration,
@@ -2330,44 +2341,35 @@ describe('EditListingPage', () => {
         'Lorem ipsum'
       );
 
-      // Tab/form: listing field
-      expect(getByLabelText('Cat')).toBeInTheDocument();
-      expect(
-        getByRole('option', { name: 'CustomExtendedDataField.placeholderSingleSelect' }).selected
-      ).toBe(true);
-      expect(getByRole('option', { name: 'Cat 1' }).selected).toBe(false);
-
       expect(
         getByRole('button', { name: 'EditListingWizard.edit.saveDetails' })
       ).toBeInTheDocument();
     });
-
-    // Test intercation
-    await user.selectOptions(
-      screen.getByRole('combobox'),
-      screen.getByRole('option', { name: 'Cat 1' })
-    );
-
-    expect(
-      getByRole('option', { name: 'CustomExtendedDataField.placeholderSingleSelect' }).selected
-    ).toBe(false);
-    expect(getByRole('option', { name: 'Cat 1' }).selected).toBe(true);
   });
 
-  it('Inquiry: edit flow no pricing on details tab', async () => {
-    const listingTypeInquiry = listingTypesInquiry[0];
-    const inquiryNoPricing = { ...listingTypeInquiry, defaultListingFields: { price: false } };
-    const config = getConfig([inquiryNoPricing], listingFieldsInquiry);
+  // Street2Ivy: Project listings have only a Details tab, so pricing/location tabs are absent.
+  it('Project: edit flow has no pricing or location tabs', async () => {
+    const listingTypesProject = [
+      {
+        id: 'project',
+        label: 'Project',
+        transactionProcess: {
+          name: 'default-project-application',
+          alias: 'default-project-application/release-1',
+        },
+        unitType: 'inquiry',
+        defaultListingFields: { price: false, location: false },
+      },
+    ];
+    const config = getConfig(listingTypesProject, []);
     const routeConfiguration = getRouteConfiguration(config.layout);
     const listing = createOwnListing('listing-item', {
       title: 'the listing',
       description: 'Lorem ipsum',
-      price: new Money(5500, 'USD'),
       publicData: {
-        listingType: 'inquiry',
-        transactionProcessAlias: 'default-inquiry/release-1',
+        listingType: 'project',
+        transactionProcessAlias: 'default-project-application/release-1',
         unitType: 'inquiry',
-        category: 'cat_1',
       },
     });
 
@@ -2388,51 +2390,10 @@ describe('EditListingPage', () => {
     });
 
     await waitFor(() => {
-      // Navigation to tab
-      const tabLabel1 = 'EditListingWizard.tabLabelPricingAndStock';
-      expect(queryByText(tabLabel1)).not.toBeInTheDocument();
-      const tabLabel2 = 'EditListingWizard.tabLabelPricing';
-      expect(queryByText(tabLabel2)).not.toBeInTheDocument();
-    });
-  });
-
-  it('Inquiry: edit flow no location on details tab', async () => {
-    const listingTypeInquiry = listingTypesInquiry[0];
-    const inquiryNoLocation = { ...listingTypeInquiry, defaultListingFields: { location: false } };
-    const config = getConfig([inquiryNoLocation], listingFieldsInquiry);
-    const routeConfiguration = getRouteConfiguration(config.layout);
-    const listing = createOwnListing('listing-item', {
-      title: 'the listing',
-      description: 'Lorem ipsum',
-      price: new Money(5500, 'USD'),
-      publicData: {
-        listingType: 'inquiry',
-        transactionProcessAlias: 'default-inquiry/release-1',
-        unitType: 'inquiry',
-        category: 'cat_1',
-      },
-    });
-
-    const props = {
-      ...commonProps,
-      params: {
-        id: listing.id.uuid,
-        slug: 'slug',
-        type: LISTING_PAGE_PARAM_TYPE_EDIT,
-        tab: DETAILS,
-      },
-    };
-
-    const { queryByText } = render(<EditListingPage {...props} />, {
-      initialState: initialState(listing),
-      config,
-      routeConfiguration,
-    });
-
-    await waitFor(() => {
-      // Navigation to tab
-      const tabLabel1 = 'EditListingWizard.tabLabelLocation';
-      expect(queryByText(tabLabel1)).not.toBeInTheDocument();
+      // Pricing and Location tabs should not be present for project listings
+      expect(queryByText('EditListingWizard.tabLabelPricingAndStock')).not.toBeInTheDocument();
+      expect(queryByText('EditListingWizard.tabLabelPricing')).not.toBeInTheDocument();
+      expect(queryByText('EditListingWizard.tabLabelLocation')).not.toBeInTheDocument();
     });
   });
 
@@ -2664,12 +2625,12 @@ describe('EditListingPage', () => {
       ).toBeInTheDocument();
     });
 
-    // Check that only details and photos tabs are available
+    // Check that only details tab is available (Street2Ivy removed style panel)
     // Details tab should be visible (current tab)
     expect(getByText('EditListingWizard.tabLabelDetails')).toBeInTheDocument();
 
-    // Style tab should be visible (style panel)
-    expect(getByText('EditListingWizard.tabLabelStyle')).toBeInTheDocument();
+    // Street2Ivy: Style tab was removed from the wizard
+    expect(queryByText('EditListingWizard.tabLabelStyle')).not.toBeInTheDocument();
 
     // Other tabs should NOT be visible due to defaultListingFields configuration
     const tabLabelLocation = 'EditListingWizard.tabLabelLocation';
@@ -2691,7 +2652,7 @@ describe('EditListingPage', () => {
     expect(queryByText(tabLabelPhotos)).not.toBeInTheDocument();
   });
 
-  it('Negotiation: new listing flow with only details and style panels', async () => {
+  it('Negotiation: new listing flow with only details panel', async () => {
     const config = getConfig(listingTypesNegotiation, []);
     const routeConfiguration = getRouteConfiguration(config.layout);
 
@@ -2733,12 +2694,12 @@ describe('EditListingPage', () => {
       ).toBeInTheDocument();
     });
 
-    // Check that only details and photos tabs are available
+    // Check that only details tab is available (Street2Ivy removed style panel)
     // Details tab should be visible (current tab)
     expect(getByText('EditListingWizard.tabLabelDetails')).toBeInTheDocument();
 
-    // Photos tab should be visible (style panel)
-    expect(getByText('EditListingWizard.tabLabelStyle')).toBeInTheDocument();
+    // Street2Ivy: Style tab was removed from the wizard
+    expect(queryByText('EditListingWizard.tabLabelStyle')).not.toBeInTheDocument();
 
     // Other tabs should NOT be visible due to defaultListingFields configuration
     const tabLabelLocation = 'EditListingWizard.tabLabelLocation';
@@ -2825,11 +2786,11 @@ describe('EditListingPageComponent', () => {
     const tabLabelAvailability = 'EditListingWizard.tabLabelAvailability';
     expect(screen.queryByText(tabLabelAvailability)).not.toBeInTheDocument();
 
-    // Tabs added
+    // Tabs added (may appear in both nav links and step labels, so use getAllByText)
     const tabLabelPricingAndStock = 'EditListingWizard.tabLabelPricingAndStock';
-    expect(screen.getByText(tabLabelPricingAndStock)).toBeInTheDocument();
+    expect(screen.getAllByText(tabLabelPricingAndStock).length).toBeGreaterThanOrEqual(1);
     const tabLabelDelivery = 'EditListingWizard.tabLabelDelivery';
-    expect(screen.getByText(tabLabelDelivery)).toBeInTheDocument();
-    expect(screen.getByText(tabLabelPhotos)).toBeInTheDocument();
+    expect(screen.getAllByText(tabLabelDelivery).length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText(tabLabelPhotos).length).toBeGreaterThanOrEqual(1);
   });
 });

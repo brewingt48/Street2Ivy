@@ -10,7 +10,13 @@ import {
   stringifyDateToISO8601,
 } from '../../util/dates';
 import { isTransactionsTransitionInvalidTransition, storableError } from '../../util/errors';
-import { transactionLineItems, transitionPrivileged, fetchApplicationByTransaction } from '../../util/api';
+import {
+  transactionLineItems,
+  transitionPrivileged,
+  fetchApplicationByTransaction,
+  fetchConversationMessages,
+  sendConversationMessage,
+} from '../../util/api';
 import * as log from '../../util/log';
 import {
   updatedEntities,
@@ -454,7 +460,13 @@ export const fetchMessages = (txId, page, config) => dispatch => {
 
 export const fetchMoreMessages = (txId, config) => (dispatch, getState, sdk) => {
   const state = getState();
-  const { oldestMessagePageFetched, totalMessagePages } = state.TransactionPage;
+  const { oldestMessagePageFetched, totalMessagePages, applicationData } = state.TransactionPage;
+
+  // Custom messaging: re-fetch all messages (no pagination needed for <100 messages)
+  if (applicationData?.id) {
+    return dispatch(fetchCustomMessagesThunk({ applicationId: applicationData.id }));
+  }
+
   const hasMoreOldMessages = totalMessagePages > oldestMessagePageFetched;
 
   // In case there're no more old pages left we default to fetching the current cursor position
@@ -492,9 +504,105 @@ export const sendMessageThunk = createAsyncThunk(
 );
 
 // Backward compatible wrapper for sendMessage
-export const sendMessage = (txId, message, config) => dispatch => {
+export const sendMessage = (txId, message, config) => (dispatch, getState) => {
+  // Check if this transaction has custom application data — if so, use custom messaging API
+  const { applicationData } = getState().TransactionPage;
+  if (applicationData?.id) {
+    return dispatch(sendCustomMessageThunk({ applicationId: applicationData.id, message, config }));
+  }
   return dispatch(sendMessageThunk({ txId, message, config }));
 };
+
+// ================ Custom Messaging (SQLite-backed) ================ //
+
+/**
+ * Normalize a custom message from our API into the Sharetribe message entity shape.
+ * This allows ActivityFeed and TransactionPanel to render custom messages
+ * identically to Sharetribe messages without any changes.
+ */
+const normalizeCustomMessage = (msg) => ({
+  id: { uuid: msg.id },
+  type: 'message',
+  attributes: {
+    content: msg.content,
+    createdAt: new Date(msg.createdAt),
+  },
+  sender: {
+    id: { uuid: msg.senderId },
+    attributes: {
+      banned: false,
+      deleted: false,
+      profile: {
+        displayName: msg.senderName || 'User',
+        abbreviatedName: msg.senderName ? msg.senderName.charAt(0) : '?',
+      },
+    },
+  },
+  // Preserve custom fields for any code that needs them
+  _custom: {
+    messageType: msg.messageType,
+    senderRole: msg.senderRole,
+    readAt: msg.readAt,
+    applicationId: msg.applicationId,
+  },
+});
+
+/**
+ * Fetch messages from our custom messaging API and normalize them.
+ * Used when the TransactionPage has applicationData (project application).
+ */
+const fetchCustomMessagesPayloadCreator = async (
+  { applicationId },
+  { rejectWithValue }
+) => {
+  try {
+    const response = await fetchConversationMessages(applicationId, { limit: 100, offset: 0 });
+    const messages = (response.messages || [])
+      .filter(m => m.messageType !== 'system')  // filter system messages for ActivityFeed
+      .map(normalizeCustomMessage);
+    const total = response.pagination?.total || messages.length;
+    return {
+      messages,
+      pagination: {
+        totalItems: total,
+        totalPages: 1,
+        page: 1,
+      },
+    };
+  } catch (e) {
+    return rejectWithValue(storableError(e));
+  }
+};
+
+export const fetchCustomMessagesThunk = createAsyncThunk(
+  'TransactionPage/fetchCustomMessages',
+  fetchCustomMessagesPayloadCreator
+);
+
+/**
+ * Send a message via our custom messaging API and normalize the response.
+ */
+const sendCustomMessagePayloadCreator = async (
+  { applicationId, message, config },
+  { dispatch, rejectWithValue }
+) => {
+  try {
+    const response = await sendConversationMessage(applicationId, message);
+    const normalized = normalizeCustomMessage(response.message);
+
+    // Re-fetch all messages to stay in sync
+    dispatch(fetchCustomMessagesThunk({ applicationId })).catch(() => {});
+
+    return normalized.id;  // Return { uuid: 'msg_...' } to match Sharetribe shape
+  } catch (e) {
+    return rejectWithValue(storableError(e));
+  }
+};
+
+export const sendCustomMessageThunk = createAsyncThunk(
+  'TransactionPage/sendCustomMessage',
+  sendCustomMessagePayloadCreator
+);
 
 ////////////////
 // sendReview //
@@ -768,6 +876,41 @@ const transactionPageSlice = createSlice({
         state.sendMessageInProgress = false;
         state.sendMessageError = action.payload;
       })
+      // fetchCustomMessages cases (custom messaging API)
+      .addCase(fetchCustomMessagesThunk.pending, state => {
+        state.fetchMessagesInProgress = true;
+        state.fetchMessagesError = null;
+      })
+      .addCase(fetchCustomMessagesThunk.fulfilled, (state, action) => {
+        const { messages: customMessages, pagination } = action.payload;
+        state.fetchMessagesInProgress = false;
+
+        if (customMessages.length > 0) {
+          // Merge custom messages with any existing Sharetribe messages.
+          // Custom messages have IDs like 'msg_...' while Sharetribe messages
+          // have UUID format, so there won't be ID collisions.
+          state.messages = mergeEntityArrays(state.messages, customMessages);
+          state.totalMessages = state.messages.length;
+        }
+        // If no custom messages, keep whatever Sharetribe messages were already loaded
+      })
+      .addCase(fetchCustomMessagesThunk.rejected, (state, action) => {
+        state.fetchMessagesInProgress = false;
+        state.fetchMessagesError = action.payload;
+      })
+      // sendCustomMessage cases
+      .addCase(sendCustomMessageThunk.pending, state => {
+        state.sendMessageInProgress = true;
+        state.sendMessageError = null;
+        state.initialMessageFailedToTransaction = null;
+      })
+      .addCase(sendCustomMessageThunk.fulfilled, state => {
+        state.sendMessageInProgress = false;
+      })
+      .addCase(sendCustomMessageThunk.rejected, (state, action) => {
+        state.sendMessageInProgress = false;
+        state.sendMessageError = action.payload;
+      })
       // sendReview cases
       .addCase(sendReviewThunk.pending, state => {
         state.sendReviewInProgress = true;
@@ -901,5 +1044,15 @@ export const loadData = (params, search, config) => (dispatch, getState) => {
     dispatch(fetchMessagesThunk({ txId, page: 1, config })),
     dispatch(fetchTransitionsThunk({ id: txId })),
     dispatch(fetchApplicationDataThunk({ transactionId: params.id })),
-  ]);
+  ]).then(results => {
+    // After initial load, check if this transaction has custom application data.
+    // If so, also fetch custom messages which will be merged into the message thread.
+    const appData = getState().TransactionPage.applicationData;
+    if (appData?.id) {
+      return dispatch(fetchCustomMessagesThunk({ applicationId: appData.id }))
+        .then(() => results)
+        .catch(() => results);
+    }
+    return results;
+  });
 };

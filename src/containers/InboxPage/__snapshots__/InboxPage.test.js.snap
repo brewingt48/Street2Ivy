@@ -2,28 +2,28 @@
 
 exports[`InboxPage InboxItem: default-booking process with "day" check booking: transition/accept 1`] = `
 <a
-  class="itemCard itemCardUnread"
+  class="emailRow emailRowUnread"
   href="/review/id-booking-ACCEPT-sale"
 />
 `;
 
 exports[`InboxPage InboxItem: default-booking process with "day" check booking: transition/cancel 1`] = `
 <a
-  class="itemCard"
+  class="emailRow"
   href="/review/id-booking-CANCEL-sale"
 />
 `;
 
 exports[`InboxPage InboxItem: default-booking process with "day" check booking: transition/complete 1`] = `
 <a
-  class="itemCard itemCardUnread"
+  class="emailRow emailRowUnread"
   href="/review/id-booking-COMPLETE-sale"
 />
 `;
 
 exports[`InboxPage InboxItem: default-booking process with "day" check booking: transition/confirm-payment 1`] = `
 <a
-  class="itemCard itemCardUnread"
+  class="emailRow emailRowUnread"
   href="/review/id-booking-CONFIRM_PAYMENT-sale"
 >
   <div
@@ -34,595 +34,735 @@ exports[`InboxPage InboxItem: default-booking process with "day" check booking: 
 
 exports[`InboxPage InboxItem: default-booking process with "day" check booking: transition/decline 1`] = `
 <a
-  class="itemCard"
+  class="emailRow"
   href="/review/id-booking-DECLINE-sale"
 />
 `;
 
 exports[`InboxPage InboxItem: default-booking process with "day" check booking: transition/expire 1`] = `
 <a
-  class="itemCard"
+  class="emailRow"
   href="/review/id-booking-EXPIRE-sale"
 />
 `;
 
 exports[`InboxPage InboxItem: default-booking process with "day" check booking: transition/expire-customer-review-period 1`] = `
 <a
-  class="itemCard"
+  class="emailRow"
   href="/review/id-booking-EXPIRE_CUSTOMER_REVIEW_PERIOD-sale"
 />
 `;
 
 exports[`InboxPage InboxItem: default-booking process with "day" check booking: transition/expire-payment 1`] = `
 <a
-  class="itemCard"
+  class="emailRow"
   href="/review/id-booking-EXPIRE_PAYMENT-sale"
 />
 `;
 
 exports[`InboxPage InboxItem: default-booking process with "day" check booking: transition/expire-provider-review-period 1`] = `
 <a
-  class="itemCard"
+  class="emailRow"
   href="/review/id-booking-EXPIRE_PROVIDER_REVIEW_PERIOD-sale"
 />
 `;
 
 exports[`InboxPage InboxItem: default-booking process with "day" check booking: transition/expire-review-period 1`] = `
 <a
-  class="itemCard"
+  class="emailRow"
   href="/review/id-booking-EXPIRE_REVIEW_PERIOD-sale"
 />
 `;
 
 exports[`InboxPage InboxItem: default-booking process with "day" check booking: transition/inquire 1`] = `
 <a
-  class="itemCard itemCardUnread"
+  class="emailRow emailRowUnread"
   href="/review/id-booking-INQUIRE-sale"
 />
 `;
 
 exports[`InboxPage InboxItem: default-booking process with "day" check booking: transition/operator-accept 1`] = `
 <a
-  class="itemCard itemCardUnread"
+  class="emailRow emailRowUnread"
   href="/review/id-booking-OPERATOR_ACCEPT-sale"
 />
 `;
 
 exports[`InboxPage InboxItem: default-booking process with "day" check booking: transition/operator-complete 1`] = `
 <a
-  class="itemCard itemCardUnread"
+  class="emailRow emailRowUnread"
   href="/review/id-booking-OPERATOR_COMPLETE-sale"
 />
 `;
 
 exports[`InboxPage InboxItem: default-booking process with "day" check booking: transition/operator-decline 1`] = `
 <a
-  class="itemCard"
+  class="emailRow"
   href="/review/id-booking-OPERATOR_DECLINE-sale"
 />
 `;
 
 exports[`InboxPage InboxItem: default-booking process with "day" check booking: transition/request-payment 1`] = `
 <a
-  class="itemCard"
+  class="emailRow"
   href="/review/id-booking-REQUEST_PAYMENT-sale"
 />
 `;
 
 exports[`InboxPage InboxItem: default-booking process with "day" check booking: transition/request-payment-after-inquiry 1`] = `
 <a
-  class="itemCard"
+  class="emailRow"
   href="/review/id-booking-REQUEST_PAYMENT_AFTER_INQUIRY-sale"
 />
 `;
 
 exports[`InboxPage InboxItem: default-booking process with "day" check booking: transition/review-1-by-customer 1`] = `
 <a
-  class="itemCard itemCardUnread"
+  class="emailRow emailRowUnread"
   href="/review/id-booking-REVIEW_1_BY_CUSTOMER-sale"
 />
 `;
 
 exports[`InboxPage InboxItem: default-booking process with "day" check booking: transition/review-1-by-provider 1`] = `
 <a
-  class="itemCard"
+  class="emailRow"
   href="/review/id-booking-REVIEW_1_BY_PROVIDER-sale"
 />
 `;
 
 exports[`InboxPage InboxItem: default-booking process with "day" check booking: transition/review-2-by-customer 1`] = `
 <a
-  class="itemCard"
+  class="emailRow"
   href="/review/id-booking-REVIEW_2_BY_CUSTOMER-sale"
 />
 `;
 
 exports[`InboxPage InboxItem: default-booking process with "day" check booking: transition/review-2-by-provider 1`] = `
 <a
-  class="itemCard"
+  class="emailRow"
   href="/review/id-booking-REVIEW_2_BY_PROVIDER-sale"
 />
 `;
 
 exports[`InboxPage InboxItem: default-booking process with "hour" check booking: transition/accept 1`] = `
 <a
-  class="itemCard itemCardUnread"
+  class="emailRow emailRowUnread"
   href="/application/id-booking-ACCEPT-order"
 />
 `;
 
 exports[`InboxPage InboxItem: default-booking process with "hour" check booking: transition/cancel 1`] = `
 <a
-  class="itemCard"
+  class="emailRow"
   href="/application/id-booking-CANCEL-order"
 />
 `;
 
 exports[`InboxPage InboxItem: default-booking process with "hour" check booking: transition/complete 1`] = `
 <a
-  class="itemCard itemCardUnread"
+  class="emailRow emailRowUnread"
   href="/application/id-booking-COMPLETE-order"
 />
 `;
 
 exports[`InboxPage InboxItem: default-booking process with "hour" check booking: transition/confirm-payment 1`] = `
 <a
-  class="itemCard"
+  class="emailRow"
   href="/application/id-booking-CONFIRM_PAYMENT-order"
 />
 `;
 
 exports[`InboxPage InboxItem: default-booking process with "hour" check booking: transition/decline 1`] = `
 <a
-  class="itemCard"
+  class="emailRow"
   href="/application/id-booking-DECLINE-order"
 />
 `;
 
 exports[`InboxPage InboxItem: default-booking process with "hour" check booking: transition/expire 1`] = `
 <a
-  class="itemCard"
+  class="emailRow"
   href="/application/id-booking-EXPIRE-order"
 />
 `;
 
 exports[`InboxPage InboxItem: default-booking process with "hour" check booking: transition/expire-customer-review-period 1`] = `
 <a
-  class="itemCard"
+  class="emailRow"
   href="/application/id-booking-EXPIRE_CUSTOMER_REVIEW_PERIOD-order"
 />
 `;
 
 exports[`InboxPage InboxItem: default-booking process with "hour" check booking: transition/expire-payment 1`] = `
 <a
-  class="itemCard"
+  class="emailRow"
   href="/application/id-booking-EXPIRE_PAYMENT-order"
 />
 `;
 
 exports[`InboxPage InboxItem: default-booking process with "hour" check booking: transition/expire-provider-review-period 1`] = `
 <a
-  class="itemCard"
+  class="emailRow"
   href="/application/id-booking-EXPIRE_PROVIDER_REVIEW_PERIOD-order"
 />
 `;
 
 exports[`InboxPage InboxItem: default-booking process with "hour" check booking: transition/expire-review-period 1`] = `
 <a
-  class="itemCard"
+  class="emailRow"
   href="/application/id-booking-EXPIRE_REVIEW_PERIOD-order"
 />
 `;
 
 exports[`InboxPage InboxItem: default-booking process with "hour" check booking: transition/inquire 1`] = `
 <a
-  class="itemCard itemCardUnread"
+  class="emailRow emailRowUnread"
   href="/application/id-booking-INQUIRE-order"
 />
 `;
 
 exports[`InboxPage InboxItem: default-booking process with "hour" check booking: transition/operator-accept 1`] = `
 <a
-  class="itemCard itemCardUnread"
+  class="emailRow emailRowUnread"
   href="/application/id-booking-OPERATOR_ACCEPT-order"
 />
 `;
 
 exports[`InboxPage InboxItem: default-booking process with "hour" check booking: transition/operator-complete 1`] = `
 <a
-  class="itemCard itemCardUnread"
+  class="emailRow emailRowUnread"
   href="/application/id-booking-OPERATOR_COMPLETE-order"
 />
 `;
 
 exports[`InboxPage InboxItem: default-booking process with "hour" check booking: transition/operator-decline 1`] = `
 <a
-  class="itemCard"
+  class="emailRow"
   href="/application/id-booking-OPERATOR_DECLINE-order"
 />
 `;
 
 exports[`InboxPage InboxItem: default-booking process with "hour" check booking: transition/request-payment 1`] = `
 <a
-  class="itemCard itemCardUnread"
+  class="emailRow emailRowUnread"
   href="/application/id-booking-REQUEST_PAYMENT-order"
 />
 `;
 
 exports[`InboxPage InboxItem: default-booking process with "hour" check booking: transition/request-payment-after-inquiry 1`] = `
 <a
-  class="itemCard itemCardUnread"
+  class="emailRow emailRowUnread"
   href="/application/id-booking-REQUEST_PAYMENT_AFTER_INQUIRY-order"
 />
 `;
 
 exports[`InboxPage InboxItem: default-booking process with "hour" check booking: transition/review-1-by-customer 1`] = `
 <a
-  class="itemCard"
+  class="emailRow"
   href="/application/id-booking-REVIEW_1_BY_CUSTOMER-order"
 />
 `;
 
 exports[`InboxPage InboxItem: default-booking process with "hour" check booking: transition/review-1-by-provider 1`] = `
 <a
-  class="itemCard itemCardUnread"
+  class="emailRow emailRowUnread"
   href="/application/id-booking-REVIEW_1_BY_PROVIDER-order"
 />
 `;
 
 exports[`InboxPage InboxItem: default-booking process with "hour" check booking: transition/review-2-by-customer 1`] = `
 <a
-  class="itemCard"
+  class="emailRow"
   href="/application/id-booking-REVIEW_2_BY_CUSTOMER-order"
 />
 `;
 
 exports[`InboxPage InboxItem: default-booking process with "hour" check booking: transition/review-2-by-provider 1`] = `
 <a
-  class="itemCard"
+  class="emailRow"
+  href="/application/id-booking-REVIEW_2_BY_PROVIDER-order"
+/>
+`;
+
+exports[`InboxPage InboxItem: default-booking process with "night" check booking: transition/accept 1`] = `
+<a
+  class="emailRow emailRowUnread"
+  href="/application/id-booking-ACCEPT-order"
+/>
+`;
+
+exports[`InboxPage InboxItem: default-booking process with "night" check booking: transition/cancel 1`] = `
+<a
+  class="emailRow"
+  href="/application/id-booking-CANCEL-order"
+/>
+`;
+
+exports[`InboxPage InboxItem: default-booking process with "night" check booking: transition/complete 1`] = `
+<a
+  class="emailRow emailRowUnread"
+  href="/application/id-booking-COMPLETE-order"
+/>
+`;
+
+exports[`InboxPage InboxItem: default-booking process with "night" check booking: transition/confirm-payment 1`] = `
+<a
+  class="emailRow"
+  href="/application/id-booking-CONFIRM_PAYMENT-order"
+/>
+`;
+
+exports[`InboxPage InboxItem: default-booking process with "night" check booking: transition/decline 1`] = `
+<a
+  class="emailRow"
+  href="/application/id-booking-DECLINE-order"
+/>
+`;
+
+exports[`InboxPage InboxItem: default-booking process with "night" check booking: transition/expire 1`] = `
+<a
+  class="emailRow"
+  href="/application/id-booking-EXPIRE-order"
+/>
+`;
+
+exports[`InboxPage InboxItem: default-booking process with "night" check booking: transition/expire-customer-review-period 1`] = `
+<a
+  class="emailRow"
+  href="/application/id-booking-EXPIRE_CUSTOMER_REVIEW_PERIOD-order"
+/>
+`;
+
+exports[`InboxPage InboxItem: default-booking process with "night" check booking: transition/expire-payment 1`] = `
+<a
+  class="emailRow"
+  href="/application/id-booking-EXPIRE_PAYMENT-order"
+/>
+`;
+
+exports[`InboxPage InboxItem: default-booking process with "night" check booking: transition/expire-provider-review-period 1`] = `
+<a
+  class="emailRow"
+  href="/application/id-booking-EXPIRE_PROVIDER_REVIEW_PERIOD-order"
+/>
+`;
+
+exports[`InboxPage InboxItem: default-booking process with "night" check booking: transition/expire-review-period 1`] = `
+<a
+  class="emailRow"
+  href="/application/id-booking-EXPIRE_REVIEW_PERIOD-order"
+/>
+`;
+
+exports[`InboxPage InboxItem: default-booking process with "night" check booking: transition/inquire 1`] = `
+<a
+  class="emailRow emailRowUnread"
+  href="/application/id-booking-INQUIRE-order"
+/>
+`;
+
+exports[`InboxPage InboxItem: default-booking process with "night" check booking: transition/operator-accept 1`] = `
+<a
+  class="emailRow emailRowUnread"
+  href="/application/id-booking-OPERATOR_ACCEPT-order"
+/>
+`;
+
+exports[`InboxPage InboxItem: default-booking process with "night" check booking: transition/operator-complete 1`] = `
+<a
+  class="emailRow emailRowUnread"
+  href="/application/id-booking-OPERATOR_COMPLETE-order"
+/>
+`;
+
+exports[`InboxPage InboxItem: default-booking process with "night" check booking: transition/operator-decline 1`] = `
+<a
+  class="emailRow"
+  href="/application/id-booking-OPERATOR_DECLINE-order"
+/>
+`;
+
+exports[`InboxPage InboxItem: default-booking process with "night" check booking: transition/request-payment 1`] = `
+<a
+  class="emailRow emailRowUnread"
+  href="/application/id-booking-REQUEST_PAYMENT-order"
+/>
+`;
+
+exports[`InboxPage InboxItem: default-booking process with "night" check booking: transition/request-payment-after-inquiry 1`] = `
+<a
+  class="emailRow emailRowUnread"
+  href="/application/id-booking-REQUEST_PAYMENT_AFTER_INQUIRY-order"
+/>
+`;
+
+exports[`InboxPage InboxItem: default-booking process with "night" check booking: transition/review-1-by-customer 1`] = `
+<a
+  class="emailRow"
+  href="/application/id-booking-REVIEW_1_BY_CUSTOMER-order"
+/>
+`;
+
+exports[`InboxPage InboxItem: default-booking process with "night" check booking: transition/review-1-by-provider 1`] = `
+<a
+  class="emailRow emailRowUnread"
+  href="/application/id-booking-REVIEW_1_BY_PROVIDER-order"
+/>
+`;
+
+exports[`InboxPage InboxItem: default-booking process with "night" check booking: transition/review-2-by-customer 1`] = `
+<a
+  class="emailRow"
+  href="/application/id-booking-REVIEW_2_BY_CUSTOMER-order"
+/>
+`;
+
+exports[`InboxPage InboxItem: default-booking process with "night" check booking: transition/review-2-by-provider 1`] = `
+<a
+  class="emailRow"
   href="/application/id-booking-REVIEW_2_BY_PROVIDER-order"
 />
 `;
 
 exports[`InboxPage InboxItem: default-inquiry process with "inquiry" item check inquiry: transition/inquire-without-payment 1`] = `
 <a
-  class="itemCard itemCardUnread"
+  class="emailRow emailRowUnread"
   href="/review/id-inquiry-INQUIRE_WITHOUT_PAYMENT-sale"
 />
 `;
 
 exports[`InboxPage InboxItem: default-negotiation process with "request" check negotiation: transition/accept-deliverable 1`] = `
 <a
-  class="itemCard"
+  class="emailRow"
   href="/application/id-negotiation-ACCEPT_DELIVERABLE-request"
 />
 `;
 
 exports[`InboxPage InboxItem: default-negotiation process with "request" check negotiation: transition/accept-update 1`] = `
 <a
-  class="itemCard itemCardUnread"
+  class="emailRow emailRowUnread"
   href="/application/id-negotiation-ACCEPT_UPDATE-request"
 />
 `;
 
 exports[`InboxPage InboxItem: default-negotiation process with "request" check negotiation: transition/auto-accept-deliverable 1`] = `
 <a
-  class="itemCard"
+  class="emailRow"
   href="/application/id-negotiation-AUTO_ACCEPT_DELIVERABLE-request"
 />
 `;
 
 exports[`InboxPage InboxItem: default-negotiation process with "request" check negotiation: transition/auto-cancel 1`] = `
 <a
-  class="itemCard"
+  class="emailRow"
   href="/application/id-negotiation-AUTO_CANCEL-request"
 />
 `;
 
 exports[`InboxPage InboxItem: default-negotiation process with "request" check negotiation: transition/auto-cancel-from-changes-requested 1`] = `
 <a
-  class="itemCard"
+  class="emailRow"
   href="/application/id-negotiation-AUTO_CANCEL_FROM_CHANGES_REQUESTED-request"
 />
 `;
 
 exports[`InboxPage InboxItem: default-negotiation process with "request" check negotiation: transition/confirm-payment 1`] = `
 <a
-  class="itemCard"
+  class="emailRow"
   href="/application/id-negotiation-CONFIRM_PAYMENT-request"
 />
 `;
 
 exports[`InboxPage InboxItem: default-negotiation process with "request" check negotiation: transition/customer-make-counter-offer 1`] = `
 <a
-  class="itemCard"
+  class="emailRow"
   href="/application/id-negotiation-CUSTOMER_MAKE_COUNTER_OFFER-request"
 />
 `;
 
 exports[`InboxPage InboxItem: default-negotiation process with "request" check negotiation: transition/customer-reject-from-update-pending 1`] = `
 <a
-  class="itemCard"
+  class="emailRow"
   href="/application/id-negotiation-CUSTOMER_REJECT_FROM_UPDATE_PENDING-request"
 />
 `;
 
 exports[`InboxPage InboxItem: default-negotiation process with "request" check negotiation: transition/customer-reject-offer 1`] = `
 <a
-  class="itemCard"
+  class="emailRow"
   href="/application/id-negotiation-CUSTOMER_REJECT_OFFER-request"
 />
 `;
 
 exports[`InboxPage InboxItem: default-negotiation process with "request" check negotiation: transition/customer-withdraw-counter-offer 1`] = `
 <a
-  class="itemCard itemCardUnread"
+  class="emailRow emailRowUnread"
   href="/application/id-negotiation-CUSTOMER_WITHDRAW_COUNTER_OFFER-request"
 />
 `;
 
 exports[`InboxPage InboxItem: default-negotiation process with "request" check negotiation: transition/deliver 1`] = `
 <a
-  class="itemCard itemCardUnread"
+  class="emailRow emailRowUnread"
   href="/application/id-negotiation-DELIVER-request"
 />
 `;
 
 exports[`InboxPage InboxItem: default-negotiation process with "request" check negotiation: transition/deliver-changes 1`] = `
 <a
-  class="itemCard itemCardUnread"
+  class="emailRow emailRowUnread"
   href="/application/id-negotiation-DELIVER_CHANGES-request"
 />
 `;
 
 exports[`InboxPage InboxItem: default-negotiation process with "request" check negotiation: transition/expire-customer-review-period 1`] = `
 <a
-  class="itemCard"
+  class="emailRow"
   href="/application/id-negotiation-EXPIRE_CUSTOMER_REVIEW_PERIOD-request"
 />
 `;
 
 exports[`InboxPage InboxItem: default-negotiation process with "request" check negotiation: transition/expire-payment 1`] = `
 <a
-  class="itemCard"
+  class="emailRow"
   href="/application/id-negotiation-EXPIRE_PAYMENT-request"
 />
 `;
 
 exports[`InboxPage InboxItem: default-negotiation process with "request" check negotiation: transition/expire-provider-review-period 1`] = `
 <a
-  class="itemCard"
+  class="emailRow"
   href="/application/id-negotiation-EXPIRE_PROVIDER_REVIEW_PERIOD-request"
 />
 `;
 
 exports[`InboxPage InboxItem: default-negotiation process with "request" check negotiation: transition/expire-review-period 1`] = `
 <a
-  class="itemCard"
+  class="emailRow"
   href="/application/id-negotiation-EXPIRE_REVIEW_PERIOD-request"
 />
 `;
 
 exports[`InboxPage InboxItem: default-negotiation process with "request" check negotiation: transition/inquire 1`] = `
 <a
-  class="itemCard itemCardUnread"
+  class="emailRow emailRowUnread"
   href="/application/id-negotiation-INQUIRE-request"
 />
 `;
 
 exports[`InboxPage InboxItem: default-negotiation process with "request" check negotiation: transition/make-offer 1`] = `
 <a
-  class="itemCard itemCardUnread"
+  class="emailRow emailRowUnread"
   href="/application/id-negotiation-MAKE_OFFER-request"
 />
 `;
 
 exports[`InboxPage InboxItem: default-negotiation process with "request" check negotiation: transition/make-offer-after-inquiry 1`] = `
 <a
-  class="itemCard itemCardUnread"
+  class="emailRow emailRowUnread"
   href="/application/id-negotiation-MAKE_OFFER_AFTER_INQUIRY-request"
 />
 `;
 
 exports[`InboxPage InboxItem: default-negotiation process with "request" check negotiation: transition/make-offer-from-request 1`] = `
 <a
-  class="itemCard itemCardUnread"
+  class="emailRow emailRowUnread"
   href="/application/id-negotiation-MAKE_OFFER_FROM_REQUEST-request"
 />
 `;
 
 exports[`InboxPage InboxItem: default-negotiation process with "request" check negotiation: transition/operator-accept-deliverable 1`] = `
 <a
-  class="itemCard"
+  class="emailRow"
   href="/application/id-negotiation-OPERATOR_ACCEPT_DELIVERABLE-request"
 />
 `;
 
 exports[`InboxPage InboxItem: default-negotiation process with "request" check negotiation: transition/operator-accept-update 1`] = `
 <a
-  class="itemCard itemCardUnread"
+  class="emailRow emailRowUnread"
   href="/application/id-negotiation-OPERATOR_ACCEPT_UPDATE-request"
 />
 `;
 
 exports[`InboxPage InboxItem: default-negotiation process with "request" check negotiation: transition/operator-cancel 1`] = `
 <a
-  class="itemCard"
+  class="emailRow"
   href="/application/id-negotiation-OPERATOR_CANCEL-request"
 />
 `;
 
 exports[`InboxPage InboxItem: default-negotiation process with "request" check negotiation: transition/operator-cancel-from-changes-requested 1`] = `
 <a
-  class="itemCard"
+  class="emailRow"
   href="/application/id-negotiation-OPERATOR_CANCEL_FROM_CHANGES_REQUESTED-request"
 />
 `;
 
 exports[`InboxPage InboxItem: default-negotiation process with "request" check negotiation: transition/operator-cancel-from-delivered 1`] = `
 <a
-  class="itemCard"
+  class="emailRow"
   href="/application/id-negotiation-OPERATOR_CANCEL_FROM_DELIVERED-request"
 />
 `;
 
 exports[`InboxPage InboxItem: default-negotiation process with "request" check negotiation: transition/operator-mark-changes-delivered 1`] = `
 <a
-  class="itemCard itemCardUnread"
+  class="emailRow emailRowUnread"
   href="/application/id-negotiation-OPERATOR_MARK_CHANGES_DELIVERED-request"
 />
 `;
 
 exports[`InboxPage InboxItem: default-negotiation process with "request" check negotiation: transition/operator-mark-delivered 1`] = `
 <a
-  class="itemCard itemCardUnread"
+  class="emailRow emailRowUnread"
   href="/application/id-negotiation-OPERATOR_MARK_DELIVERED-request"
 />
 `;
 
 exports[`InboxPage InboxItem: default-negotiation process with "request" check negotiation: transition/operator-reject-from-customer-counter-offer 1`] = `
 <a
-  class="itemCard"
+  class="emailRow"
   href="/application/id-negotiation-OPERATOR_REJECT_FROM_CUSTOMER_COUNTER_OFFER-request"
 />
 `;
 
 exports[`InboxPage InboxItem: default-negotiation process with "request" check negotiation: transition/operator-reject-offer 1`] = `
 <a
-  class="itemCard"
+  class="emailRow"
   href="/application/id-negotiation-OPERATOR_REJECT_OFFER-request"
 />
 `;
 
 exports[`InboxPage InboxItem: default-negotiation process with "request" check negotiation: transition/operator-reject-request 1`] = `
 <a
-  class="itemCard"
+  class="emailRow"
   href="/application/id-negotiation-OPERATOR_REJECT_REQUEST-request"
 />
 `;
 
 exports[`InboxPage InboxItem: default-negotiation process with "request" check negotiation: transition/operator-request-changes 1`] = `
 <a
-  class="itemCard"
+  class="emailRow"
   href="/application/id-negotiation-OPERATOR_REQUEST_CHANGES-request"
 />
 `;
 
 exports[`InboxPage InboxItem: default-negotiation process with "request" check negotiation: transition/provider-accept-counter-offer 1`] = `
 <a
-  class="itemCard itemCardUnread"
+  class="emailRow emailRowUnread"
   href="/application/id-negotiation-PROVIDER_ACCEPT_COUNTER_OFFER-request"
 />
 `;
 
 exports[`InboxPage InboxItem: default-negotiation process with "request" check negotiation: transition/provider-make-counter-offer 1`] = `
 <a
-  class="itemCard itemCardUnread"
+  class="emailRow emailRowUnread"
   href="/application/id-negotiation-PROVIDER_MAKE_COUNTER_OFFER-request"
 />
 `;
 
 exports[`InboxPage InboxItem: default-negotiation process with "request" check negotiation: transition/provider-reject-counter-offer 1`] = `
 <a
-  class="itemCard itemCardUnread"
+  class="emailRow emailRowUnread"
   href="/application/id-negotiation-PROVIDER_REJECT_COUNTER_OFFER-request"
 />
 `;
 
 exports[`InboxPage InboxItem: default-negotiation process with "request" check negotiation: transition/provider-withdraw-from-update-pending 1`] = `
 <a
-  class="itemCard"
+  class="emailRow"
   href="/application/id-negotiation-PROVIDER_WITHDRAW_FROM_UPDATE_PENDING-request"
 />
 `;
 
 exports[`InboxPage InboxItem: default-negotiation process with "request" check negotiation: transition/provider-withdraw-offer 1`] = `
 <a
-  class="itemCard"
+  class="emailRow"
   href="/application/id-negotiation-PROVIDER_WITHDRAW_OFFER-request"
 />
 `;
 
 exports[`InboxPage InboxItem: default-negotiation process with "request" check negotiation: transition/reject-request 1`] = `
 <a
-  class="itemCard"
+  class="emailRow"
   href="/application/id-negotiation-REJECT_REQUEST-request"
 />
 `;
 
 exports[`InboxPage InboxItem: default-negotiation process with "request" check negotiation: transition/request-changes 1`] = `
 <a
-  class="itemCard"
+  class="emailRow"
   href="/application/id-negotiation-REQUEST_CHANGES-request"
 />
 `;
 
 exports[`InboxPage InboxItem: default-negotiation process with "request" check negotiation: transition/request-payment-to-accept-offer 1`] = `
 <a
-  class="itemCard"
+  class="emailRow"
   href="/application/id-negotiation-REQUEST_PAYMENT_TO_ACCEPT_OFFER-request"
 />
 `;
 
 exports[`InboxPage InboxItem: default-negotiation process with "request" check negotiation: transition/request-quote 1`] = `
 <a
-  class="itemCard"
+  class="emailRow"
   href="/application/id-negotiation-REQUEST_QUOTE-request"
 />
 `;
 
 exports[`InboxPage InboxItem: default-negotiation process with "request" check negotiation: transition/review-1-by-customer 1`] = `
 <a
-  class="itemCard"
+  class="emailRow"
   href="/application/id-negotiation-REVIEW_1_BY_CUSTOMER-request"
 />
 `;
 
 exports[`InboxPage InboxItem: default-negotiation process with "request" check negotiation: transition/review-1-by-provider 1`] = `
 <a
-  class="itemCard itemCardUnread"
+  class="emailRow emailRowUnread"
   href="/application/id-negotiation-REVIEW_1_BY_PROVIDER-request"
 />
 `;
 
 exports[`InboxPage InboxItem: default-negotiation process with "request" check negotiation: transition/review-2-by-customer 1`] = `
 <a
-  class="itemCard"
+  class="emailRow"
   href="/application/id-negotiation-REVIEW_2_BY_CUSTOMER-request"
 />
 `;
 
 exports[`InboxPage InboxItem: default-negotiation process with "request" check negotiation: transition/review-2-by-provider 1`] = `
 <a
-  class="itemCard"
+  class="emailRow"
   href="/application/id-negotiation-REVIEW_2_BY_PROVIDER-request"
 />
 `;
 
 exports[`InboxPage InboxItem: default-negotiation process with "request" check negotiation: transition/update-from-update-pending 1`] = `
 <a
-  class="itemCard itemCardUnread"
+  class="emailRow emailRowUnread"
   href="/application/id-negotiation-UPDATE_FROM_UPDATE_PENDING-request"
 />
 `;
 
 exports[`InboxPage InboxItem: default-negotiation process with "request" check negotiation: transition/update-offer 1`] = `
 <a
-  class="itemCard itemCardUnread"
+  class="emailRow emailRowUnread"
   href="/application/id-negotiation-UPDATE_OFFER-request"
 />
 `;
 
 exports[`InboxPage InboxItem: default-negotiation process with "request" check negotiation: transition/withdraw-request 1`] = `
 <a
-  class="itemCard"
+  class="emailRow"
   href="/application/id-negotiation-WITHDRAW_REQUEST-request"
 />
 `;
 
 exports[`InboxPage InboxItem: default-purchase process with "item" InboxItem with stockType "oneItem" matches snapshot of purchase sale 1`] = `
 <a
-  class="itemCard itemCardUnread"
+  class="emailRow emailRowUnread"
   href="/review/oneItem-sale"
 >
   <div
@@ -633,49 +773,49 @@ exports[`InboxPage InboxItem: default-purchase process with "item" InboxItem wit
 
 exports[`InboxPage InboxItem: default-purchase process with "item" check purchase: transition/auto-cancel 1`] = `
 <a
-  class="itemCard"
+  class="emailRow"
   href="/review/id-purchase-AUTO_CANCEL-sale"
 />
 `;
 
 exports[`InboxPage InboxItem: default-purchase process with "item" check purchase: transition/auto-cancel-from-disputed 1`] = `
 <a
-  class="itemCard"
+  class="emailRow"
   href="/review/id-purchase-AUTO_CANCEL_FROM_DISPUTED-sale"
 />
 `;
 
 exports[`InboxPage InboxItem: default-purchase process with "item" check purchase: transition/auto-complete 1`] = `
 <a
-  class="itemCard itemCardUnread"
+  class="emailRow emailRowUnread"
   href="/review/id-purchase-AUTO_COMPLETE-sale"
 />
 `;
 
 exports[`InboxPage InboxItem: default-purchase process with "item" check purchase: transition/auto-mark-received 1`] = `
 <a
-  class="itemCard"
+  class="emailRow"
   href="/review/id-purchase-AUTO_MARK_RECEIVED-sale"
 />
 `;
 
 exports[`InboxPage InboxItem: default-purchase process with "item" check purchase: transition/cancel 1`] = `
 <a
-  class="itemCard"
+  class="emailRow"
   href="/review/id-purchase-CANCEL-sale"
 />
 `;
 
 exports[`InboxPage InboxItem: default-purchase process with "item" check purchase: transition/cancel-from-disputed 1`] = `
 <a
-  class="itemCard"
+  class="emailRow"
   href="/review/id-purchase-CANCEL_FROM_DISPUTED-sale"
 />
 `;
 
 exports[`InboxPage InboxItem: default-purchase process with "item" check purchase: transition/confirm-payment 1`] = `
 <a
-  class="itemCard itemCardUnread"
+  class="emailRow emailRowUnread"
   href="/review/id-purchase-CONFIRM_PAYMENT-sale"
 >
   <div
@@ -686,126 +826,126 @@ exports[`InboxPage InboxItem: default-purchase process with "item" check purchas
 
 exports[`InboxPage InboxItem: default-purchase process with "item" check purchase: transition/dispute 1`] = `
 <a
-  class="itemCard itemCardUnread"
+  class="emailRow emailRowUnread"
   href="/review/id-purchase-DISPUTE-sale"
 />
 `;
 
 exports[`InboxPage InboxItem: default-purchase process with "item" check purchase: transition/expire-customer-review-period 1`] = `
 <a
-  class="itemCard"
+  class="emailRow"
   href="/review/id-purchase-EXPIRE_CUSTOMER_REVIEW_PERIOD-sale"
 />
 `;
 
 exports[`InboxPage InboxItem: default-purchase process with "item" check purchase: transition/expire-payment 1`] = `
 <a
-  class="itemCard"
+  class="emailRow"
   href="/review/id-purchase-EXPIRE_PAYMENT-sale"
 />
 `;
 
 exports[`InboxPage InboxItem: default-purchase process with "item" check purchase: transition/expire-provider-review-period 1`] = `
 <a
-  class="itemCard"
+  class="emailRow"
   href="/review/id-purchase-EXPIRE_PROVIDER_REVIEW_PERIOD-sale"
 />
 `;
 
 exports[`InboxPage InboxItem: default-purchase process with "item" check purchase: transition/expire-review-period 1`] = `
 <a
-  class="itemCard"
+  class="emailRow"
   href="/review/id-purchase-EXPIRE_REVIEW_PERIOD-sale"
 />
 `;
 
 exports[`InboxPage InboxItem: default-purchase process with "item" check purchase: transition/inquire 1`] = `
 <a
-  class="itemCard itemCardUnread"
+  class="emailRow emailRowUnread"
   href="/review/id-purchase-INQUIRE-sale"
 />
 `;
 
 exports[`InboxPage InboxItem: default-purchase process with "item" check purchase: transition/mark-delivered 1`] = `
 <a
-  class="itemCard"
+  class="emailRow"
   href="/review/id-purchase-MARK_DELIVERED-sale"
 />
 `;
 
 exports[`InboxPage InboxItem: default-purchase process with "item" check purchase: transition/mark-received 1`] = `
 <a
-  class="itemCard"
+  class="emailRow"
   href="/review/id-purchase-MARK_RECEIVED-sale"
 />
 `;
 
 exports[`InboxPage InboxItem: default-purchase process with "item" check purchase: transition/mark-received-from-disputed 1`] = `
 <a
-  class="itemCard"
+  class="emailRow"
   href="/review/id-purchase-MARK_RECEIVED_FROM_DISPUTED-sale"
 />
 `;
 
 exports[`InboxPage InboxItem: default-purchase process with "item" check purchase: transition/mark-received-from-purchased 1`] = `
 <a
-  class="itemCard"
+  class="emailRow"
   href="/review/id-purchase-MARK_RECEIVED_FROM_PURCHASED-sale"
 />
 `;
 
 exports[`InboxPage InboxItem: default-purchase process with "item" check purchase: transition/operator-dispute 1`] = `
 <a
-  class="itemCard itemCardUnread"
+  class="emailRow emailRowUnread"
   href="/review/id-purchase-OPERATOR_DISPUTE-sale"
 />
 `;
 
 exports[`InboxPage InboxItem: default-purchase process with "item" check purchase: transition/operator-mark-delivered 1`] = `
 <a
-  class="itemCard"
+  class="emailRow"
   href="/review/id-purchase-OPERATOR_MARK_DELIVERED-sale"
 />
 `;
 
 exports[`InboxPage InboxItem: default-purchase process with "item" check purchase: transition/request-payment 1`] = `
 <a
-  class="itemCard itemCardUnread"
+  class="emailRow emailRowUnread"
   href="/review/id-purchase-REQUEST_PAYMENT-sale"
 />
 `;
 
 exports[`InboxPage InboxItem: default-purchase process with "item" check purchase: transition/request-payment-after-inquiry 1`] = `
 <a
-  class="itemCard itemCardUnread"
+  class="emailRow emailRowUnread"
   href="/review/id-purchase-REQUEST_PAYMENT_AFTER_INQUIRY-sale"
 />
 `;
 
 exports[`InboxPage InboxItem: default-purchase process with "item" check purchase: transition/review-1-by-customer 1`] = `
 <a
-  class="itemCard itemCardUnread"
+  class="emailRow emailRowUnread"
   href="/review/id-purchase-REVIEW_1_BY_CUSTOMER-sale"
 />
 `;
 
 exports[`InboxPage InboxItem: default-purchase process with "item" check purchase: transition/review-1-by-provider 1`] = `
 <a
-  class="itemCard"
+  class="emailRow"
   href="/review/id-purchase-REVIEW_1_BY_PROVIDER-sale"
 />
 `;
 
 exports[`InboxPage InboxItem: default-purchase process with "item" check purchase: transition/review-2-by-customer 1`] = `
 <a
-  class="itemCard"
+  class="emailRow"
   href="/review/id-purchase-REVIEW_2_BY_CUSTOMER-sale"
 />
 `;
 
 exports[`InboxPage InboxItem: default-purchase process with "item" check purchase: transition/review-2-by-provider 1`] = `
 <a
-  class="itemCard"
+  class="emailRow"
   href="/review/id-purchase-REVIEW_2_BY_PROVIDER-sale"
 />
 `;

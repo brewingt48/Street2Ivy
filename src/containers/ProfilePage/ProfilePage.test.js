@@ -169,24 +169,19 @@ describe('ProfilePage', () => {
     expect(screen.getByText('ListingCard.price')).toBeInTheDocument();
   });
 
-  it('Check that review information is shown correctly', async () => {
-    let rendered = {};
+  // Street2Ivy: Reviews are hidden on profile page (hideReviews={true})
+  // so we verify that reviews are NOT rendered instead.
+  it('Check that reviews are hidden on profile page', async () => {
     await act(async () => {
-      rendered = render(<ProfilePage {...props} />, {
+      render(<ProfilePage {...props} />, {
         initialState: getInitialState(),
         config,
       });
     });
-    const { getByRole } = rendered;
 
-    expect(
-      getByRole('heading', { name: 'ProfilePage.reviewsFromMyCustomersTitle' })
-    ).toBeInTheDocument();
-
-    expect(screen.getByText('Awesome!')).toBeInTheDocument();
-    expect(screen.getByText('reviewerA display name')).toBeInTheDocument();
-    expect(screen.getByText('March 2024')).toBeInTheDocument();
-    expect(screen.getAllByTitle('3/5')).toHaveLength(2);
+    // Reviews should not be visible since hideReviews={true} in ProfilePage
+    expect(screen.queryByText('ProfilePage.reviewsFromMyCustomersTitle')).not.toBeInTheDocument();
+    expect(screen.queryByText('Awesome!')).not.toBeInTheDocument();
   });
 });
 

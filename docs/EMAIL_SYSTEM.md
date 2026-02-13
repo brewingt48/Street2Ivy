@@ -43,10 +43,13 @@ Each type has a professional HTML template and a plain-text fallback:
 | `application-received` | Student | Student submits application (confirmation) |
 | `application-accepted` | Student | Partner accepts application |
 | `application-declined` | Student | Partner declines application |
+| `application-withdrawn` | Corporate partner | Student withdraws application |
+| `invitation-declined` | Corporate partner | Student declines invitation |
+| `student-accepted-invite` | Corporate partner | Student accepts invitation |
 | `project-completed` | Student | Partner marks project complete |
 | `invite-received` | Student | Partner sends project invitation |
 | `assessment-received` | Student | Partner submits performance assessment |
-| `new-message` | Either | New message in transaction thread |
+| `new-message` | Either | New message in conversation thread (custom messaging) |
 
 ## How Emails Are Sent
 
@@ -104,7 +107,7 @@ Run the template test suite:
 ```bash
 node -e "
 const { renderEmailTemplate } = require('./server/services/emailTemplates');
-const types = ['new-application','application-received','application-accepted','application-declined','project-completed','invite-received','assessment-received','new-message'];
+const types = ['new-application','application-received','application-accepted','application-declined','application-withdrawn','invitation-declined','student-accepted-invite','project-completed','invite-received','assessment-received','new-message'];
 for (const t of types) {
   const html = renderEmailTemplate(t, 'Test', { studentName:'Test',companyName:'Test',projectTitle:'Test' });
   console.log(t, html ? '✓' : '✗', html?.length + ' chars');

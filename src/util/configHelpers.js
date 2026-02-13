@@ -1150,19 +1150,24 @@ const mergeListingConfig = (hostedConfig, defaultConfigs, categoriesInUse) => {
   const { listingTypes: defaultListingTypes, listingFields: defaultListingFields, ...rest } =
     defaultConfigs.listing || {};
 
-  // Street2Ivy: Always merge default listing types and fields so that local
-  // configuration (project listing type and fields) is always included
-  const mergedListingTypes = union(hostedListingTypes, defaultListingTypes, 'listingType');
+  // Street2Ivy: Use hosted listing types if available, otherwise fall back to defaults.
+  // The default config includes the "project" listing type for local development.
+  // In production, listing types come from the hosted Console assets.
+  const mergedListingTypes = hostedListingTypes.length > 0
+    ? hostedListingTypes
+    : defaultListingTypes;
 
   // Street2Ivy: Filter out free listing types (default-inquiry process)
-  // to only show the "project" listing type
+  // to only show the project listing type and any other non-inquiry types
   const listingTypes = mergedListingTypes.filter(lt => {
     const processAlias = lt.transactionType?.alias || '';
-    // Only include project listing type, exclude default-inquiry (free listings)
+    // Exclude default-inquiry (free listings) — Street2Ivy uses project applications instead
     return !processAlias.startsWith('default-inquiry');
   });
 
-  const listingFields = union(hostedListingFields, defaultListingFields, 'key');
+  const listingFields = hostedListingFields.length > 0
+    ? hostedListingFields
+    : defaultListingFields;
 
   const listingTypesInUse = listingTypes.map(lt => `${lt.listingType}`);
 
@@ -1176,6 +1181,7 @@ const mergeListingConfig = (hostedConfig, defaultConfigs, categoriesInUse) => {
 
 const mergeUserConfig = (hostedConfig, defaultConfigs) => {
   const hostedUserFields = restructureUserFields(hostedConfig?.userFields?.userFields);
+  const hostedUserTypes = hostedConfig?.userTypes?.userTypes || [];
 
   const {
     userFields: defaultUserFields,
@@ -1193,12 +1199,18 @@ const mergeUserConfig = (hostedConfig, defaultConfigs) => {
   // Merge user fields - local fields take precedence
   const userFields = union(hostedUserFields, defaultUserFields, 'key');
 
-  // Include all user types (including admin types) for field validation
+  // Include all user types (including admin types and hosted types) for field validation.
+  // Hosted user types are included so that hosted user fields referencing hosted user types
+  // are not rejected during validation (e.g., fields with userTypeIds: ['a', 'b', 'c']
+  // when hosted config defines user types 'a', 'b', 'c').
   const allUserTypesForValidation = defaultAllUserTypes || [
     ...userTypes,
     ...(defaultAdminUserTypes || []),
   ];
-  const userTypesInUse = allUserTypesForValidation.map(ut => `${ut.userType}`);
+  // Also include hosted user types so hosted field configs validate correctly
+  const hostedUserTypeIds = hostedUserTypes.map(ut => `${ut.userType}`);
+  const defaultUserTypeIds = allUserTypesForValidation.map(ut => `${ut.userType}`);
+  const userTypesInUse = [...new Set([...defaultUserTypeIds, ...hostedUserTypeIds])];
   return {
     userTypes: validUserTypes(userTypes),
     userFields: validUserFields(userFields, userTypesInUse),

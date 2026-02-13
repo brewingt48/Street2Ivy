@@ -329,9 +329,8 @@ describe('SearchPage', () => {
     );
 
     await waitFor(() => {
-      // Has main search in Topbar and it's a location search.
-      expect(getByPlaceholderText('TopbarSearchForm.placeholder')).toBeInTheDocument();
-      expect(screen.getByTestId('location-search')).toBeInTheDocument();
+      // Street2Ivy: Search form is intentionally hidden (showSearchForm = false in Topbar)
+      // so we skip topbar search assertions.
 
       // Has filter column
       expect(screen.getByTestId('filterColumnAside')).toBeInTheDocument();
@@ -422,9 +421,8 @@ describe('SearchPage', () => {
     });
 
     await waitFor(() => {
-      // Has main search in Topbar and it's a location search.
-      expect(getByPlaceholderText('TopbarSearchForm.placeholder')).toBeInTheDocument();
-      expect(screen.getByTestId('location-search')).toBeInTheDocument();
+      // Street2Ivy: Search form is intentionally hidden (showSearchForm = false in Topbar)
+      // so we skip topbar search assertions.
 
       // Does not have filter column
       expect(screen.queryByTestId('filterColumnAside')).not.toBeInTheDocument();

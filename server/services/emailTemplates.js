@@ -511,6 +511,63 @@ function studentAcceptedInvite(data) {
   });
 }
 
+/**
+ * APPLICATION_WITHDRAWN — sent to corporate partner when student withdraws their application
+ */
+function applicationWithdrawn(data) {
+  const subject = `Application Withdrawn - ${data.projectTitle}`;
+  const body = `
+    <td style="padding:32px;">
+      <h1 style="margin:0 0 8px 0;font-size:22px;color:#0f172a;font-weight:700;">Application Withdrawn</h1>
+      <p style="margin:0 0 4px 0;font-size:15px;color:#334155;">Hi ${escapeHtml(data.companyName)} Team,</p>
+      <p style="margin:0 0 24px 0;font-size:15px;color:#334155;line-height:1.6;"><strong>${escapeHtml(data.studentName)}</strong> has withdrawn their application for <strong>"${escapeHtml(data.projectTitle)}"</strong>.</p>
+
+      <!-- Info Card -->
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#F8FAFC;border:1px solid #E2E8F0;border-radius:8px;margin-bottom:24px;">
+        <tr>
+          <td style="padding:20px;">
+            <p style="margin:0;font-size:14px;color:#334155;line-height:1.5;">This application has been removed from your active applications list. No further action is needed from your end.</p>
+          </td>
+        </tr>
+      </table>
+
+      ${ctaButton('View Your Applications', `${getBaseUrl()}/inbox/received`)}
+    </td>`;
+
+  return emailShell(subject, body, {
+    preheader: `${data.studentName} withdrew their application for "${data.projectTitle}"`,
+  });
+}
+
+/**
+ * INVITATION_DECLINED — sent to corporate partner when student declines their invitation
+ */
+function invitationDeclined(data) {
+  const subject = `Invitation Declined - ${data.projectTitle}`;
+  const body = `
+    <td style="padding:32px;">
+      <h1 style="margin:0 0 8px 0;font-size:22px;color:#0f172a;font-weight:700;">Invitation Update</h1>
+      <p style="margin:0 0 4px 0;font-size:15px;color:#334155;">Hi ${escapeHtml(data.companyName)} Team,</p>
+      <p style="margin:0 0 24px 0;font-size:15px;color:#334155;line-height:1.6;"><strong>${escapeHtml(data.studentName)}</strong> has decided not to pursue the invitation to apply for <strong>"${escapeHtml(data.projectTitle)}"</strong> at this time.</p>
+
+      <!-- Encouragement Card -->
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#F8FAFC;border:1px solid #E2E8F0;border-radius:8px;margin-bottom:24px;">
+        <tr>
+          <td style="padding:20px;">
+            <p style="margin:0 0 8px 0;font-size:14px;color:#0f172a;font-weight:600;">What you can do next</p>
+            <p style="margin:0;font-size:14px;color:#334155;line-height:1.5;">There are many qualified students on Campus2Career. Browse student profiles and send invitations to find the right match for your project.</p>
+          </td>
+        </tr>
+      </table>
+
+      ${ctaButton('Browse Students', `${getBaseUrl()}/s?pub_userType=student`)}
+    </td>`;
+
+  return emailShell(subject, body, {
+    preheader: `${data.studentName} declined your invitation for "${data.projectTitle}"`,
+  });
+}
+
 // ─── Template Registry ───────────────────────────────────────────────────────
 
 /**
@@ -522,6 +579,8 @@ const EMAIL_TEMPLATES = {
   'application-received': applicationReceived,
   'application-accepted': applicationAccepted,
   'application-declined': applicationDeclined,
+  'application-withdrawn': applicationWithdrawn,
+  'invitation-declined': invitationDeclined,
   'project-completed': projectCompleted,
   'invite-received': inviteReceived,
   'assessment-received': assessmentReceived,

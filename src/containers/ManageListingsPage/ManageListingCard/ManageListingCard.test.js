@@ -27,7 +27,8 @@ const getConfig = listingTypes => {
 };
 
 describe('ManageListingCard', () => {
-  it('Inquiry (inquiry): no price', () => {
+  // Street2Ivy: Use project listing type instead of default-inquiry (which is filtered out)
+  it('Project listing: no price', () => {
     const listing = createOwnListing('listing-day', {
       title: 'the listing',
       description: 'Lorem ipsum',
@@ -35,8 +36,8 @@ describe('ManageListingCard', () => {
       availabilityPlan: null,
 
       publicData: {
-        listingType: 'free-inquiry',
-        transactionProcessAlias: 'default-inquiry/release-1',
+        listingType: 'project',
+        transactionProcessAlias: 'default-project-application/release-1',
         unitType: 'inquiry',
         amenities: ['dog_1'],
         location: {
@@ -48,10 +49,10 @@ describe('ManageListingCard', () => {
 
     const config = getConfig([
       {
-        id: 'free-inquiry',
+        id: 'project',
         transactionProcess: {
-          name: 'default-inquiry',
-          alias: 'default-inquiry/release-1',
+          name: 'default-project-application',
+          alias: 'default-project-application/release-1',
         },
         unitType: 'inquiry',
         defaultListingFields: {
@@ -86,7 +87,7 @@ describe('ManageListingCard', () => {
     expect(tree.queryByText('ManageListingCard.manageStock')).not.toBeInTheDocument();
   });
 
-  it('Inquiry (inquiry): with price', () => {
+  it('Project listing: with price', () => {
     const listing = createOwnListing('listing-day', {
       title: 'the listing',
       description: 'Lorem ipsum',
@@ -94,8 +95,8 @@ describe('ManageListingCard', () => {
       availabilityPlan: null,
 
       publicData: {
-        listingType: 'free-inquiry',
-        transactionProcessAlias: 'default-inquiry/release-1',
+        listingType: 'project',
+        transactionProcessAlias: 'default-project-application/release-1',
         unitType: 'inquiry',
         amenities: ['dog_1'],
         location: {
@@ -107,10 +108,10 @@ describe('ManageListingCard', () => {
 
     const config = getConfig([
       {
-        id: 'free-inquiry',
+        id: 'project',
         transactionProcess: {
-          name: 'default-inquiry',
-          alias: 'default-inquiry/release-1',
+          name: 'default-project-application',
+          alias: 'default-project-application/release-1',
         },
         unitType: 'inquiry',
         defaultListingFields: {
