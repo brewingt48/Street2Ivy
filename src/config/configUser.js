@@ -739,6 +739,11 @@ export const userTypes = [
   {
     userType: 'student',
     label: 'Student',
+    // Students are customers — they apply to projects, they don't receive applications
+    roles: {
+      customer: true,
+      provider: false,
+    },
     // Hide payment tabs - students don't handle payments through the platform
     accountLinksVisibility: {
       paymentMethods: false,
@@ -748,6 +753,11 @@ export const userTypes = [
   {
     userType: 'corporate-partner',
     label: 'Corporate Partner',
+    // Corporate partners are providers — they receive and review applications
+    roles: {
+      customer: false,
+      provider: true,
+    },
     // Hide payment tabs - corporate partners are billed offline
     accountLinksVisibility: {
       paymentMethods: false,
@@ -781,6 +791,10 @@ export const allUserTypes = [
   {
     userType: 'student',
     label: 'Student',
+    roles: {
+      customer: true,
+      provider: false,
+    },
     accountLinksVisibility: {
       paymentMethods: false,
       payoutDetails: false,
@@ -789,6 +803,10 @@ export const allUserTypes = [
   {
     userType: 'corporate-partner',
     label: 'Corporate Partner',
+    roles: {
+      customer: false,
+      provider: true,
+    },
     accountLinksVisibility: {
       paymentMethods: false,
       payoutDetails: false,
