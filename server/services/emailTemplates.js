@@ -148,7 +148,7 @@ function newApplication(data) {
   const body = `
     <td style="padding:32px;">
       <h1 style="margin:0 0 8px 0;font-size:22px;color:#0f172a;font-weight:700;">New Application Received</h1>
-      <p style="margin:0 0 24px 0;font-size:15px;color:#64748B;">A student has applied for your project.</p>
+      <p style="margin:0 0 24px 0;font-size:15px;color:#64748B;">A new applicant has applied for your project.</p>
 
       <!-- Project Card -->
       <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#F8FAFC;border:1px solid #E2E8F0;border-radius:8px;margin-bottom:24px;">
@@ -166,9 +166,9 @@ function newApplication(data) {
         </tr>
       </table>
 
-      ${ctaButton('Review Application', data.applicationUrl || `${getBaseUrl()}/inbox/sales`)}
+      ${ctaButton('Review Application', data.applicationUrl || `${getBaseUrl()}/inbox/received`)}
 
-      <p style="margin:16px 0 0 0;font-size:13px;color:#94A3B8;">Tip: Respond quickly to applications to attract top student talent.</p>
+      <p style="margin:16px 0 0 0;font-size:13px;color:#94A3B8;">Tip: Respond quickly to applications to attract top talent.</p>
     </td>`;
 
   return emailShell(subject, body, {
@@ -203,7 +203,7 @@ function applicationReceived(data) {
         </tr>
       </table>
 
-      ${ctaButton('Track Your Application', `${getBaseUrl()}/inbox/orders`)}
+      ${ctaButton('Track Your Application', `${getBaseUrl()}/inbox/applications`)}
 
       <p style="margin:16px 0 0 0;font-size:14px;color:#64748B;line-height:1.5;">While you wait, keep browsing other projects — applying to multiple opportunities increases your chances!</p>
     </td>`;
@@ -259,7 +259,7 @@ function applicationAccepted(data) {
               </tr>
             </table>
 
-            ${ctaButton('Go to Your Project', `${getBaseUrl()}/inbox/orders`)}
+            ${ctaButton('Go to Your Project', `${getBaseUrl()}/inbox/applications`)}
           </td>
         </tr>
       </table>
@@ -335,7 +335,7 @@ function projectCompleted(data) {
               </tr>
             </table>
 
-            ${ctaButton('View Project Details', `${getBaseUrl()}/inbox/orders`)}
+            ${ctaButton('View Project Details', `${getBaseUrl()}/inbox/applications`)}
           </td>
         </tr>
       </table>
@@ -388,7 +388,7 @@ function inviteReceived(data) {
               </tr>
             </table>
 
-            ${ctaButton('View Invitation', data.invitationUrl || `${getBaseUrl()}/inbox/orders`)}
+            ${ctaButton('View Invitation', data.invitationUrl || `${getBaseUrl()}/inbox/applications`)}
           </td>
         </tr>
       </table>
@@ -500,7 +500,7 @@ function studentAcceptedInvite(data) {
               </tr>
             </table>
 
-            ${ctaButton('View Your Applications', data.applicationUrl || `${getBaseUrl()}/inbox/sales`)}
+            ${ctaButton('View Your Applications', data.applicationUrl || `${getBaseUrl()}/inbox/received`)}
           </td>
         </tr>
       </table>

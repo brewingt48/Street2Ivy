@@ -2,7 +2,7 @@ const crypto = require('crypto');
 const db = require('../api-util/db');
 const { getSdk, handleError, serialize } = require('../api-util/sdk');
 const { getIntegrationSdkForTenant } = require('../api-util/integrationSdk');
-const { notifyTransactionStateChange } = require('../api-util/notifications');
+const { sendNotification, NOTIFICATION_TYPES, notifyTransactionStateChange } = require('../api-util/notifications');
 
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
@@ -166,37 +166,85 @@ const submitApplication = async (req, res) => {
     });
 
     // Send email/in-app notifications asynchronously (non-blocking)
-    if (transactionId) {
+    // Strategy: Send student confirmation directly (we have all the data).
+    // For corporate partner notification, try Integration SDK for their email.
+    const baseUrl = process.env.REACT_APP_MARKETPLACE_ROOT_URL || 'https://street2ivy.com';
+    const studentName = currentUser.attributes?.profile?.displayName || 'Student';
+    const studentEmail = currentUser.attributes?.email;
+    const studentUniversity = currentUser.attributes?.profile?.publicData?.university || 'Not specified';
+    const studentMajor = currentUser.attributes?.profile?.publicData?.major || 'Not specified';
+
+    // 1) Send confirmation to student (no Integration SDK needed)
+    try {
+      // Get listing title from the marketplace SDK (student has read access)
+      let listingTitle = 'your project';
       try {
-        const integrationSdk = getIntegrationSdkForTenant(req.tenant);
         const sharetribeSdk = require('sharetribe-flex-sdk');
         const { UUID } = sharetribeSdk.types;
-
-        const fullTxResponse = await integrationSdk.transactions.show({
-          id: new UUID(transactionId),
-          include: ['listing', 'customer', 'provider'],
-        });
-
-        const transaction = fullTxResponse.data.data;
-        const included = fullTxResponse.data.included || [];
-        const listing = included.find(i => i.type === 'listing');
-        const customer = included.find(
-          i => i.type === 'user' && i.id.uuid === transaction.relationships?.customer?.data?.id?.uuid
-        );
-        const provider = included.find(
-          i => i.type === 'user' && i.id.uuid === transaction.relationships?.provider?.data?.id?.uuid
-        );
-
-        await notifyTransactionStateChange({
-          transaction,
-          transition: 'transition/inquire-without-payment',
-          customer,
-          provider,
-          listing,
-        });
-      } catch (notifError) {
-        console.error('[ProjectApplications] Notification error:', notifError.message);
+        const listingResp = await sdk.listings.show({ id: new UUID(listingIdStr) });
+        listingTitle = listingResp.data.data.attributes?.title || listingTitle;
+      } catch (listErr) {
+        console.warn('[ProjectApplications] Could not fetch listing title:', listErr.message);
       }
+
+      await sendNotification({
+        type: NOTIFICATION_TYPES.APPLICATION_RECEIVED,
+        recipientId: studentId,
+        recipientEmail: studentEmail,
+        data: {
+          studentName,
+          projectTitle: listingTitle,
+          companyName: 'the corporate partner',
+          timeline: 'See project details',
+        },
+      });
+      console.log(`[ProjectApplications] Student confirmation sent to ${studentEmail}`);
+
+      // 2) Try to notify corporate partner (requires Integration SDK for provider email)
+      if (transactionId) {
+        try {
+          const integrationSdk = getIntegrationSdkForTenant(req.tenant);
+          const sharetribeSdk = require('sharetribe-flex-sdk');
+          const { UUID } = sharetribeSdk.types;
+
+          const fullTxResponse = await integrationSdk.transactions.show({
+            id: new UUID(transactionId),
+            include: ['listing', 'customer', 'provider'],
+          });
+
+          const included = fullTxResponse.data.included || [];
+          const provider = included.find(i => i.type === 'user' && i.id.uuid !== studentId);
+          const listing = included.find(i => i.type === 'listing');
+          const providerEmail = provider?.attributes?.email;
+          const providerName = provider?.attributes?.profile?.displayName || 'Team';
+          const providerListingTitle = listing?.attributes?.title || listingTitle;
+
+          if (providerEmail) {
+            await sendNotification({
+              type: NOTIFICATION_TYPES.NEW_APPLICATION,
+              recipientId: provider?.id?.uuid,
+              recipientEmail: providerEmail,
+              data: {
+                companyName: providerName,
+                projectTitle: providerListingTitle,
+                studentName,
+                studentUniversity,
+                studentMajor,
+                applicationUrl: `${baseUrl}/inbox/received`,
+              },
+            });
+            console.log(`[ProjectApplications] Corporate partner notified at ${providerEmail}`);
+          } else {
+            console.warn('[ProjectApplications] No provider email found — in-app notification only');
+          }
+        } catch (intSdkError) {
+          console.error('[ProjectApplications] Integration SDK error (corporate partner notification skipped):', intSdkError.message);
+          console.error('[ProjectApplications] Ensure SHARETRIBE_SDK_CLIENT_SECRET is set in Heroku config vars.');
+          console.error('[ProjectApplications] Get it from Sharetribe Console → Build → Applications.');
+        }
+      }
+    } catch (notifError) {
+      console.error('[ProjectApplications] Notification error:', notifError.message);
     }
   } catch (e) {
     console.error('Error submitting project application:', e);
@@ -429,6 +477,7 @@ const acceptApplication = async (req, res) => {
     });
 
     // Send email/in-app notification asynchronously
+    // Try Integration SDK for full transaction data; fall back to direct notification
     if (application.transactionId) {
       try {
         const integrationSdk = getIntegrationSdkForTenant(req.tenant);
@@ -454,8 +503,31 @@ const acceptApplication = async (req, res) => {
           provider,
           listing,
         });
-      } catch (notifError) {
-        console.error('[ProjectApplications] Accept notification error:', notifError.message);
+      } catch (intSdkError) {
+        console.error('[ProjectApplications] Integration SDK error on accept:', intSdkError.message);
+        console.error('[ProjectApplications] Ensure SHARETRIBE_SDK_CLIENT_SECRET is set.');
+        // Fallback: Send notification using what we know from SQLite application data
+        try {
+          let listingTitle = 'your project';
+          try {
+            const listingResp = await sdk.listings.show({ id: new UUID(application.listingId) });
+            listingTitle = listingResp.data.data.attributes?.title || listingTitle;
+          } catch (_) { /* non-critical */ }
+
+          await sendNotification({
+            type: NOTIFICATION_TYPES.APPLICATION_ACCEPTED,
+            recipientId: application.studentId,
+            recipientEmail: null, // We don't have the student's email without Integration SDK
+            data: {
+              studentName: 'there',
+              projectTitle: listingTitle,
+              companyName: 'the project team',
+            },
+          });
+          console.log('[ProjectApplications] Fallback accept notification stored (in-app only, no email)');
+        } catch (fallbackErr) {
+          console.error('[ProjectApplications] Fallback notification also failed:', fallbackErr.message);
+        }
       }
     }
   } catch (e) {
@@ -543,8 +615,33 @@ const declineApplication = async (req, res) => {
           provider,
           listing,
         });
-      } catch (notifError) {
-        console.error('[ProjectApplications] Decline notification error:', notifError.message);
+      } catch (intSdkError) {
+        console.error('[ProjectApplications] Integration SDK error on decline:', intSdkError.message);
+        console.error('[ProjectApplications] Ensure SHARETRIBE_SDK_CLIENT_SECRET is set.');
+        // Fallback: store in-app notification
+        try {
+          let listingTitle = 'your project';
+          try {
+            const listingResp = await sdk.listings.show({ id: new UUID(application.listingId) });
+            listingTitle = listingResp.data.data.attributes?.title || listingTitle;
+          } catch (_) { /* non-critical */ }
+
+          const baseUrl = process.env.REACT_APP_MARKETPLACE_ROOT_URL || 'https://street2ivy.com';
+          await sendNotification({
+            type: NOTIFICATION_TYPES.APPLICATION_DECLINED,
+            recipientId: application.studentId,
+            recipientEmail: null,
+            data: {
+              studentName: 'there',
+              projectTitle: listingTitle,
+              companyName: 'the project team',
+              browseProjectsUrl: `${baseUrl}/s`,
+            },
+          });
+          console.log('[ProjectApplications] Fallback decline notification stored (in-app only)');
+        } catch (fallbackErr) {
+          console.error('[ProjectApplications] Fallback notification also failed:', fallbackErr.message);
+        }
       }
     }
   } catch (e) {

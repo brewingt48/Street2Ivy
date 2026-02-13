@@ -11,10 +11,10 @@ import PreviewResolverPage from '../containers/PreviewResolverPage/PreviewResolv
 import { NamedRedirect } from '../components';
 import { connect } from 'react-redux';
 
-// Role-aware inbox redirect: students see "orders", corporate partners see "sales"
+// Role-aware inbox redirect: students see "applications", corporate partners see "received"
 const InboxRedirectComponent = ({ currentUser }) => {
   const userType = currentUser?.attributes?.profile?.publicData?.userType;
-  const tab = userType === 'student' ? 'orders' : 'sales';
+  const tab = userType === 'student' ? 'applications' : 'received';
   return <NamedRedirect name="InboxPage" params={{ tab }} />;
 };
 const InboxRedirect = connect(state => ({
@@ -295,7 +295,7 @@ const routeConfiguration = (layoutConfig, accessControlConfig) => {
       loadData: pageDataLoadingAPI.InboxPage.loadData,
     },
     {
-      path: '/order/:id',
+      path: '/application/:id',
       name: 'OrderDetailsPage',
       auth: true,
       authPage: 'LoginPage',
@@ -306,14 +306,15 @@ const routeConfiguration = (layoutConfig, accessControlConfig) => {
       setInitialValues: pageDataLoadingAPI.TransactionPage.setInitialValues,
     },
     {
-      path: '/order/:id/details',
+      // Legacy redirect: /order/:id → /application/:id
+      path: '/order/:id',
       name: 'OrderDetailsPageRedirect',
       auth: true,
       authPage: 'LoginPage',
       component: props => <NamedRedirect name="OrderDetailsPage" params={{ id: props.params?.id }} />,
     },
     {
-      path: '/sale/:id',
+      path: '/review/:id',
       name: 'SaleDetailsPage',
       auth: true,
       authPage: 'LoginPage',
@@ -322,7 +323,8 @@ const routeConfiguration = (layoutConfig, accessControlConfig) => {
       loadData: pageDataLoadingAPI.TransactionPage.loadData,
     },
     {
-      path: '/sale/:id/details',
+      // Legacy redirect: /sale/:id → /review/:id
+      path: '/sale/:id',
       name: 'SaleDetailsPageRedirect',
       auth: true,
       authPage: 'LoginPage',

@@ -494,7 +494,7 @@ export const TransactionPageComponent = props => {
   const isProviderBanned = !!provider?.attributes?.banned;
   const isProviderDeleted = !!provider?.attributes?.deleted;
 
-  // Redirect users with someone else's direct link to their own inbox/sales or inbox/orders page.
+  // Redirect users with someone else's direct link to their own inbox/received or inbox/applications page.
   const isDataAvailable =
     process &&
     currentUser &&
@@ -523,15 +523,15 @@ export const TransactionPageComponent = props => {
 
   if (isDataAvailable && isProviderRole && !isOwnSale) {
     // If the user's user type does not have a provider role set, redirect
-    // to 'orders' inbox tab. Otherwise, redirect to 'sales' tab.
-    const tab = !isProviderUserTypeRole ? 'orders' : 'sales';
+    // to 'applications' inbox tab. Otherwise, redirect to 'received' tab.
+    const tab = !isProviderUserTypeRole ? 'applications' : 'received';
     // eslint-disable-next-line no-console
     console.error('Tried to access a sale that was not owned by the current user');
     return <NamedRedirect name="InboxPage" params={{ tab }} />;
   } else if (isDataAvailable && isCustomerRole && !isOwnOrder) {
     // If the user's user type does not have a customer role set, redirect
-    // to 'sales' inbox tab. Otherwise, redirect to 'orders' tab.
-    const tab = !isCustomerUserTypeRole ? 'sales' : 'orders';
+    // to 'received' inbox tab. Otherwise, redirect to 'applications' tab.
+    const tab = !isCustomerUserTypeRole ? 'received' : 'applications';
     // eslint-disable-next-line no-console
     console.error('Tried to access an order that was not owned by the current user');
     return <NamedRedirect name="InboxPage" params={{ tab }} />;

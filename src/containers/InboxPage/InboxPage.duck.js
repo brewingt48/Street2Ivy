@@ -52,7 +52,12 @@ export default inboxPageSlice.reducer;
 const loadDataPayloadCreator = ({ params, search }, { dispatch, rejectWithValue, extra: sdk }) => {
   const { tab } = params;
 
+  // Map URL tab names to Sharetribe API filter values
+  // "applications" = student's view (customer/order), "received" = corporate partner's view (provider/sale)
   const onlyFilterValues = {
+    applications: 'order',
+    received: 'sale',
+    // Legacy tab names (for backward compatibility with old bookmarks)
     orders: 'order',
     sales: 'sale',
   };

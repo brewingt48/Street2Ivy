@@ -330,10 +330,14 @@ export const InboxPageComponent = props => {
     transactions,
   } = props;
   const { tab } = params;
-  const validTab = tab === 'orders' || tab === 'sales';
+  const validTab = tab === 'applications' || tab === 'received' || tab === 'orders' || tab === 'sales';
   if (!validTab) {
     return <NotFoundPage staticContext={props.staticContext} />;
   }
+
+  // Normalize legacy tab names → new names
+  const isApplicationsTab = tab === 'applications' || tab === 'orders';
+  const isReceivedTab = tab === 'received' || tab === 'sales';
 
   const { customer: isCustomerUserType, provider: isProviderUserType } = getCurrentUserTypeRoles(
     config,
@@ -366,11 +370,10 @@ export const InboxPageComponent = props => {
 
   const dashboardLink = getDashboardLink();
 
-  const isOrders = tab === 'orders';
   const hasNoResults = !fetchInProgress && transactions.length === 0 && !fetchOrdersOrSalesError;
   const ordersTitle = intl.formatMessage({ id: 'InboxPage.ordersTitle' });
   const salesTitle = intl.formatMessage({ id: 'InboxPage.salesTitle' });
-  const title = isOrders ? ordersTitle : salesTitle;
+  const title = isApplicationsTab ? ordersTitle : salesTitle;
   const search = parse(location.search);
 
   const pickType = lt => conf => conf.listingType === lt;
@@ -381,7 +384,7 @@ export const InboxPageComponent = props => {
     return foundConfig;
   };
   const toTxItem = tx => {
-    const transactionRole = isOrders ? TX_TRANSITION_ACTOR_CUSTOMER : TX_TRANSITION_ACTOR_PROVIDER;
+    const transactionRole = isApplicationsTab ? TX_TRANSITION_ACTOR_CUSTOMER : TX_TRANSITION_ACTOR_PROVIDER;
     let stateData = null;
     try {
       stateData = getStateData({ transaction: tx, transactionRole, intl });
@@ -415,17 +418,17 @@ export const InboxPageComponent = props => {
     ) : null;
   };
 
-  const hasOrderOrSaleTransactions = (tx, isOrdersTab, user) => {
-    return isOrdersTab
+  const hasOrderOrSaleTransactions = (tx, isAppTab, user) => {
+    return isAppTab
       ? user?.id && tx && tx.length > 0 && tx[0].customer.id.uuid === user?.id?.uuid
       : user?.id && tx && tx.length > 0 && tx[0].provider.id.uuid === user?.id?.uuid;
   };
   const hasTransactions =
-    !fetchInProgress && hasOrderOrSaleTransactions(transactions, isOrders, currentUser);
+    !fetchInProgress && hasOrderOrSaleTransactions(transactions, isApplicationsTab, currentUser);
 
   // Build tabs — only show both tabs if user has both roles
-  // Use role-aware labels instead of marketplace "orders/sales" language
-  const ordersTabMaybe = isCustomerUserType
+  // Use role-aware labels with education-appropriate tab names
+  const applicationsTabMaybe = isCustomerUserType
     ? [
         {
           text: (
@@ -436,16 +439,16 @@ export const InboxPageComponent = props => {
               ) : null}
             </span>
           ),
-          selected: isOrders,
+          selected: isApplicationsTab,
           linkProps: {
             name: 'InboxPage',
-            params: { tab: 'orders' },
+            params: { tab: 'applications' },
           },
         },
       ]
     : [];
 
-  const salesTabMaybe = isProviderUserType
+  const receivedTabMaybe = isProviderUserType
     ? [
         {
           text: (
@@ -456,16 +459,16 @@ export const InboxPageComponent = props => {
               ) : null}
             </span>
           ),
-          selected: !isOrders,
+          selected: isReceivedTab,
           linkProps: {
             name: 'InboxPage',
-            params: { tab: 'sales' },
+            params: { tab: 'received' },
           },
         },
       ]
     : [];
 
-  const tabs = [...ordersTabMaybe, ...salesTabMaybe];
+  const tabs = [...applicationsTabMaybe, ...receivedTabMaybe];
 
   return (
     <Page title={title} scrollingDisabled={scrollingDisabled}>
@@ -501,18 +504,18 @@ export const InboxPageComponent = props => {
         <div className={css.inboxHeader}>
           <div className={css.inboxHeaderInfo}>
             <h2 className={css.inboxHeaderTitle}>
-              {isStudent && isOrders
+              {isStudent && isApplicationsTab
                 ? intl.formatMessage({ id: 'InboxPage.studentOrdersHeading' })
-                : isCorporatePartner && !isOrders
+                : isCorporatePartner && !isApplicationsTab
                 ? intl.formatMessage({ id: 'InboxPage.corporateSalesHeading' })
-                : intl.formatMessage({ id: isOrders ? 'InboxPage.ordersHeading' : 'InboxPage.salesHeading' })}
+                : intl.formatMessage({ id: isApplicationsTab ? 'InboxPage.ordersHeading' : 'InboxPage.salesHeading' })}
             </h2>
             <p className={css.inboxHeaderSubtitle}>
-              {isStudent && isOrders
+              {isStudent && isApplicationsTab
                 ? intl.formatMessage({ id: 'InboxPage.studentOrdersSubtitle' })
-                : isCorporatePartner && !isOrders
+                : isCorporatePartner && !isApplicationsTab
                 ? intl.formatMessage({ id: 'InboxPage.corporateSalesSubtitle' })
-                : intl.formatMessage({ id: isOrders ? 'InboxPage.ordersSubtitle' : 'InboxPage.salesSubtitle' })}
+                : intl.formatMessage({ id: isApplicationsTab ? 'InboxPage.ordersSubtitle' : 'InboxPage.salesSubtitle' })}
             </p>
           </div>
           <InboxSearchForm
@@ -560,12 +563,12 @@ export const InboxPageComponent = props => {
               <div className={css.emptyStateIcon}>📬</div>
               <h3 className={css.emptyStateTitle}>
                 <FormattedMessage
-                  id={isOrders ? 'InboxPage.noOrdersTitle' : 'InboxPage.noSalesTitle'}
+                  id={isApplicationsTab ? 'InboxPage.noOrdersTitle' : 'InboxPage.noSalesTitle'}
                 />
               </h3>
               <p className={css.emptyStateText}>
                 <FormattedMessage
-                  id={isOrders ? 'InboxPage.noOrdersFound' : 'InboxPage.noSalesFound'}
+                  id={isApplicationsTab ? 'InboxPage.noOrdersFound' : 'InboxPage.noSalesFound'}
                 />
               </p>
             </div>

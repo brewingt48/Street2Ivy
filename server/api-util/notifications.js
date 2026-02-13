@@ -1,5 +1,5 @@
 /**
- * Email Notification Service for Street2Ivy
+ * Email Notification Service for Campus2Career
  *
  * This module handles sending email notifications for key platform events:
  * - Transaction state changes (application received, accepted, declined, completed)
@@ -48,7 +48,7 @@ const NOTIFICATION_TEMPLATES = {
       You can track your application status in your dashboard.
 
       Best of luck!
-      The Street2Ivy Team
+      The Campus2Career Team
     `,
   },
   [NOTIFICATION_TYPES.APPLICATION_ACCEPTED]: {
@@ -68,7 +68,7 @@ const NOTIFICATION_TEMPLATES = {
       Log in to your dashboard to get started.
 
       Congratulations!
-      The Street2Ivy Team
+      The Campus2Career Team
     `,
   },
   [NOTIFICATION_TYPES.APPLICATION_DECLINED]: {
@@ -85,7 +85,7 @@ const NOTIFICATION_TEMPLATES = {
       Browse more projects: {browseProjectsUrl}
 
       Keep applying and building your experience!
-      The Street2Ivy Team
+      The Campus2Career Team
     `,
   },
   [NOTIFICATION_TYPES.PROJECT_COMPLETED]: {
@@ -103,7 +103,7 @@ const NOTIFICATION_TEMPLATES = {
       - Update your profile with your new skills
 
       Keep up the great work!
-      The Street2Ivy Team
+      The Campus2Career Team
     `,
   },
   [NOTIFICATION_TYPES.INVITE_RECEIVED]: {
@@ -123,7 +123,7 @@ const NOTIFICATION_TEMPLATES = {
       View and respond to this invitation: {invitationUrl}
 
       Good luck!
-      The Street2Ivy Team
+      The Campus2Career Team
     `,
   },
   [NOTIFICATION_TYPES.NEW_MESSAGE]: {
@@ -137,7 +137,7 @@ const NOTIFICATION_TEMPLATES = {
 
       View full conversation: {conversationUrl}
 
-      The Street2Ivy Team
+      The Campus2Career Team
     `,
   },
   [NOTIFICATION_TYPES.NEW_APPLICATION]: {
@@ -145,7 +145,7 @@ const NOTIFICATION_TEMPLATES = {
     getContent: (data) => `
       Hi {companyName} Team,
 
-      A new student has applied for your project "{projectTitle}"!
+      A new applicant has applied for your project "{projectTitle}"!
 
       Applicant: {studentName}
       University: {studentUniversity}
@@ -153,7 +153,7 @@ const NOTIFICATION_TEMPLATES = {
 
       Review their application: {applicationUrl}
 
-      The Street2Ivy Team
+      The Campus2Career Team
     `,
   },
   [NOTIFICATION_TYPES.ASSESSMENT_RECEIVED]: {
@@ -168,7 +168,7 @@ const NOTIFICATION_TEMPLATES = {
       View your assessment: {assessmentUrl}
 
       Keep building your experience!
-      The Street2Ivy Team
+      The Campus2Career Team
     `,
   },
   [NOTIFICATION_TYPES.STUDENT_ACCEPTED_INVITE]: {
@@ -339,7 +339,7 @@ async function notifyTransactionStateChange({
           studentName: customerName,
           studentUniversity: customer?.attributes?.profile?.publicData?.university || 'Not specified',
           studentMajor: customer?.attributes?.profile?.publicData?.major || 'Not specified',
-          applicationUrl: `${baseUrl}/inbox/sales`,
+          applicationUrl: `${baseUrl}/inbox/received`,
         },
       });
 

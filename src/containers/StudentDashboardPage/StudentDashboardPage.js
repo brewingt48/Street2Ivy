@@ -907,7 +907,7 @@ const StudentDashboardPageComponent = props => {
               <span className={css.tabIcon}>📚</span>
               Completed
             </button>
-            <NamedLink name="InboxPage" params={{ tab: 'orders' }} className={css.tabLink} title="View your messages, reviews, and application conversations">
+            <NamedLink name="InboxPage" params={{ tab: 'applications' }} className={css.tabLink} title="View your messages, reviews, and application conversations">
               <span className={css.tabIcon}>💬</span>
               My Inbox
             </NamedLink>
@@ -973,7 +973,7 @@ const StudentDashboardPageComponent = props => {
                   <p className={css.inboxLinkDescription}>
                     View your submitted applications, messages with corporate partners, and reviews — all in your Inbox.
                   </p>
-                  <NamedLink name="InboxPage" params={{ tab: 'orders' }} className={css.inboxLinkButton}>
+                  <NamedLink name="InboxPage" params={{ tab: 'applications' }} className={css.inboxLinkButton}>
                     Open My Inbox →
                   </NamedLink>
                 </div>

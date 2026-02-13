@@ -128,6 +128,10 @@ module.exports = (req, res) => {
       } catch (notifError) {
         // Non-critical: notification failure should not affect the transition response
         console.error('[TransactionTransition] Notification error:', notifError.message);
+        if (notifError.message?.includes('client secret') || notifError.message?.includes('CLIENT_SECRET')) {
+          console.error('[TransactionTransition] ⚠ SHARETRIBE_SDK_CLIENT_SECRET is not set. Email notifications require this env var.');
+          console.error('[TransactionTransition] Get it from Sharetribe Console → Build → Applications.');
+        }
       }
     })
     .catch(e => {

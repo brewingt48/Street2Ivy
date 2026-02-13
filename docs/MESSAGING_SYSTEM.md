@@ -5,7 +5,7 @@ Campus2Career's messaging system is built on Sharetribe's transaction-based mess
 ## Architecture
 
 ```
-InboxPage (/inbox/orders or /inbox/sales)
+InboxPage (/inbox/applications or /inbox/received)
   └─ InboxItem (email-client-style card per transaction)
        └─ NamedLink → TransactionPage
             ├─ ActivityFeed (messages + transitions)
@@ -17,7 +17,7 @@ InboxPage (/inbox/orders or /inbox/sales)
 
 | File | Purpose |
 |------|---------|
-| `src/containers/InboxPage/InboxPage.js` | Email-style inbox with tabs for orders/sales |
+| `src/containers/InboxPage/InboxPage.js` | Email-style inbox with tabs for applications/received |
 | `src/containers/InboxPage/InboxPage.duck.js` | Redux state — fetches transactions list |
 | `src/containers/InboxPage/InboxPage.stateData.js` | Resolves transaction state for display |
 | `src/containers/InboxPage/InboxSearchForm/` | Sort/filter controls |
@@ -27,19 +27,30 @@ InboxPage (/inbox/orders or /inbox/sales)
 | `src/containers/TransactionPage/SendMessageForm/` | Message composition form |
 | `src/containers/TransactionPage/TransactionPanel/` | Main panel with all sections |
 
+## URL Structure
+
+| URL | Who sees it | Purpose |
+|-----|------------|---------|
+| `/inbox/applications` | Students | "My Applications" — track submitted applications |
+| `/inbox/received` | Corporate Partners | "Applications" — review received applications |
+| `/application/:id` | Students | View transaction details as applicant |
+| `/review/:id` | Corporate Partners | Review application, accept/decline, message |
+
+Legacy URLs (`/inbox/orders`, `/inbox/sales`, `/order/:id`, `/sale/:id`) redirect to the new paths.
+
 ## User Flows
 
 ### Student (Customer) Flow
 
 1. **Apply to project** → Creates transaction with `transition/inquire-without-payment`
-2. **View inbox** → `/inbox/orders` shows "My Applications" tab
+2. **View inbox** → `/inbox/applications` shows "My Applications" tab
 3. **Click transaction** → Opens TransactionPage with full conversation
 4. **Send messages** → Uses SendMessageForm in TransactionPage
 5. **Receive updates** → Status badges update automatically (Applied → Accepted → Completed)
 
 ### Corporate Partner (Provider) Flow
 
-1. **Receive application** → Transaction appears in `/inbox/sales` as "Applications" tab
+1. **Receive application** → Transaction appears in `/inbox/received` as "Applications" tab
 2. **Review application** → TransactionPage shows ApplicationDetailSection (skills, GPA, resume, etc.)
 3. **Accept/Decline** → Action buttons in TransactionPage trigger transitions
 4. **Communicate** → Send messages through the transaction thread
@@ -97,6 +108,6 @@ The following components were removed in favor of the Inbox/TransactionPage syst
 - `MessageCenter` (was in StudentDashboardPage) — replaced by InboxPage
 - `MessageDetailModal` (was in StudentDashboardPage) — replaced by TransactionPage
 - `ReviewsPanel` (was in both dashboards) — replaced by TransactionPage ReviewModal
-- `ApplicationsPage` inline accept/decline — redirects to `/inbox/sales`
+- `ApplicationsPage` inline accept/decline — redirects to `/inbox/received`
 
 Dashboards now link to the Inbox rather than embedding their own messaging/review UIs.

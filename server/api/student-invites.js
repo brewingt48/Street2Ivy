@@ -97,15 +97,14 @@ const acceptInvite = async (req, res) => {
     try {
       const studentName = currentUser.attributes?.profile?.displayName || 'A student';
       const baseUrl = process.env.REACT_APP_MARKETPLACE_ROOT_URL || 'https://street2ivy.com';
-
-      // Look up the corporate partner's email via Integration SDK
-      const integrationSdk = getIntegrationSdkForTenant(req.tenant);
       let providerEmail = null;
       let providerName = 'Team';
       let projectTitle = invite.projectTitle || 'your project';
 
+      // Try Integration SDK for corporate partner's email
       if (invite.corporatePartnerId) {
         try {
+          const integrationSdk = getIntegrationSdkForTenant(req.tenant);
           const sharetribeSdk = require('sharetribe-flex-sdk');
           const { UUID } = sharetribeSdk.types;
           const userResponse = await integrationSdk.users.show({
@@ -115,12 +114,14 @@ const acceptInvite = async (req, res) => {
           providerName = userResponse.data.data.attributes?.profile?.displayName || 'Team';
         } catch (userErr) {
           console.error('[StudentInvites] Could not fetch corporate partner:', userErr.message);
+          console.error('[StudentInvites] Ensure SHARETRIBE_SDK_CLIENT_SECRET is set in Heroku config vars.');
         }
       }
 
       // Fetch listing title if we have a listingId but no projectTitle
       if (invite.listingId && (!invite.projectTitle || invite.projectTitle === 'your project')) {
         try {
+          const integrationSdk = getIntegrationSdkForTenant(req.tenant);
           const sharetribeSdk = require('sharetribe-flex-sdk');
           const { UUID } = sharetribeSdk.types;
           const listingResponse = await integrationSdk.listings.show({
@@ -128,7 +129,7 @@ const acceptInvite = async (req, res) => {
           });
           projectTitle = listingResponse.data.data.attributes?.title || projectTitle;
         } catch (listErr) {
-          // Non-critical
+          // Non-critical — use invite's projectTitle
         }
       }
 
@@ -140,9 +141,10 @@ const acceptInvite = async (req, res) => {
           companyName: providerName,
           studentName,
           projectTitle,
-          applicationUrl: `${baseUrl}/inbox/sales`,
+          applicationUrl: `${baseUrl}/inbox/received`,
         },
       });
+      console.log(`[StudentInvites] Invite acceptance notification sent${providerEmail ? ` to ${providerEmail}` : ' (in-app only, no email)'}`);
     } catch (notifError) {
       console.error('[StudentInvites] Accept notification error:', notifError.message);
     }

@@ -14,7 +14,7 @@ describe('InboxSearchForm', () => {
         onSubmit={() => {}}
         onSelect={() => {}}
         intl={fakeIntl}
-        tab={'orders'}
+        tab={'applications'}
         routeConfiguration={{}}
         history={{}}
       />

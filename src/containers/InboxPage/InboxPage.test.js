@@ -140,7 +140,7 @@ describe('InboxPage', () => {
 
       const ordersProps = {
         params: {
-          tab: 'orders',
+          tab: 'applications',
         },
         scrollingDisabled: false,
         onManageDisableScrolling: noop,
@@ -156,12 +156,12 @@ describe('InboxPage', () => {
         // Has links to orders tab
         const ordersTabTitle = screen.getByRole('link', { name: 'InboxPage.ordersTabTitle' });
         expect(ordersTabTitle).toBeInTheDocument();
-        expect(ordersTabTitle.getAttribute('href')).toContain('/inbox/orders');
+        expect(ordersTabTitle.getAttribute('href')).toContain('/inbox/applications');
 
         // Has links to sales tab
         const salesTabTitle = screen.getByRole('link', { name: 'InboxPage.salesTabTitle' });
         expect(salesTabTitle).toBeInTheDocument();
-        expect(salesTabTitle.getAttribute('href')).toContain('/inbox/sales');
+        expect(salesTabTitle.getAttribute('href')).toContain('/inbox/received');
 
         // Has 2 items
         const items = screen.queryAllByRole('link', { name: /listing1/i });
@@ -237,7 +237,7 @@ describe('InboxPage', () => {
 
       const salesProps = {
         params: {
-          tab: 'sales',
+          tab: 'received',
         },
         scrollingDisabled: false,
         onManageDisableScrolling: noop,
@@ -253,12 +253,12 @@ describe('InboxPage', () => {
         // Has links to orders tab
         const ordersTabTitle = screen.getByRole('link', { name: 'InboxPage.ordersTabTitle' });
         expect(ordersTabTitle).toBeInTheDocument();
-        expect(ordersTabTitle.getAttribute('href')).toContain('/inbox/orders');
+        expect(ordersTabTitle.getAttribute('href')).toContain('/inbox/applications');
 
         // Has links to sales tab
         const salesTabTitle = screen.getByRole('link', { name: 'InboxPage.salesTabTitle' });
         expect(salesTabTitle).toBeInTheDocument();
-        expect(salesTabTitle.getAttribute('href')).toContain('/inbox/sales');
+        expect(salesTabTitle.getAttribute('href')).toContain('/inbox/received');
 
         // Has 2 items
         const items = screen.queryAllByRole('link', { name: /listing1/i });

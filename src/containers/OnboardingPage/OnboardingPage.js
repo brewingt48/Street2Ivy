@@ -373,7 +373,7 @@ const OnboardingPageComponent = props => {
 
             {/* Skip Link */}
             <div className={css.skipSection}>
-              <NamedLink name="InboxPage" params={{ tab: 'orders' }} className={css.skipLink}>
+              <NamedLink name="InboxPage" params={{ tab: 'applications' }} className={css.skipLink}>
                 <FormattedMessage id="OnboardingPage.skipToInbox" />
               </NamedLink>
             </div>

@@ -436,6 +436,21 @@ if (require.main === module) {
     } catch (schedulerErr) {
       console.error('[Scheduler] Failed to start deadline expiration scheduler:', schedulerErr);
     }
+
+    // ─── Email & Notification Diagnostics ───────────────────────────
+    const { isEmailEnabled } = require('./services/email');
+    const hasMailgunKey = !!process.env.MAILGUN_API_KEY;
+    const hasMailgunDomain = !!process.env.MAILGUN_DOMAIN;
+    const hasIntegrationSecret = !!(process.env.SHARETRIBE_INTEGRATION_API_CLIENT_SECRET || process.env.SHARETRIBE_SDK_CLIENT_SECRET);
+    const emailEnabled = isEmailEnabled();
+
+    console.log('\n========== EMAIL & NOTIFICATION STATUS ==========');
+    console.log(`  Mailgun API Key:     ${hasMailgunKey ? '✓ Set' : '✗ MISSING — emails will not send'}`);
+    console.log(`  Mailgun Domain:      ${hasMailgunDomain ? `✓ ${process.env.MAILGUN_DOMAIN}` : '✗ MISSING — emails will not send'}`);
+    console.log(`  Email Enabled:       ${emailEnabled ? '✓ Yes' : '✗ No (check MAILGUN_API_KEY, MAILGUN_DOMAIN, EMAIL_ENABLED)'}`);
+    console.log(`  Integration SDK:     ${hasIntegrationSecret ? '✓ Client secret set' : '✗ MISSING — user email lookups will fail'}`);
+    console.log(`  From Address:        ${process.env.MAILGUN_FROM_NAME || 'Campus2Career'} <${process.env.MAILGUN_FROM_EMAIL || `noreply@${process.env.MAILGUN_DOMAIN || 'street2ivy.com'}`}>`);
+    console.log('===================================================\n');
   });
 
   // Graceful shutdown:

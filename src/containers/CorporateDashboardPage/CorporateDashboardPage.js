@@ -521,12 +521,12 @@ export const CorporateDashboardPageComponent = props => {
     },
     {
       id: 'review-applicants',
-      label: 'Review student applications',
+      label: 'Review applications',
       description: hasReceivedApplication
-        ? 'Review and manage student applications in your Inbox'
-        : 'No applications yet - search for students to invite',
+        ? 'Review and manage applications in your Inbox'
+        : 'No applications yet - search for applicants to invite',
       completed: hasReceivedApplication,
-      link: { name: 'InboxPage', params: { tab: 'sales' } },
+      link: { name: 'InboxPage', params: { tab: 'received' } },
     },
     {
       id: 'search-students',
@@ -537,10 +537,10 @@ export const CorporateDashboardPageComponent = props => {
     },
     {
       id: 'accept-student',
-      label: 'Accept a student for a project',
-      description: 'Connect with talented students for real project work',
+      label: 'Accept an applicant for a project',
+      description: 'Connect with talented applicants for real project work',
       completed: hasAcceptedStudent,
-      link: hasAcceptedStudent ? undefined : { name: 'InboxPage', params: { tab: 'sales' } },
+      link: hasAcceptedStudent ? undefined : { name: 'InboxPage', params: { tab: 'received' } },
     },
   ];
 
@@ -813,12 +813,12 @@ export const CorporateDashboardPageComponent = props => {
             <div className={css.applicationsSummaryCard}>
               <div className={css.applicationsSummaryContent}>
                 <div className={css.applicationsSummaryInfo}>
-                  <h3 className={css.sectionTitle}>Student Applications</h3>
+                  <h3 className={css.sectionTitle}>Applications</h3>
                   <p className={css.sectionDescription}>
-                    Review applications, accept or decline students, message them, and leave reviews — all in your Inbox.
+                    Review applications, accept or decline applicants, message them, and leave reviews — all in your Inbox.
                   </p>
                 </div>
-                <NamedLink name="InboxPage" params={{ tab: 'sales' }} className={css.viewApplicationsButton}>
+                <NamedLink name="InboxPage" params={{ tab: 'received' }} className={css.viewApplicationsButton}>
                   Open Inbox →
                 </NamedLink>
               </div>

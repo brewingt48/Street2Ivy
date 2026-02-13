@@ -54,7 +54,7 @@ const AccessDeniedView = ({ reason, depositConfirmed, transactionState }) => {
       <div className={css.accessIcon}>{icon}</div>
       <h2>{title}</h2>
       <p>{message}</p>
-      <NamedLink name="InboxPage" params={{ tab: 'orders' }} className={css.backButton}>
+      <NamedLink name="InboxPage" params={{ tab: 'applications' }} className={css.backButton}>
         <FormattedMessage id="ProjectWorkspacePage.backToInbox" />
       </NamedLink>
     </div>
@@ -612,7 +612,7 @@ const ProjectWorkspacePageComponent = props => {
           <div className={css.accessDenied}>
             <h2>Unable to Load Project Details</h2>
             <p>There was an error loading the project details. Please try again later.</p>
-            <NamedLink name="InboxPage" params={{ tab: 'orders' }} className={css.backButton}>
+            <NamedLink name="InboxPage" params={{ tab: 'applications' }} className={css.backButton}>
               <FormattedMessage id="ProjectWorkspacePage.backToInbox" />
             </NamedLink>
           </div>
