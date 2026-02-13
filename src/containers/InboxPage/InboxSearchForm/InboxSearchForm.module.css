@@ -4,12 +4,12 @@
   margin-bottom: 24px;
 }
 
-.sortyByWrapper {
+.sortByWrapper {
   display: inline-flex;
   margin-left: auto;
 }
 
-.sortyBy {
+.sortBy {
   composes: marketplaceSmallFontStyles from global;
   font-weight: var(--fontWeightRegular);
   padding: 8px 8px 8px 0;

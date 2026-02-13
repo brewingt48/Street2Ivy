@@ -52,8 +52,8 @@ const MainPanelHeader = props => {
           </span>
         </h1>
         {isSortByActive ? (
-          <div className={css.sortyByWrapper}>
-            <span className={css.sortyBy}>
+          <div className={css.sortByWrapper}>
+            <span className={css.sortBy}>
               <FormattedMessage id="MainPanelHeader.sortBy" />
             </span>
             {sortByComponent}

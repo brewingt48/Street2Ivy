@@ -60,7 +60,7 @@ import css from './InboxPage.module.css';
 const INBOX_PAGE_SIZE = 10;
 
 // Format a timestamp into a human-readable relative time (e.g. "2h ago", "3d ago")
-const formatRelativeTime = dateString => {
+const formatRelativeTime = (dateString, intl) => {
   if (!dateString) return '';
   const date = new Date(dateString);
   const now = new Date();
@@ -69,11 +69,11 @@ const formatRelativeTime = dateString => {
   const diffHours = Math.floor(diffMs / 3600000);
   const diffDays = Math.floor(diffMs / 86400000);
 
-  if (diffMins < 1) return 'Just now';
-  if (diffMins < 60) return `${diffMins}m ago`;
-  if (diffHours < 24) return `${diffHours}h ago`;
-  if (diffDays < 7) return `${diffDays}d ago`;
-  if (diffDays < 30) return `${Math.floor(diffDays / 7)}w ago`;
+  if (diffMins < 1) return intl.formatMessage({ id: 'InboxPage.timeJustNow' });
+  if (diffMins < 60) return intl.formatMessage({ id: 'InboxPage.timeMinutesAgo' }, { minutes: diffMins });
+  if (diffHours < 24) return intl.formatMessage({ id: 'InboxPage.timeHoursAgo' }, { hours: diffHours });
+  if (diffDays < 7) return intl.formatMessage({ id: 'InboxPage.timeDaysAgo' }, { days: diffDays });
+  if (diffDays < 30) return intl.formatMessage({ id: 'InboxPage.timeWeeksAgo' }, { weeks: Math.floor(diffDays / 7) });
   return date.toLocaleDateString([], { month: 'short', day: 'numeric' });
 };
 
@@ -216,18 +216,18 @@ export const InboxItem = props => {
 
   // Format relative time for the transaction
   const lastTransitionedAt = tx.attributes?.lastTransitionedAt;
-  const timeAgo = lastTransitionedAt ? formatRelativeTime(lastTransitionedAt) : '';
+  const timeAgo = lastTransitionedAt ? formatRelativeTime(lastTransitionedAt, intl) : '';
 
   // Generate an email-like preview snippet based on state
   const getPreviewSnippet = () => {
     if (processName === 'default-project-application') {
-      if (processState === 'applied' && !isCustomer) return 'New application received — tap to review';
-      if (processState === 'applied' && isCustomer) return 'Application submitted — waiting for response';
-      if (processState === 'accepted' && isCustomer) return 'Congratulations! Your application was accepted';
-      if (processState === 'accepted' && !isCustomer) return 'You accepted this application';
-      if (processState === 'declined') return 'This application was declined';
-      if (processState === 'completed') return 'Project completed — leave a review';
-      if (processState?.includes('reviewed')) return 'Review submitted';
+      if (processState === 'applied' && !isCustomer) return intl.formatMessage({ id: 'InboxPage.previewAppliedProvider' });
+      if (processState === 'applied' && isCustomer) return intl.formatMessage({ id: 'InboxPage.previewAppliedCustomer' });
+      if (processState === 'accepted' && isCustomer) return intl.formatMessage({ id: 'InboxPage.previewAcceptedCustomer' });
+      if (processState === 'accepted' && !isCustomer) return intl.formatMessage({ id: 'InboxPage.previewAcceptedProvider' });
+      if (processState === 'declined') return intl.formatMessage({ id: 'InboxPage.previewDeclined' });
+      if (processState === 'completed') return intl.formatMessage({ id: 'InboxPage.previewCompleted' });
+      if (processState?.includes('reviewed')) return intl.formatMessage({ id: 'InboxPage.previewReviewed' });
     }
     return null;
   };
@@ -430,7 +430,7 @@ export const InboxPageComponent = props => {
         {
           text: (
             <span>
-              {isStudent ? 'My Applications' : <FormattedMessage id="InboxPage.ordersTabTitle" />}
+              {isStudent ? <FormattedMessage id="InboxPage.studentOrdersTab" /> : <FormattedMessage id="InboxPage.ordersTabTitle" />}
               {customerNotificationCount > 0 ? (
                 <NotificationBadge count={customerNotificationCount} />
               ) : null}
@@ -450,7 +450,7 @@ export const InboxPageComponent = props => {
         {
           text: (
             <span>
-              {isCorporatePartner ? 'Applications' : <FormattedMessage id="InboxPage.salesTabTitle" />}
+              {isCorporatePartner ? <FormattedMessage id="InboxPage.corporateSalesTab" /> : <FormattedMessage id="InboxPage.salesTabTitle" />}
               {providerNotificationCount > 0 ? (
                 <NotificationBadge count={providerNotificationCount} />
               ) : null}
@@ -502,16 +502,16 @@ export const InboxPageComponent = props => {
           <div className={css.inboxHeaderInfo}>
             <h2 className={css.inboxHeaderTitle}>
               {isStudent && isOrders
-                ? 'My Applications & Messages'
+                ? intl.formatMessage({ id: 'InboxPage.studentOrdersHeading' })
                 : isCorporatePartner && !isOrders
-                ? 'Student Applications & Messages'
+                ? intl.formatMessage({ id: 'InboxPage.corporateSalesHeading' })
                 : intl.formatMessage({ id: isOrders ? 'InboxPage.ordersHeading' : 'InboxPage.salesHeading' })}
             </h2>
             <p className={css.inboxHeaderSubtitle}>
               {isStudent && isOrders
-                ? 'Track your project applications, communicate with partners, and leave reviews'
+                ? intl.formatMessage({ id: 'InboxPage.studentOrdersSubtitle' })
                 : isCorporatePartner && !isOrders
-                ? 'Review student applications, accept or decline, and communicate with students'
+                ? intl.formatMessage({ id: 'InboxPage.corporateSalesSubtitle' })
                 : intl.formatMessage({ id: isOrders ? 'InboxPage.ordersSubtitle' : 'InboxPage.salesSubtitle' })}
             </p>
           </div>
@@ -528,9 +528,11 @@ export const InboxPageComponent = props => {
         {/* Message count bar */}
         {!fetchInProgress && transactions.length > 0 && (
           <div className={css.inboxCount}>
-            {transactions.length} {transactions.length === 1 ? 'message' : 'messages'}
+            {intl.formatMessage({ id: 'InboxPage.messageCount' }, { count: transactions.length })}
             {pagination?.totalItems > INBOX_PAGE_SIZE && (
-              <span className={css.inboxCountTotal}> of {pagination.totalItems} total</span>
+              <span className={css.inboxCountTotal}>
+                {intl.formatMessage({ id: 'InboxPage.messageCountTotal' }, { total: pagination.totalItems })}
+              </span>
             )}
           </div>
         )}
@@ -548,7 +550,9 @@ export const InboxPageComponent = props => {
           ) : (
             <div className={css.loadingContainer}>
               <IconSpinner />
-              <span className={css.loadingText}>Loading your inbox...</span>
+              <span className={css.loadingText}>
+                <FormattedMessage id="InboxPage.loading" />
+              </span>
             </div>
           )}
           {hasNoResults ? (

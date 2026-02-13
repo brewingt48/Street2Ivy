@@ -42,8 +42,8 @@ const InboxSearchForm = props => {
 
         return (
           <Form onSubmit={handleSubmit} className={classes}>
-            <div className={css.sortyByWrapper}>
-              <span className={css.sortyBy}>
+            <div className={css.sortByWrapper}>
+              <span className={css.sortBy}>
                 <FormattedMessage id="InboxSearchForm.sortLabel" />
               </span>
               <InboxSortBy intl={intl} onSelect={onSelect} initialValue={initialValue} />

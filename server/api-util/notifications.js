@@ -202,12 +202,15 @@ async function sendNotification({ type, recipientId, recipientEmail, data }) {
     });
 
     // Send email via Mailgun (non-blocking — email failure should not break notification)
+    // Pass type + data so sendEmail can use professional per-type HTML templates
     if (recipientEmail) {
       try {
         const emailResult = await sendEmail({
           to: recipientEmail,
           subject,
           text: content,
+          type,
+          data,
           tags: { 'o:tag': [type] },
         });
         if (emailResult.success) {

@@ -2,6 +2,8 @@
  * Mailgun Email Service for Street2Ivy / Campus2Career
  *
  * Sends transactional emails for platform events using Mailgun.
+ * Uses professional per-notification-type HTML templates (Phase 4)
+ * with a fallback to generic plain-text-to-HTML conversion.
  *
  * Environment variables (provisioned via Heroku Mailgun add-on):
  *   MAILGUN_API_KEY   – API key for Mailgun
@@ -15,6 +17,7 @@
 
 const Mailgun = require('mailgun.js');
 const formData = require('form-data');
+const { renderEmailTemplate } = require('./emailTemplates');
 
 // ─── Mailgun Client ───────────────────────────────────────────────────────────
 
@@ -56,12 +59,11 @@ function getFromAddress() {
   return `${name} <${email}>`;
 }
 
-// ─── Plain-text → simple HTML ─────────────────────────────────────────────────
+// ─── Generic Fallback (plain-text → HTML) ────────────────────────────────────
 
 /**
  * Wraps plain-text notification content in a clean, branded HTML email.
- * This is the "Phase 2" simple version; Phase 4 will replace with
- * professionally designed templates.
+ * Used as fallback when no per-type template exists.
  */
 function wrapInHtmlTemplate(subject, plainTextBody) {
   // Trim leading/trailing whitespace from each line and convert to HTML
@@ -69,9 +71,7 @@ function wrapInHtmlTemplate(subject, plainTextBody) {
     .split('\n')
     .map(l => l.trim())
     .filter((l, i, arr) => {
-      // Remove leading blank lines
       if (i === 0 && l === '') return false;
-      // Remove trailing blank lines
       if (i === arr.length - 1 && l === '') return false;
       return true;
     });
@@ -79,16 +79,13 @@ function wrapInHtmlTemplate(subject, plainTextBody) {
   const htmlBody = lines
     .map(line => {
       if (line === '') return '<br/>';
-      // Convert URLs to clickable links
       const withLinks = line.replace(
         /(https?:\/\/[^\s<]+)/g,
-        '<a href="$1" style="color:#0d9488;text-decoration:underline;">$1</a>'
+        '<a href="$1" style="color:#00A89A;text-decoration:underline;">$1</a>'
       );
-      // Bold lines that look like section headers (end with ':')
       if (line.endsWith(':') && line.length < 60) {
         return `<p style="margin:0 0 4px 0;"><strong>${withLinks}</strong></p>`;
       }
-      // List items starting with "- " or numbered "1. "
       if (/^\d+\.\s/.test(line) || line.startsWith('- ')) {
         return `<p style="margin:0 0 2px 16px;">${withLinks}</p>`;
       }
@@ -103,16 +100,16 @@ function wrapInHtmlTemplate(subject, plainTextBody) {
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>${escapeHtml(subject)}</title>
 </head>
-<body style="margin:0;padding:0;background-color:#f1f5f9;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f1f5f9;padding:32px 16px;">
+<body style="margin:0;padding:0;background-color:#F1F5F9;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#F1F5F9;padding:32px 16px;">
     <tr>
       <td align="center">
-        <table width="600" cellpadding="0" cellspacing="0" style="background-color:#ffffff;border-radius:8px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.08);">
+        <table width="600" cellpadding="0" cellspacing="0" style="background-color:#FFFFFF;border-radius:8px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.08);">
           <!-- Header -->
           <tr>
-            <td style="background-color:#0f172a;padding:24px 32px;">
-              <span style="font-size:20px;font-weight:700;color:#ffffff;font-family:'Playfair Display',Georgia,serif;">Campus2Career</span>
-              <span style="font-size:12px;color:#94a3b8;margin-left:8px;">by Street2Ivy</span>
+            <td style="background-color:#0f172a;padding:20px 32px;">
+              <span style="font-size:22px;font-weight:700;color:#FFFFFF;font-family:Georgia,'Times New Roman',serif;letter-spacing:-0.3px;">Campus2Career</span>
+              <span style="font-size:11px;color:#94A3B8;margin-left:6px;">by Street2Ivy</span>
             </td>
           </tr>
           <!-- Body -->
@@ -123,7 +120,7 @@ function wrapInHtmlTemplate(subject, plainTextBody) {
           </tr>
           <!-- Footer -->
           <tr>
-            <td style="padding:20px 32px;background-color:#f8fafc;border-top:1px solid #e2e8f0;font-size:12px;color:#94a3b8;text-align:center;">
+            <td style="padding:20px 32px;background-color:#F8FAFC;border-top:1px solid #E2E8F0;font-size:12px;color:#94A3B8;text-align:center;">
               <p style="margin:0 0 4px 0;">Street2Ivy, Inc. &middot; Campus2Career Platform</p>
               <p style="margin:0;">You received this email because you have an account on Campus2Career.</p>
             </td>
@@ -137,7 +134,7 @@ function wrapInHtmlTemplate(subject, plainTextBody) {
 }
 
 function escapeHtml(str) {
-  return str
+  return String(str || '')
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
@@ -154,10 +151,12 @@ function escapeHtml(str) {
  * @param {string} options.subject   - Email subject line
  * @param {string} options.text      - Plain-text body
  * @param {string} [options.html]    - HTML body (auto-generated from text if omitted)
+ * @param {string} [options.type]    - Notification type for template selection (e.g. 'application-received')
+ * @param {Object} [options.data]    - Template data for professional templates
  * @param {Object} [options.tags]    - Mailgun tags for analytics (e.g. { 'o:tag': ['application'] })
  * @returns {Promise<{ success: boolean, messageId?: string, error?: string }>}
  */
-async function sendEmail({ to, subject, text, html, tags = {} }) {
+async function sendEmail({ to, subject, text, html, type, data, tags = {} }) {
   if (!to) {
     console.warn('[Email] No recipient address — skipping send');
     return { success: false, error: 'No recipient email address' };
@@ -175,7 +174,15 @@ async function sendEmail({ to, subject, text, html, tags = {} }) {
   }
 
   const domain = process.env.MAILGUN_DOMAIN;
-  const htmlContent = html || wrapInHtmlTemplate(subject, text);
+
+  // Priority: explicit html > per-type template > generic plain-text wrapper
+  let htmlContent = html;
+  if (!htmlContent && type && data) {
+    htmlContent = renderEmailTemplate(type, subject, data);
+  }
+  if (!htmlContent) {
+    htmlContent = wrapInHtmlTemplate(subject, text || '');
+  }
 
   try {
     const result = await client.messages.create(domain, {
