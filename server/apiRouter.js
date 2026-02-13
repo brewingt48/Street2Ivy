@@ -96,6 +96,9 @@ const projectApplications = require('./api/project-applications');
 // Application Messaging (inbox, conversations, send messages)
 const applicationMessaging = require('./api/application-messaging');
 
+// Compose Message & Direct Messages (user-initiated messaging)
+const composeMessage = require('./api/compose-message');
+
 // Email Status & Test (admin-only diagnostics)
 const emailStatus = require('./api/email-status');
 
@@ -270,6 +273,14 @@ router.get('/messages/unread-count', applicationMessaging.getUnreadCount);
 router.get('/messages/:applicationId', applicationMessaging.getMessages);
 router.post('/messages/:applicationId', applicationMessaging.sendMessage);
 router.post('/messages/:applicationId/read', applicationMessaging.markRead);
+
+// Street2Ivy: Compose Message & Direct Messages (user-initiated messaging)
+router.get('/compose/eligible-recipients', composeMessage.getEligibleRecipients);
+router.post('/compose/message', composeMessage.sendMessage);
+router.get('/direct-messages/inbox', composeMessage.getDirectMessageInbox);
+router.get('/direct-messages/:threadId', composeMessage.getDirectMessages);
+router.post('/direct-messages/:threadId', composeMessage.sendDirectMessage);
+router.post('/direct-messages/:threadId/read', composeMessage.markDirectMessageRead);
 
 // Street2Ivy: Listing Management (close/reopen projects)
 router.post('/listings/:listingId/close', listingManagement.closeListing);

@@ -568,6 +568,47 @@ function invitationDeclined(data) {
   });
 }
 
+/**
+ * DIRECT_MESSAGE — sent when a user sends a direct message (user ↔ admin, or user-initiated)
+ */
+function directMessage(data) {
+  const subject = data.subject
+    ? `New Message from ${data.senderName}: ${data.subject}`
+    : `New Message from ${data.senderName}`;
+  const body = `
+    <td style="padding:32px;">
+      <h1 style="margin:0 0 8px 0;font-size:22px;color:#0f172a;font-weight:700;">New Message</h1>
+      <p style="margin:0 0 24px 0;font-size:15px;color:#334155;">Hi ${escapeHtml(data.recipientName)},</p>
+
+      <!-- Message Preview Card -->
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#F8FAFC;border:1px solid #E2E8F0;border-radius:8px;margin-bottom:24px;">
+        <tr>
+          <td style="padding:20px;">
+            <table role="presentation" cellpadding="0" cellspacing="0" width="100%">
+              <tr>
+                <td style="padding-bottom:12px;">
+                  <span style="font-size:14px;font-weight:600;color:#0f172a;">${escapeHtml(data.senderName)}</span>
+                  ${data.subject ? `<br/><span style="font-size:13px;color:#64748B;">Re: ${escapeHtml(data.subject)}</span>` : ''}
+                </td>
+              </tr>
+              ${data.messagePreview ? `<tr>
+                <td style="padding:12px 16px;background-color:#FFFFFF;border-radius:6px;border:1px solid #E2E8F0;">
+                  <p style="margin:0;font-size:14px;color:#334155;line-height:1.5;font-style:italic;">"${escapeHtml(data.messagePreview)}"</p>
+                </td>
+              </tr>` : ''}
+            </table>
+          </td>
+        </tr>
+      </table>
+
+      ${ctaButton('View Conversation', data.conversationUrl || `${getBaseUrl()}/inbox`)}
+    </td>`;
+
+  return emailShell(subject, body, {
+    preheader: `${data.senderName}: "${(data.messagePreview || '').substring(0, 80)}"`,
+  });
+}
+
 // ─── Template Registry ───────────────────────────────────────────────────────
 
 /**
@@ -586,6 +627,7 @@ const EMAIL_TEMPLATES = {
   'assessment-received': assessmentReceived,
   'new-message': newMessage,
   'student-accepted-invite': studentAcceptedInvite,
+  'direct-message': directMessage,
 };
 
 /**

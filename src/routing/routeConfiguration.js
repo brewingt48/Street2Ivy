@@ -30,6 +30,7 @@ const EditListingPage = loadable(() => import(/* webpackChunkName: "EditListingP
 const EmailVerificationPage = loadable(() => import(/* webpackChunkName: "EmailVerificationPage" */ '../containers/EmailVerificationPage/EmailVerificationPage'));
 const InboxPage = loadable(() => import(/* webpackChunkName: "InboxPage" */ '../containers/InboxPage/InboxPage'));
 const ConversationPage = loadable(() => import(/* webpackChunkName: "ConversationPage" */ '../containers/InboxPage/ConversationPage'));
+const DirectConversationPage = loadable(() => import(/* webpackChunkName: "DirectConversationPage" */ '../containers/InboxPage/DirectConversationPage'));
 const MakeOfferPage = loadable(() => import(/* webpackChunkName: "MakeOfferPage" */ '../containers/MakeOfferPage/MakeOfferPage'));
 const LandingPage = loadable(() => import(/* webpackChunkName: "LandingPage" */ '../containers/LandingPage/LandingPage'));
 const ListingPageCoverPhoto = loadable(() => import(/* webpackChunkName: "ListingPageCoverPhoto" */ /* webpackPrefetch: true */ '../containers/ListingPage/ListingPageCoverPhoto'));
@@ -292,6 +293,13 @@ const routeConfiguration = (layoutConfig, accessControlConfig) => {
       auth: true,
       authPage: 'LoginPage',
       component: ConversationPage,
+    },
+    {
+      path: '/inbox/direct/:threadId',
+      name: 'DirectConversationPage',
+      auth: true,
+      authPage: 'LoginPage',
+      component: DirectConversationPage,
     },
     {
       path: '/inbox/:tab',

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useLocation, useHistory } from 'react-router-dom';
 import { compose } from 'redux';
 import { connect } from 'react-redux';
@@ -55,6 +55,7 @@ import NotFoundPage from '../../containers/NotFoundPage/NotFoundPage';
 import InboxSearchForm from './InboxSearchForm/InboxSearchForm';
 
 import { stateDataShape, getStateData } from './InboxPage.stateData';
+import ComposeMessageModal from './ComposeMessageModal';
 import css from './InboxPage.module.css';
 
 const INBOX_PAGE_SIZE = 10;
@@ -166,6 +167,83 @@ const handleSortSelect = (tab, routeConfiguration, history) => urlParam => {
  * Used on the "Messages" tab which fetches from our custom API (not Sharetribe).
  */
 const ConversationItem = ({ conversation, currentUserId, intl }) => {
+  // Handle direct message threads (conversationType === 'direct')
+  if (conversation.conversationType === 'direct') {
+    const {
+      threadId,
+      otherUserName,
+      otherUserType,
+      subject,
+      lastMessageContent: dmContent,
+      lastMessageSender: dmSender,
+      lastMessageAt: dmAt,
+      unreadCount: dmUnread,
+    } = conversation;
+
+    const preview = dmContent
+      ? `${dmSender ? dmSender + ': ' : ''}${dmContent.substring(0, 80)}${dmContent.length > 80 ? '...' : ''}`
+      : '';
+    const timeAgo = dmAt ? formatRelativeTime(dmAt, intl) : '';
+    const rowClasses = classNames(css.emailRow, { [css.emailRowUnread]: dmUnread > 0 });
+
+    const typeBadge = (otherUserType === 'educational-admin' || otherUserType === 'system-admin')
+      ? 'Admin'
+      : otherUserType === 'corporate-partner'
+      ? 'Partner'
+      : otherUserType === 'student'
+      ? 'Student'
+      : '';
+
+    return (
+      <NamedLink className={rowClasses} name="DirectConversationPage" params={{ threadId }}>
+        {dmUnread > 0 && <div className={css.itemNotificationBar} />}
+        <div className={css.emailFrom}>
+          <div className={css.emailAvatar} style={{
+            width: 32, height: 32, borderRadius: '50%',
+            background: typeBadge === 'Admin' ? '#6366f1' : 'var(--s2i-teal-500)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            color: 'white', fontSize: 14, fontWeight: 600, flexShrink: 0,
+          }}>
+            {(otherUserName || '?')[0]?.toUpperCase()}
+          </div>
+          <div className={css.emailFromInfo}>
+            <span className={css.emailFromName}>
+              {otherUserName || 'User'}
+              {typeBadge && (
+                <span style={{
+                  marginLeft: 6, fontSize: 10, fontWeight: 600,
+                  padding: '1px 6px', borderRadius: 8,
+                  background: typeBadge === 'Admin' ? '#eef2ff' : '#f0fdfa',
+                  color: typeBadge === 'Admin' ? '#4f46e5' : '#0d9488',
+                }}>
+                  {typeBadge}
+                </span>
+              )}
+              {dmUnread > 0 && (
+                <span style={{
+                  marginLeft: 6, background: 'var(--s2i-coral-500)', color: 'white',
+                  fontSize: 10, fontWeight: 700, borderRadius: 8, padding: '1px 5px',
+                }}>
+                  {dmUnread}
+                </span>
+              )}
+            </span>
+            <span className={css.emailFromProjectMobile}>{subject || 'Direct Message'}</span>
+          </div>
+        </div>
+        <div className={css.emailSubject}>
+          <span className={css.emailSubjectTitle}>{subject || 'Direct Message'}</span>
+          {preview && <span className={css.emailSubjectPreview}>{preview}</span>}
+        </div>
+        <div className={css.emailStatus}>
+          <div className={css.stateName} style={{ background: '#eef2ff', color: '#4f46e5' }}>Direct</div>
+        </div>
+        <div className={css.emailDate}>{timeAgo}</div>
+      </NamedLink>
+    );
+  }
+
+  // Regular application conversation
   const {
     id,
     studentId,
@@ -424,6 +502,7 @@ export const InboxItem = props => {
  * @returns {JSX.Element} inbox page component
  */
 export const InboxPageComponent = props => {
+  const [composeOpen, setComposeOpen] = useState(false);
   const config = useConfiguration();
   const routeConfiguration = useRouteConfiguration();
   const history = useHistory();
@@ -692,11 +771,33 @@ export const InboxPageComponent = props => {
         }
         footer={<FooterContainer />}
       >
+        {/* Compose Message Modal */}
+        <ComposeMessageModal
+          isOpen={composeOpen}
+          onClose={() => setComposeOpen(false)}
+          onSuccess={(result) => {
+            // Navigate to the new conversation
+            if (result.conversationType === 'direct') {
+              history.push(`/inbox/direct/${result.conversationId}`);
+            } else {
+              history.push(`/inbox/conversation/${result.conversationId}`);
+            }
+          }}
+        />
+
         {/* Email-style Inbox Header */}
         <div className={css.inboxHeader}>
           <div className={css.inboxHeaderInfo}>
             <h2 className={css.inboxHeaderTitle}>{getHeading()}</h2>
             <p className={css.inboxHeaderSubtitle}>{getSubtitle()}</p>
+          </div>
+          <div className={css.inboxHeaderActions}>
+            <button
+              className={css.composeButton}
+              onClick={() => setComposeOpen(true)}
+            >
+              <FormattedMessage id="InboxPage.composeButton" />
+            </button>
           </div>
           <InboxSearchForm
             onSubmit={() => {}}

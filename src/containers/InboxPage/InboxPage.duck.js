@@ -3,7 +3,7 @@ import { storableError } from '../../util/errors';
 import { parse, getValidInboxSort } from '../../util/urlHelpers';
 import { getSupportedProcessesInfo } from '../../transactions/transaction';
 import { addMarketplaceEntities } from '../../ducks/marketplaceData.duck';
-import { fetchMessageInbox } from '../../util/api';
+import { fetchMessageInbox, fetchDirectMessageInbox } from '../../util/api';
 
 const INBOX_PAGE_SIZE = 10;
 const MESSAGES_PAGE_SIZE = 20;
@@ -70,14 +70,40 @@ export default inboxPageSlice.reducer;
 const loadDataPayloadCreator = ({ params, search, isMessagesTab }, { dispatch, rejectWithValue, extra: sdk }) => {
   const { tab } = params;
 
-  // "messages" tab: fetch from our custom messaging API
+  // "messages" tab: fetch from our custom messaging API + direct messages, then merge
   if (isMessagesTab || tab === 'messages') {
     const { page = 1 } = parse(search);
     const offset = (page - 1) * MESSAGES_PAGE_SIZE;
 
-    return fetchMessageInbox({ limit: MESSAGES_PAGE_SIZE, offset })
-      .then(response => {
-        return response;
+    return Promise.all([
+      fetchMessageInbox({ limit: MESSAGES_PAGE_SIZE, offset }),
+      fetchDirectMessageInbox({ limit: MESSAGES_PAGE_SIZE, offset }).catch(() => ({ threads: [] })),
+    ])
+      .then(([appResponse, directResponse]) => {
+        // Tag application conversations with their type
+        const appConversations = (appResponse.conversations || []).map(c => ({
+          ...c,
+          conversationType: 'application',
+        }));
+
+        // Convert direct message threads to the same shape
+        const directConversations = (directResponse.threads || []).map(t => ({
+          ...t,
+          id: t.threadId,
+          conversationType: 'direct',
+        }));
+
+        // Merge both lists, sorted by lastMessageAt descending
+        const allConversations = [...appConversations, ...directConversations].sort((a, b) => {
+          const dateA = new Date(a.lastMessageAt || a.submittedAt || 0);
+          const dateB = new Date(b.lastMessageAt || b.submittedAt || 0);
+          return dateB - dateA;
+        });
+
+        return {
+          conversations: allConversations,
+          pagination: appResponse.pagination,
+        };
       })
       .catch(e => {
         return rejectWithValue(storableError(e));

@@ -30,6 +30,7 @@ const NOTIFICATION_TYPES = {
   DELIVERABLE_SUBMITTED: 'deliverable-submitted',
   STUDENT_PROJECT_UPDATE: 'student-project-update',
   ADMIN_MESSAGE: 'admin-message',
+  DIRECT_MESSAGE: 'direct-message',
 };
 
 // Notification templates with subject lines and content generators
@@ -211,6 +212,20 @@ const NOTIFICATION_TEMPLATES = {
       There are many other qualified students on Campus2Career. Browse student profiles to find the right match.
 
       Browse students: {browseStudentsUrl}
+
+      The Campus2Career Team
+    `,
+  },
+  [NOTIFICATION_TYPES.DIRECT_MESSAGE]: {
+    subject: 'New Message from {senderName}',
+    getContent: (data) => `
+      Hi {recipientName},
+
+      You have a new message from {senderName}:
+
+      "{messagePreview}"
+
+      View full conversation: {conversationUrl}
 
       The Campus2Career Team
     `,

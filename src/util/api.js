@@ -322,6 +322,59 @@ export const markConversationRead = (applicationId) => {
   });
 };
 
+// ─── Compose Message & Direct Messages ─────────────────────────────────────
+
+// Fetch eligible recipients for the compose message modal
+export const fetchEligibleRecipients = () => {
+  return request('/api/compose/eligible-recipients', {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
+  });
+};
+
+// Compose and send a new message (initiates a conversation)
+export const composeMessage = ({ recipientId, subject, content }) => {
+  return request('/api/compose/message', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ recipientId, subject, content }),
+  });
+};
+
+// Fetch direct message thread previews for the inbox
+export const fetchDirectMessageInbox = ({ limit = 20, offset = 0 } = {}) => {
+  return request(`/api/direct-messages/inbox?limit=${limit}&offset=${offset}`, {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
+  });
+};
+
+// Fetch all messages in a direct message thread
+export const fetchDirectMessages = (threadId, { limit = 50, offset = 0 } = {}) => {
+  return request(`/api/direct-messages/${threadId}?limit=${limit}&offset=${offset}`, {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
+  });
+};
+
+// Send a reply in a direct message thread
+export const sendDirectMessageReply = (threadId, content) => {
+  return request(`/api/direct-messages/${threadId}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ content }),
+  });
+};
+
+// Mark all messages in a direct message thread as read
+export const markDirectMessageRead = (threadId) => {
+  return request(`/api/direct-messages/${threadId}/read`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({}),
+  });
+};
+
 // Mark a project as completed (corporate partner transitions accepted → completed)
 export const markProjectCompleted = (transactionId) => {
   return request('/api/transaction-transition', {

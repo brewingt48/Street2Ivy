@@ -337,6 +337,28 @@ sqlite.exec(`
   CREATE INDEX IF NOT EXISTS idx_app_messages_application ON application_messages(application_id, created_at);
   CREATE INDEX IF NOT EXISTS idx_app_messages_sender ON application_messages(sender_id);
   CREATE INDEX IF NOT EXISTS idx_app_messages_unread ON application_messages(application_id, read_at);
+
+  -- ---------------------------------------------------------------
+  -- Direct Messages — threaded conversations (user ↔ admin, etc.)
+  -- ---------------------------------------------------------------
+  CREATE TABLE IF NOT EXISTS direct_messages (
+    id TEXT PRIMARY KEY,
+    thread_id TEXT NOT NULL,
+    sender_id TEXT NOT NULL,
+    sender_name TEXT,
+    sender_type TEXT,
+    recipient_id TEXT NOT NULL,
+    recipient_name TEXT,
+    recipient_type TEXT,
+    subject TEXT,
+    content TEXT NOT NULL,
+    read_at TEXT,
+    created_at TEXT
+  );
+
+  CREATE INDEX IF NOT EXISTS idx_direct_messages_thread ON direct_messages(thread_id, created_at);
+  CREATE INDEX IF NOT EXISTS idx_direct_messages_sender ON direct_messages(sender_id);
+  CREATE INDEX IF NOT EXISTS idx_direct_messages_recipient ON direct_messages(recipient_id);
 `);
 
 // -------------------------------------------------------------------
@@ -1704,6 +1726,21 @@ const projectApplications = {
   },
 
   /**
+   * Find the most recent active conversation between a student and corporate partner.
+   * Used by compose-message to reuse existing threads instead of creating duplicates.
+   * Returns null if no active conversation exists.
+   */
+  findActiveConversation(studentId, corporateId) {
+    const row = sqlite.prepare(
+      `SELECT * FROM project_applications
+       WHERE student_id = ? AND corporate_id = ?
+         AND status NOT IN ('rejected', 'declined', 'withdrawn', 'cancelled')
+       ORDER BY COALESCE(updated_at, submitted_at) DESC LIMIT 1`
+    ).get(studentId, corporateId);
+    return row ? projectApplications._fromRow(row) : null;
+  },
+
+  /**
    * Count applications by status for a corporate partner (dashboard stats).
    */
   countByStatus(corporateId) {
@@ -2084,6 +2121,177 @@ const applicationMessages = {
 };
 
 // -------------------------------------------------------------------
+// Direct Messages — threaded conversations (user ↔ admin, etc.)
+// -------------------------------------------------------------------
+
+const directMessages = {
+  /**
+   * Generate a deterministic thread ID for any two users.
+   * Sorts IDs so the thread is the same regardless of who initiates.
+   */
+  getOrCreateThreadId(userId1, userId2) {
+    const sorted = [userId1, userId2].sort();
+    return `dm_${sorted[0]}_${sorted[1]}`;
+  },
+
+  /**
+   * Create a new direct message.
+   */
+  create(msg) {
+    const now = new Date().toISOString();
+    sqlite.prepare(`
+      INSERT INTO direct_messages
+        (id, thread_id, sender_id, sender_name, sender_type,
+         recipient_id, recipient_name, recipient_type,
+         subject, content, read_at, created_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).run(
+      msg.id,
+      msg.threadId,
+      msg.senderId,
+      msg.senderName || null,
+      msg.senderType || null,
+      msg.recipientId,
+      msg.recipientName || null,
+      msg.recipientType || null,
+      msg.subject || null,
+      msg.content,
+      msg.readAt || null,
+      msg.createdAt || now
+    );
+    return directMessages.getById(msg.id);
+  },
+
+  /**
+   * Get a single message by ID.
+   */
+  getById(id) {
+    const row = sqlite.prepare('SELECT * FROM direct_messages WHERE id = ?').get(id);
+    return row ? directMessages._fromRow(row) : null;
+  },
+
+  /**
+   * Get all messages in a thread, ordered oldest first (chat-style).
+   */
+  getByThreadId(threadId, { limit = 50, offset = 0 } = {}) {
+    let sql = 'SELECT * FROM direct_messages WHERE thread_id = ? ORDER BY created_at ASC';
+    const params = [threadId];
+    if (limit) {
+      sql += ' LIMIT ?';
+      params.push(limit);
+    }
+    if (offset) {
+      sql += ' OFFSET ?';
+      params.push(offset);
+    }
+    return sqlite.prepare(sql).all(...params).map(directMessages._fromRow);
+  },
+
+  /**
+   * Get thread previews for the inbox.
+   * Returns threads where the user is either sender or recipient,
+   * with the last message and unread count.
+   */
+  getThreadPreviews(userId, { limit = 20, offset = 0 } = {}) {
+    const sql = `
+      SELECT
+        dm_latest.*,
+        (
+          SELECT COUNT(*) FROM direct_messages dm2
+          WHERE dm2.thread_id = dm_latest.thread_id
+            AND dm2.sender_id != ?
+            AND dm2.recipient_id = ?
+            AND dm2.read_at IS NULL
+        ) AS unread_count,
+        (
+          SELECT COUNT(*) FROM direct_messages dm3
+          WHERE dm3.thread_id = dm_latest.thread_id
+        ) AS total_messages,
+        (
+          SELECT subject FROM direct_messages dm4
+          WHERE dm4.thread_id = dm_latest.thread_id
+            AND dm4.subject IS NOT NULL
+          ORDER BY dm4.created_at ASC LIMIT 1
+        ) AS thread_subject
+      FROM (
+        SELECT dm1.*
+        FROM direct_messages dm1
+        INNER JOIN (
+          SELECT thread_id, MAX(created_at) AS max_created
+          FROM direct_messages
+          WHERE sender_id = ? OR recipient_id = ?
+          GROUP BY thread_id
+        ) latest ON dm1.thread_id = latest.thread_id
+          AND dm1.created_at = latest.max_created
+      ) dm_latest
+      ORDER BY dm_latest.created_at DESC
+      LIMIT ? OFFSET ?
+    `;
+    const rows = sqlite.prepare(sql).all(userId, userId, userId, userId, limit, offset);
+    return rows.map(row => {
+      const msg = directMessages._fromRow(row);
+      // Determine the "other" party for display
+      const otherName = msg.senderId === userId ? msg.recipientName : msg.senderName;
+      const otherId = msg.senderId === userId ? msg.recipientId : msg.senderId;
+      const otherType = msg.senderId === userId ? msg.recipientType : msg.senderType;
+      return {
+        threadId: msg.threadId,
+        otherUserId: otherId,
+        otherUserName: otherName,
+        otherUserType: otherType,
+        subject: row.thread_subject || null,
+        lastMessageContent: msg.content,
+        lastMessageSender: msg.senderName,
+        lastMessageAt: msg.createdAt,
+        unreadCount: row.unread_count || 0,
+        totalMessages: row.total_messages || 0,
+      };
+    });
+  },
+
+  /**
+   * Mark messages from the other user as read in a thread.
+   */
+  markAsRead(threadId, userId) {
+    const now = new Date().toISOString();
+    const info = sqlite.prepare(`
+      UPDATE direct_messages
+      SET read_at = ?
+      WHERE thread_id = ? AND sender_id != ? AND recipient_id = ? AND read_at IS NULL
+    `).run(now, threadId, userId, userId);
+    return info.changes;
+  },
+
+  /**
+   * Get total unread direct messages across all threads for a user.
+   */
+  getUnreadCountByUser(userId) {
+    const row = sqlite.prepare(`
+      SELECT COUNT(*) as count FROM direct_messages
+      WHERE recipient_id = ? AND read_at IS NULL
+    `).get(userId);
+    return row ? row.count : 0;
+  },
+
+  _fromRow(row) {
+    return {
+      id: row.id,
+      threadId: row.thread_id,
+      senderId: row.sender_id,
+      senderName: row.sender_name,
+      senderType: row.sender_type,
+      recipientId: row.recipient_id,
+      recipientName: row.recipient_name,
+      recipientType: row.recipient_type,
+      subject: row.subject,
+      content: row.content,
+      readAt: row.read_at,
+      createdAt: row.created_at,
+    };
+  },
+};
+
+// -------------------------------------------------------------------
 // Transaction helper (expose sqlite.transaction for multi-step ops)
 // -------------------------------------------------------------------
 
@@ -2122,4 +2330,5 @@ module.exports = {
   adminMessages,
   projectApplications,
   applicationMessages,
+  directMessages,
 };
