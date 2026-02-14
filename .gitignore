@@ -1,36 +1,30 @@
-# See http://help.github.com/ignore-files/ for more about ignoring files.
-
 # dependencies
 node_modules
 
 # testing
 coverage
 
-# production
-build
+# Next.js
+.next/
+out/
+build/
+
+# environment
+.env
+.env.local
+.env.production.local
 
 # misc
 .DS_Store
-.env
 npm-debug.log
 yarn-error.log
 .vercel
 
-# Multi-tenancy data (contains secrets)
-server/data/tenants.json
+# legacy app data
+legacy/server/data/
+legacy/server/uploads/
+legacy/build/
+legacy/node_modules/
 
-# Server-side persisted data (auto-generated, may contain PII)
-server/data/educational-admin-applications.json
-server/data/education-messages.json
-server/data/assessments.json
-server/data/tenants/
-server/data/student-waitlist.json
-server/data/attachments-meta.json
-server/data/blocked-coaching-students.json
-server/data/admin-messages.json
-server/uploads/
-
-# SQLite database (auto-generated at runtime)
-server/data/campus2career.db
-server/data/campus2career.db-wal
-server/data/campus2career.db-shm
+# uploads
+uploads/
