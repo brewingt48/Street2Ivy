@@ -11,6 +11,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { forgotPasswordSchema } from '@/lib/auth/validation';
 import { sql } from '@/lib/db';
 import { randomBytes } from 'crypto';
+import { sendEmail, passwordResetEmail } from '@/lib/email/send';
 
 export async function POST(request: NextRequest) {
   try {
@@ -49,8 +50,14 @@ export async function POST(request: NextRequest) {
         WHERE id = ${user.id}
       `;
 
-      // TODO: Send password reset email via Mailgun
-      // For now, log the token (only in development)
+      // Send password reset email
+      const resetEmailData = passwordResetEmail({
+        firstName: user.first_name as string,
+        resetToken,
+      });
+      sendEmail({ to: email, ...resetEmailData, tags: ['password-reset'] }).catch(() => {});
+
+      // Log the token in development for debugging
       if (process.env.NODE_ENV !== 'production') {
         console.log(`[DEV] Password reset token for ${email}: ${resetToken}`);
       }

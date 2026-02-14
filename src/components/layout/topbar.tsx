@@ -7,12 +7,13 @@
  */
 
 import Link from 'next/link';
-import { Bell, Menu } from 'lucide-react';
+import { Menu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { UserNav } from './user-nav';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Sidebar } from './sidebar';
+import { NotificationBell } from '@/components/notifications/notification-bell';
+import { ThemeToggle } from '@/components/theme/theme-toggle';
 
 interface TopbarProps {
   user: {
@@ -55,20 +56,10 @@ export function Topbar({ user }: TopbarProps) {
           <NavLinks role={user.role} />
         </nav>
 
-        {/* Right side: notifications + user menu */}
-        <div className="flex items-center space-x-2 ml-auto">
-          {/* Notification bell */}
-          <Link href="/inbox">
-            <Button variant="ghost" size="icon" className="relative">
-              <Bell className="h-5 w-5" />
-              <Badge className="absolute -top-1 -right-1 h-4 w-4 p-0 flex items-center justify-center text-[10px] bg-red-500 text-white border-0">
-                0
-              </Badge>
-              <span className="sr-only">Notifications</span>
-            </Button>
-          </Link>
-
-          {/* User menu */}
+        {/* Right side: theme toggle + notifications + user menu */}
+        <div className="flex items-center space-x-1 ml-auto">
+          <ThemeToggle />
+          <NotificationBell />
           <UserNav user={user} />
         </div>
       </div>

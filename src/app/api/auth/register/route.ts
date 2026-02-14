@@ -14,6 +14,7 @@ import { generateSessionId, setSessionCookie } from '@/lib/auth/cookies';
 import { getUserByEmail } from '@/lib/auth/middleware';
 import { sql } from '@/lib/db';
 import type { SessionData } from '@/lib/auth/types';
+import { sendEmail, welcomeEmail } from '@/lib/email/send';
 
 export async function POST(request: NextRequest) {
   try {
@@ -68,8 +69,9 @@ export async function POST(request: NextRequest) {
     // Set session cookie
     setSessionCookie(sid);
 
-    // TODO: Send welcome email via Mailgun
-    // TODO: Create email verification token and send verification email
+    // Send welcome email (fire-and-forget — don't block registration)
+    const welcome = welcomeEmail({ firstName, role });
+    sendEmail({ to: email, ...welcome, tags: ['welcome'] }).catch(() => {});
 
     return NextResponse.json(
       {
