@@ -20,7 +20,9 @@ import {
   Plus,
   Search,
   Users,
+  Download,
 } from 'lucide-react';
+import { ExportButton } from '@/components/analytics/export-button';
 
 interface Tenant {
   id: string;
@@ -90,12 +92,35 @@ export default function AdminTenantsPage() {
             {tenants.length} institution{tenants.length !== 1 ? 's' : ''} on the platform
           </p>
         </div>
-        <Button
-          className="bg-teal-600 hover:bg-teal-700"
-          onClick={() => router.push('/admin/tenants/new')}
-        >
-          <Plus className="h-4 w-4 mr-2" /> New Tenant
-        </Button>
+        <div className="flex items-center gap-2">
+          <ExportButton
+            data={tenants.map((t) => ({
+              name: t.name,
+              subdomain: t.subdomain,
+              status: t.status,
+              students: t.stats?.students || 0,
+              corporates: t.stats?.corporates || 0,
+              listings: t.stats?.listings || 0,
+              createdAt: t.createdAt,
+            })) as unknown as Record<string, unknown>[]}
+            filename="tenants"
+            columns={[
+              { key: 'name', label: 'Name' },
+              { key: 'subdomain', label: 'Subdomain' },
+              { key: 'status', label: 'Status' },
+              { key: 'students', label: 'Students' },
+              { key: 'corporates', label: 'Corporates' },
+              { key: 'listings', label: 'Listings' },
+              { key: 'createdAt', label: 'Created', format: (v) => v ? new Date(v as string).toLocaleDateString() : '' },
+            ]}
+          />
+          <Button
+            className="bg-teal-600 hover:bg-teal-700"
+            onClick={() => router.push('/admin/tenants/new')}
+          >
+            <Plus className="h-4 w-4 mr-2" /> New Tenant
+          </Button>
+        </div>
       </div>
 
       {/* Overview Stats */}

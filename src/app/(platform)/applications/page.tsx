@@ -25,7 +25,9 @@ import {
   XCircle,
   ArrowRight,
   AlertCircle,
+  Download,
 } from 'lucide-react';
+import { ExportButton } from '@/components/analytics/export-button';
 
 interface Application {
   id: string;
@@ -126,13 +128,26 @@ export default function ApplicationsPage() {
             <strong>Pending</strong> = awaiting review &middot; <strong>Accepted</strong> = you&apos;re in! &middot; <strong>Completed</strong> = project finished &middot; <strong>Withdraw</strong> to cancel a pending application
           </p>
         </div>
-        <Button
-          onClick={() => router.push('/projects')}
-          className="bg-teal-600 hover:bg-teal-700"
-        >
-          Browse Projects
-          <ArrowRight className="ml-2 h-4 w-4" />
-        </Button>
+        <div className="flex items-center gap-2">
+          <ExportButton
+            data={applications as unknown as Record<string, unknown>[]}
+            filename="my-applications"
+            columns={[
+              { key: 'listingTitle', label: 'Project' },
+              { key: 'corporateName', label: 'Company' },
+              { key: 'status', label: 'Status' },
+              { key: 'submittedAt', label: 'Applied', format: (v) => v ? new Date(v as string).toLocaleDateString() : '' },
+              { key: 'respondedAt', label: 'Response', format: (v) => v ? new Date(v as string).toLocaleDateString() : '' },
+            ]}
+          />
+          <Button
+            onClick={() => router.push('/projects')}
+            className="bg-teal-600 hover:bg-teal-700"
+          >
+            Browse Projects
+            <ArrowRight className="ml-2 h-4 w-4" />
+          </Button>
+        </div>
       </div>
 
       {/* Status Tabs */}

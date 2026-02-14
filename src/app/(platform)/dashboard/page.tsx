@@ -163,56 +163,75 @@ export default function DashboardPage() {
 
       {/* Stats Cards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Applications</CardTitle>
-            <FileText className="h-4 w-4 text-slate-400" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.applications.total}</div>
-            <p className="text-xs text-slate-500 dark:text-slate-400">
-              {stats.applications.pending} pending
-            </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Available Projects</CardTitle>
-            <Briefcase className="h-4 w-4 text-slate-400" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.availableProjects}</div>
-            <p className="text-xs text-slate-500 dark:text-slate-400">
-              Open for applications
-            </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Messages</CardTitle>
-            <Inbox className="h-4 w-4 text-slate-400" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.unreadMessages}</div>
-            <p className="text-xs text-slate-500 dark:text-slate-400">
-              Unread messages
-            </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Profile</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.profileCompleteness}%</div>
-            <div className="w-full bg-slate-200 rounded-full h-1.5 mt-2">
-              <div
-                className="bg-teal-600 h-1.5 rounded-full transition-all"
-                style={{ width: `${stats.profileCompleteness}%` }}
-              />
-            </div>
-          </CardContent>
-        </Card>
+        <Link href="/applications">
+          <Card className="hover:border-teal-300 hover:shadow-sm transition-all cursor-pointer">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Applications</CardTitle>
+              <FileText className="h-4 w-4 text-slate-400" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{stats.applications.total}</div>
+              <p className="text-xs text-slate-500 dark:text-slate-400">
+                {stats.applications.pending} pending
+              </p>
+            </CardContent>
+          </Card>
+        </Link>
+        <Link href="/projects">
+          <Card className="hover:border-teal-300 hover:shadow-sm transition-all cursor-pointer">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Available Projects</CardTitle>
+              <Briefcase className="h-4 w-4 text-slate-400" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{stats.availableProjects}</div>
+              <p className="text-xs text-slate-500 dark:text-slate-400">
+                Open for applications
+              </p>
+            </CardContent>
+          </Card>
+        </Link>
+        <Link href="/inbox">
+          <Card className="hover:border-teal-300 hover:shadow-sm transition-all cursor-pointer">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Messages</CardTitle>
+              <Inbox className="h-4 w-4 text-slate-400" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{stats.unreadMessages}</div>
+              <p className="text-xs text-slate-500 dark:text-slate-400">
+                Unread messages
+              </p>
+            </CardContent>
+          </Card>
+        </Link>
+        <Link href="/settings">
+          <Card className="hover:border-teal-300 hover:shadow-sm transition-all cursor-pointer">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Profile</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{stats.profileCompleteness}%</div>
+              <div className="w-full bg-slate-200 rounded-full h-1.5 mt-2">
+                <div
+                  className="bg-teal-600 h-1.5 rounded-full transition-all"
+                  style={{ width: `${stats.profileCompleteness}%` }}
+                />
+              </div>
+            </CardContent>
+          </Card>
+        </Link>
+      </div>
+
+      {/* Analytics Link */}
+      <div className="flex justify-end">
+        <Link href="/dashboard/analytics">
+          <Button variant="outline" size="sm" className="gap-1.5">
+            <TrendingUp className="h-4 w-4" />
+            View Analytics
+            <ArrowRight className="h-3 w-3" />
+          </Button>
+        </Link>
       </div>
 
       {/* Recommended Projects — Smart Matching */}

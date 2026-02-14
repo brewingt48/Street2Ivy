@@ -15,7 +15,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { FileText, Clock, CheckCircle2, XCircle, ChevronDown, ChevronUp, Mail, GraduationCap } from 'lucide-react';
+import { FileText, Clock, CheckCircle2, XCircle, ChevronDown, ChevronUp, Mail, GraduationCap, Download } from 'lucide-react';
+import { ExportButton } from '@/components/analytics/export-button';
 
 interface Application {
   id: string;
@@ -108,8 +109,25 @@ export default function CorporateApplicationsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Applications</h1>
-        <p className="text-slate-500 dark:text-slate-400 mt-1">Review and respond to student applications</p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Applications</h1>
+            <p className="text-slate-500 dark:text-slate-400 mt-1">Review and respond to student applications</p>
+          </div>
+          <ExportButton
+            data={applications as unknown as Record<string, unknown>[]}
+            filename="applications-received"
+            columns={[
+              { key: 'studentName', label: 'Student' },
+              { key: 'studentEmail', label: 'Email' },
+              { key: 'listingTitle', label: 'Project' },
+              { key: 'status', label: 'Status' },
+              { key: 'gpa', label: 'GPA' },
+              { key: 'submittedAt', label: 'Applied', format: (v) => v ? new Date(v as string).toLocaleDateString() : '' },
+              { key: 'respondedAt', label: 'Responded', format: (v) => v ? new Date(v as string).toLocaleDateString() : '' },
+            ]}
+          />
+        </div>
         <p className="text-xs text-slate-400 mt-2">
           Click a row to expand details &middot; <strong>Accept</strong> to approve a student &middot; <strong>Decline</strong> with an optional reason &middot; <strong>Complete</strong> when the project is finished
         </p>

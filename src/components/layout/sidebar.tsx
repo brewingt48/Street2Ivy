@@ -28,6 +28,7 @@ import {
   Sparkles,
   Home,
   HelpCircle,
+  TrendingUp,
 } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
@@ -107,6 +108,7 @@ function getNavItems(role: string): NavSection[] {
         {
           items: [
             { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+            { href: '/dashboard/analytics', label: 'Analytics', icon: TrendingUp },
             { href: '/projects', label: 'Browse Projects', icon: Search },
             { href: '/applications', label: 'My Applications', icon: FileText },
             { href: '/inbox', label: 'Messages', icon: Inbox },
@@ -125,6 +127,7 @@ function getNavItems(role: string): NavSection[] {
         {
           items: [
             { href: '/corporate', label: 'Dashboard', icon: LayoutDashboard },
+            { href: '/corporate/analytics', label: 'Analytics', icon: TrendingUp },
             { href: '/corporate/projects', label: 'My Listings', icon: Briefcase },
             { href: '/corporate/applications', label: 'Applications', icon: ClipboardList },
             { href: '/corporate/search-students', label: 'Find Students', icon: Search },
@@ -144,6 +147,7 @@ function getNavItems(role: string): NavSection[] {
         {
           items: [
             { href: '/education', label: 'Dashboard', icon: LayoutDashboard },
+            { href: '/education/analytics', label: 'Analytics', icon: TrendingUp },
             { href: '/education/students', label: 'Students', icon: GraduationCap },
             { href: '/education/corporates', label: 'Corporate Partners', icon: Briefcase },
             { href: '/education/waitlist', label: 'Waitlist', icon: ClipboardList },
@@ -169,6 +173,7 @@ function getNavItems(role: string): NavSection[] {
         {
           items: [
             { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
+            { href: '/admin/analytics', label: 'Analytics', icon: TrendingUp },
             { href: '/admin/users', label: 'Users', icon: Users },
             { href: '/admin/tenants', label: 'Tenants', icon: Building2 },
             { href: '/admin/institutions', label: 'Institutions', icon: GraduationCap },

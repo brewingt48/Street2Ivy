@@ -26,7 +26,9 @@ import {
   Ban,
   RefreshCw,
   Star,
+  Download,
 } from 'lucide-react';
+import { ExportButton } from '@/components/analytics/export-button';
 
 interface User {
   id: string;
@@ -115,9 +117,25 @@ export default function AdminUsersPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Users</h1>
-        <p className="text-slate-500 dark:text-slate-400 mt-1">Manage platform users — approve, reject, or discontinue accounts</p>
+      <div className="flex items-start justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Users</h1>
+          <p className="text-slate-500 dark:text-slate-400 mt-1">Manage platform users — approve, reject, or discontinue accounts</p>
+        </div>
+        <ExportButton
+          data={users as unknown as Record<string, unknown>[]}
+          filename="platform-users"
+          columns={[
+            { key: 'name', label: 'Name' },
+            { key: 'email', label: 'Email' },
+            { key: 'role', label: 'Role' },
+            { key: 'isActive', label: 'Active', format: (v) => v ? 'Yes' : 'No' },
+            { key: 'approvalStatus', label: 'Approval Status' },
+            { key: 'university', label: 'University' },
+            { key: 'companyName', label: 'Company' },
+            { key: 'createdAt', label: 'Created', format: (v) => v ? new Date(v as string).toLocaleDateString() : '' },
+          ]}
+        />
       </div>
 
       <div className="flex gap-3">

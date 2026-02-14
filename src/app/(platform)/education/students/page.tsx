@@ -10,7 +10,8 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Search, GraduationCap, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Search, GraduationCap, ChevronLeft, ChevronRight, Download } from 'lucide-react';
+import { ExportButton } from '@/components/analytics/export-button';
 
 interface Student {
   id: string;
@@ -49,9 +50,25 @@ export default function EducationStudentsPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Students</h1>
-        <p className="text-slate-500 dark:text-slate-400 mt-1">View and manage enrolled students</p>
+      <div className="flex items-start justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Students</h1>
+          <p className="text-slate-500 dark:text-slate-400 mt-1">View and manage enrolled students</p>
+        </div>
+        <ExportButton
+          data={students as unknown as Record<string, unknown>[]}
+          filename="students"
+          columns={[
+            { key: 'name', label: 'Name' },
+            { key: 'email', label: 'Email' },
+            { key: 'university', label: 'University' },
+            { key: 'major', label: 'Major' },
+            { key: 'graduationYear', label: 'Grad Year' },
+            { key: 'gpa', label: 'GPA' },
+            { key: 'applicationCount', label: 'Applications' },
+            { key: 'isActive', label: 'Active', format: (v) => v ? 'Yes' : 'No' },
+          ]}
+        />
         <p className="text-xs text-slate-400 mt-2">
           Search by name, email, or university. <strong>Active</strong> students can access the platform. The <strong>apps</strong> count shows how many projects each student has applied to.
         </p>

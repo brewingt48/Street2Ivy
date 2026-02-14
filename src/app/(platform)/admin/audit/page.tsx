@@ -5,7 +5,8 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Shield, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Shield, ChevronLeft, ChevronRight, Download } from 'lucide-react';
+import { ExportButton } from '@/components/analytics/export-button';
 
 interface AuditEntry { id: string; userId: string | null; userName: string | null; action: string; resource: string | null; resourceId: string | null; ipAddress: string | null; createdAt: string; }
 
@@ -25,9 +26,23 @@ export default function AdminAuditPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Audit Log</h1>
-        <p className="text-slate-500 dark:text-slate-400 mt-1">System activity and changes</p>
+      <div className="flex items-start justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Audit Log</h1>
+          <p className="text-slate-500 dark:text-slate-400 mt-1">System activity and changes</p>
+        </div>
+        <ExportButton
+          data={entries as unknown as Record<string, unknown>[]}
+          filename="audit-log"
+          columns={[
+            { key: 'userName', label: 'User' },
+            { key: 'action', label: 'Action' },
+            { key: 'resource', label: 'Resource' },
+            { key: 'resourceId', label: 'Resource ID' },
+            { key: 'ipAddress', label: 'IP Address' },
+            { key: 'createdAt', label: 'Timestamp', format: (v) => v ? new Date(v as string).toLocaleString() : '' },
+          ]}
+        />
       </div>
 
       {loading ? (
