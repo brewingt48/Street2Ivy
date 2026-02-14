@@ -1,0 +1,167 @@
+'use client';
+
+/**
+ * Create New Listing Page
+ */
+
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { ArrowLeft, Save, Send, AlertCircle } from 'lucide-react';
+
+interface Skill { id: string; name: string; category: string; }
+
+const CATEGORIES = ['Technology','Marketing','Design','Finance','Consulting','Data Science','Engineering','Research','Operations','Legal','Other'];
+
+export default function NewListingPage() {
+  const router = useRouter();
+  const [saving, setSaving] = useState(false);
+  const [publishing, setPublishing] = useState(false);
+  const [error, setError] = useState('');
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
+  const [category, setCategory] = useState('');
+  const [location, setLocation] = useState('');
+  const [remoteAllowed, setRemoteAllowed] = useState(false);
+  const [compensation, setCompensation] = useState('');
+  const [hoursPerWeek, setHoursPerWeek] = useState('');
+  const [duration, setDuration] = useState('');
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
+  const [maxApplicants, setMaxApplicants] = useState('');
+  const [requiresNda, setRequiresNda] = useState(false);
+  const [allSkills, setAllSkills] = useState<Skill[]>([]);
+  const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
+  const [skillSearch, setSkillSearch] = useState('');
+
+  useEffect(() => {
+    fetch('/api/skills').then((r) => r.json()).then((d) => setAllSkills(d.skills || [])).catch(console.error);
+  }, []);
+
+  const filteredSkills = allSkills.filter((s) => s.name.toLowerCase().includes(skillSearch.toLowerCase()) && !selectedSkills.includes(s.name));
+
+  const buildPayload = () => ({
+    title, description,
+    category: category || undefined,
+    location: location || undefined,
+    remoteAllowed,
+    compensation: compensation || undefined,
+    hoursPerWeek: hoursPerWeek ? parseInt(hoursPerWeek) : undefined,
+    duration: duration || undefined,
+    startDate: startDate || undefined,
+    endDate: endDate || undefined,
+    maxApplicants: maxApplicants ? parseInt(maxApplicants) : undefined,
+    requiresNda,
+    skillsRequired: selectedSkills.length > 0 ? selectedSkills : undefined,
+  });
+
+  const handleSaveDraft = async () => {
+    if (!title || !description) { setError('Title and description are required'); return; }
+    setSaving(true); setError('');
+    try {
+      const res = await fetch('/api/listings', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(buildPayload()) });
+      if (!res.ok) { const d = await res.json(); throw new Error(d.error || 'Failed to save'); }
+      router.push('/corporate/projects');
+    } catch (err) { setError(err instanceof Error ? err.message : 'Failed to save'); } finally { setSaving(false); }
+  };
+
+  const handlePublish = async () => {
+    if (!title || !description) { setError('Title and description are required'); return; }
+    setPublishing(true); setError('');
+    try {
+      const createRes = await fetch('/api/listings', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(buildPayload()) });
+      if (!createRes.ok) { const d = await createRes.json(); throw new Error(d.error || 'Failed to create'); }
+      const { listing } = await createRes.json();
+      await fetch(`/api/listings/${listing.id}/publish`, { method: 'POST' });
+      router.push('/corporate/projects');
+    } catch (err) { setError(err instanceof Error ? err.message : 'Failed to publish'); } finally { setPublishing(false); }
+  };
+
+  return (
+    <div className="max-w-3xl mx-auto space-y-6">
+      <Button variant="ghost" size="sm" onClick={() => router.push('/corporate/projects')}>
+        <ArrowLeft className="h-4 w-4 mr-2" /> Back to Listings
+      </Button>
+
+      <div>
+        <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Create New Listing</h1>
+        <p className="text-slate-500 dark:text-slate-400 mt-1">Describe your project to attract the best student talent</p>
+      </div>
+
+      {error && (
+        <div className="p-3 text-sm text-red-600 bg-red-50 rounded-md flex items-center gap-2">
+          <AlertCircle className="h-4 w-4 shrink-0" /> {error}
+        </div>
+      )}
+
+      <Card>
+        <CardHeader><CardTitle>Project Details</CardTitle><CardDescription>Basic information about your project</CardDescription></CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2"><Label htmlFor="title">Project Title *</Label><Input id="title" placeholder="e.g. Social Media Marketing Campaign" value={title} onChange={(e) => setTitle(e.target.value)} /></div>
+          <div className="space-y-2"><Label htmlFor="desc">Description *</Label><Textarea id="desc" placeholder="Describe the project scope, deliverables, and what you're looking for..." value={description} onChange={(e) => setDescription(e.target.value)} rows={6} /></div>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>Category</Label>
+              <Select value={category} onValueChange={setCategory}><SelectTrigger><SelectValue placeholder="Select category" /></SelectTrigger><SelectContent>{CATEGORIES.map((c) => (<SelectItem key={c} value={c}>{c}</SelectItem>))}</SelectContent></Select>
+            </div>
+            <div className="space-y-2"><Label htmlFor="loc">Location</Label><Input id="loc" placeholder="e.g. New York, NY" value={location} onChange={(e) => setLocation(e.target.value)} /></div>
+          </div>
+          <div className="flex items-center gap-6">
+            <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" checked={remoteAllowed} onChange={(e) => setRemoteAllowed(e.target.checked)} className="rounded border-slate-300" /><span className="text-sm">Remote-friendly</span></label>
+            <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" checked={requiresNda} onChange={(e) => setRequiresNda(e.target.checked)} className="rounded border-slate-300" /><span className="text-sm">Requires NDA</span></label>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader><CardTitle>Compensation & Schedule</CardTitle></CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2"><Label>Compensation</Label><Input placeholder="e.g. $25/hr or $2,000 fixed" value={compensation} onChange={(e) => setCompensation(e.target.value)} /></div>
+            <div className="space-y-2"><Label>Hours per Week</Label><Input type="number" placeholder="20" min={1} max={80} value={hoursPerWeek} onChange={(e) => setHoursPerWeek(e.target.value)} /></div>
+          </div>
+          <div className="grid grid-cols-3 gap-4">
+            <div className="space-y-2"><Label>Duration</Label><Input placeholder="e.g. 3 months" value={duration} onChange={(e) => setDuration(e.target.value)} /></div>
+            <div className="space-y-2"><Label>Start Date</Label><Input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} /></div>
+            <div className="space-y-2"><Label>End Date</Label><Input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} /></div>
+          </div>
+          <div className="space-y-2"><Label>Max Applicants</Label><Input type="number" placeholder="Leave empty for unlimited" min={1} value={maxApplicants} onChange={(e) => setMaxApplicants(e.target.value)} className="max-w-xs" /></div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader><CardTitle>Required Skills ({selectedSkills.length})</CardTitle><CardDescription>Select the skills needed for this project</CardDescription></CardHeader>
+        <CardContent className="space-y-4">
+          {selectedSkills.length > 0 && (
+            <div className="flex flex-wrap gap-2">
+              {selectedSkills.map((s) => (<Badge key={s} className="bg-teal-600 cursor-pointer" onClick={() => setSelectedSkills((p) => p.filter((x) => x !== s))}>{s} &times;</Badge>))}
+            </div>
+          )}
+          <Input placeholder="Search skills to add..." value={skillSearch} onChange={(e) => setSkillSearch(e.target.value)} />
+          {skillSearch && (
+            <div className="max-h-48 overflow-y-auto border rounded-md p-3">
+              <div className="flex flex-wrap gap-2">
+                {filteredSkills.slice(0, 30).map((s) => (<Badge key={s.id} variant="outline" className="cursor-pointer hover:bg-teal-50" onClick={() => { setSelectedSkills((p) => [...p, s.name]); setSkillSearch(''); }}>{s.name}</Badge>))}
+                {filteredSkills.length === 0 && <p className="text-sm text-slate-400">No skills found</p>}
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      <div className="flex justify-between pb-8">
+        <Button variant="ghost" onClick={() => router.push('/corporate/projects')}>Cancel</Button>
+        <div className="flex gap-3">
+          <Button variant="outline" onClick={handleSaveDraft} disabled={saving || publishing}><Save className="h-4 w-4 mr-2" /> {saving ? 'Saving...' : 'Save as Draft'}</Button>
+          <Button onClick={handlePublish} disabled={saving || publishing} className="bg-teal-600 hover:bg-teal-700"><Send className="h-4 w-4 mr-2" /> {publishing ? 'Publishing...' : 'Save & Publish'}</Button>
+        </div>
+      </div>
+    </div>
+  );
+}
