@@ -24,6 +24,7 @@ import {
   Newspaper,
   Globe,
   ClipboardList,
+  Palette,
 } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
@@ -143,6 +144,12 @@ function getNavItems(role: string): NavSection[] {
             { href: '/education/students', label: 'Students', icon: GraduationCap },
             { href: '/education/waitlist', label: 'Waitlist', icon: ClipboardList },
             { href: '/inbox', label: 'Messages', icon: Inbox },
+          ],
+        },
+        {
+          title: 'Institution',
+          items: [
+            { href: '/education/settings', label: 'Branding & Settings', icon: Palette },
           ],
         },
         {
