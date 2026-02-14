@@ -8,17 +8,14 @@ if (!connectionString) {
   throw new Error('DATABASE_URL environment variable is required');
 }
 
-// Heroku Postgres requires SSL in production
-// Append ?sslmode=no-verify to bypass certificate validation (Heroku self-signed certs)
-const dbUrl = process.env.NODE_ENV === 'production' && !connectionString.includes('sslmode')
-  ? `${connectionString}?sslmode=no-verify`
-  : connectionString;
-
 // Raw SQL client (for RLS context, raw queries, password verification)
-export const sql = postgres(dbUrl, {
+export const sql = postgres(connectionString, {
   max: 10,
   idle_timeout: 20,
   connect_timeout: 10,
+  ssl: process.env.NODE_ENV === 'production'
+    ? { rejectUnauthorized: false }
+    : false,
 });
 
 // Drizzle ORM instance with full schema
