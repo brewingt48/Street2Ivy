@@ -120,7 +120,10 @@ export default function ApplicationsPage() {
             My Applications
           </h1>
           <p className="text-slate-500 dark:text-slate-400 mt-1">
-            Track your project applications
+            Track your project applications and their current status
+          </p>
+          <p className="text-xs text-slate-400 mt-2">
+            <strong>Pending</strong> = awaiting review &middot; <strong>Accepted</strong> = you&apos;re in! &middot; <strong>Completed</strong> = project finished &middot; <strong>Withdraw</strong> to cancel a pending application
           </p>
         </div>
         <Button

@@ -8,7 +8,8 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
-import { GraduationCap, Briefcase, CheckCircle2, Clock } from 'lucide-react';
+import { GraduationCap, Briefcase, CheckCircle2, Clock, Info } from 'lucide-react';
+import { HelpSupportCard } from '@/components/shared/help-support-card';
 
 interface Stats {
   totalStudents: number;
@@ -57,6 +58,22 @@ export default function EducationDashboardPage() {
       <div>
         <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Education Dashboard</h1>
         <p className="text-slate-500 dark:text-slate-400 mt-1">Manage your students and institution</p>
+      </div>
+
+      {/* Quick Guide for Edu Admins */}
+      <div className="bg-teal-50 dark:bg-teal-900/20 border border-teal-200 dark:border-teal-800 rounded-lg p-4">
+        <div className="flex items-start gap-3">
+          <Info className="h-5 w-5 text-teal-600 mt-0.5 shrink-0" />
+          <div className="text-sm text-teal-800 dark:text-teal-300">
+            <p className="font-medium mb-1">Administration Guide</p>
+            <ul className="space-y-1 text-teal-700 dark:text-teal-400">
+              <li>&bull; <strong>Students</strong> &mdash; View and manage enrolled students from your institution</li>
+              <li>&bull; <strong>Corporate Partners</strong> &mdash; Approve or manage corporate partners within your tenant</li>
+              <li>&bull; <strong>Waitlist</strong> &mdash; Review and manage students waiting for approval</li>
+              <li>&bull; <strong>Branding &amp; Settings</strong> &mdash; Customize your institution&apos;s branding and configuration</li>
+            </ul>
+          </div>
+        </div>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -110,6 +127,39 @@ export default function EducationDashboardPage() {
           )}
         </CardContent>
       </Card>
+
+      {/* Understanding Your Dashboard */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-lg">
+            <Info className="h-5 w-5 text-teal-600" />
+            Understanding Your Dashboard
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-4 md:grid-cols-2 text-sm text-slate-600 dark:text-slate-300">
+            <div>
+              <p className="font-medium text-slate-900 dark:text-white mb-1">Total Students</p>
+              <p>The number of students registered under your institution&apos;s tenant. Students must use an approved email domain to register.</p>
+            </div>
+            <div>
+              <p className="font-medium text-slate-900 dark:text-white mb-1">Active Projects</p>
+              <p>Published project listings from corporate partners that your students can apply to.</p>
+            </div>
+            <div>
+              <p className="font-medium text-slate-900 dark:text-white mb-1">Completed</p>
+              <p>Projects that have been successfully completed by students from your institution.</p>
+            </div>
+            <div>
+              <p className="font-medium text-slate-900 dark:text-white mb-1">Waitlist</p>
+              <p>Students waiting for approval to join the platform. Review and approve them from the Waitlist page.</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Help & Support */}
+      <HelpSupportCard />
     </div>
   );
 }

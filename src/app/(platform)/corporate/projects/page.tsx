@@ -126,6 +126,9 @@ export default function CorporateProjectsPage() {
         <div>
           <h1 className="text-3xl font-bold text-slate-900 dark:text-white">My Listings</h1>
           <p className="text-slate-500 dark:text-slate-400 mt-1">Create and manage your project listings</p>
+          <p className="text-xs text-slate-400 mt-2">
+            <strong>Draft</strong> = only you can see &middot; <strong>Published</strong> = visible to students &middot; <strong>Close</strong> to stop accepting applications &middot; <strong>Delete</strong> to permanently remove
+          </p>
         </div>
         <Button onClick={() => router.push('/corporate/projects/new')} className="bg-teal-600 hover:bg-teal-700">
           <Plus className="h-4 w-4 mr-2" /> New Listing

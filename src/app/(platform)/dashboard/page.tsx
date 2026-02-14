@@ -32,7 +32,9 @@ import {
   Search,
   MapPin,
   TrendingUp,
+  Info,
 } from 'lucide-react';
+import { HelpSupportCard } from '@/components/shared/help-support-card';
 
 interface DashboardData {
   stats: {
@@ -140,6 +142,22 @@ export default function DashboardPage() {
             Browse All
             <ArrowRight className="ml-2 h-4 w-4" />
           </Button>
+        </div>
+      </div>
+
+      {/* Quick Tips */}
+      <div className="bg-teal-50 dark:bg-teal-900/20 border border-teal-200 dark:border-teal-800 rounded-lg p-4">
+        <div className="flex items-start gap-3">
+          <Info className="h-5 w-5 text-teal-600 mt-0.5 shrink-0" />
+          <div className="text-sm text-teal-800 dark:text-teal-300">
+            <p className="font-medium mb-1">Getting Started Tips</p>
+            <ul className="space-y-1 text-teal-700 dark:text-teal-400">
+              <li>&bull; <strong>Complete your profile</strong> to improve your visibility to corporate partners</li>
+              <li>&bull; <strong>Add your skills</strong> in Settings &mdash; our matching algorithm uses them to recommend projects</li>
+              <li>&bull; <strong>Browse Projects</strong> to find opportunities that match your interests and expertise</li>
+              <li>&bull; <strong>Check your messages</strong> regularly &mdash; partners may reach out with invitations</li>
+            </ul>
+          </div>
         </div>
       </div>
 
@@ -341,6 +359,39 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
       )}
+
+      {/* Understanding Your Dashboard */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-lg">
+            <Info className="h-5 w-5 text-teal-600" />
+            Understanding Your Dashboard
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-4 md:grid-cols-2 text-sm text-slate-600 dark:text-slate-300">
+            <div>
+              <p className="font-medium text-slate-900 dark:text-white mb-1">Applications</p>
+              <p>Tracks how many projects you&apos;ve applied to. &quot;Pending&quot; means the company hasn&apos;t responded yet.</p>
+            </div>
+            <div>
+              <p className="font-medium text-slate-900 dark:text-white mb-1">Available Projects</p>
+              <p>The number of published listings currently accepting applications. Browse them to find your next opportunity.</p>
+            </div>
+            <div>
+              <p className="font-medium text-slate-900 dark:text-white mb-1">Recommended For You</p>
+              <p>Projects matched to your skills using our smart matching algorithm. The percentage shows how well your skills align.</p>
+            </div>
+            <div>
+              <p className="font-medium text-slate-900 dark:text-white mb-1">Profile Completeness</p>
+              <p>A complete profile with skills, bio, and education details makes you more visible to corporate partners.</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Help & Support */}
+      <HelpSupportCard />
     </div>
   );
 }

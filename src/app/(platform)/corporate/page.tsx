@@ -31,7 +31,9 @@ import {
   TrendingUp,
   Search,
   GraduationCap,
+  Info,
 } from 'lucide-react';
+import { HelpSupportCard } from '@/components/shared/help-support-card';
 
 interface DashboardData {
   listings: { active: number; draft: number; closed: number; total: number };
@@ -137,6 +139,22 @@ export default function CorporateDashboardPage() {
           <Button onClick={() => router.push('/corporate/projects/new')} className="bg-teal-600 hover:bg-teal-700">
             <Plus className="h-4 w-4 mr-2" /> New Listing
           </Button>
+        </div>
+      </div>
+
+      {/* Quick Tips for Corporate Partners */}
+      <div className="bg-teal-50 dark:bg-teal-900/20 border border-teal-200 dark:border-teal-800 rounded-lg p-4">
+        <div className="flex items-start gap-3">
+          <Info className="h-5 w-5 text-teal-600 mt-0.5 shrink-0" />
+          <div className="text-sm text-teal-800 dark:text-teal-300">
+            <p className="font-medium mb-1">Quick Guide</p>
+            <ul className="space-y-1 text-teal-700 dark:text-teal-400">
+              <li>&bull; <strong>New Listing</strong> &mdash; Create a project listing describing the work, skills needed, and compensation</li>
+              <li>&bull; <strong>Applications</strong> &mdash; Review student applications, accept or decline, and mark projects as complete</li>
+              <li>&bull; <strong>Find Students</strong> &mdash; Search the student pool to proactively invite qualified candidates</li>
+              <li>&bull; <strong>Messages</strong> &mdash; Communicate with students about applications and project details</li>
+            </ul>
+          </div>
         </div>
       </div>
 
@@ -298,6 +316,39 @@ export default function CorporateDashboardPage() {
           )}
         </CardContent>
       </Card>
+
+      {/* Understanding Your Dashboard */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-lg">
+            <Info className="h-5 w-5 text-teal-600" />
+            Understanding Your Dashboard
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-4 md:grid-cols-2 text-sm text-slate-600 dark:text-slate-300">
+            <div>
+              <p className="font-medium text-slate-900 dark:text-white mb-1">Active Listings</p>
+              <p>Published project listings that are visible to students and accepting applications. Drafts are not visible until published.</p>
+            </div>
+            <div>
+              <p className="font-medium text-slate-900 dark:text-white mb-1">Applications</p>
+              <p>Student submissions to your projects. &quot;Pending&quot; means they&apos;re awaiting your review. Click to accept, decline, or mark complete.</p>
+            </div>
+            <div>
+              <p className="font-medium text-slate-900 dark:text-white mb-1">Invites Sent</p>
+              <p>Direct invitations you&apos;ve sent to students. Students can accept or decline your invite.</p>
+            </div>
+            <div>
+              <p className="font-medium text-slate-900 dark:text-white mb-1">Recommended Students</p>
+              <p>Students matched to your active listings using our skills-based algorithm. The percentage shows skill alignment.</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Help & Support */}
+      <HelpSupportCard />
     </div>
   );
 }

@@ -52,6 +52,9 @@ export default function EducationStudentsPage() {
       <div>
         <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Students</h1>
         <p className="text-slate-500 dark:text-slate-400 mt-1">View and manage enrolled students</p>
+        <p className="text-xs text-slate-400 mt-2">
+          Search by name, email, or university. <strong>Active</strong> students can access the platform. The <strong>apps</strong> count shows how many projects each student has applied to.
+        </p>
       </div>
 
       <div className="flex gap-3">

@@ -57,7 +57,7 @@ const TEST_USERS = [
     email: 'eduadmin.test@campus2career.com',
     firstName: 'Taylor',
     lastName: 'Washington',
-    role: 'edu_admin',
+    role: 'educational_admin',
     bio: 'Director of Career Services at Howard University. Dedicated to bridging the gap between academic excellence and career readiness.',
     metadata: {
       institution: 'Howard University',

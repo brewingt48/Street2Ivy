@@ -151,6 +151,9 @@ export default function ProjectsPage() {
         <p className="text-slate-500 dark:text-slate-400 mt-1">
           Discover opportunities from top companies
         </p>
+        <p className="text-xs text-slate-400 mt-2">
+          Use the search bar and filters to find projects. Filter by <strong>category</strong>, <strong>remote</strong> availability, partner <strong>alumni status</strong>, or <strong>sport</strong>. Click any project card to view details and apply.
+        </p>
       </div>
 
       {/* Search & Filters */}

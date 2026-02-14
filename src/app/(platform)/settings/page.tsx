@@ -236,6 +236,9 @@ export default function SettingsPage() {
         <p className="text-slate-500 dark:text-slate-400 mt-1">
           Manage your profile, skills, and account security
         </p>
+        <p className="text-xs text-slate-400 mt-2">
+          Keep your profile up to date for better visibility. Adding <strong>skills</strong> improves project matching. Use a <strong>strong password</strong> (8+ characters) to keep your account secure.
+        </p>
       </div>
 
       {/* Profile Information */}

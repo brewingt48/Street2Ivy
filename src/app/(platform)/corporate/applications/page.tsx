@@ -110,6 +110,9 @@ export default function CorporateApplicationsPage() {
       <div>
         <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Applications</h1>
         <p className="text-slate-500 dark:text-slate-400 mt-1">Review and respond to student applications</p>
+        <p className="text-xs text-slate-400 mt-2">
+          Click a row to expand details &middot; <strong>Accept</strong> to approve a student &middot; <strong>Decline</strong> with an optional reason &middot; <strong>Complete</strong> when the project is finished
+        </p>
       </div>
 
       <div className="flex flex-wrap gap-2">

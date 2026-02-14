@@ -92,6 +92,9 @@ export default function NewListingPage() {
       <div>
         <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Create New Listing</h1>
         <p className="text-slate-500 dark:text-slate-400 mt-1">Describe your project to attract the best student talent</p>
+        <p className="text-xs text-slate-400 mt-2">
+          Fill in the details below. <strong>Title</strong> and <strong>Description</strong> are required. Add skills to help our matching algorithm connect you with the right students. You can save as a draft and publish later.
+        </p>
       </div>
 
       {error && (
