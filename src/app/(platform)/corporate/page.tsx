@@ -3,7 +3,8 @@
 /**
  * Corporate Partner Dashboard
  *
- * Shows listing stats, application stats, recent applications, and invite summary.
+ * Shows listing stats, application stats, recent applications,
+ * invite summary, and recommended students (smart matching).
  */
 
 import { useState, useEffect } from 'react';
@@ -26,6 +27,10 @@ import {
   ArrowRight,
   Plus,
   Inbox,
+  Sparkles,
+  TrendingUp,
+  Search,
+  GraduationCap,
 } from 'lucide-react';
 
 interface DashboardData {
@@ -43,6 +48,18 @@ interface DashboardData {
   }[];
 }
 
+interface StudentRecommendation {
+  userId: string;
+  firstName: string;
+  lastName: string;
+  matchScore: number;
+  matchedSkills: string[];
+  missingSkills: string[];
+  university: string | null;
+  major: string | null;
+  gpa: string | null;
+}
+
 const statusConfig: Record<string, { label: string; color: string }> = {
   pending: { label: 'Pending', color: 'bg-yellow-100 text-yellow-700' },
   accepted: { label: 'Accepted', color: 'bg-green-100 text-green-700' },
@@ -53,6 +70,7 @@ const statusConfig: Record<string, { label: string; color: string }> = {
 export default function CorporateDashboardPage() {
   const router = useRouter();
   const [data, setData] = useState<DashboardData | null>(null);
+  const [recommendations, setRecommendations] = useState<StudentRecommendation[]>([]);
   const [loading, setLoading] = useState(true);
   const [userName, setUserName] = useState('');
 
@@ -64,6 +82,23 @@ export default function CorporateDashboardPage() {
       .then(([dashboard, auth]) => {
         setData(dashboard);
         setUserName(auth.user?.firstName || '');
+
+        // If there are active listings, fetch student recommendations for the first one
+        if (dashboard.listings?.active > 0) {
+          fetch('/api/listings/corporate?status=published&limit=1')
+            .then((r) => r.json())
+            .then((listingsData) => {
+              const firstListing = (listingsData.listings || [])[0];
+              if (firstListing) {
+                return fetch(`/api/matching?type=students&listingId=${firstListing.id}&limit=6`)
+                  .then((r) => r.json())
+                  .then((matchingData) => {
+                    setRecommendations(matchingData.recommendations || []);
+                  });
+              }
+            })
+            .catch(console.error);
+        }
       })
       .catch(console.error)
       .finally(() => setLoading(false));
@@ -94,9 +129,15 @@ export default function CorporateDashboardPage() {
             Here&apos;s an overview of your listings and applications.
           </p>
         </div>
-        <Button onClick={() => router.push('/corporate/projects/new')} className="bg-teal-600 hover:bg-teal-700">
-          <Plus className="h-4 w-4 mr-2" /> New Listing
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" onClick={() => router.push('/corporate/search-students')}>
+            <Search className="h-4 w-4 mr-2" />
+            Find Students
+          </Button>
+          <Button onClick={() => router.push('/corporate/projects/new')} className="bg-teal-600 hover:bg-teal-700">
+            <Plus className="h-4 w-4 mr-2" /> New Listing
+          </Button>
+        </div>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -141,6 +182,80 @@ export default function CorporateDashboardPage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Recommended Students — Smart Matching */}
+      {recommendations.length > 0 && (
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <div>
+              <CardTitle className="flex items-center gap-2">
+                <Sparkles className="h-5 w-5 text-amber-500" />
+                Recommended Students
+              </CardTitle>
+              <CardDescription>Top-matched students for your active listings</CardDescription>
+            </div>
+            <Link href="/corporate/search-students">
+              <Button variant="ghost" size="sm">
+                View All <ArrowRight className="ml-1 h-3 w-3" />
+              </Button>
+            </Link>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+              {recommendations.slice(0, 6).map((rec) => (
+                <div
+                  key={rec.userId}
+                  className="border rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer group"
+                  onClick={() => router.push('/corporate/search-students')}
+                >
+                  <div className="flex items-start justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 rounded-full bg-teal-50 flex items-center justify-center">
+                        <GraduationCap className="h-4 w-4 text-teal-600" />
+                      </div>
+                      <h3 className="font-medium text-sm text-slate-900 dark:text-white group-hover:text-teal-600 transition-colors">
+                        {rec.firstName} {rec.lastName}
+                      </h3>
+                    </div>
+                    <Badge className="bg-teal-50 text-teal-700 border-0 text-xs flex-shrink-0">
+                      <TrendingUp className="h-3 w-3 mr-1" />
+                      {rec.matchScore}%
+                    </Badge>
+                  </div>
+
+                  {(rec.university || rec.major) && (
+                    <p className="text-xs text-slate-500 mb-2">
+                      {rec.university}{rec.university && rec.major ? ' · ' : ''}{rec.major}
+                    </p>
+                  )}
+
+                  {rec.gpa && (
+                    <p className="text-xs text-slate-400 mb-2">GPA: {rec.gpa}</p>
+                  )}
+
+                  <div className="flex items-center gap-2 flex-wrap">
+                    {rec.matchedSkills.length > 0 && (
+                      <span className="text-xs text-green-600">
+                        {rec.matchedSkills.length} skill{rec.matchedSkills.length !== 1 ? 's' : ''} matched
+                      </span>
+                    )}
+                    {rec.matchedSkills.slice(0, 2).map((skill) => (
+                      <Badge key={skill} variant="outline" className="text-xs py-0">
+                        {skill}
+                      </Badge>
+                    ))}
+                    {rec.matchedSkills.length > 2 && (
+                      <span className="text-xs text-slate-400">
+                        +{rec.matchedSkills.length - 2} more
+                      </span>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">

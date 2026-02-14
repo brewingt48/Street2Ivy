@@ -18,11 +18,22 @@ export default function PublicLayout({
 }) {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [bookDemoUrl, setBookDemoUrl] = useState('https://calendly.com');
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 50);
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // Fetch admin-configured Book Demo URL
+  useEffect(() => {
+    fetch('/api/admin/homepage')
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.bookDemoUrl) setBookDemoUrl(data.bookDemoUrl);
+      })
+      .catch(() => {/* use default */});
   }, []);
 
   return (
@@ -37,11 +48,18 @@ export default function PublicLayout({
       >
         <div className="max-w-7xl mx-auto flex h-16 items-center px-6 lg:px-8">
           <Link href="/" className="flex items-center mr-10">
-            <span className={`text-xl font-bold tracking-tight transition-colors ${
-              scrolled ? 'text-navy-900' : 'text-white'
-            }`}>
-              Campus<span className={scrolled ? 'text-gold-500' : 'text-gold-300'}>2</span>Career
-            </span>
+            <div className="flex flex-col">
+              <span className={`text-xl font-bold tracking-tight transition-colors leading-tight ${
+                scrolled ? 'text-navy-900' : 'text-white'
+              }`}>
+                Campus<span className={scrolled ? 'text-gold-500' : 'text-gold-300'}>2</span>Career
+              </span>
+              <span className={`text-[9px] font-medium tracking-wider uppercase transition-colors ${
+                scrolled ? 'text-navy-400' : 'text-white/50'
+              }`}>
+                by Street2Ivy
+              </span>
+            </div>
           </Link>
 
           <nav className="hidden lg:flex items-center space-x-8 flex-1">
@@ -71,9 +89,9 @@ export default function PublicLayout({
             }`}>
               Sign In
             </Link>
-            <Link href="/register" className="inline-flex items-center justify-center rounded-full bg-gold-500 px-6 py-2.5 text-sm font-semibold text-navy-900 hover:bg-gold-400 transition-colors shadow-lg shadow-gold-500/25">
-              Request a Demo
-            </Link>
+            <a href={bookDemoUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center rounded-full bg-gold-500 px-6 py-2.5 text-sm font-semibold text-navy-900 hover:bg-gold-400 transition-colors shadow-lg shadow-gold-500/25">
+              Book a Demo
+            </a>
           </div>
 
           {/* Mobile menu button */}
@@ -106,9 +124,9 @@ export default function PublicLayout({
               ))}
               <div className="pt-4 border-t border-navy-100 flex flex-col gap-3">
                 <Link href="/login" className="text-sm font-medium text-navy-600">Sign In</Link>
-                <Link href="/register" className="inline-flex items-center justify-center rounded-full bg-gold-500 px-6 py-2.5 text-sm font-semibold text-navy-900 hover:bg-gold-400">
-                  Request a Demo
-                </Link>
+                <a href={bookDemoUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center rounded-full bg-gold-500 px-6 py-2.5 text-sm font-semibold text-navy-900 hover:bg-gold-400">
+                  Book a Demo
+                </a>
               </div>
             </div>
           </div>
@@ -124,9 +142,14 @@ export default function PublicLayout({
           {/* Main footer */}
           <div className="py-16 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
             <div className="lg:col-span-1">
-              <span className="text-xl font-bold tracking-tight">
-                Campus<span className="text-gold-400">2</span>Career
-              </span>
+              <div className="flex flex-col">
+                <span className="text-xl font-bold tracking-tight leading-tight">
+                  Campus<span className="text-gold-400">2</span>Career
+                </span>
+                <span className="text-[9px] font-medium tracking-wider uppercase text-navy-500">
+                  by Street2Ivy
+                </span>
+              </div>
               <p className="mt-4 text-sm text-navy-300 leading-relaxed max-w-xs">
                 From Campus to Career — Real Projects, Real Impact. The enterprise platform connecting students, corporations, and institutions.
               </p>

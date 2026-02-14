@@ -384,29 +384,163 @@ export default function TenantDetailPage() {
             </CardContent>
           </Card>
 
-          {/* Features */}
+          {/* Plan Management */}
           <Card>
             <CardHeader>
-              <CardTitle>Features & Limits</CardTitle>
+              <CardTitle className="flex items-center gap-2">
+                <Crown className="h-5 w-5 text-amber-500" />
+                Plan & Features
+              </CardTitle>
+              <CardDescription>
+                Assign or upgrade the tenant&apos;s plan. Toggling a plan will automatically enable/disable the corresponding features.
+              </CardDescription>
             </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+            <CardContent className="space-y-6">
+              {/* Plan Selector */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 {[
-                  { key: 'plan', label: 'Plan', format: (v: unknown) => String(v || 'starter').charAt(0).toUpperCase() + String(v || 'starter').slice(1) },
-                  { key: 'maxStudents', label: 'Max Students', format: (v: unknown) => Number(v) === -1 ? 'Unlimited' : String(v || 100) },
-                  { key: 'maxListings', label: 'Max Listings', format: (v: unknown) => Number(v) === -1 ? 'Unlimited' : String(v || 10) },
-                  { key: 'aiCoaching', label: 'AI Coaching', format: (v: unknown) => v ? 'Enabled' : 'Disabled' },
-                  { key: 'customBranding', label: 'Custom Branding', format: (v: unknown) => v ? 'Enabled' : 'Disabled' },
-                  { key: 'analytics', label: 'Analytics', format: (v: unknown) => v ? 'Enabled' : 'Disabled' },
-                  { key: 'apiAccess', label: 'API Access', format: (v: unknown) => v ? 'Enabled' : 'Disabled' },
-                ].map((feat) => (
-                  <div key={feat.key} className="rounded-lg border p-3">
-                    <p className="text-xs text-slate-500 uppercase tracking-wider">{feat.label}</p>
-                    <p className="font-semibold text-slate-900 dark:text-white mt-1">
-                      {feat.format((tenant.features as Record<string, unknown>)?.[feat.key])}
+                  {
+                    plan: 'starter',
+                    label: 'Starter',
+                    description: '100 students, 10 listings',
+                    features: { maxStudents: 100, maxListings: 10, aiCoaching: false, customBranding: false, analytics: false, apiAccess: false },
+                  },
+                  {
+                    plan: 'professional',
+                    label: 'Professional',
+                    description: '500 students, 50 listings',
+                    features: { maxStudents: 500, maxListings: 50, aiCoaching: true, customBranding: true, analytics: true, apiAccess: false },
+                  },
+                  {
+                    plan: 'enterprise',
+                    label: 'Enterprise',
+                    description: 'Unlimited students & listings',
+                    features: { maxStudents: -1, maxListings: -1, aiCoaching: true, customBranding: true, analytics: true, apiAccess: true },
+                  },
+                ].map((p) => {
+                  const currentPlan = ((tenant.features as Record<string, unknown>)?.plan as string) || 'starter';
+                  const isActive = currentPlan === p.plan;
+                  return (
+                    <button
+                      key={p.plan}
+                      onClick={async () => {
+                        if (isActive) return;
+                        setSaving(true);
+                        try {
+                          const res = await fetch(`/api/admin/tenants/${id}`, {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                              features: { ...p.features, plan: p.plan, upgradeRequestPending: false },
+                            }),
+                          });
+                          if (res.ok) {
+                            setSaved(true);
+                            setTimeout(() => setSaved(false), 3000);
+                            fetchTenant();
+                          }
+                        } catch (err) { console.error(err); }
+                        finally { setSaving(false); }
+                      }}
+                      className={`text-left p-4 rounded-xl border-2 transition-all ${
+                        isActive
+                          ? 'border-teal-500 bg-teal-50 dark:bg-teal-900/20'
+                          : 'border-slate-200 hover:border-slate-300 dark:border-slate-700'
+                      }`}
+                      disabled={saving}
+                    >
+                      <div className="flex items-center justify-between mb-1">
+                        <p className={`font-semibold ${isActive ? 'text-teal-700 dark:text-teal-400' : 'text-slate-900 dark:text-white'}`}>
+                          {p.label}
+                        </p>
+                        {isActive && <Check className="h-4 w-4 text-teal-600" />}
+                      </div>
+                      <p className="text-xs text-slate-500">{p.description}</p>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Upgrade Request Indicator */}
+              {(tenant.features as Record<string, unknown>)?.upgradeRequestPending ? (
+                <div className="flex items-center gap-3 p-3 rounded-lg bg-amber-50 border border-amber-200">
+                  <Crown className="h-5 w-5 text-amber-600" />
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-amber-800">Upgrade Requested</p>
+                    <p className="text-xs text-amber-600">
+                      This tenant has requested a plan upgrade to{' '}
+                      <strong>{String((tenant.features as Record<string, unknown>)?.requestedPlan || 'professional')}</strong>.
                     </p>
                   </div>
-                ))}
+                  <Badge className="bg-amber-100 text-amber-700 border-0">Pending</Badge>
+                </div>
+              ) : null}
+
+              {/* Feature Toggles */}
+              <div className="space-y-2">
+                <p className="text-sm font-medium text-slate-700 dark:text-slate-300">Individual Feature Overrides</p>
+                <p className="text-xs text-slate-400 mb-3">
+                  Toggle individual features regardless of plan level. Changes take effect immediately.
+                </p>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                  {[
+                    { key: 'aiCoaching', label: 'AI Coaching' },
+                    { key: 'customBranding', label: 'Custom Branding' },
+                    { key: 'analytics', label: 'Analytics' },
+                    { key: 'apiAccess', label: 'API Access' },
+                    { key: 'aiCoachingEnabled', label: 'AI Coach Access' },
+                  ].map((feat) => {
+                    const features = (tenant.features || {}) as Record<string, unknown>;
+                    const enabled = !!features[feat.key];
+                    return (
+                      <button
+                        key={feat.key}
+                        onClick={async () => {
+                          setSaving(true);
+                          try {
+                            const res = await fetch(`/api/admin/tenants/${id}`, {
+                              method: 'PUT',
+                              headers: { 'Content-Type': 'application/json' },
+                              body: JSON.stringify({
+                                features: { [feat.key]: !enabled },
+                              }),
+                            });
+                            if (res.ok) fetchTenant();
+                          } catch (err) { console.error(err); }
+                          finally { setSaving(false); }
+                        }}
+                        className={`flex items-center justify-between p-3 rounded-lg border transition-colors ${
+                          enabled ? 'border-green-200 bg-green-50/50' : 'border-slate-200'
+                        }`}
+                        disabled={saving}
+                      >
+                        <span className="text-sm text-slate-700 dark:text-slate-300">{feat.label}</span>
+                        <Badge
+                          variant={enabled ? 'default' : 'outline'}
+                          className={enabled ? 'bg-green-100 text-green-700 border-0' : ''}
+                        >
+                          {enabled ? 'On' : 'Off'}
+                        </Badge>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Limits */}
+              <div className="grid grid-cols-2 gap-3">
+                <div className="rounded-lg border p-3">
+                  <p className="text-xs text-slate-500 uppercase tracking-wider">Max Students</p>
+                  <p className="font-semibold text-slate-900 dark:text-white mt-1">
+                    {Number((tenant.features as Record<string, unknown>)?.maxStudents) === -1 ? 'Unlimited' : String((tenant.features as Record<string, unknown>)?.maxStudents || 100)}
+                  </p>
+                </div>
+                <div className="rounded-lg border p-3">
+                  <p className="text-xs text-slate-500 uppercase tracking-wider">Max Listings</p>
+                  <p className="font-semibold text-slate-900 dark:text-white mt-1">
+                    {Number((tenant.features as Record<string, unknown>)?.maxListings) === -1 ? 'Unlimited' : String((tenant.features as Record<string, unknown>)?.maxListings || 10)}
+                  </p>
+                </div>
               </div>
             </CardContent>
           </Card>

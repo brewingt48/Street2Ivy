@@ -30,7 +30,10 @@ const updateTenantSchema = z.object({
       customBranding: z.boolean().optional(),
       analytics: z.boolean().optional(),
       apiAccess: z.boolean().optional(),
+      aiCoachingEnabled: z.boolean().optional(),
       plan: z.string().optional(),
+      upgradeRequestPending: z.boolean().optional(),
+      requestedPlan: z.string().optional(),
     })
     .optional(),
 });

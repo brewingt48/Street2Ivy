@@ -3,7 +3,8 @@
 /**
  * Student Dashboard Page
  *
- * Shows live stats, recent applications, and onboarding progress.
+ * Shows live stats, recommended projects (smart matching),
+ * recent applications, and onboarding progress.
  */
 
 import { useState, useEffect } from 'react';
@@ -27,6 +28,10 @@ import {
   CheckCircle2,
   Clock,
   XCircle,
+  Sparkles,
+  Search,
+  MapPin,
+  TrendingUp,
 } from 'lucide-react';
 
 interface DashboardData {
@@ -54,6 +59,19 @@ interface DashboardData {
   }[];
 }
 
+interface Recommendation {
+  listingId: string;
+  title: string;
+  description: string;
+  category: string | null;
+  company: string | null;
+  compensation: string | null;
+  remoteAllowed: boolean;
+  matchScore: number;
+  matchedSkills: string[];
+  missingSkills: string[];
+}
+
 const statusConfig: Record<string, { label: string; color: string; icon: typeof Clock }> = {
   pending: { label: 'Pending', color: 'bg-yellow-100 text-yellow-700', icon: Clock },
   accepted: { label: 'Accepted', color: 'bg-green-100 text-green-700', icon: CheckCircle2 },
@@ -65,6 +83,7 @@ const statusConfig: Record<string, { label: string; color: string; icon: typeof 
 export default function DashboardPage() {
   const router = useRouter();
   const [data, setData] = useState<DashboardData | null>(null);
+  const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
   const [loading, setLoading] = useState(true);
   const [userName, setUserName] = useState('');
 
@@ -72,10 +91,12 @@ export default function DashboardPage() {
     Promise.all([
       fetch('/api/students/dashboard').then((r) => r.json()),
       fetch('/api/auth/me').then((r) => r.json()),
+      fetch('/api/matching?type=projects&limit=6').then((r) => r.json()).catch(() => ({ recommendations: [] })),
     ])
-      .then(([dashboard, auth]) => {
+      .then(([dashboard, auth, matching]) => {
         setData(dashboard);
         setUserName(auth.user?.firstName || '');
+        setRecommendations(matching.recommendations || []);
       })
       .catch(console.error)
       .finally(() => setLoading(false));
@@ -110,10 +131,16 @@ export default function DashboardPage() {
             Here&apos;s an overview of your activity.
           </p>
         </div>
-        <Button onClick={() => router.push('/projects')} className="bg-teal-600 hover:bg-teal-700">
-          Browse Projects
-          <ArrowRight className="ml-2 h-4 w-4" />
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" onClick={() => router.push('/projects')}>
+            <Search className="mr-2 h-4 w-4" />
+            Search Projects
+          </Button>
+          <Button onClick={() => router.push('/projects')} className="bg-teal-600 hover:bg-teal-700">
+            Browse All
+            <ArrowRight className="ml-2 h-4 w-4" />
+          </Button>
+        </div>
       </div>
 
       {/* Stats Cards */}
@@ -170,6 +197,73 @@ export default function DashboardPage() {
         </Card>
       </div>
 
+      {/* Recommended Projects — Smart Matching */}
+      {recommendations.length > 0 && (
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <div>
+              <CardTitle className="flex items-center gap-2">
+                <Sparkles className="h-5 w-5 text-amber-500" />
+                Recommended For You
+              </CardTitle>
+              <CardDescription>Projects matched to your skills and interests</CardDescription>
+            </div>
+            <Link href="/projects">
+              <Button variant="ghost" size="sm">
+                View All <ArrowRight className="ml-1 h-3 w-3" />
+              </Button>
+            </Link>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+              {recommendations.slice(0, 6).map((rec) => (
+                <div
+                  key={rec.listingId}
+                  className="border rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer group"
+                  onClick={() => router.push(`/projects/${rec.listingId}`)}
+                >
+                  <div className="flex items-start justify-between mb-2">
+                    <h3 className="font-medium text-sm text-slate-900 dark:text-white group-hover:text-teal-600 transition-colors line-clamp-1">
+                      {rec.title}
+                    </h3>
+                    <Badge className="bg-teal-50 text-teal-700 border-0 text-xs ml-2 flex-shrink-0">
+                      <TrendingUp className="h-3 w-3 mr-1" />
+                      {rec.matchScore}%
+                    </Badge>
+                  </div>
+
+                  {rec.company && (
+                    <p className="text-xs text-slate-500 mb-2">{rec.company}</p>
+                  )}
+
+                  <p className="text-xs text-slate-400 line-clamp-2 mb-3">
+                    {rec.description}
+                  </p>
+
+                  <div className="flex items-center gap-2 flex-wrap">
+                    {rec.remoteAllowed && (
+                      <Badge variant="outline" className="text-xs py-0">
+                        <MapPin className="h-2.5 w-2.5 mr-1" /> Remote
+                      </Badge>
+                    )}
+                    {rec.compensation && (
+                      <Badge variant="outline" className="text-xs py-0">
+                        {rec.compensation}
+                      </Badge>
+                    )}
+                    {rec.matchedSkills.length > 0 && (
+                      <span className="text-xs text-green-600">
+                        {rec.matchedSkills.length} skill{rec.matchedSkills.length !== 1 ? 's' : ''} matched
+                      </span>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Recent Applications */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
@@ -178,7 +272,7 @@ export default function DashboardPage() {
             <CardDescription>Your latest project applications</CardDescription>
           </div>
           {stats.applications.total > 0 && (
-            <Link href="/projects">
+            <Link href="/applications">
               <Button variant="ghost" size="sm">
                 View All <ArrowRight className="ml-1 h-3 w-3" />
               </Button>

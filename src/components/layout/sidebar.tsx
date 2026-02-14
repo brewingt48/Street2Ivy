@@ -25,6 +25,8 @@ import {
   Globe,
   ClipboardList,
   Palette,
+  Sparkles,
+  Home,
 } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
@@ -173,15 +175,16 @@ function getNavItems(role: string): NavSection[] {
         {
           title: 'Content',
           items: [
+            { href: '/admin/homepage', label: 'Homepage Editor', icon: Home },
             { href: '/admin/blog', label: 'Blog', icon: Newspaper },
-            { href: '/admin/content', label: 'Landing Page', icon: Globe },
+            { href: '/admin/content', label: 'Landing Page (Raw)', icon: Globe },
           ],
         },
         {
           title: 'System',
           items: [
             { href: '/admin/waitlist', label: 'Waitlist', icon: ClipboardList },
-            { href: '/admin/coaching', label: 'Coaching', icon: FileText },
+            { href: '/admin/coaching', label: 'AI Coaching', icon: Sparkles },
             { href: '/admin/audit', label: 'Audit Log', icon: Shield },
             { href: '/admin/edu-applications', label: 'Edu Applications', icon: BarChart3 },
             { href: '/inbox', label: 'Messages', icon: Inbox },

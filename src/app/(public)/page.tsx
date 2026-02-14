@@ -5,10 +5,15 @@
  *
  * 9 sections: Hero, Problem, How It Works, Value Props,
  * White Label, AI Coaching, Social Proof, Video, CTA Footer
+ *
+ * Reads admin settings from /api/admin/homepage for:
+ * - Hidden sections
+ * - Custom copy overrides
+ * - Book Demo URL
+ * - Logo URL
  */
 
 import { useRef, useEffect, useState } from 'react';
-import Link from 'next/link';
 import { motion, useInView } from 'framer-motion';
 import {
   ChevronDown,
@@ -28,7 +33,39 @@ import {
   Play,
   Monitor,
   Zap,
+  CalendarCheck,
+  Bot,
+  AlertTriangle,
 } from 'lucide-react';
+
+/* ─── Types ─── */
+interface HomepageSettings {
+  bookDemoUrl: string;
+  logoUrl: string;
+  hiddenSections: string[];
+  aiCoachingEnabled: boolean;
+  heroCopy: {
+    headline?: string;
+    subheadline?: string;
+  };
+  problemCopy: {
+    headline?: string;
+  };
+  ctaCopy: {
+    headline?: string;
+    subheadline?: string;
+  };
+}
+
+const DEFAULT_SETTINGS: HomepageSettings = {
+  bookDemoUrl: 'https://calendly.com',
+  logoUrl: '',
+  hiddenSections: [],
+  aiCoachingEnabled: false,
+  heroCopy: {},
+  problemCopy: {},
+  ctaCopy: {},
+};
 
 /* ─── Animation helpers ─── */
 function FadeInSection({ children, className = '', delay = 0 }: { children: React.ReactNode; className?: string; delay?: number }) {
@@ -48,9 +85,14 @@ function FadeInSection({ children, className = '', delay = 0 }: { children: Reac
 }
 
 /* ─── SECTION 1: Hero ─── */
-function HeroSection() {
+function HeroSection({ settings }: { settings: HomepageSettings }) {
   const [loaded, setLoaded] = useState(false);
   useEffect(() => { setLoaded(true); }, []);
+
+  const headline = settings.heroCopy?.headline || 'Where Talent Meets Opportunity';
+  const subheadline = settings.heroCopy?.subheadline ||
+    'Campus2Career connects students with real corporate projects — building careers before graduation.';
+  const demoUrl = settings.bookDemoUrl || 'https://calendly.com';
 
   return (
     <section className="relative h-screen min-h-[700px] flex items-center justify-center overflow-hidden">
@@ -88,8 +130,15 @@ function HeroSection() {
           transition={{ duration: 0.8, delay: 0.4 }}
           className="font-serif text-5xl md:text-7xl lg:text-8xl font-bold text-white leading-[1.05] tracking-tight"
         >
-          Where Talent Meets{' '}
-          <span className="text-gold-300">Opportunity</span>
+          {headline.includes('Opportunity') ? (
+            <>
+              {headline.split('Opportunity')[0]}
+              <span className="text-gold-300">Opportunity</span>
+              {headline.split('Opportunity')[1]}
+            </>
+          ) : (
+            headline
+          )}
         </motion.h1>
         <motion.p
           initial={{ opacity: 0, y: 20 }}
@@ -97,7 +146,7 @@ function HeroSection() {
           transition={{ duration: 0.7, delay: 0.7 }}
           className="mt-6 text-lg md:text-xl text-navy-200 max-w-2xl mx-auto leading-relaxed"
         >
-          Campus2Career connects students with real corporate projects — building careers before graduation.
+          {subheadline}
         </motion.p>
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -105,12 +154,15 @@ function HeroSection() {
           transition={{ duration: 0.6, delay: 1 }}
           className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4"
         >
-          <Link
-            href="/register"
-            className="inline-flex items-center justify-center rounded-full bg-gold-500 px-8 py-3.5 text-base font-semibold text-navy-900 hover:bg-gold-400 transition-all shadow-xl shadow-gold-500/30 hover:shadow-gold-500/50"
+          <a
+            href={demoUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center justify-center rounded-full bg-gold-500 px-8 py-3.5 text-base font-semibold text-navy-900 hover:bg-gold-400 transition-all shadow-xl shadow-gold-500/30 hover:shadow-gold-500/50 gap-2"
           >
-            Request a Demo
-          </Link>
+            <CalendarCheck className="h-5 w-5" />
+            Book a Demo
+          </a>
           <a
             href="#how-it-works"
             className="inline-flex items-center justify-center rounded-full border-2 border-white/30 px-8 py-3.5 text-base font-semibold text-white hover:bg-white/10 transition-all"
@@ -134,25 +186,27 @@ function HeroSection() {
 }
 
 /* ─── SECTION 2: The Problem / Opportunity ─── */
-function ProblemSection() {
+function ProblemSection({ settings }: { settings: HomepageSettings }) {
+  const headline = settings.problemCopy?.headline || 'The Talent Gap Is Real — And AI Is Making It Worse';
+
   const stats = [
     {
-      icon: GraduationCap,
-      number: '78%',
-      label: 'of graduates feel unprepared for the workforce',
-      description: 'Traditional internships reach only a fraction of students, leaving most without meaningful professional experience.',
+      icon: Bot,
+      number: '65%',
+      label: 'of entry-level jobs threatened by AI automation',
+      description: 'Artificial intelligence is rapidly replacing routine entry-level tasks. Students who graduate without hands-on project experience are increasingly unemployable in a market that demands demonstrated skills over degrees.',
     },
     {
-      icon: Briefcase,
+      icon: AlertTriangle,
       number: '$4,700',
-      label: 'average cost per hire',
-      description: 'Companies struggle to find candidates with real-world skills. The resume-and-interview pipeline is broken.',
+      label: 'average cost per hire — and rising',
+      description: 'Companies need proven talent, not training projects. Campus2Career gives corporations de-risked opportunities to work with emerging talent through small, scoped projects — low overhead, high impact. All work happens off-platform.',
     },
     {
-      icon: Building2,
+      icon: TrendingUp,
       number: '3x',
-      label: 'pressure on employment outcomes',
-      description: 'Universities are measured by employment outcomes, yet lack scalable tools to connect students with industry.',
+      label: 'more pressure on career readiness',
+      description: 'Universities face mounting pressure to prove career outcomes. Students need advanced, real-world experience to stand out. Companies need to invest in the next generation of talent to fuel growth. Campus2Career bridges all three.',
     },
   ];
 
@@ -162,8 +216,11 @@ function ProblemSection() {
         <FadeInSection className="text-center max-w-3xl mx-auto mb-20">
           <p className="text-gold-600 font-medium tracking-wider text-sm uppercase mb-4">The Challenge</p>
           <h2 className="font-serif text-4xl md:text-5xl font-bold text-navy-900 leading-tight">
-            The Talent Gap Is Real
+            {headline}
           </h2>
+          <p className="mt-4 text-lg text-navy-500 max-w-2xl mx-auto">
+            AI is reshaping the entry-level job market. Students need more than a degree — they need proof of what they can do. Companies need low-risk ways to discover and develop emerging talent.
+          </p>
         </FadeInSection>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-12">
@@ -609,48 +666,51 @@ function VideoSection() {
   );
 }
 
-/* ─── SECTION 9: CTA Footer ─── */
-function CTASection() {
+/* ─── SECTION 9: CTA Footer — Book a Demo ─── */
+function CTASection({ settings }: { settings: HomepageSettings }) {
+  const headline = settings.ctaCopy?.headline || 'Ready to Bridge the Gap Between Campus and Career?';
+  const subheadline = settings.ctaCopy?.subheadline ||
+    'Book a demo to see how Campus2Career can transform your talent pipeline — for students, corporations, and institutions.';
+  const demoUrl = settings.bookDemoUrl || 'https://calendly.com';
+
   return (
     <section id="demo" className="py-24 md:py-32 bg-navy">
       <div className="max-w-5xl mx-auto px-6 lg:px-8 text-center">
         <FadeInSection>
           <h2 className="font-serif text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-tight">
-            Ready to Bridge the Gap Between{' '}
-            <span className="text-gold-300">Campus and Career?</span>
+            {headline.includes('Campus') && headline.includes('Career') ? (
+              <>
+                {headline.split('Campus')[0]}
+                <span className="text-gold-300">Campus</span>
+                {headline.split('Campus')[1].split('Career')[0]}
+                <span className="text-gold-300">Career</span>
+                {headline.split('Career').slice(1).join('Career')}
+              </>
+            ) : (
+              headline
+            )}
           </h2>
           <p className="mt-6 text-lg text-navy-300 max-w-2xl mx-auto">
-            Whether you&apos;re a student, corporation, or institution — Campus2Career has a solution designed for you.
+            {subheadline}
           </p>
         </FadeInSection>
 
         <FadeInSection delay={0.3}>
           <div className="mt-12 flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Link
-              href="/register?role=student"
-              className="inline-flex items-center justify-center rounded-full bg-gold-500 px-8 py-3.5 text-base font-semibold text-navy-900 hover:bg-gold-400 transition-all shadow-xl shadow-gold-500/30 w-full sm:w-auto gap-2"
+            <a
+              href={demoUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center rounded-full bg-gold-500 px-10 py-4 text-lg font-semibold text-navy-900 hover:bg-gold-400 transition-all shadow-xl shadow-gold-500/30 hover:shadow-gold-500/50 gap-3"
             >
-              <GraduationCap className="h-5 w-5" />
-              I&apos;m a Student
-              <ArrowRight className="h-4 w-4" />
-            </Link>
-            <Link
-              href="/register?role=corporate_partner"
-              className="inline-flex items-center justify-center rounded-full border-2 border-gold-500/40 px-8 py-3.5 text-base font-semibold text-gold-300 hover:bg-gold-500/10 transition-all w-full sm:w-auto gap-2"
-            >
-              <Briefcase className="h-5 w-5" />
-              Corporate Partner
-              <ArrowRight className="h-4 w-4" />
-            </Link>
-            <Link
-              href="/register?role=educational_admin"
-              className="inline-flex items-center justify-center rounded-full border-2 border-white/20 px-8 py-3.5 text-base font-semibold text-white hover:bg-white/10 transition-all w-full sm:w-auto gap-2"
-            >
-              <Building2 className="h-5 w-5" />
-              Institution
-              <ArrowRight className="h-4 w-4" />
-            </Link>
+              <CalendarCheck className="h-6 w-6" />
+              Book a Demo
+              <ArrowRight className="h-5 w-5" />
+            </a>
           </div>
+          <p className="mt-4 text-sm text-navy-400">
+            Free consultation &middot; No commitment &middot; See the platform live
+          </p>
         </FadeInSection>
       </div>
     </section>
@@ -659,17 +719,28 @@ function CTASection() {
 
 /* ─── PAGE COMPONENT ─── */
 export default function LandingPage() {
+  const [settings, setSettings] = useState<HomepageSettings>(DEFAULT_SETTINGS);
+
+  useEffect(() => {
+    fetch('/api/admin/homepage')
+      .then((r) => r.json())
+      .then((data) => setSettings({ ...DEFAULT_SETTINGS, ...data }))
+      .catch(() => {/* use defaults */});
+  }, []);
+
+  const hidden = settings.hiddenSections || [];
+
   return (
     <>
-      <HeroSection />
-      <ProblemSection />
-      <HowItWorksSection />
-      <ValuePropsSection />
-      <WhiteLabelSection />
-      <AICoachingSection />
-      <SocialProofSection />
-      <VideoSection />
-      <CTASection />
+      {!hidden.includes('hero') && <HeroSection settings={settings} />}
+      {!hidden.includes('problem') && <ProblemSection settings={settings} />}
+      {!hidden.includes('how-it-works') && <HowItWorksSection />}
+      {!hidden.includes('value-props') && <ValuePropsSection />}
+      {!hidden.includes('white-label') && <WhiteLabelSection />}
+      {!hidden.includes('ai-coaching') && <AICoachingSection />}
+      {!hidden.includes('social-proof') && <SocialProofSection />}
+      {!hidden.includes('video') && <VideoSection />}
+      {!hidden.includes('cta') && <CTASection settings={settings} />}
     </>
   );
 }

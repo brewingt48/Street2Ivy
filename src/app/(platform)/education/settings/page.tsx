@@ -14,8 +14,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Textarea } from '@/components/ui/textarea';
 import {
   Check,
+  Crown,
   ExternalLink,
   Lock,
   Palette,
@@ -24,6 +26,7 @@ import {
   Settings,
   Type,
   Video,
+  ArrowUp,
 } from 'lucide-react';
 
 interface TenantSettings {
@@ -422,25 +425,48 @@ export default function EducationSettingsPage() {
             </CardContent>
           </Card>
 
-          {/* Features */}
+          {/* Features & Plan */}
           <Card>
             <CardHeader>
-              <CardTitle>Your Plan Features</CardTitle>
+              <CardTitle className="flex items-center gap-2">
+                <Crown className="h-5 w-5 text-amber-500" />
+                Your Plan
+              </CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-between p-3 rounded-lg bg-slate-50 dark:bg-slate-800/50">
+                <div>
+                  <p className="font-semibold text-slate-900 dark:text-white capitalize">
+                    {String(tenant.features.plan || 'starter')} Plan
+                  </p>
+                  <p className="text-xs text-slate-500">
+                    {tenant.features.maxStudents === -1 ? 'Unlimited' : tenant.features.maxStudents || 100} students &middot;{' '}
+                    {tenant.features.maxListings === -1 ? 'Unlimited' : tenant.features.maxListings || 10} listings
+                  </p>
+                </div>
+                <Badge variant="outline" className="capitalize">
+                  {String(tenant.features.plan || 'starter')}
+                </Badge>
+              </div>
+
               <div className="space-y-2">
                 {[
-                  { label: 'Max Students', value: tenant.features.maxStudents === -1 ? 'Unlimited' : String(tenant.features.maxStudents || 100) },
-                  { label: 'Max Listings', value: tenant.features.maxListings === -1 ? 'Unlimited' : String(tenant.features.maxListings || 10) },
                   { label: 'Custom Branding', value: tenant.features.customBranding ? 'Enabled' : 'Not available' },
                   { label: 'AI Coaching', value: tenant.features.aiCoaching ? 'Enabled' : 'Not available' },
+                  { label: 'Analytics', value: (tenant.features as Record<string, unknown>).analytics ? 'Enabled' : 'Not available' },
+                  { label: 'API Access', value: (tenant.features as Record<string, unknown>).apiAccess ? 'Enabled' : 'Not available' },
                 ].map((f) => (
                   <div key={f.label} className="flex items-center justify-between py-1.5 border-b border-slate-100 dark:border-slate-800 last:border-0">
                     <span className="text-sm text-slate-600 dark:text-slate-400">{f.label}</span>
-                    <span className="text-sm font-medium text-slate-900 dark:text-white">{f.value}</span>
+                    <span className={`text-sm font-medium ${f.value === 'Enabled' ? 'text-green-600' : 'text-slate-400'}`}>{f.value}</span>
                   </div>
                 ))}
               </div>
+
+              {/* Upgrade Request */}
+              {String(tenant.features.plan || 'starter') !== 'enterprise' && (
+                <UpgradeRequestCard currentPlan={String(tenant.features.plan || 'starter')} />
+              )}
             </CardContent>
           </Card>
         </div>
@@ -467,6 +493,122 @@ export default function EducationSettingsPage() {
         >
           <Save className="h-4 w-4 mr-2" /> {saving ? 'Saving...' : 'Save Settings'}
         </Button>
+      </div>
+    </div>
+  );
+}
+
+/* ── Upgrade Request Card ── */
+function UpgradeRequestCard({ currentPlan }: { currentPlan: string }) {
+  const [requesting, setRequesting] = useState(false);
+  const [requested, setRequested] = useState(false);
+  const [selectedPlan, setSelectedPlan] = useState('');
+  const [message, setMessage] = useState('');
+  const [status, setStatus] = useState<{ pending: boolean; plan: string | null }>({ pending: false, plan: null });
+
+  useEffect(() => {
+    fetch('/api/education/upgrade-request')
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.upgradeRequestPending) {
+          setStatus({ pending: true, plan: data.requestedPlan });
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  const handleRequest = async () => {
+    if (!selectedPlan) return;
+    setRequesting(true);
+    try {
+      const res = await fetch('/api/education/upgrade-request', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ requestedPlan: selectedPlan, message }),
+      });
+      if (res.ok) {
+        setRequested(true);
+        setStatus({ pending: true, plan: selectedPlan });
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setRequesting(false);
+    }
+  };
+
+  if (status.pending) {
+    return (
+      <div className="p-4 rounded-lg bg-amber-50 border border-amber-200 mt-4">
+        <div className="flex items-center gap-2">
+          <Crown className="h-5 w-5 text-amber-600" />
+          <p className="text-sm font-medium text-amber-800">
+            Upgrade to <span className="capitalize">{status.plan}</span> requested
+          </p>
+        </div>
+        <p className="text-xs text-amber-600 mt-1">
+          Your upgrade request has been submitted. A platform admin will review it shortly.
+        </p>
+      </div>
+    );
+  }
+
+  const upgradePlans = currentPlan === 'starter'
+    ? [
+        { value: 'professional', label: 'Professional', desc: '500 students, 50 listings, AI coaching, custom branding' },
+        { value: 'enterprise', label: 'Enterprise', desc: 'Unlimited students & listings, API access, full features' },
+      ]
+    : [
+        { value: 'enterprise', label: 'Enterprise', desc: 'Unlimited students & listings, API access, full features' },
+      ];
+
+  return (
+    <div className="p-4 rounded-lg border border-dashed border-teal-300 bg-teal-50/50 mt-4">
+      <p className="text-sm font-medium text-teal-800 flex items-center gap-2">
+        <ArrowUp className="h-4 w-4" /> Request a Plan Upgrade
+      </p>
+      <p className="text-xs text-teal-600 mt-1 mb-3">
+        Need more capacity or features? Request an upgrade and we&apos;ll review it.
+      </p>
+
+      <div className="space-y-3">
+        <div className="flex gap-2">
+          {upgradePlans.map((p) => (
+            <button
+              key={p.value}
+              onClick={() => setSelectedPlan(p.value)}
+              className={`flex-1 text-left p-3 rounded-lg border text-sm transition-colors ${
+                selectedPlan === p.value
+                  ? 'border-teal-500 bg-teal-100'
+                  : 'border-slate-200 hover:border-teal-300'
+              }`}
+            >
+              <p className="font-medium text-slate-900">{p.label}</p>
+              <p className="text-xs text-slate-500 mt-0.5">{p.desc}</p>
+            </button>
+          ))}
+        </div>
+
+        {selectedPlan && (
+          <>
+            <Textarea
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              placeholder="Optional: Tell us why you need an upgrade..."
+              rows={2}
+              className="text-sm"
+            />
+            <Button
+              size="sm"
+              className="bg-teal-600 hover:bg-teal-700"
+              onClick={handleRequest}
+              disabled={requesting}
+            >
+              <ArrowUp className="h-3.5 w-3.5 mr-1" />
+              {requesting ? 'Submitting...' : requested ? 'Submitted!' : 'Request Upgrade'}
+            </Button>
+          </>
+        )}
       </div>
     </div>
   );
