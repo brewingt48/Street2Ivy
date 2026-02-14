@@ -16,10 +16,10 @@ export default function AuthLayout({
         {/* Brand header */}
         <div className="text-center space-y-2">
           <h1 className="text-3xl font-bold text-slate-900 dark:text-white">
-            Street2Ivy
+            Campus2Career
           </h1>
           <p className="text-sm text-slate-500 dark:text-slate-400">
-            Connecting Students with Real-World Experience
+            From Campus to Career — Real Projects, Real Impact
           </p>
         </div>
         {children}

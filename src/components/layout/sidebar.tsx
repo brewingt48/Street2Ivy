@@ -53,7 +53,7 @@ export function Sidebar({ user, mobile }: SidebarProps) {
       {mobile && (
         <div className="px-4 pb-4">
           <span className="text-xl font-bold text-teal-700 dark:text-teal-400">
-            Street2Ivy
+            Campus2Career
           </span>
         </div>
       )}

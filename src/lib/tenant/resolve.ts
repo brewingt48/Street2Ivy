@@ -9,6 +9,7 @@ const PLATFORM_DOMAINS = [
   'localhost',
   'herokuapp.com',
   'street2ivy.com',
+  'campus2career.com',
   'vercel.app',
 ];
 

@@ -39,7 +39,7 @@ export function middleware(request: NextRequest) {
 
   // Always set the default tenant ID for now
   response.headers.set('x-tenant-id', defaultTenantId);
-  response.headers.set('x-tenant-subdomain', subdomain || 'street2ivy');
+  response.headers.set('x-tenant-subdomain', subdomain || 'campus2career');
 
   // Read session cookie for auth context
   const sessionId = request.cookies.get('s2i.sid')?.value;

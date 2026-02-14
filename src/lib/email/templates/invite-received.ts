@@ -10,7 +10,7 @@ export function inviteReceivedEmail(data: {
   projectTitle: string;
 }): { subject: string; html: string } {
   return {
-    subject: `${data.companyName} invited you to a project on Street2Ivy`,
+    subject: `${data.companyName} invited you to a project on Campus2Career`,
     html: emailShell({
       title: 'Project Invitation',
       preheader: `${data.companyName} wants to work with you!`,

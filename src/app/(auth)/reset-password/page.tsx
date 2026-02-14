@@ -2,7 +2,7 @@ import { Suspense } from 'react';
 import { ResetPasswordForm } from '@/components/auth/reset-password-form';
 
 export const metadata = {
-  title: 'Set New Password — Street2Ivy',
+  title: 'Set New Password — Campus2Career',
 };
 
 export default function ResetPasswordPage() {

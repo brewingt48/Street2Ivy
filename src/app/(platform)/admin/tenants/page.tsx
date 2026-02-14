@@ -77,7 +77,7 @@ export default function AdminTenantsPage() {
                     <p className="font-medium">{t.name}</p>
                     <Badge className={`border-0 ${statusColors[t.status] || ''}`}>{t.status}</Badge>
                   </div>
-                  <p className="text-sm text-slate-400">{t.subdomain}.street2ivy.com</p>
+                  <p className="text-sm text-slate-400">{t.subdomain}.campus2career.com</p>
                   {t.institutionDomain && <p className="text-xs text-slate-400">Institution: {t.institutionDomain}</p>}
                 </div>
                 <p className="text-xs text-slate-400">{new Date(t.createdAt).toLocaleDateString()}</p>
