@@ -13,7 +13,7 @@ export const sql = postgres(connectionString, {
   max: 10,
   idle_timeout: 20,
   connect_timeout: 10,
-  ssl: { rejectUnauthorized: false },
+  ssl: process.env.NODE_ENV === 'production' ? 'require' : false,
 });
 
 // Drizzle ORM instance with full schema
