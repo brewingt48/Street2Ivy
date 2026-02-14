@@ -91,6 +91,7 @@ export default function TenantDetailPage() {
   const [editPrimaryColor, setEditPrimaryColor] = useState('#0F766E');
   const [editSecondaryColor, setEditSecondaryColor] = useState('#C8A951');
   const [editLogoUrl, setEditLogoUrl] = useState('');
+  const [editAllowedDomains, setEditAllowedDomains] = useState('');
 
   const fetchTenant = useCallback(async () => {
     try {
@@ -106,6 +107,9 @@ export default function TenantDetailPage() {
         setEditPrimaryColor(data.tenant.branding?.primaryColor || '#0F766E');
         setEditSecondaryColor(data.tenant.branding?.secondaryColor || '#C8A951');
         setEditLogoUrl(data.tenant.branding?.logoUrl || '');
+        const features = (data.tenant.features || {}) as Record<string, unknown>;
+        const domains = (features.allowedDomains || []) as string[];
+        setEditAllowedDomains(domains.join(', '));
       }
     } catch (err) {
       console.error(err);
@@ -120,6 +124,9 @@ export default function TenantDetailPage() {
     setSaving(true);
     setSaved(false);
     try {
+      const domainsArray = editAllowedDomains
+        ? editAllowedDomains.split(',').map((d: string) => d.trim()).filter(Boolean)
+        : [];
       const res = await fetch(`/api/admin/tenants/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -130,6 +137,9 @@ export default function TenantDetailPage() {
             primaryColor: editPrimaryColor,
             secondaryColor: editSecondaryColor,
             logoUrl: editLogoUrl || undefined,
+          },
+          features: {
+            allowedDomains: domainsArray,
           },
         }),
       });
@@ -318,6 +328,18 @@ export default function TenantDetailPage() {
                   onChange={(e) => setEditLogoUrl(e.target.value)}
                   placeholder="https://..."
                 />
+              </div>
+
+              <div className="space-y-2">
+                <Label>Allowed Email Domains</Label>
+                <Input
+                  value={editAllowedDomains}
+                  onChange={(e) => setEditAllowedDomains(e.target.value.toLowerCase())}
+                  placeholder="harvard.edu, fas.harvard.edu"
+                />
+                <p className="text-xs text-slate-400">
+                  Comma-separated. Students must register with one of these email domains. Leave empty to allow any email.
+                </p>
               </div>
 
               <div>

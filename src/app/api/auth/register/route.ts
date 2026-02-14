@@ -45,10 +45,39 @@ export async function POST(request: NextRequest) {
     // Get tenant ID from header (set by middleware)
     const tenantId = request.headers.get('x-tenant-id') || process.env.TENANT_ID || null;
 
+    // For students: validate email domain against tenant's allowed domains
+    if (role === 'student' && tenantId) {
+      const [tenant] = await sql`SELECT features FROM tenants WHERE id = ${tenantId}`;
+      if (tenant) {
+        const features = (tenant.features || {}) as Record<string, unknown>;
+        const allowedDomains = (features.allowedDomains || []) as string[];
+        if (allowedDomains.length > 0) {
+          const emailDomain = email.split('@')[1]?.toLowerCase();
+          const domainAllowed = allowedDomains.some(
+            (d: string) => emailDomain === d.toLowerCase() || emailDomain?.endsWith('.' + d.toLowerCase())
+          );
+          if (!domainAllowed) {
+            return NextResponse.json(
+              {
+                error: `Students must register with an email from: ${allowedDomains.join(', ')}`,
+              },
+              { status: 403 }
+            );
+          }
+        }
+      }
+    }
+
+    // For corporate partners: set initial approval status to pending
+    const corporateStatus = role === 'corporate_partner' ? 'pending_approval' : null;
+
     // Insert user — display_name is GENERATED ALWAYS, do NOT include
     const result = await sql`
-      INSERT INTO users (email, password_hash, first_name, last_name, role, tenant_id, email_verified)
-      VALUES (${email}, ${passwordHash}, ${firstName}, ${lastName}, ${role}, ${tenantId}, false)
+      INSERT INTO users (email, password_hash, first_name, last_name, role, tenant_id, email_verified, metadata)
+      VALUES (
+        ${email}, ${passwordHash}, ${firstName}, ${lastName}, ${role}, ${tenantId}, false,
+        ${corporateStatus ? JSON.stringify({ approvalStatus: 'pending_approval' }) : '{}'}::jsonb
+      )
       RETURNING id, email, role, first_name, last_name, display_name, email_verified, tenant_id, avatar_url
     `;
 

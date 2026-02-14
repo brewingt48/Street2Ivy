@@ -15,6 +15,14 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
+import {
   ArrowLeft,
   ArrowRight,
   Building2,
@@ -85,6 +93,8 @@ export default function NewTenantPage() {
   const [name, setName] = useState('');
   const [displayName, setDisplayName] = useState('');
   const [institutionDomain, setInstitutionDomain] = useState('');
+  const [institutionType, setInstitutionType] = useState('university');
+  const [allowedDomains, setAllowedDomains] = useState('');
   const [plan, setPlan] = useState('professional');
   const [primaryColor, setPrimaryColor] = useState('#0F766E');
   const [secondaryColor, setSecondaryColor] = useState('#C8A951');
@@ -119,6 +129,8 @@ export default function NewTenantPage() {
           name,
           displayName: displayName || name,
           institutionDomain: institutionDomain || undefined,
+          institutionType,
+          allowedDomains: allowedDomains ? allowedDomains.split(',').map((d: string) => d.trim()).filter(Boolean) : [],
           plan,
           adminEmail: adminEmail.trim(),
           adminFirstName: adminFirstName.trim(),
@@ -343,13 +355,52 @@ export default function NewTenantPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="instDomain">Institution Domain</Label>
+                  <Label htmlFor="instType">Institution Type <span className="text-red-500">*</span></Label>
+                  <Select value={institutionType} onValueChange={setInstitutionType}>
+                    <SelectTrigger id="instType">
+                      <SelectValue placeholder="Select type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="university">University / College</SelectItem>
+                      <SelectItem value="community_college">Community College</SelectItem>
+                      <SelectItem value="hbcu">HBCU</SelectItem>
+                      <SelectItem value="trade_school">Trade / Vocational School</SelectItem>
+                      <SelectItem value="bootcamp">Bootcamp / Academy</SelectItem>
+                      <SelectItem value="nonprofit">Non-Profit Organization</SelectItem>
+                      <SelectItem value="government">Government Program</SelectItem>
+                      <SelectItem value="workforce">Workforce Development</SelectItem>
+                      <SelectItem value="corporate_training">Corporate Training</SelectItem>
+                      <SelectItem value="other">Other</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="instDomain">Primary Domain</Label>
                   <Input
                     id="instDomain"
                     value={institutionDomain}
                     onChange={(e) => setInstitutionDomain(e.target.value.toLowerCase())}
                     placeholder="harvard.edu"
                   />
+                  <p className="text-xs text-slate-400">
+                    Primary institution domain (can be .edu, .org, .com, etc.)
+                  </p>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="allowedDomains">Allowed Email Domains</Label>
+                  <Input
+                    id="allowedDomains"
+                    value={allowedDomains}
+                    onChange={(e) => setAllowedDomains(e.target.value.toLowerCase())}
+                    placeholder="harvard.edu, fas.harvard.edu"
+                  />
+                  <p className="text-xs text-slate-400">
+                    Comma-separated. Students must register with one of these email domains.
+                  </p>
                 </div>
               </div>
 
@@ -544,10 +595,20 @@ export default function NewTenantPage() {
                     <Label className="text-xs text-slate-500 uppercase tracking-wider">Subdomain</Label>
                     <p className="font-mono text-teal-600">{subdomain}.campus2career.com</p>
                   </div>
+                  <div>
+                    <Label className="text-xs text-slate-500 uppercase tracking-wider">Type</Label>
+                    <p className="text-slate-700 capitalize">{institutionType.replace('_', ' ')}</p>
+                  </div>
                   {institutionDomain && (
                     <div>
-                      <Label className="text-xs text-slate-500 uppercase tracking-wider">Institution Domain</Label>
+                      <Label className="text-xs text-slate-500 uppercase tracking-wider">Primary Domain</Label>
                       <p className="text-slate-700">{institutionDomain}</p>
+                    </div>
+                  )}
+                  {allowedDomains && (
+                    <div>
+                      <Label className="text-xs text-slate-500 uppercase tracking-wider">Allowed Email Domains</Label>
+                      <p className="text-slate-700">{allowedDomains}</p>
                     </div>
                   )}
                   <div>

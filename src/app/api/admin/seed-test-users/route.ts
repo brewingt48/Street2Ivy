@@ -90,10 +90,16 @@ export async function POST() {
     const skipped: Array<{ email: string; reason: string }> = [];
 
     for (const user of TEST_USERS) {
-      // Check if user already exists
+      // Check if user already exists — if so, reset their password
       const existing = await sql`SELECT id FROM users WHERE email = ${user.email}`;
       if (existing.length > 0) {
-        skipped.push({ email: user.email, reason: 'Already exists' });
+        // Reset password for existing test user
+        const [{ hash: resetHash }] = await sql`SELECT crypt(${TEST_PASSWORD}, gen_salt('bf', 10)) AS hash`;
+        await sql`
+          UPDATE users SET password_hash = ${resetHash}, is_active = true, email_verified = true
+          WHERE email = ${user.email}
+        `;
+        created.push({ email: user.email, role: user.role, status: 'reset' });
         continue;
       }
 
@@ -104,13 +110,13 @@ export async function POST() {
       await sql`
         INSERT INTO users (
           email, password_hash, first_name, last_name, role, tenant_id,
-          email_verified, bio, metadata,
+          email_verified, is_active, bio, metadata,
           onboarding_completed
         )
         VALUES (
           ${user.email}, ${hash}, ${user.firstName}, ${user.lastName},
           ${user.role}, ${tenantId},
-          true, ${user.bio}, ${JSON.stringify(user.metadata)}::jsonb,
+          true, true, ${user.bio}, ${JSON.stringify(user.metadata)}::jsonb,
           true
         )
       `;
@@ -136,8 +142,10 @@ export async function POST() {
       }
     }
 
+    const newCount = created.filter((c) => c.status === 'created').length;
+    const resetCount = created.filter((c) => c.status === 'reset').length;
     return NextResponse.json({
-      message: `Created ${created.length} test users, skipped ${skipped.length}`,
+      message: `Created ${newCount} new, reset ${resetCount} existing test users`,
       created,
       skipped,
       credentials: {

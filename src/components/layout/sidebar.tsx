@@ -144,6 +144,7 @@ function getNavItems(role: string): NavSection[] {
           items: [
             { href: '/education', label: 'Dashboard', icon: LayoutDashboard },
             { href: '/education/students', label: 'Students', icon: GraduationCap },
+            { href: '/education/corporates', label: 'Corporate Partners', icon: Briefcase },
             { href: '/education/waitlist', label: 'Waitlist', icon: ClipboardList },
             { href: '/inbox', label: 'Messages', icon: Inbox },
           ],

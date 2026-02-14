@@ -87,9 +87,29 @@ export async function GET(request: NextRequest) {
       ORDER BY category
     `;
 
+    // Get ratings for listing authors
+    const authorIds = Array.from(new Set(listings.map((l: Record<string, unknown>) => l.author_id as string)));
+    let authorRatings: Record<string, { avg: number; count: number }> = {};
+    if (authorIds.length > 0) {
+      const ratings = await sql`
+        SELECT assessor_id, AVG(overall_average) as avg_rating, COUNT(*) as rating_count
+        FROM assessments
+        WHERE assessor_id = ANY(${authorIds})
+          AND overall_average IS NOT NULL
+        GROUP BY assessor_id
+      `;
+      authorRatings = Object.fromEntries(
+        ratings.map((r: Record<string, unknown>) => [
+          r.assessor_id as string,
+          { avg: Number(r.avg_rating), count: Number(r.rating_count) },
+        ])
+      );
+    }
+
     return NextResponse.json({
       listings: listings.map((l: Record<string, unknown>) => {
         const authorMeta = (l.author_metadata || {}) as Record<string, unknown>;
+        const rating = authorRatings[l.author_id as string];
         return {
           id: l.id,
           title: l.title,
@@ -115,6 +135,8 @@ export async function GET(request: NextRequest) {
             displayName: l.author_display_name,
             alumniOf: (authorMeta.alumniOf as string) || null,
             sportsPlayed: (authorMeta.sportsPlayed as string) || null,
+            avgRating: rating?.avg || null,
+            ratingCount: rating?.count || null,
           },
         };
       }),

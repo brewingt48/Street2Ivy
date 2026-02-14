@@ -39,6 +39,7 @@ import {
   Filter,
   School,
   Trophy,
+  Star,
 } from 'lucide-react';
 
 interface ProjectListing {
@@ -66,6 +67,8 @@ interface ProjectListing {
     displayName: string;
     alumniOf: string | null;
     sportsPlayed: string | null;
+    avgRating: number | null;
+    ratingCount: number | null;
   };
 }
 
@@ -247,7 +250,15 @@ export default function ProjectsPage() {
                       {project.title}
                     </CardTitle>
                     <CardDescription className="mt-1">
-                      {project.author.displayName || `${project.author.firstName} ${project.author.lastName}`}
+                      <span className="flex items-center gap-1">
+                        {project.author.displayName || `${project.author.firstName} ${project.author.lastName}`}
+                        {project.author.avgRating ? (
+                          <span className="inline-flex items-center gap-0.5 text-amber-600 ml-1">
+                            <Star className="h-3 w-3 fill-amber-500 text-amber-500" />
+                            <span className="text-xs font-medium">{Number(project.author.avgRating).toFixed(1)}</span>
+                          </span>
+                        ) : null}
+                      </span>
                       {project.author.alumniOf && (
                         <span className="flex items-center gap-1 mt-0.5 text-xs text-slate-400">
                           <School className="h-3 w-3" /> Alumni: {project.author.alumniOf}

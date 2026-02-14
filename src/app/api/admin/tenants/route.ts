@@ -18,6 +18,11 @@ const createTenantSchema = z.object({
   name: z.string().min(1, 'Name is required').max(200),
   displayName: z.string().max(200).optional(),
   institutionDomain: z.string().optional(),
+  institutionType: z.enum([
+    'university', 'community_college', 'hbcu', 'trade_school',
+    'bootcamp', 'nonprofit', 'government', 'workforce', 'corporate_training', 'other',
+  ]).default('university'),
+  allowedDomains: z.array(z.string()).optional(),
   plan: z.enum(['starter', 'professional', 'enterprise']).default('starter'),
   adminEmail: z.string().email('Valid admin email required'),
   adminFirstName: z.string().min(1, 'Admin first name required'),
@@ -145,7 +150,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { subdomain, name, displayName, institutionDomain, plan, adminEmail, adminFirstName, adminLastName, branding, features } = parsed.data;
+    const { subdomain, name, displayName, institutionDomain, institutionType, allowedDomains, plan, adminEmail, adminFirstName, adminLastName, branding, features } = parsed.data;
 
     // Check subdomain uniqueness
     const existing = await sql`SELECT id FROM tenants WHERE subdomain = ${subdomain}`;
@@ -159,8 +164,20 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Admin email already registered' }, { status: 409 });
     }
 
-    // Merge plan defaults with custom features
-    const mergedFeatures = { ...planDefaults[plan], ...features, plan };
+    // Build allowed domains list — includes institution domain by default if provided
+    const effectiveDomains = [...(allowedDomains || [])];
+    if (institutionDomain && !effectiveDomains.includes(institutionDomain)) {
+      effectiveDomains.push(institutionDomain);
+    }
+
+    // Merge plan defaults with custom features + institution metadata
+    const mergedFeatures = {
+      ...planDefaults[plan],
+      ...features,
+      plan,
+      institutionType,
+      allowedDomains: effectiveDomains,
+    };
     const mergedBranding = branding || {};
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const brandingJson = sql.json(mergedBranding as any);

@@ -164,6 +164,16 @@ export function RegisterForm() {
                 </SelectItem>
               </SelectContent>
             </Select>
+            {formData.role === 'corporate_partner' && (
+              <p className="text-xs text-amber-600 bg-amber-50 p-2 rounded">
+                Corporate partner accounts require admin approval before full access is granted.
+              </p>
+            )}
+            {formData.role === 'student' && (
+              <p className="text-xs text-slate-400">
+                Students must register with their institutional email address.
+              </p>
+            )}
           </div>
 
           <div className="space-y-2">

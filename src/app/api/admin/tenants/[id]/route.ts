@@ -34,6 +34,8 @@ const updateTenantSchema = z.object({
       plan: z.string().optional(),
       upgradeRequestPending: z.boolean().optional(),
       requestedPlan: z.string().optional(),
+      institutionType: z.string().optional(),
+      allowedDomains: z.array(z.string()).optional(),
     })
     .optional(),
 });
