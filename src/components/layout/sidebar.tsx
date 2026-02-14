@@ -104,6 +104,7 @@ function getNavItems(role: string): NavSection[] {
           items: [
             { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
             { href: '/projects', label: 'Browse Projects', icon: Search },
+            { href: '/applications', label: 'My Applications', icon: FileText },
             { href: '/inbox', label: 'Messages', icon: Inbox },
           ],
         },
