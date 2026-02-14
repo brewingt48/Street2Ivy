@@ -16,11 +16,22 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import {
   Plus,
   Briefcase,
   Users,
   Edit,
   Eye,
+  Trash2,
+  XCircle,
+  AlertTriangle,
 } from 'lucide-react';
 
 interface Listing {
@@ -47,6 +58,10 @@ export default function CorporateProjectsPage() {
   const [listings, setListings] = useState<Listing[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('');
+  const [deleteTarget, setDeleteTarget] = useState<Listing | null>(null);
+  const [deleting, setDeleting] = useState(false);
+  const [closeTarget, setCloseTarget] = useState<Listing | null>(null);
+  const [closing, setClosing] = useState(false);
 
   useEffect(() => {
     fetch('/api/listings')
@@ -55,6 +70,38 @@ export default function CorporateProjectsPage() {
       .catch(console.error)
       .finally(() => setLoading(false));
   }, []);
+
+  const handleClose = async () => {
+    if (!closeTarget) return;
+    setClosing(true);
+    try {
+      const res = await fetch(`/api/listings/${closeTarget.id}/close`, { method: 'POST' });
+      if (res.ok) {
+        setListings((prev) => prev.map((l) => l.id === closeTarget.id ? { ...l, status: 'closed' } : l));
+        setCloseTarget(null);
+      }
+    } catch (err) {
+      console.error('Failed to close listing:', err);
+    } finally {
+      setClosing(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!deleteTarget) return;
+    setDeleting(true);
+    try {
+      const res = await fetch(`/api/listings/${deleteTarget.id}/delete`, { method: 'DELETE' });
+      if (res.ok) {
+        setListings((prev) => prev.filter((l) => l.id !== deleteTarget.id));
+        setDeleteTarget(null);
+      }
+    } catch (err) {
+      console.error('Failed to delete listing:', err);
+    } finally {
+      setDeleting(false);
+    }
+  };
 
   const filteredListings = filter ? listings.filter((l) => l.status === filter) : listings;
   const counts = {
@@ -138,10 +185,18 @@ export default function CorporateProjectsPage() {
                         <Edit className="h-3 w-3 mr-1" /> Edit
                       </Button>
                       {listing.status === 'published' && (
-                        <Button variant="ghost" size="sm" onClick={() => router.push(`/projects/${listing.id}`)}>
-                          <Eye className="h-3 w-3 mr-1" /> View
-                        </Button>
+                        <>
+                          <Button variant="ghost" size="sm" onClick={() => router.push(`/projects/${listing.id}`)}>
+                            <Eye className="h-3 w-3 mr-1" /> View
+                          </Button>
+                          <Button variant="ghost" size="sm" className="text-amber-600 hover:text-amber-700 hover:bg-amber-50" onClick={() => setCloseTarget(listing)}>
+                            <XCircle className="h-3 w-3 mr-1" /> Close
+                          </Button>
+                        </>
                       )}
+                      <Button variant="ghost" size="sm" className="text-red-600 hover:text-red-700 hover:bg-red-50" onClick={() => setDeleteTarget(listing)}>
+                        <Trash2 className="h-3 w-3 mr-1" /> Delete
+                      </Button>
                     </div>
                   </div>
                 </CardContent>
@@ -150,6 +205,55 @@ export default function CorporateProjectsPage() {
           })}
         </div>
       )}
+      {/* Close Confirmation Dialog */}
+      <Dialog open={!!closeTarget} onOpenChange={(open) => !open && setCloseTarget(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-amber-500" />
+              Close Listing
+            </DialogTitle>
+            <DialogDescription>
+              Are you sure you want to close &quot;{closeTarget?.title}&quot;? This will remove it from search results. Students can no longer apply, but existing applications will be preserved.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setCloseTarget(null)}>Cancel</Button>
+            <Button
+              onClick={handleClose}
+              disabled={closing}
+              className="bg-amber-600 hover:bg-amber-700"
+            >
+              {closing ? 'Closing...' : 'Close Listing'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-red-600">
+              <Trash2 className="h-5 w-5" />
+              Delete Listing Permanently
+            </DialogTitle>
+            <DialogDescription>
+              Are you sure you want to permanently delete &quot;{deleteTarget?.title}&quot;? This action cannot be undone. All applications, messages, and associated data will be removed.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDeleteTarget(null)}>Cancel</Button>
+            <Button
+              onClick={handleDelete}
+              disabled={deleting}
+              variant="destructive"
+            >
+              {deleting ? 'Deleting...' : 'Delete Permanently'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

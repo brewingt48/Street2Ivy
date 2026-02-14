@@ -9,11 +9,26 @@ import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Users, Building2, Briefcase, FileText, Clock, GraduationCap } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Users, Building2, Briefcase, FileText, Clock, GraduationCap, UserPlus, CheckCircle2, AlertCircle, Copy } from 'lucide-react';
+
+interface TestUser {
+  email: string;
+  role: string;
+  firstName: string;
+  lastName: string;
+  exists: boolean;
+  lastLogin: string | null;
+}
 
 export default function AdminDashboardPage() {
   const [data, setData] = useState<Record<string, unknown> | null>(null);
   const [loading, setLoading] = useState(true);
+  const [seeding, setSeeding] = useState(false);
+  const [seedResult, setSeedResult] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+  const [testUsers, setTestUsers] = useState<TestUser[]>([]);
+  const [testPassword, setTestPassword] = useState('');
+  const [loadingTestUsers, setLoadingTestUsers] = useState(false);
 
   useEffect(() => {
     fetch('/api/admin/dashboard')
@@ -22,6 +37,39 @@ export default function AdminDashboardPage() {
       .catch(console.error)
       .finally(() => setLoading(false));
   }, []);
+
+  const fetchTestUsers = async () => {
+    setLoadingTestUsers(true);
+    try {
+      const res = await fetch('/api/admin/seed-test-users');
+      const data = await res.json();
+      setTestUsers(data.testUsers || []);
+      setTestPassword(data.password || '');
+    } catch {
+      // ignore
+    } finally {
+      setLoadingTestUsers(false);
+    }
+  };
+
+  const handleSeedUsers = async () => {
+    setSeeding(true);
+    setSeedResult(null);
+    try {
+      const res = await fetch('/api/admin/seed-test-users', { method: 'POST' });
+      const data = await res.json();
+      if (res.ok) {
+        setSeedResult({ message: data.message, type: 'success' });
+        fetchTestUsers(); // Refresh the list
+      } else {
+        setSeedResult({ message: data.error || 'Failed', type: 'error' });
+      }
+    } catch {
+      setSeedResult({ message: 'Failed to seed test users', type: 'error' });
+    } finally {
+      setSeeding(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -145,6 +193,79 @@ export default function AdminDashboardPage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Test Users Section */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center gap-2">
+              <UserPlus className="h-5 w-5 text-teal-600" />
+              Test User Profiles
+            </CardTitle>
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm" onClick={fetchTestUsers} disabled={loadingTestUsers}>
+                {loadingTestUsers ? 'Loading...' : 'Check Status'}
+              </Button>
+              <Button size="sm" onClick={handleSeedUsers} disabled={seeding} className="bg-teal-600 hover:bg-teal-700">
+                <UserPlus className="h-4 w-4 mr-1" />
+                {seeding ? 'Creating...' : 'Seed Test Users'}
+              </Button>
+            </div>
+          </div>
+          <p className="text-sm text-slate-500 mt-1">
+            Create one test account for each user type. All accounts share the same password.
+          </p>
+        </CardHeader>
+        <CardContent>
+          {seedResult && (
+            <div className={`mb-4 p-3 rounded-md text-sm flex items-center gap-2 ${
+              seedResult.type === 'success' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-600'
+            }`}>
+              {seedResult.type === 'success' ? <CheckCircle2 className="h-4 w-4" /> : <AlertCircle className="h-4 w-4" />}
+              {seedResult.message}
+            </div>
+          )}
+
+          {testUsers.length > 0 ? (
+            <div className="space-y-3">
+              {testPassword && (
+                <div className="p-3 bg-slate-50 dark:bg-slate-800 rounded-lg flex items-center justify-between">
+                  <div>
+                    <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">Shared Password</p>
+                    <p className="text-sm font-mono font-semibold mt-0.5">{testPassword}</p>
+                  </div>
+                  <Button variant="outline" size="sm" onClick={() => navigator.clipboard.writeText(testPassword)}>
+                    <Copy className="h-3 w-3 mr-1" /> Copy
+                  </Button>
+                </div>
+              )}
+              {testUsers.map((tu) => (
+                <div key={tu.email} className={`flex items-center justify-between p-3 rounded-lg border ${
+                  tu.exists ? 'border-green-200 bg-green-50/50' : 'border-slate-200'
+                }`}>
+                  <div>
+                    <p className="text-sm font-medium">{tu.firstName} {tu.lastName}</p>
+                    <p className="text-xs text-slate-400 font-mono">{tu.email}</p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Badge variant="outline" className="text-xs">{tu.role.replace('_', ' ')}</Badge>
+                    {tu.exists ? (
+                      <Badge className="bg-green-100 text-green-700 border-0 text-xs">Active</Badge>
+                    ) : (
+                      <Badge variant="outline" className="text-xs text-slate-400">Not Created</Badge>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-6 text-slate-400">
+              <UserPlus className="h-8 w-8 mx-auto mb-2 opacity-30" />
+              <p className="text-sm">Click &quot;Check Status&quot; to see test user accounts or &quot;Seed Test Users&quot; to create them</p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }
