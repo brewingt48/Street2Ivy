@@ -185,28 +185,28 @@ function HeroSection({ settings }: { settings: HomepageSettings }) {
   );
 }
 
-/* ─── SECTION 2: The Problem / Opportunity ─── */
+/* ─── SECTION 2: The Opportunity ─── */
 function ProblemSection({ settings }: { settings: HomepageSettings }) {
-  const headline = settings.problemCopy?.headline || 'The Talent Gap Is Real — And AI Is Making It Worse';
+  const headline = settings.problemCopy?.headline || 'A Massive Opportunity to Rethink Career Readiness';
 
   const stats = [
     {
       icon: Bot,
       number: '65%',
-      label: 'of entry-level jobs threatened by AI automation',
-      description: 'Artificial intelligence is rapidly replacing routine entry-level tasks. Students who graduate without hands-on project experience are increasingly unemployable in a market that demands demonstrated skills over degrees.',
+      label: 'of employers prioritize project experience',
+      description: 'The workforce is evolving fast. Employers increasingly value demonstrated skills over credentials alone. Students who gain hands-on project experience before graduation have a decisive advantage in today\'s competitive market.',
     },
     {
       icon: AlertTriangle,
       number: '$4,700',
-      label: 'average cost per hire — and rising',
-      description: 'Companies need proven talent, not training projects. Campus2Career gives corporations de-risked opportunities to work with emerging talent through small, scoped projects — low overhead, high impact. All work happens off-platform.',
+      label: 'saved per hire with pre-vetted talent',
+      description: 'Companies spend thousands recruiting entry-level talent. Campus2Career reduces that cost by connecting corporations directly with skilled, project-ready students — creating value for everyone from day one.',
     },
     {
       icon: TrendingUp,
       number: '3x',
-      label: 'more pressure on career readiness',
-      description: 'Universities face mounting pressure to prove career outcomes. Students need advanced, real-world experience to stand out. Companies need to invest in the next generation of talent to fuel growth. Campus2Career bridges all three.',
+      label: 'stronger career outcomes with real experience',
+      description: 'Universities that offer project-based learning see dramatically better placement rates. Students build portfolios, companies discover future hires, and institutions prove their value. Everyone wins.',
     },
   ];
 
@@ -214,12 +214,12 @@ function ProblemSection({ settings }: { settings: HomepageSettings }) {
     <section className="py-24 md:py-32 bg-ivory">
       <div className="max-w-7xl mx-auto px-6 lg:px-8">
         <FadeInSection className="text-center max-w-3xl mx-auto mb-20">
-          <p className="text-gold-600 font-medium tracking-wider text-sm uppercase mb-4">The Challenge</p>
+          <p className="text-gold-600 font-medium tracking-wider text-sm uppercase mb-4">The Opportunity</p>
           <h2 className="font-serif text-4xl md:text-5xl font-bold text-navy-900 leading-tight">
             {headline}
           </h2>
           <p className="mt-4 text-lg text-navy-500 max-w-2xl mx-auto">
-            AI is reshaping the entry-level job market. Students need more than a degree — they need proof of what they can do. Companies need low-risk ways to discover and develop emerging talent.
+            The future of work rewards experience, not just education. Students, companies, and universities all win when real-world projects become part of the learning journey.
           </p>
         </FadeInSection>
 
