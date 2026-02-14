@@ -110,14 +110,12 @@ export async function POST() {
       await sql`
         INSERT INTO users (
           email, password_hash, first_name, last_name, role, tenant_id,
-          email_verified, is_active, bio, metadata,
-          onboarding_completed
+          email_verified, is_active, bio, metadata
         )
         VALUES (
           ${user.email}, ${hash}, ${user.firstName}, ${user.lastName},
           ${user.role}, ${tenantId},
-          true, true, ${user.bio}, ${JSON.stringify(user.metadata)}::jsonb,
-          true
+          true, true, ${user.bio}, ${JSON.stringify(user.metadata)}::jsonb
         )
       `;
 
