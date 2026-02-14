@@ -1,0 +1,543 @@
+'use client';
+
+/**
+ * Tenant Detail Page — Admin view of a single tenant
+ *
+ * Shows: Stats, branding preview, feature toggles, admin users,
+ * recent activity, and suspend/reactivate controls.
+ */
+
+import { useState, useEffect, useCallback } from 'react';
+import { useParams, useRouter } from 'next/navigation';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Skeleton } from '@/components/ui/skeleton';
+import {
+  ArrowLeft,
+  Building2,
+  Check,
+  Crown,
+  ExternalLink,
+  GraduationCap,
+  Briefcase,
+  FileText,
+  Layers,
+  Palette,
+  Save,
+  Shield,
+  Users,
+  XCircle,
+  RefreshCw,
+  AlertTriangle,
+} from 'lucide-react';
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+
+interface TenantDetail {
+  id: string;
+  subdomain: string;
+  name: string;
+  displayName: string | null;
+  status: string;
+  institutionDomain: string | null;
+  branding: Record<string, string>;
+  features: Record<string, unknown>;
+  createdAt: string;
+  updatedAt: string;
+  stats: {
+    students: number;
+    corporates: number;
+    admins: number;
+    listings: number;
+    applications: number;
+  };
+}
+
+interface AdminUser {
+  id: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  lastLoginAt: string | null;
+  createdAt: string;
+}
+
+interface RecentUser {
+  id: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  role: string;
+  createdAt: string;
+}
+
+export default function TenantDetailPage() {
+  const { id } = useParams();
+  const router = useRouter();
+  const [tenant, setTenant] = useState<TenantDetail | null>(null);
+  const [admins, setAdmins] = useState<AdminUser[]>([]);
+  const [recentUsers, setRecentUsers] = useState<RecentUser[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const [showSuspend, setShowSuspend] = useState(false);
+  const [suspending, setSuspending] = useState(false);
+
+  // Editable fields
+  const [editName, setEditName] = useState('');
+  const [editDisplayName, setEditDisplayName] = useState('');
+  const [editPrimaryColor, setEditPrimaryColor] = useState('#0F766E');
+  const [editSecondaryColor, setEditSecondaryColor] = useState('#C8A951');
+  const [editLogoUrl, setEditLogoUrl] = useState('');
+
+  const fetchTenant = useCallback(async () => {
+    try {
+      const res = await fetch(`/api/admin/tenants/${id}`);
+      const data = await res.json();
+      if (res.ok) {
+        setTenant(data.tenant);
+        setAdmins(data.admins || []);
+        setRecentUsers(data.recentUsers || []);
+        // Populate edit fields
+        setEditName(data.tenant.name);
+        setEditDisplayName(data.tenant.displayName || '');
+        setEditPrimaryColor(data.tenant.branding?.primaryColor || '#0F766E');
+        setEditSecondaryColor(data.tenant.branding?.secondaryColor || '#C8A951');
+        setEditLogoUrl(data.tenant.branding?.logoUrl || '');
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  }, [id]);
+
+  useEffect(() => { fetchTenant(); }, [fetchTenant]);
+
+  const handleSave = async () => {
+    setSaving(true);
+    setSaved(false);
+    try {
+      const res = await fetch(`/api/admin/tenants/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: editName,
+          displayName: editDisplayName,
+          branding: {
+            primaryColor: editPrimaryColor,
+            secondaryColor: editSecondaryColor,
+            logoUrl: editLogoUrl || undefined,
+          },
+        }),
+      });
+      if (res.ok) {
+        setSaved(true);
+        setTimeout(() => setSaved(false), 3000);
+        fetchTenant();
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleSuspend = async () => {
+    setSuspending(true);
+    try {
+      const res = await fetch(`/api/admin/tenants/${id}`, { method: 'DELETE' });
+      if (res.ok) {
+        setShowSuspend(false);
+        fetchTenant();
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setSuspending(false);
+    }
+  };
+
+  const handleReactivate = async () => {
+    setSaving(true);
+    try {
+      const res = await fetch(`/api/admin/tenants/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'active' }),
+      });
+      if (res.ok) fetchTenant();
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const statusColors: Record<string, string> = {
+    active: 'bg-green-100 text-green-700',
+    inactive: 'bg-slate-100 text-slate-500',
+    suspended: 'bg-red-100 text-red-700',
+  };
+
+  const roleIcons: Record<string, React.ReactNode> = {
+    student: <GraduationCap className="h-3.5 w-3.5" />,
+    corporate_partner: <Briefcase className="h-3.5 w-3.5" />,
+    educational_admin: <Shield className="h-3.5 w-3.5" />,
+    admin: <Crown className="h-3.5 w-3.5" />,
+  };
+
+  if (loading) {
+    return (
+      <div className="space-y-6 max-w-5xl mx-auto">
+        <Skeleton className="h-8 w-64" />
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          {[1, 2, 3, 4].map((i) => <Skeleton key={i} className="h-24" />)}
+        </div>
+        <Skeleton className="h-64" />
+      </div>
+    );
+  }
+
+  if (!tenant) {
+    return (
+      <div className="text-center py-20">
+        <Building2 className="h-12 w-12 text-slate-300 mx-auto mb-4" />
+        <p className="text-slate-500">Tenant not found</p>
+        <Button variant="outline" className="mt-4" onClick={() => router.push('/admin/tenants')}>
+          Back to Tenants
+        </Button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6 max-w-5xl mx-auto">
+      {/* Header */}
+      <div className="flex items-start justify-between">
+        <div className="flex items-center gap-4">
+          <Button variant="ghost" size="sm" onClick={() => router.push('/admin/tenants')}>
+            <ArrowLeft className="h-4 w-4 mr-2" /> Back
+          </Button>
+          <div>
+            <div className="flex items-center gap-3">
+              <h1 className="text-3xl font-bold text-slate-900 dark:text-white">{tenant.name}</h1>
+              <Badge className={`border-0 ${statusColors[tenant.status] || ''}`}>{tenant.status}</Badge>
+            </div>
+            <p className="text-slate-500 mt-1 font-mono text-sm">
+              {tenant.subdomain}.campus2career.com
+              <a
+                href={`https://${tenant.subdomain}.campus2career.com`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex ml-2 text-teal-600 hover:text-teal-700"
+              >
+                <ExternalLink className="h-3.5 w-3.5" />
+              </a>
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2">
+          {tenant.status === 'suspended' ? (
+            <Button
+              variant="outline"
+              className="border-green-200 text-green-700 hover:bg-green-50"
+              onClick={handleReactivate}
+              disabled={saving}
+            >
+              <RefreshCw className="h-4 w-4 mr-2" /> Reactivate
+            </Button>
+          ) : (
+            <Button
+              variant="outline"
+              className="border-red-200 text-red-700 hover:bg-red-50"
+              onClick={() => setShowSuspend(true)}
+            >
+              <XCircle className="h-4 w-4 mr-2" /> Suspend
+            </Button>
+          )}
+        </div>
+      </div>
+
+      {/* Stats Row */}
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+        {[
+          { label: 'Students', value: tenant.stats.students, icon: GraduationCap, color: 'text-blue-600' },
+          { label: 'Corporates', value: tenant.stats.corporates, icon: Briefcase, color: 'text-teal-600' },
+          { label: 'Admins', value: tenant.stats.admins, icon: Shield, color: 'text-amber-600' },
+          { label: 'Listings', value: tenant.stats.listings, icon: FileText, color: 'text-purple-600' },
+          { label: 'Applications', value: tenant.stats.applications, icon: Layers, color: 'text-pink-600' },
+        ].map((stat) => {
+          const Icon = stat.icon;
+          return (
+            <Card key={stat.label}>
+              <CardContent className="pt-4 pb-4 flex items-center gap-3">
+                <div className={`p-2 rounded-lg bg-slate-50 ${stat.color}`}>
+                  <Icon className="h-5 w-5" />
+                </div>
+                <div>
+                  <p className="text-2xl font-bold text-slate-900 dark:text-white">{stat.value}</p>
+                  <p className="text-xs text-slate-500">{stat.label}</p>
+                </div>
+              </CardContent>
+            </Card>
+          );
+        })}
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Left column: Settings */}
+        <div className="lg:col-span-2 space-y-6">
+          {/* Edit Settings */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Palette className="h-5 w-5 text-teal-600" /> Settings & Branding
+              </CardTitle>
+              <CardDescription>Update tenant name, display name, and brand colors</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Institution Name</Label>
+                  <Input value={editName} onChange={(e) => setEditName(e.target.value)} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Display Name</Label>
+                  <Input value={editDisplayName} onChange={(e) => setEditDisplayName(e.target.value)} />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Logo URL</Label>
+                <Input
+                  value={editLogoUrl}
+                  onChange={(e) => setEditLogoUrl(e.target.value)}
+                  placeholder="https://..."
+                />
+              </div>
+
+              <div>
+                <Label className="text-sm font-medium text-slate-700 dark:text-slate-300">Brand Colors</Label>
+                <div className="flex items-center gap-6 mt-2">
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="color"
+                      value={editPrimaryColor}
+                      onChange={(e) => setEditPrimaryColor(e.target.value)}
+                      className="w-10 h-10 rounded cursor-pointer border-0"
+                    />
+                    <div>
+                      <p className="text-xs text-slate-500">Primary</p>
+                      <p className="text-xs font-mono text-slate-400">{editPrimaryColor}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="color"
+                      value={editSecondaryColor}
+                      onChange={(e) => setEditSecondaryColor(e.target.value)}
+                      className="w-10 h-10 rounded cursor-pointer border-0"
+                    />
+                    <div>
+                      <p className="text-xs text-slate-500">Secondary</p>
+                      <p className="text-xs font-mono text-slate-400">{editSecondaryColor}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Brand Preview */}
+              <div className="rounded-lg border p-4 bg-slate-50 dark:bg-slate-800">
+                <p className="text-xs text-slate-500 uppercase tracking-wider mb-2">Preview</p>
+                <div className="flex items-center gap-3">
+                  <div
+                    className="w-10 h-10 rounded-lg flex items-center justify-center text-white text-sm font-bold"
+                    style={{ backgroundColor: editPrimaryColor }}
+                  >
+                    {(editDisplayName || editName || 'T').charAt(0).toUpperCase()}
+                  </div>
+                  <div>
+                    <p className="font-bold" style={{ color: editPrimaryColor }}>
+                      {editDisplayName || editName}
+                    </p>
+                    <p className="text-xs" style={{ color: editSecondaryColor }}>
+                      Powered by Campus2Career
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-2">
+                {saved && (
+                  <span className="text-sm text-green-600 flex items-center gap-1">
+                    <Check className="h-4 w-4" /> Saved
+                  </span>
+                )}
+                <Button className="bg-teal-600 hover:bg-teal-700" onClick={handleSave} disabled={saving}>
+                  <Save className="h-4 w-4 mr-2" /> {saving ? 'Saving...' : 'Save Changes'}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Features */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Features & Limits</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                {[
+                  { key: 'plan', label: 'Plan', format: (v: unknown) => String(v || 'starter').charAt(0).toUpperCase() + String(v || 'starter').slice(1) },
+                  { key: 'maxStudents', label: 'Max Students', format: (v: unknown) => Number(v) === -1 ? 'Unlimited' : String(v || 100) },
+                  { key: 'maxListings', label: 'Max Listings', format: (v: unknown) => Number(v) === -1 ? 'Unlimited' : String(v || 10) },
+                  { key: 'aiCoaching', label: 'AI Coaching', format: (v: unknown) => v ? 'Enabled' : 'Disabled' },
+                  { key: 'customBranding', label: 'Custom Branding', format: (v: unknown) => v ? 'Enabled' : 'Disabled' },
+                  { key: 'analytics', label: 'Analytics', format: (v: unknown) => v ? 'Enabled' : 'Disabled' },
+                  { key: 'apiAccess', label: 'API Access', format: (v: unknown) => v ? 'Enabled' : 'Disabled' },
+                ].map((feat) => (
+                  <div key={feat.key} className="rounded-lg border p-3">
+                    <p className="text-xs text-slate-500 uppercase tracking-wider">{feat.label}</p>
+                    <p className="font-semibold text-slate-900 dark:text-white mt-1">
+                      {feat.format((tenant.features as Record<string, unknown>)?.[feat.key])}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Right column: Admins + Recent Activity */}
+        <div className="space-y-6">
+          {/* Admins */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Shield className="h-5 w-5 text-amber-600" /> Admins
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {admins.length === 0 ? (
+                <p className="text-sm text-slate-400">No admins yet</p>
+              ) : (
+                admins.map((a) => (
+                  <div key={a.id} className="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800">
+                    <div className="w-8 h-8 rounded-full bg-teal-100 text-teal-700 flex items-center justify-center text-sm font-bold">
+                      {a.firstName.charAt(0)}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-slate-900 dark:text-white truncate">
+                        {a.firstName} {a.lastName}
+                      </p>
+                      <p className="text-xs text-slate-400 truncate">{a.email}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-xs text-slate-400">
+                        {a.lastLoginAt
+                          ? `Last login ${new Date(a.lastLoginAt).toLocaleDateString()}`
+                          : 'Never logged in'}
+                      </p>
+                    </div>
+                  </div>
+                ))
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Recent Users */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Users className="h-5 w-5 text-blue-600" /> Recent Users
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              {recentUsers.length === 0 ? (
+                <p className="text-sm text-slate-400">No users yet</p>
+              ) : (
+                recentUsers.map((u) => (
+                  <div key={u.id} className="flex items-center gap-2 py-1.5">
+                    <span className="text-slate-400">{roleIcons[u.role] || <Users className="h-3.5 w-3.5" />}</span>
+                    <span className="text-sm text-slate-700 dark:text-slate-300 truncate flex-1">
+                      {u.firstName} {u.lastName}
+                    </span>
+                    <Badge variant="outline" className="text-xs">
+                      {u.role.replace('_', ' ')}
+                    </Badge>
+                  </div>
+                ))
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Meta */}
+          <Card>
+            <CardContent className="pt-4 space-y-2">
+              <div className="flex justify-between text-sm">
+                <span className="text-slate-500">Created</span>
+                <span className="text-slate-700 dark:text-slate-300">
+                  {new Date(tenant.createdAt).toLocaleDateString()}
+                </span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-slate-500">Updated</span>
+                <span className="text-slate-700 dark:text-slate-300">
+                  {new Date(tenant.updatedAt).toLocaleDateString()}
+                </span>
+              </div>
+              {tenant.institutionDomain && (
+                <div className="flex justify-between text-sm">
+                  <span className="text-slate-500">Domain</span>
+                  <span className="text-slate-700 dark:text-slate-300">{tenant.institutionDomain}</span>
+                </div>
+              )}
+              <div className="flex justify-between text-sm">
+                <span className="text-slate-500">ID</span>
+                <span className="text-xs font-mono text-slate-400 truncate max-w-[180px]">{tenant.id}</span>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+
+      {/* Suspend Dialog */}
+      <Dialog open={showSuspend} onOpenChange={setShowSuspend}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-red-700">
+              <AlertTriangle className="h-5 w-5" /> Suspend Tenant
+            </DialogTitle>
+            <DialogDescription>
+              Suspending <strong>{tenant.name}</strong> will immediately prevent all users
+              from accessing the platform. This action can be reversed.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="rounded-lg bg-red-50 p-3 text-sm text-red-700">
+            <p>This will affect:</p>
+            <ul className="list-disc list-inside mt-1 space-y-1">
+              <li>{tenant.stats.students} students</li>
+              <li>{tenant.stats.corporates} corporate partners</li>
+              <li>{tenant.stats.admins} admins</li>
+              <li>{tenant.stats.listings} active listings</li>
+            </ul>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowSuspend(false)}>Cancel</Button>
+            <Button
+              className="bg-red-600 hover:bg-red-700 text-white"
+              onClick={handleSuspend}
+              disabled={suspending}
+            >
+              {suspending ? 'Suspending...' : 'Suspend Tenant'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}
