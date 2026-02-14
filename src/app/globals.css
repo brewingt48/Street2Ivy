@@ -53,8 +53,48 @@
   * {
     @apply border-border;
   }
+  html {
+    scroll-behavior: smooth;
+  }
   body {
     @apply bg-background text-foreground;
     font-feature-settings: "rlig" 1, "calt" 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+/* Selection color */
+::selection {
+  background: rgba(200, 169, 81, 0.3);
+  color: #0A1628;
+}
+
+/* Focus visible for accessibility */
+:focus-visible {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: 2px;
+}
+
+/* Smooth scroll offset for fixed nav */
+[id] {
+  scroll-margin-top: 80px;
+}
+
+/* Custom scrollbar */
+@media (min-width: 768px) {
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: hsl(215 20% 65% / 0.4);
+    border-radius: 4px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: hsl(215 20% 65% / 0.6);
   }
 }

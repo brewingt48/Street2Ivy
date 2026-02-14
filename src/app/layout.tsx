@@ -17,11 +17,20 @@ export const metadata: Metadata = {
   title: 'Campus2Career — Where Talent Meets Opportunity',
   description:
     'From Campus to Career — a multi-tenant marketplace connecting students with corporations for paid, real-world project work. Real Projects, Real Impact.',
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://street2ivy-dev-c54ffcb26038.herokuapp.com'),
   openGraph: {
     title: 'Campus2Career — Where Talent Meets Opportunity',
     description: 'From Campus to Career — Real Projects, Real Impact. Connect students with corporations for paid project work.',
     siteName: 'Campus2Career',
     type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Campus2Career — Where Talent Meets Opportunity',
+    description: 'From Campus to Career — Real Projects, Real Impact.',
+  },
+  other: {
+    'theme-color': '#0A1628',
   },
 };
 
