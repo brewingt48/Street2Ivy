@@ -15,6 +15,9 @@ const nextConfig = {
       },
     ],
   },
+  // Prevent Next.js from bundling postgres.js — it needs its native type
+  // serializers (Date, Buffer, etc.) which get broken by webpack bundling
+  serverExternalPackages: ['postgres'],
 };
 
 export default nextConfig;

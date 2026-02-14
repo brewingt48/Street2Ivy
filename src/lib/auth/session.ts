@@ -16,12 +16,13 @@ export async function createSession(
   data: SessionData,
   ttlSeconds: number = 30 * 24 * 60 * 60 // 30 days
 ): Promise<void> {
-  const expire = new Date(Date.now() + ttlSeconds * 1000);
+  const expireIso = new Date(Date.now() + ttlSeconds * 1000).toISOString();
+  const sessJson = JSON.stringify(data);
   await sql`
     INSERT INTO sessions (sid, sess, expire)
-    VALUES (${sid}, ${JSON.stringify(data)}::jsonb, ${expire})
+    VALUES (${sid}, ${sessJson}::jsonb, ${expireIso}::timestamptz)
     ON CONFLICT (sid) DO UPDATE
-    SET sess = ${JSON.stringify(data)}::jsonb, expire = ${expire}
+    SET sess = ${sessJson}::jsonb, expire = ${expireIso}::timestamptz
   `;
 }
 
@@ -61,10 +62,10 @@ export async function touchSession(
   sid: string,
   ttlSeconds: number = 30 * 24 * 60 * 60
 ): Promise<void> {
-  const expire = new Date(Date.now() + ttlSeconds * 1000);
+  const expireIso = new Date(Date.now() + ttlSeconds * 1000).toISOString();
   await sql`
     UPDATE sessions
-    SET expire = ${expire}
+    SET expire = ${expireIso}::timestamptz
     WHERE sid = ${sid}
   `;
 }
