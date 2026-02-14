@@ -27,6 +27,7 @@ import {
   Palette,
   Sparkles,
   Home,
+  HelpCircle,
 } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
@@ -177,6 +178,7 @@ function getNavItems(role: string): NavSection[] {
           title: 'Content',
           items: [
             { href: '/admin/homepage', label: 'Homepage Editor', icon: Home },
+            { href: '/admin/faq', label: 'FAQ Manager', icon: HelpCircle },
             { href: '/admin/blog', label: 'Blog', icon: Newspaper },
             { href: '/admin/content', label: 'Landing Page (Raw)', icon: Globe },
           ],

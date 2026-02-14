@@ -66,6 +66,7 @@ const ALL_SECTIONS = [
   { id: 'ai-coaching', label: 'AI Coaching', description: 'AI career coaching feature section' },
   { id: 'social-proof', label: 'Social Proof', description: 'Stats, partner logos, and testimonials' },
   { id: 'video', label: 'Video Content', description: 'Platform demo video section' },
+  { id: 'faq', label: 'FAQ', description: 'Frequently asked questions accordion — manage content in FAQ Manager' },
   { id: 'cta', label: 'CTA Footer', description: 'Bottom call-to-action with Book Demo' },
 ];
 

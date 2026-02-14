@@ -27,6 +27,14 @@ import {
   Type,
   Video,
   ArrowUp,
+  Plus,
+  Trash2,
+  ChevronUp as ChevronUpIcon,
+  ChevronDown as ChevronDownIcon,
+  HelpCircle,
+  GripVertical,
+  AlertCircle,
+  CheckCircle2,
 } from 'lucide-react';
 
 interface TenantSettings {
@@ -71,6 +79,11 @@ export default function EducationSettingsPage() {
   const [welcomeMessage, setWelcomeMessage] = useState('');
   const [tagline, setTagline] = useState('');
 
+  // FAQ state
+  const [faqItems, setFaqItems] = useState<Array<{ question: string; answer: string; order: number }>>([]);
+  const [faqSaving, setFaqSaving] = useState(false);
+  const [faqMsg, setFaqMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+
   const fetchSettings = useCallback(async () => {
     try {
       const res = await fetch('/api/education/settings');
@@ -92,7 +105,22 @@ export default function EducationSettingsPage() {
     }
   }, []);
 
-  useEffect(() => { fetchSettings(); }, [fetchSettings]);
+  useEffect(() => {
+    fetchSettings();
+    // Load FAQ items
+    fetch('/api/education/faq')
+      .then((r) => r.json())
+      .then((data) => {
+        setFaqItems(
+          (data.items || []).map((item: Record<string, unknown>, i: number) => ({
+            question: (item.question as string) || '',
+            answer: (item.answer as string) || '',
+            order: (item.order as number) ?? i,
+          }))
+        );
+      })
+      .catch(console.error);
+  }, [fetchSettings]);
 
   const handleSave = async () => {
     setSaving(true);
@@ -472,6 +500,35 @@ export default function EducationSettingsPage() {
         </div>
       </div>
 
+      {/* FAQ Management */}
+      <TenantFaqSection
+        items={faqItems}
+        setItems={setFaqItems}
+        saving={faqSaving}
+        msg={faqMsg}
+        onSave={async () => {
+          setFaqSaving(true);
+          setFaqMsg(null);
+          try {
+            const orderedItems = faqItems.map((item, i) => ({ ...item, order: i }));
+            const res = await fetch('/api/education/faq', {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ items: orderedItems }),
+            });
+            if (!res.ok) {
+              const d = await res.json();
+              throw new Error(d.error || 'Failed to save');
+            }
+            setFaqMsg({ type: 'success', text: 'FAQ saved successfully' });
+          } catch (err) {
+            setFaqMsg({ type: 'error', text: err instanceof Error ? err.message : 'Failed to save' });
+          } finally {
+            setFaqSaving(false);
+          }
+        }}
+      />
+
       {/* Save Button */}
       {error && (
         <div className="rounded-lg bg-red-50 dark:bg-red-900/20 p-4 text-sm text-red-700 dark:text-red-300">
@@ -611,6 +668,122 @@ function UpgradeRequestCard({ currentPlan }: { currentPlan: string }) {
         )}
       </div>
     </div>
+  );
+}
+
+/* ── Tenant FAQ Section ── */
+interface TenantFaqSectionProps {
+  items: Array<{ question: string; answer: string; order: number }>;
+  setItems: React.Dispatch<React.SetStateAction<Array<{ question: string; answer: string; order: number }>>>;
+  saving: boolean;
+  msg: { type: 'success' | 'error'; text: string } | null;
+  onSave: () => void;
+}
+
+function TenantFaqSection({ items, setItems, saving, msg, onSave }: TenantFaqSectionProps) {
+  const addItem = () => {
+    setItems([...items, { question: '', answer: '', order: items.length }]);
+  };
+
+  const removeItem = (index: number) => {
+    setItems(items.filter((_, i) => i !== index));
+  };
+
+  const moveItem = (index: number, direction: 'up' | 'down') => {
+    const newItems = [...items];
+    const targetIndex = direction === 'up' ? index - 1 : index + 1;
+    if (targetIndex < 0 || targetIndex >= newItems.length) return;
+    [newItems[index], newItems[targetIndex]] = [newItems[targetIndex], newItems[index]];
+    setItems(newItems);
+  };
+
+  const updateItem = (index: number, field: 'question' | 'answer', value: string) => {
+    const newItems = [...items];
+    newItems[index] = { ...newItems[index], [field]: value };
+    setItems(newItems);
+  };
+
+  return (
+    <Card>
+      <CardHeader>
+        <div className="flex items-center justify-between">
+          <div>
+            <CardTitle className="flex items-center gap-2">
+              <HelpCircle className="h-5 w-5 text-teal-600" />
+              FAQ Management
+            </CardTitle>
+            <CardDescription className="mt-1">
+              Create frequently asked questions for your institution&apos;s portal. These can be displayed to your students and partners.
+            </CardDescription>
+          </div>
+          <Button onClick={onSave} disabled={saving} size="sm" className="bg-teal-600 hover:bg-teal-700">
+            <Save className="h-3.5 w-3.5 mr-1" />
+            {saving ? 'Saving...' : 'Save FAQ'}
+          </Button>
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        {msg && (
+          <div className={`p-3 rounded-md text-sm flex items-center gap-2 ${
+            msg.type === 'success' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-600'
+          }`}>
+            {msg.type === 'success' ? <CheckCircle2 className="h-4 w-4" /> : <AlertCircle className="h-4 w-4" />}
+            {msg.text}
+          </div>
+        )}
+
+        {items.length === 0 ? (
+          <div className="text-center py-8">
+            <HelpCircle className="h-10 w-10 text-slate-300 mx-auto mb-3" />
+            <p className="text-sm text-slate-500">No FAQ items yet</p>
+            <Button variant="outline" size="sm" className="mt-3" onClick={addItem}>
+              <Plus className="h-3.5 w-3.5 mr-1" /> Add First Question
+            </Button>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {items.map((item, index) => (
+              <div key={index} className="border rounded-lg p-4 space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-medium text-slate-400 flex items-center gap-1">
+                    <GripVertical className="h-3.5 w-3.5" />
+                    Q{index + 1}
+                  </span>
+                  <div className="flex items-center gap-1">
+                    <Button variant="ghost" size="sm" onClick={() => moveItem(index, 'up')} disabled={index === 0} className="h-7 w-7 p-0">
+                      <ChevronUpIcon className="h-3.5 w-3.5" />
+                    </Button>
+                    <Button variant="ghost" size="sm" onClick={() => moveItem(index, 'down')} disabled={index === items.length - 1} className="h-7 w-7 p-0">
+                      <ChevronDownIcon className="h-3.5 w-3.5" />
+                    </Button>
+                    <Button variant="ghost" size="sm" onClick={() => removeItem(index)} className="h-7 w-7 p-0 text-red-500 hover:text-red-700 hover:bg-red-50">
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
+                </div>
+                <Input
+                  placeholder="Question..."
+                  value={item.question}
+                  onChange={(e) => updateItem(index, 'question', e.target.value)}
+                />
+                <Textarea
+                  placeholder="Answer..."
+                  value={item.answer}
+                  onChange={(e) => updateItem(index, 'answer', e.target.value)}
+                  rows={2}
+                />
+              </div>
+            ))}
+          </div>
+        )}
+
+        {items.length > 0 && (
+          <Button variant="outline" size="sm" onClick={addItem}>
+            <Plus className="h-3.5 w-3.5 mr-1" /> Add Question
+          </Button>
+        )}
+      </CardContent>
+    </Card>
   );
 }
 

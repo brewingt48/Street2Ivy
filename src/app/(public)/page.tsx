@@ -666,7 +666,72 @@ function VideoSection() {
   );
 }
 
-/* ─── SECTION 9: CTA Footer — Book a Demo ─── */
+/* ─── SECTION 9: FAQ ─── */
+interface FaqItem {
+  question: string;
+  answer: string;
+  order?: number;
+}
+
+function FAQSection({ items }: { items: FaqItem[] }) {
+  const [openIndex, setOpenIndex] = useState<number | null>(null);
+
+  if (items.length === 0) return null;
+
+  return (
+    <section id="faq" className="py-24 md:py-32 bg-ivory">
+      <div className="max-w-4xl mx-auto px-6 lg:px-8">
+        <FadeInSection className="text-center max-w-3xl mx-auto mb-16">
+          <p className="text-gold-600 font-medium tracking-wider text-sm uppercase mb-4">FAQ</p>
+          <h2 className="font-serif text-4xl md:text-5xl font-bold text-navy-900 leading-tight">
+            Frequently Asked Questions
+          </h2>
+          <p className="mt-4 text-lg text-navy-500">
+            Everything you need to know about Campus2Career
+          </p>
+        </FadeInSection>
+
+        <FadeInSection delay={0.2}>
+          <div className="space-y-3">
+            {items.map((item, i) => (
+              <div
+                key={i}
+                className="bg-white rounded-xl border border-navy-100/50 shadow-sm overflow-hidden"
+              >
+                <button
+                  onClick={() => setOpenIndex(openIndex === i ? null : i)}
+                  className="w-full flex items-center justify-between p-6 text-left hover:bg-navy-50/50 transition-colors"
+                >
+                  <span className="font-semibold text-navy-900 pr-4">{item.question}</span>
+                  <ChevronDown
+                    className={`h-5 w-5 text-navy-400 shrink-0 transition-transform duration-300 ${
+                      openIndex === i ? 'rotate-180' : ''
+                    }`}
+                  />
+                </button>
+                <motion.div
+                  initial={false}
+                  animate={{
+                    height: openIndex === i ? 'auto' : 0,
+                    opacity: openIndex === i ? 1 : 0,
+                  }}
+                  transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+                  className="overflow-hidden"
+                >
+                  <div className="px-6 pb-6 text-navy-500 leading-relaxed">
+                    {item.answer}
+                  </div>
+                </motion.div>
+              </div>
+            ))}
+          </div>
+        </FadeInSection>
+      </div>
+    </section>
+  );
+}
+
+/* ─── SECTION 10: CTA Footer — Book a Demo ─── */
 function CTASection({ settings }: { settings: HomepageSettings }) {
   const headline = settings.ctaCopy?.headline || 'Ready to Bridge the Gap Between Campus and Career?';
   const subheadline = settings.ctaCopy?.subheadline ||
@@ -720,12 +785,18 @@ function CTASection({ settings }: { settings: HomepageSettings }) {
 /* ─── PAGE COMPONENT ─── */
 export default function LandingPage() {
   const [settings, setSettings] = useState<HomepageSettings>(DEFAULT_SETTINGS);
+  const [faqItems, setFaqItems] = useState<FaqItem[]>([]);
 
   useEffect(() => {
     fetch('/api/admin/homepage')
       .then((r) => r.json())
       .then((data) => setSettings({ ...DEFAULT_SETTINGS, ...data }))
       .catch(() => {/* use defaults */});
+
+    fetch('/api/admin/faq')
+      .then((r) => r.json())
+      .then((data) => setFaqItems(data.items || []))
+      .catch(() => {/* no FAQ */});
   }, []);
 
   const hidden = settings.hiddenSections || [];
@@ -740,6 +811,7 @@ export default function LandingPage() {
       {!hidden.includes('ai-coaching') && <AICoachingSection />}
       {!hidden.includes('social-proof') && <SocialProofSection />}
       {!hidden.includes('video') && <VideoSection />}
+      {!hidden.includes('faq') && <FAQSection items={faqItems} />}
       {!hidden.includes('cta') && <CTASection settings={settings} />}
     </>
   );
