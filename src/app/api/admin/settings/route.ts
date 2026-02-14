@@ -10,6 +10,9 @@ import { sql } from '@/lib/db';
 import { getCurrentSession } from '@/lib/auth/middleware';
 import { z } from 'zod';
 
+// Force dynamic to prevent caching
+export const dynamic = 'force-dynamic';
+
 const updateSettingsSchema = z.object({
   aiCoachingUrl: z.string().optional(),
   aiCoachingEnabled: z.boolean().optional(),
@@ -17,15 +20,34 @@ const updateSettingsSchema = z.object({
   logoUrl: z.string().optional(),
   hiddenSections: z.array(z.string()).optional(),
   heroCopy: z.object({
+    tagline: z.string().optional(),
     headline: z.string().optional(),
     subheadline: z.string().optional(),
   }).optional(),
   problemCopy: z.object({
     headline: z.string().optional(),
+    description: z.string().optional(),
     stats: z.array(z.object({
       value: z.string().optional(),
       label: z.string().optional(),
+      description: z.string().optional(),
     })).optional(),
+  }).optional(),
+  howItWorksCopy: z.object({
+    headline: z.string().optional(),
+    steps: z.array(z.object({
+      title: z.string().optional(),
+      description: z.string().optional(),
+    })).optional(),
+  }).optional(),
+  socialProofCopy: z.object({
+    stats: z.array(z.object({
+      number: z.string().optional(),
+      label: z.string().optional(),
+    })).optional(),
+    testimonialQuote: z.string().optional(),
+    testimonialAuthor: z.string().optional(),
+    testimonialTitle: z.string().optional(),
   }).optional(),
   ctaCopy: z.object({
     headline: z.string().optional(),
@@ -76,7 +98,7 @@ export async function PUT(request: NextRequest) {
     const currentSettings = (existing?.content || {}) as Record<string, unknown>;
     const newSettings = { ...currentSettings };
 
-    // Merge only provided fields
+    // Merge only provided fields (shallow merge for simple values, deep merge for objects)
     const updates = parsed.data;
     if (updates.aiCoachingUrl !== undefined) newSettings.aiCoachingUrl = updates.aiCoachingUrl;
     if (updates.aiCoachingEnabled !== undefined) newSettings.aiCoachingEnabled = updates.aiCoachingEnabled;
@@ -85,6 +107,8 @@ export async function PUT(request: NextRequest) {
     if (updates.hiddenSections !== undefined) newSettings.hiddenSections = updates.hiddenSections;
     if (updates.heroCopy !== undefined) newSettings.heroCopy = { ...(currentSettings.heroCopy as Record<string, unknown> || {}), ...updates.heroCopy };
     if (updates.problemCopy !== undefined) newSettings.problemCopy = { ...(currentSettings.problemCopy as Record<string, unknown> || {}), ...updates.problemCopy };
+    if (updates.howItWorksCopy !== undefined) newSettings.howItWorksCopy = { ...(currentSettings.howItWorksCopy as Record<string, unknown> || {}), ...updates.howItWorksCopy };
+    if (updates.socialProofCopy !== undefined) newSettings.socialProofCopy = { ...(currentSettings.socialProofCopy as Record<string, unknown> || {}), ...updates.socialProofCopy };
     if (updates.ctaCopy !== undefined) newSettings.ctaCopy = { ...(currentSettings.ctaCopy as Record<string, unknown> || {}), ...updates.ctaCopy };
 
     await sql`

@@ -45,11 +45,24 @@ interface HomepageSettings {
   hiddenSections: string[];
   aiCoachingEnabled: boolean;
   heroCopy: {
+    tagline?: string;
     headline?: string;
     subheadline?: string;
   };
   problemCopy: {
     headline?: string;
+    description?: string;
+    stats?: Array<{ value?: string; label?: string; description?: string }>;
+  };
+  howItWorksCopy: {
+    headline?: string;
+    steps?: Array<{ title?: string; description?: string }>;
+  };
+  socialProofCopy: {
+    stats?: Array<{ number?: string; label?: string }>;
+    testimonialQuote?: string;
+    testimonialAuthor?: string;
+    testimonialTitle?: string;
   };
   ctaCopy: {
     headline?: string;
@@ -64,6 +77,8 @@ const DEFAULT_SETTINGS: HomepageSettings = {
   aiCoachingEnabled: false,
   heroCopy: {},
   problemCopy: {},
+  howItWorksCopy: {},
+  socialProofCopy: {},
   ctaCopy: {},
 };
 
@@ -89,6 +104,7 @@ function HeroSection({ settings }: { settings: HomepageSettings }) {
   const [loaded, setLoaded] = useState(false);
   useEffect(() => { setLoaded(true); }, []);
 
+  const tagline = settings.heroCopy?.tagline || 'From Campus to Career';
   const headline = settings.heroCopy?.headline || 'Where Talent Meets Opportunity';
   const subheadline = settings.heroCopy?.subheadline ||
     'Campus2Career connects students with real corporate projects — building careers before graduation.';
@@ -122,7 +138,7 @@ function HeroSection({ settings }: { settings: HomepageSettings }) {
           transition={{ duration: 0.6, delay: 0.2 }}
           className="text-gold-300 font-medium tracking-wider text-sm uppercase mb-6"
         >
-          From Campus to Career
+          {tagline}
         </motion.p>
         <motion.h1
           initial={{ opacity: 0, y: 30 }}
@@ -188,8 +204,9 @@ function HeroSection({ settings }: { settings: HomepageSettings }) {
 /* ─── SECTION 2: The Opportunity ─── */
 function ProblemSection({ settings }: { settings: HomepageSettings }) {
   const headline = settings.problemCopy?.headline || 'A Massive Opportunity to Rethink Career Readiness';
+  const description = settings.problemCopy?.description || 'The future of work rewards experience, not just education. Students, companies, and universities all win when real-world projects become part of the learning journey.';
 
-  const stats = [
+  const defaultStats = [
     {
       icon: Bot,
       number: '65%',
@@ -210,6 +227,16 @@ function ProblemSection({ settings }: { settings: HomepageSettings }) {
     },
   ];
 
+  const icons = [Bot, AlertTriangle, TrendingUp];
+  const stats = settings.problemCopy?.stats && settings.problemCopy.stats.length > 0
+    ? settings.problemCopy.stats.map((s, i) => ({
+        icon: icons[i] || TrendingUp,
+        number: s.value || defaultStats[i]?.number || '',
+        label: s.label || defaultStats[i]?.label || '',
+        description: s.description || defaultStats[i]?.description || '',
+      }))
+    : defaultStats;
+
   return (
     <section className="py-24 md:py-32 bg-ivory">
       <div className="max-w-7xl mx-auto px-6 lg:px-8">
@@ -219,7 +246,7 @@ function ProblemSection({ settings }: { settings: HomepageSettings }) {
             {headline}
           </h2>
           <p className="mt-4 text-lg text-navy-500 max-w-2xl mx-auto">
-            The future of work rewards experience, not just education. Students, companies, and universities all win when real-world projects become part of the learning journey.
+            {description}
           </p>
         </FadeInSection>
 
@@ -243,8 +270,10 @@ function ProblemSection({ settings }: { settings: HomepageSettings }) {
 }
 
 /* ─── SECTION 3: How It Works ─── */
-function HowItWorksSection() {
-  const steps = [
+function HowItWorksSection({ settings }: { settings: HomepageSettings }) {
+  const sectionHeadline = settings.howItWorksCopy?.headline || 'One Platform. Three Powerful Connections.';
+
+  const defaultSteps = [
     {
       number: '01',
       icon: Briefcase,
@@ -265,13 +294,23 @@ function HowItWorksSection() {
     },
   ];
 
+  const stepIcons = [Briefcase, Users, BarChart3];
+  const steps = settings.howItWorksCopy?.steps && settings.howItWorksCopy.steps.length > 0
+    ? settings.howItWorksCopy.steps.map((s, i) => ({
+        number: String(i + 1).padStart(2, '0'),
+        icon: stepIcons[i] || BarChart3,
+        title: s.title || defaultSteps[i]?.title || `Step ${i + 1}`,
+        description: s.description || defaultSteps[i]?.description || '',
+      }))
+    : defaultSteps;
+
   return (
     <section id="how-it-works" className="py-24 md:py-32 bg-white">
       <div className="max-w-7xl mx-auto px-6 lg:px-8">
         <FadeInSection className="text-center max-w-3xl mx-auto mb-20">
           <p className="text-gold-600 font-medium tracking-wider text-sm uppercase mb-4">The Platform</p>
           <h2 className="font-serif text-4xl md:text-5xl font-bold text-navy-900 leading-tight">
-            One Platform. Three Powerful Connections.
+            {sectionHeadline}
           </h2>
         </FadeInSection>
 
@@ -563,13 +602,25 @@ function AICoachingSection() {
 }
 
 /* ─── SECTION 7: Social Proof / Numbers ─── */
-function SocialProofSection() {
-  const stats = [
+function SocialProofSection({ settings }: { settings: HomepageSettings }) {
+  const defaultStats = [
     { number: '500+', label: 'Corporate Partners' },
     { number: '$2.4M+', label: 'Paid to Students' },
     { number: '45+', label: 'University Partners' },
     { number: '92%', label: 'Student Satisfaction' },
   ];
+
+  const stats = settings.socialProofCopy?.stats && settings.socialProofCopy.stats.length > 0
+    ? settings.socialProofCopy.stats.map((s, i) => ({
+        number: s.number || defaultStats[i]?.number || '',
+        label: s.label || defaultStats[i]?.label || '',
+      }))
+    : defaultStats;
+
+  const testimonialQuote = settings.socialProofCopy?.testimonialQuote ||
+    'Campus2Career didn\'t just give our students internships — it gave them real project ownership. Our employment outcomes improved 34% in the first year.';
+  const testimonialAuthor = settings.socialProofCopy?.testimonialAuthor || 'Dr. Sarah Chen';
+  const testimonialTitle = settings.socialProofCopy?.testimonialTitle || 'VP of Career Services, Partner University';
 
   return (
     <section className="py-24 md:py-32 bg-navy-900">
@@ -598,11 +649,11 @@ function SocialProofSection() {
         {/* Testimonial */}
         <FadeInSection delay={0.4} className="text-center max-w-3xl mx-auto">
           <blockquote className="font-serif text-2xl md:text-3xl text-white/90 italic leading-relaxed">
-            &ldquo;Campus2Career didn&apos;t just give our students internships — it gave them real project ownership. Our employment outcomes improved 34% in the first year.&rdquo;
+            &ldquo;{testimonialQuote}&rdquo;
           </blockquote>
           <div className="mt-6">
-            <p className="text-gold-400 font-semibold">Dr. Sarah Chen</p>
-            <p className="text-navy-400 text-sm">VP of Career Services, Partner University</p>
+            <p className="text-gold-400 font-semibold">{testimonialAuthor}</p>
+            <p className="text-navy-400 text-sm">{testimonialTitle}</p>
           </div>
         </FadeInSection>
       </div>
@@ -786,30 +837,52 @@ function CTASection({ settings }: { settings: HomepageSettings }) {
 export default function LandingPage() {
   const [settings, setSettings] = useState<HomepageSettings>(DEFAULT_SETTINGS);
   const [faqItems, setFaqItems] = useState<FaqItem[]>([]);
+  const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    fetch('/api/admin/homepage')
-      .then((r) => r.json())
-      .then((data) => setSettings({ ...DEFAULT_SETTINGS, ...data }))
-      .catch(() => {/* use defaults */});
-
-    fetch('/api/admin/faq')
-      .then((r) => r.json())
-      .then((data) => setFaqItems(data.items || []))
-      .catch(() => {/* no FAQ */});
+    // Fetch settings and FAQ in parallel
+    Promise.allSettled([
+      fetch('/api/admin/homepage')
+        .then((r) => {
+          if (!r.ok) throw new Error('Settings fetch failed');
+          return r.json();
+        })
+        .then((data) => {
+          if (data && typeof data === 'object') {
+            setSettings({ ...DEFAULT_SETTINGS, ...data });
+          }
+        }),
+      fetch('/api/admin/faq')
+        .then((r) => {
+          if (!r.ok) throw new Error('FAQ fetch failed');
+          return r.json();
+        })
+        .then((data) => {
+          if (data?.items) setFaqItems(data.items);
+        }),
+    ]).finally(() => setReady(true));
   }, []);
 
   const hidden = settings.hiddenSections || [];
+
+  // Show nothing until ready to prevent hydration/flash issues
+  if (!ready) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-navy-900">
+        <div className="animate-pulse text-gold-400 font-serif text-2xl">Campus2Career</div>
+      </div>
+    );
+  }
 
   return (
     <>
       {!hidden.includes('hero') && <HeroSection settings={settings} />}
       {!hidden.includes('problem') && <ProblemSection settings={settings} />}
-      {!hidden.includes('how-it-works') && <HowItWorksSection />}
+      {!hidden.includes('how-it-works') && <HowItWorksSection settings={settings} />}
       {!hidden.includes('value-props') && <ValuePropsSection />}
       {!hidden.includes('white-label') && <WhiteLabelSection />}
       {!hidden.includes('ai-coaching') && <AICoachingSection />}
-      {!hidden.includes('social-proof') && <SocialProofSection />}
+      {!hidden.includes('social-proof') && <SocialProofSection settings={settings} />}
       {!hidden.includes('video') && <VideoSection />}
       {!hidden.includes('faq') && <FAQSection items={faqItems} />}
       {!hidden.includes('cta') && <CTASection settings={settings} />}

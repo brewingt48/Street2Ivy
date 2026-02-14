@@ -44,12 +44,24 @@ interface Settings {
   aiCoachingEnabled: boolean;
   aiCoachingUrl: string;
   heroCopy: {
+    tagline?: string;
     headline?: string;
     subheadline?: string;
   };
   problemCopy: {
     headline?: string;
-    stats?: Array<{ value?: string; label?: string }>;
+    description?: string;
+    stats?: Array<{ value?: string; label?: string; description?: string }>;
+  };
+  howItWorksCopy: {
+    headline?: string;
+    steps?: Array<{ title?: string; description?: string }>;
+  };
+  socialProofCopy: {
+    stats?: Array<{ number?: string; label?: string }>;
+    testimonialQuote?: string;
+    testimonialAuthor?: string;
+    testimonialTitle?: string;
   };
   ctaCopy: {
     headline?: string;
@@ -78,6 +90,8 @@ const DEFAULTS: Settings = {
   aiCoachingUrl: '',
   heroCopy: {},
   problemCopy: {},
+  howItWorksCopy: {},
+  socialProofCopy: {},
   ctaCopy: {},
 };
 
@@ -329,6 +343,22 @@ export default function AdminHomepageCMS() {
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
+            <Label htmlFor="heroTagline">Tagline (above headline)</Label>
+            <Input
+              id="heroTagline"
+              value={settings.heroCopy?.tagline || ''}
+              onChange={(e) =>
+                setSettings({
+                  ...settings,
+                  heroCopy: { ...settings.heroCopy, tagline: e.target.value },
+                })
+              }
+              placeholder="From Campus to Career"
+              className="mt-1"
+            />
+            <p className="text-xs text-slate-400 mt-1">Small uppercase text above the main headline.</p>
+          </div>
+          <div>
             <Label htmlFor="heroHeadline">Headline</Label>
             <Input
               id="heroHeadline"
@@ -386,9 +416,211 @@ export default function AdminHomepageCMS() {
                   problemCopy: { ...settings.problemCopy, headline: e.target.value },
                 })
               }
-              placeholder="The Talent Gap Is Real"
+              placeholder="A Massive Opportunity to Rethink Career Readiness"
               className="mt-1"
             />
+          </div>
+          <div>
+            <Label htmlFor="problemDescription">Section Description</Label>
+            <Textarea
+              id="problemDescription"
+              value={settings.problemCopy?.description || ''}
+              onChange={(e) =>
+                setSettings({
+                  ...settings,
+                  problemCopy: { ...settings.problemCopy, description: e.target.value },
+                })
+              }
+              placeholder="The future of work rewards experience, not just education..."
+              rows={2}
+              className="mt-1"
+            />
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* How It Works Copy */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Type className="h-5 w-5 text-teal-600" />
+            How It Works Section
+          </CardTitle>
+          <CardDescription>
+            Customize the 3-step process section headline and step descriptions.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div>
+            <Label htmlFor="howHeadline">Section Headline</Label>
+            <Input
+              id="howHeadline"
+              value={settings.howItWorksCopy?.headline || ''}
+              onChange={(e) =>
+                setSettings({
+                  ...settings,
+                  howItWorksCopy: { ...settings.howItWorksCopy, headline: e.target.value },
+                })
+              }
+              placeholder="One Platform. Three Powerful Connections."
+              className="mt-1"
+            />
+          </div>
+          {[0, 1, 2].map((i) => {
+            const defaultTitles = ['Corporations Post Projects', 'Students Apply & Match', 'Institutions Track Impact'];
+            const step = settings.howItWorksCopy?.steps?.[i] || {};
+            return (
+              <div key={i} className="p-3 border rounded-lg space-y-2">
+                <p className="text-xs font-semibold text-slate-500 uppercase">Step {i + 1}</p>
+                <div>
+                  <Label htmlFor={`step${i}Title`}>Title</Label>
+                  <Input
+                    id={`step${i}Title`}
+                    value={step.title || ''}
+                    onChange={(e) => {
+                      const steps = [...(settings.howItWorksCopy?.steps || [{}, {}, {}])];
+                      steps[i] = { ...steps[i], title: e.target.value };
+                      setSettings({
+                        ...settings,
+                        howItWorksCopy: { ...settings.howItWorksCopy, steps },
+                      });
+                    }}
+                    placeholder={defaultTitles[i]}
+                    className="mt-1"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor={`step${i}Desc`}>Description</Label>
+                  <Textarea
+                    id={`step${i}Desc`}
+                    value={step.description || ''}
+                    onChange={(e) => {
+                      const steps = [...(settings.howItWorksCopy?.steps || [{}, {}, {}])];
+                      steps[i] = { ...steps[i], description: e.target.value };
+                      setSettings({
+                        ...settings,
+                        howItWorksCopy: { ...settings.howItWorksCopy, steps },
+                      });
+                    }}
+                    placeholder="Step description..."
+                    rows={2}
+                    className="mt-1"
+                  />
+                </div>
+              </div>
+            );
+          })}
+        </CardContent>
+      </Card>
+
+      {/* Social Proof Copy */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Type className="h-5 w-5 text-teal-600" />
+            Social Proof Section
+          </CardTitle>
+          <CardDescription>
+            Customize the statistics banner and testimonial on the homepage.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <p className="text-xs font-semibold text-slate-500 uppercase">Stats Banner (4 stats)</p>
+          <div className="grid grid-cols-2 gap-3">
+            {[0, 1, 2, 3].map((i) => {
+              const defaultLabels = ['Corporate Partners', 'Paid to Students', 'University Partners', 'Student Satisfaction'];
+              const defaultNumbers = ['500+', '$2.4M+', '45+', '92%'];
+              const stat = settings.socialProofCopy?.stats?.[i] || {};
+              return (
+                <div key={i} className="p-3 border rounded-lg space-y-2">
+                  <div>
+                    <Label htmlFor={`stat${i}Num`}>Number</Label>
+                    <Input
+                      id={`stat${i}Num`}
+                      value={stat.number || ''}
+                      onChange={(e) => {
+                        const stats = [...(settings.socialProofCopy?.stats || [{}, {}, {}, {}])];
+                        stats[i] = { ...stats[i], number: e.target.value };
+                        setSettings({
+                          ...settings,
+                          socialProofCopy: { ...settings.socialProofCopy, stats },
+                        });
+                      }}
+                      placeholder={defaultNumbers[i]}
+                      className="mt-1"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor={`stat${i}Label`}>Label</Label>
+                    <Input
+                      id={`stat${i}Label`}
+                      value={stat.label || ''}
+                      onChange={(e) => {
+                        const stats = [...(settings.socialProofCopy?.stats || [{}, {}, {}, {}])];
+                        stats[i] = { ...stats[i], label: e.target.value };
+                        setSettings({
+                          ...settings,
+                          socialProofCopy: { ...settings.socialProofCopy, stats },
+                        });
+                      }}
+                      placeholder={defaultLabels[i]}
+                      className="mt-1"
+                    />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+          <div className="pt-3 border-t space-y-3">
+            <p className="text-xs font-semibold text-slate-500 uppercase">Testimonial</p>
+            <div>
+              <Label htmlFor="testimonialQuote">Quote</Label>
+              <Textarea
+                id="testimonialQuote"
+                value={settings.socialProofCopy?.testimonialQuote || ''}
+                onChange={(e) =>
+                  setSettings({
+                    ...settings,
+                    socialProofCopy: { ...settings.socialProofCopy, testimonialQuote: e.target.value },
+                  })
+                }
+                placeholder="Campus2Career didn't just give our students internships..."
+                rows={3}
+                className="mt-1"
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label htmlFor="testimonialAuthor">Author Name</Label>
+                <Input
+                  id="testimonialAuthor"
+                  value={settings.socialProofCopy?.testimonialAuthor || ''}
+                  onChange={(e) =>
+                    setSettings({
+                      ...settings,
+                      socialProofCopy: { ...settings.socialProofCopy, testimonialAuthor: e.target.value },
+                    })
+                  }
+                  placeholder="Dr. Sarah Chen"
+                  className="mt-1"
+                />
+              </div>
+              <div>
+                <Label htmlFor="testimonialTitle">Author Title</Label>
+                <Input
+                  id="testimonialTitle"
+                  value={settings.socialProofCopy?.testimonialTitle || ''}
+                  onChange={(e) =>
+                    setSettings({
+                      ...settings,
+                      socialProofCopy: { ...settings.socialProofCopy, testimonialTitle: e.target.value },
+                    })
+                  }
+                  placeholder="VP of Career Services, Partner University"
+                  className="mt-1"
+                />
+              </div>
+            </div>
           </div>
         </CardContent>
       </Card>

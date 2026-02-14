@@ -84,6 +84,15 @@ export default function EducationSettingsPage() {
   const [faqSaving, setFaqSaving] = useState(false);
   const [faqMsg, setFaqMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
+  // Tenant content customization state
+  const [tenantHeroTagline, setTenantHeroTagline] = useState('');
+  const [tenantHeroHeadline, setTenantHeroHeadline] = useState('');
+  const [tenantHeroSubheadline, setTenantHeroSubheadline] = useState('');
+  const [tenantCtaHeadline, setTenantCtaHeadline] = useState('');
+  const [tenantCtaSubheadline, setTenantCtaSubheadline] = useState('');
+  const [contentSaving, setContentSaving] = useState(false);
+  const [contentMsg, setContentMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+
   const fetchSettings = useCallback(async () => {
     try {
       const res = await fetch('/api/education/settings');
@@ -118,6 +127,22 @@ export default function EducationSettingsPage() {
             order: (item.order as number) ?? i,
           }))
         );
+      })
+      .catch(console.error);
+    // Load tenant content
+    fetch('/api/education/content')
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.content) {
+          const c = data.content as Record<string, unknown>;
+          const hero = (c.heroCopy || {}) as Record<string, string>;
+          const cta = (c.ctaCopy || {}) as Record<string, string>;
+          setTenantHeroTagline(hero.tagline || '');
+          setTenantHeroHeadline(hero.headline || '');
+          setTenantHeroSubheadline(hero.subheadline || '');
+          setTenantCtaHeadline(cta.headline || '');
+          setTenantCtaSubheadline(cta.subheadline || '');
+        }
       })
       .catch(console.error);
   }, [fetchSettings]);
@@ -499,6 +524,126 @@ export default function EducationSettingsPage() {
           </Card>
         </div>
       </div>
+
+      {/* Landing Page Content Customization */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="flex items-center gap-2">
+                <Type className="h-5 w-5 text-teal-600" />
+                Landing Page Content
+              </CardTitle>
+              <CardDescription className="mt-1">
+                Customize the text that appears on your institution&apos;s landing page. Leave fields blank to use platform defaults.
+              </CardDescription>
+            </div>
+            <Button
+              onClick={async () => {
+                setContentSaving(true);
+                setContentMsg(null);
+                try {
+                  const res = await fetch('/api/education/content', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                      heroCopy: {
+                        tagline: tenantHeroTagline || undefined,
+                        headline: tenantHeroHeadline || undefined,
+                        subheadline: tenantHeroSubheadline || undefined,
+                      },
+                      ctaCopy: {
+                        headline: tenantCtaHeadline || undefined,
+                        subheadline: tenantCtaSubheadline || undefined,
+                      },
+                    }),
+                  });
+                  if (!res.ok) {
+                    const d = await res.json();
+                    throw new Error(d.error || 'Failed to save');
+                  }
+                  setContentMsg({ type: 'success', text: 'Content saved successfully' });
+                  setTimeout(() => setContentMsg(null), 3000);
+                } catch (err) {
+                  setContentMsg({ type: 'error', text: err instanceof Error ? err.message : 'Failed to save' });
+                } finally {
+                  setContentSaving(false);
+                }
+              }}
+              disabled={contentSaving}
+              size="sm"
+              className="bg-teal-600 hover:bg-teal-700"
+            >
+              <Save className="h-3.5 w-3.5 mr-1" />
+              {contentSaving ? 'Saving...' : 'Save Content'}
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {contentMsg && (
+            <div className={`p-3 rounded-md text-sm flex items-center gap-2 ${
+              contentMsg.type === 'success' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-600'
+            }`}>
+              {contentMsg.type === 'success' ? <CheckCircle2 className="h-4 w-4" /> : <AlertCircle className="h-4 w-4" />}
+              {contentMsg.text}
+            </div>
+          )}
+
+          <div className="space-y-3 p-3 border rounded-lg">
+            <p className="text-xs font-semibold text-slate-500 uppercase">Hero Section</p>
+            <div>
+              <Label>Tagline</Label>
+              <Input
+                value={tenantHeroTagline}
+                onChange={(e) => setTenantHeroTagline(e.target.value)}
+                placeholder="From Campus to Career"
+                className="mt-1"
+              />
+            </div>
+            <div>
+              <Label>Headline</Label>
+              <Input
+                value={tenantHeroHeadline}
+                onChange={(e) => setTenantHeroHeadline(e.target.value)}
+                placeholder="Where Talent Meets Opportunity"
+                className="mt-1"
+              />
+            </div>
+            <div>
+              <Label>Subheadline</Label>
+              <Textarea
+                value={tenantHeroSubheadline}
+                onChange={(e) => setTenantHeroSubheadline(e.target.value)}
+                placeholder="Campus2Career connects students with real corporate projects..."
+                rows={2}
+                className="mt-1"
+              />
+            </div>
+          </div>
+
+          <div className="space-y-3 p-3 border rounded-lg">
+            <p className="text-xs font-semibold text-slate-500 uppercase">Call-to-Action Section</p>
+            <div>
+              <Label>CTA Headline</Label>
+              <Input
+                value={tenantCtaHeadline}
+                onChange={(e) => setTenantCtaHeadline(e.target.value)}
+                placeholder="Ready to Bridge the Gap Between Campus and Career?"
+                className="mt-1"
+              />
+            </div>
+            <div>
+              <Label>CTA Subheadline</Label>
+              <Input
+                value={tenantCtaSubheadline}
+                onChange={(e) => setTenantCtaSubheadline(e.target.value)}
+                placeholder="Book a demo to see how Campus2Career can transform your talent pipeline."
+                className="mt-1"
+              />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* FAQ Management */}
       <TenantFaqSection

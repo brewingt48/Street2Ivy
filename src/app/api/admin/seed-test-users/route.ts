@@ -85,6 +85,26 @@ export async function POST() {
       return NextResponse.json({ error: 'Admin access required' }, { status: 403 });
     }
 
+    // Ensure required columns exist before seeding
+    try {
+      const colCheck = await sql`
+        SELECT column_name FROM information_schema.columns
+        WHERE table_name = 'users' AND column_name = 'is_active'
+      `;
+      if (colCheck.length === 0) {
+        await sql`ALTER TABLE users ADD COLUMN is_active BOOLEAN NOT NULL DEFAULT TRUE`;
+      }
+    } catch {
+      // Column might already exist, continue
+    }
+
+    // Ensure pgcrypto extension exists
+    try {
+      await sql`CREATE EXTENSION IF NOT EXISTS pgcrypto`;
+    } catch {
+      // Extension might already exist
+    }
+
     const tenantId = session.data.tenantId || process.env.TENANT_ID || null;
     const created: Array<{ email: string; role: string; status: string }> = [];
     const skipped: Array<{ email: string; reason: string }> = [];
@@ -96,7 +116,7 @@ export async function POST() {
         // Reset password for existing test user
         const [{ hash: resetHash }] = await sql`SELECT crypt(${TEST_PASSWORD}, gen_salt('bf', 10)) AS hash`;
         await sql`
-          UPDATE users SET password_hash = ${resetHash}, is_active = true, email_verified = true
+          UPDATE users SET password_hash = ${resetHash}, email_verified = true
           WHERE email = ${user.email}
         `;
         created.push({ email: user.email, role: user.role, status: 'reset' });
@@ -106,16 +126,16 @@ export async function POST() {
       // Hash password via PostgreSQL crypt()
       const [{ hash }] = await sql`SELECT crypt(${TEST_PASSWORD}, gen_salt('bf', 10)) AS hash`;
 
-      // Insert user
+      // Insert user — only use columns that exist in the schema
       await sql`
         INSERT INTO users (
           email, password_hash, first_name, last_name, role, tenant_id,
-          email_verified, is_active, bio, metadata
+          email_verified, bio, metadata
         )
         VALUES (
           ${user.email}, ${hash}, ${user.firstName}, ${user.lastName},
           ${user.role}, ${tenantId},
-          true, true, ${user.bio}, ${JSON.stringify(user.metadata)}::jsonb
+          true, ${user.bio}, ${JSON.stringify(user.metadata)}::jsonb
         )
       `;
 
@@ -132,8 +152,8 @@ export async function POST() {
         `;
         for (const skill of skills) {
           await sql`
-            INSERT INTO user_skills (user_id, skill_id, proficiency_level)
-            VALUES (${student.id}, ${skill.id}, ${Math.floor(Math.random() * 3) + 3})
+            INSERT INTO user_skills (user_id, skill_id)
+            VALUES (${student.id}, ${skill.id})
             ON CONFLICT (user_id, skill_id) DO NOTHING
           `;
         }
@@ -153,7 +173,7 @@ export async function POST() {
     });
   } catch (error) {
     console.error('Seed test users error:', error);
-    return NextResponse.json({ error: 'Failed to seed test users' }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to seed test users', details: error instanceof Error ? error.message : 'Unknown error' }, { status: 500 });
   }
 }
 

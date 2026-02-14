@@ -8,6 +8,9 @@ import { sql } from '@/lib/db';
 import { getCurrentSession } from '@/lib/auth/middleware';
 import { z } from 'zod';
 
+// Force dynamic to prevent caching stale content
+export const dynamic = 'force-dynamic';
+
 const updateContentSchema = z.object({
   section: z.string().min(1),
   content: z.record(z.unknown()),
