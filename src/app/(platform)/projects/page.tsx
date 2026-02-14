@@ -37,6 +37,8 @@ import {
   ChevronRight,
   Briefcase,
   Filter,
+  School,
+  Trophy,
 } from 'lucide-react';
 
 interface ProjectListing {
@@ -62,6 +64,8 @@ interface ProjectListing {
     firstName: string;
     lastName: string;
     displayName: string;
+    alumniOf: string | null;
+    sportsPlayed: string | null;
   };
 }
 
@@ -85,6 +89,8 @@ export default function ProjectsPage() {
   const [search, setSearch] = useState(searchParams.get('q') || '');
   const [category, setCategory] = useState(searchParams.get('category') || '');
   const [remoteOnly, setRemoteOnly] = useState(searchParams.get('remote') === 'true');
+  const [alumniOfFilter, setAlumniOfFilter] = useState(searchParams.get('alumniOf') || '');
+  const [sportsPlayedFilter, setSportsPlayedFilter] = useState(searchParams.get('sportsPlayed') || '');
   const [page, setPage] = useState(parseInt(searchParams.get('page') || '1'));
 
   const fetchProjects = useCallback(async () => {
@@ -94,6 +100,8 @@ export default function ProjectsPage() {
       if (search) params.set('q', search);
       if (category && category !== 'all') params.set('category', category);
       if (remoteOnly) params.set('remote', 'true');
+      if (alumniOfFilter) params.set('alumniOf', alumniOfFilter);
+      if (sportsPlayedFilter) params.set('sportsPlayed', sportsPlayedFilter);
       params.set('page', String(page));
       params.set('limit', '12');
 
@@ -107,7 +115,7 @@ export default function ProjectsPage() {
     } finally {
       setLoading(false);
     }
-  }, [search, category, remoteOnly, page]);
+  }, [search, category, remoteOnly, alumniOfFilter, sportsPlayedFilter, page]);
 
   useEffect(() => {
     fetchProjects();
@@ -123,10 +131,12 @@ export default function ProjectsPage() {
     setSearch('');
     setCategory('');
     setRemoteOnly(false);
+    setAlumniOfFilter('');
+    setSportsPlayedFilter('');
     setPage(1);
   };
 
-  const hasActiveFilters = search || category || remoteOnly;
+  const hasActiveFilters = search || category || remoteOnly || alumniOfFilter || sportsPlayedFilter;
 
   return (
     <div className="space-y-6">
@@ -176,6 +186,18 @@ export default function ProjectsPage() {
               <Wifi className="h-4 w-4 mr-2" />
               Remote
             </Button>
+            <Input
+              placeholder="Partner alumni of..."
+              value={alumniOfFilter}
+              onChange={(e) => setAlumniOfFilter(e.target.value)}
+              className="w-[170px]"
+            />
+            <Input
+              placeholder="Partner sport..."
+              value={sportsPlayedFilter}
+              onChange={(e) => setSportsPlayedFilter(e.target.value)}
+              className="w-[160px]"
+            />
             <Button type="submit" className="bg-teal-600 hover:bg-teal-700">
               Search
             </Button>
@@ -226,6 +248,16 @@ export default function ProjectsPage() {
                     </CardTitle>
                     <CardDescription className="mt-1">
                       {project.author.displayName || `${project.author.firstName} ${project.author.lastName}`}
+                      {project.author.alumniOf && (
+                        <span className="flex items-center gap-1 mt-0.5 text-xs text-slate-400">
+                          <School className="h-3 w-3" /> Alumni: {project.author.alumniOf}
+                        </span>
+                      )}
+                      {project.author.sportsPlayed && (
+                        <span className="flex items-center gap-1 mt-0.5 text-xs text-slate-400">
+                          <Trophy className="h-3 w-3" /> {project.author.sportsPlayed}
+                        </span>
+                      )}
                     </CardDescription>
                   </div>
                   {project.category && (

@@ -16,134 +16,93 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const q = searchParams.get('q') || '';
     const skill = searchParams.get('skill') || '';
+    const alumniOf = searchParams.get('alumniOf') || '';
+    const sportsPlayed = searchParams.get('sportsPlayed') || '';
     const page = Math.max(1, parseInt(searchParams.get('page') || '1'));
     const limit = Math.min(50, Math.max(1, parseInt(searchParams.get('limit') || '20')));
     const offset = (page - 1) * limit;
 
-    let students;
-    let total;
+    // Build dynamic WHERE conditions
+    const conditions = [
+      sql`u.role = 'student'`,
+      sql`u.is_active = true`,
+    ];
 
-    if (q && skill) {
+    if (q) {
       const searchPattern = `%${q}%`;
-      const skillPattern = `%${skill}%`;
-      students = await sql`
-        SELECT u.id, u.display_name, u.email, u.university, u.major,
-               u.graduation_year, u.gpa, u.bio, u.hours_per_week, u.location,
-               u.open_to_work,
-               COALESCE(
-                 (SELECT array_agg(s.name) FROM user_skills us JOIN skills s ON s.id = us.skill_id WHERE us.user_id = u.id),
-                 ARRAY[]::text[]
-               ) as skills
-        FROM users u
-        WHERE u.role = 'student'
-          AND u.is_active = true
-          AND (u.display_name ILIKE ${searchPattern} OR u.university ILIKE ${searchPattern} OR u.major ILIKE ${searchPattern})
-          AND EXISTS (
-            SELECT 1 FROM user_skills us JOIN skills s ON s.id = us.skill_id
-            WHERE us.user_id = u.id AND s.name ILIKE ${skillPattern}
-          )
-        ORDER BY u.created_at DESC
-        LIMIT ${limit} OFFSET ${offset}
-      `;
-      const countResult = await sql`
-        SELECT COUNT(*) as count FROM users u
-        WHERE u.role = 'student' AND u.is_active = true
-          AND (u.display_name ILIKE ${searchPattern} OR u.university ILIKE ${searchPattern} OR u.major ILIKE ${searchPattern})
-          AND EXISTS (
-            SELECT 1 FROM user_skills us JOIN skills s ON s.id = us.skill_id
-            WHERE us.user_id = u.id AND s.name ILIKE ${skillPattern}
-          )
-      `;
-      total = parseInt(countResult[0].count as string);
-    } else if (q) {
-      const searchPattern = `%${q}%`;
-      students = await sql`
-        SELECT u.id, u.display_name, u.email, u.university, u.major,
-               u.graduation_year, u.gpa, u.bio, u.hours_per_week, u.location,
-               u.open_to_work,
-               COALESCE(
-                 (SELECT array_agg(s.name) FROM user_skills us JOIN skills s ON s.id = us.skill_id WHERE us.user_id = u.id),
-                 ARRAY[]::text[]
-               ) as skills
-        FROM users u
-        WHERE u.role = 'student'
-          AND u.is_active = true
-          AND (u.display_name ILIKE ${searchPattern} OR u.university ILIKE ${searchPattern} OR u.major ILIKE ${searchPattern})
-        ORDER BY u.created_at DESC
-        LIMIT ${limit} OFFSET ${offset}
-      `;
-      const countResult = await sql`
-        SELECT COUNT(*) as count FROM users u
-        WHERE u.role = 'student' AND u.is_active = true
-          AND (u.display_name ILIKE ${searchPattern} OR u.university ILIKE ${searchPattern} OR u.major ILIKE ${searchPattern})
-      `;
-      total = parseInt(countResult[0].count as string);
-    } else if (skill) {
-      const skillPattern = `%${skill}%`;
-      students = await sql`
-        SELECT u.id, u.display_name, u.email, u.university, u.major,
-               u.graduation_year, u.gpa, u.bio, u.hours_per_week, u.location,
-               u.open_to_work,
-               COALESCE(
-                 (SELECT array_agg(s.name) FROM user_skills us JOIN skills s ON s.id = us.skill_id WHERE us.user_id = u.id),
-                 ARRAY[]::text[]
-               ) as skills
-        FROM users u
-        WHERE u.role = 'student'
-          AND u.is_active = true
-          AND EXISTS (
-            SELECT 1 FROM user_skills us JOIN skills s ON s.id = us.skill_id
-            WHERE us.user_id = u.id AND s.name ILIKE ${skillPattern}
-          )
-        ORDER BY u.created_at DESC
-        LIMIT ${limit} OFFSET ${offset}
-      `;
-      const countResult = await sql`
-        SELECT COUNT(*) as count FROM users u
-        WHERE u.role = 'student' AND u.is_active = true
-          AND EXISTS (
-            SELECT 1 FROM user_skills us JOIN skills s ON s.id = us.skill_id
-            WHERE us.user_id = u.id AND s.name ILIKE ${skillPattern}
-          )
-      `;
-      total = parseInt(countResult[0].count as string);
-    } else {
-      students = await sql`
-        SELECT u.id, u.display_name, u.email, u.university, u.major,
-               u.graduation_year, u.gpa, u.bio, u.hours_per_week, u.location,
-               u.open_to_work,
-               COALESCE(
-                 (SELECT array_agg(s.name) FROM user_skills us JOIN skills s ON s.id = us.skill_id WHERE us.user_id = u.id),
-                 ARRAY[]::text[]
-               ) as skills
-        FROM users u
-        WHERE u.role = 'student'
-          AND u.is_active = true
-        ORDER BY u.created_at DESC
-        LIMIT ${limit} OFFSET ${offset}
-      `;
-      const countResult = await sql`
-        SELECT COUNT(*) as count FROM users u
-        WHERE u.role = 'student' AND u.is_active = true
-      `;
-      total = parseInt(countResult[0].count as string);
+      conditions.push(
+        sql`(u.display_name ILIKE ${searchPattern} OR u.university ILIKE ${searchPattern} OR u.major ILIKE ${searchPattern})`
+      );
     }
 
+    if (skill) {
+      const skillPattern = `%${skill}%`;
+      conditions.push(
+        sql`EXISTS (
+          SELECT 1 FROM user_skills us JOIN skills s ON s.id = us.skill_id
+          WHERE us.user_id = u.id AND s.name ILIKE ${skillPattern}
+        )`
+      );
+    }
+
+    if (alumniOf) {
+      const alumniPattern = `%${alumniOf}%`;
+      conditions.push(
+        sql`u.metadata->>'alumniOf' ILIKE ${alumniPattern}`
+      );
+    }
+
+    if (sportsPlayed) {
+      const sportsPattern = `%${sportsPlayed}%`;
+      conditions.push(
+        sql`u.metadata->>'sportsPlayed' ILIKE ${sportsPattern}`
+      );
+    }
+
+    const whereClause = conditions.reduce((acc, cond, i) =>
+      i === 0 ? cond : sql`${acc} AND ${cond}`
+    );
+
+    const students = await sql`
+      SELECT u.id, u.display_name, u.email, u.university, u.major,
+             u.graduation_year, u.gpa, u.bio, u.hours_per_week, u.location,
+             u.open_to_work, u.metadata,
+             COALESCE(
+               (SELECT array_agg(s.name) FROM user_skills us JOIN skills s ON s.id = us.skill_id WHERE us.user_id = u.id),
+               ARRAY[]::text[]
+             ) as skills
+      FROM users u
+      WHERE ${whereClause}
+      ORDER BY u.created_at DESC
+      LIMIT ${limit} OFFSET ${offset}
+    `;
+
+    const countResult = await sql`
+      SELECT COUNT(*) as count FROM users u
+      WHERE ${whereClause}
+    `;
+    const total = parseInt(countResult[0].count as string);
+
     return NextResponse.json({
-      students: students.map((s: Record<string, unknown>) => ({
-        id: s.id,
-        name: s.display_name,
-        email: s.email,
-        university: s.university,
-        major: s.major,
-        graduationYear: s.graduation_year,
-        gpa: s.gpa,
-        bio: s.bio,
-        hoursPerWeek: s.hours_per_week,
-        location: s.location,
-        openToWork: s.open_to_work,
-        skills: s.skills || [],
-      })),
+      students: students.map((s: Record<string, unknown>) => {
+        const metadata = (s.metadata || {}) as Record<string, unknown>;
+        return {
+          id: s.id,
+          name: s.display_name,
+          email: s.email,
+          university: s.university,
+          major: s.major,
+          graduationYear: s.graduation_year,
+          gpa: s.gpa,
+          bio: s.bio,
+          hoursPerWeek: s.hours_per_week,
+          location: s.location,
+          openToWork: s.open_to_work,
+          skills: s.skills || [],
+          alumniOf: (metadata.alumniOf as string) || null,
+          sportsPlayed: (metadata.sportsPlayed as string) || null,
+        };
+      }),
       total,
       page,
       totalPages: Math.ceil(total / limit),

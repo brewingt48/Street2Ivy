@@ -16,7 +16,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Search, Send, GraduationCap, MapPin, Clock, Star, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Search, Send, GraduationCap, MapPin, Clock, Star, ChevronLeft, ChevronRight, School, Trophy } from 'lucide-react';
 
 interface Student {
   id: string;
@@ -31,6 +31,8 @@ interface Student {
   hoursPerWeek: number | null;
   location: string | null;
   openToWork: boolean;
+  alumniOf: string | null;
+  sportsPlayed: string | null;
 }
 
 interface Listing {
@@ -44,6 +46,8 @@ export default function SearchStudentsPage() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [skillFilter, setSkillFilter] = useState('');
+  const [alumniOfFilter, setAlumniOfFilter] = useState('');
+  const [sportsPlayedFilter, setSportsPlayedFilter] = useState('');
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
@@ -60,6 +64,8 @@ export default function SearchStudentsPage() {
       const params = new URLSearchParams({ page: String(page), limit: '20' });
       if (searchQuery) params.set('q', searchQuery);
       if (skillFilter) params.set('skill', skillFilter);
+      if (alumniOfFilter) params.set('alumniOf', alumniOfFilter);
+      if (sportsPlayedFilter) params.set('sportsPlayed', sportsPlayedFilter);
       const res = await fetch(`/api/corporate/search-students?${params}`);
       const data = await res.json();
       setStudents(data.students || []);
@@ -69,7 +75,7 @@ export default function SearchStudentsPage() {
     } finally {
       setLoading(false);
     }
-  }, [page, searchQuery, skillFilter]);
+  }, [page, searchQuery, skillFilter, alumniOfFilter, sportsPlayedFilter]);
 
   useEffect(() => {
     fetchStudents();
@@ -131,19 +137,33 @@ export default function SearchStudentsPage() {
       {/* Search & Filters */}
       <Card>
         <CardContent className="py-4">
-          <form onSubmit={handleSearch} className="flex gap-3">
-            <div className="flex-1">
+          <form onSubmit={handleSearch} className="flex gap-3 flex-wrap">
+            <div className="flex-1 min-w-[200px]">
               <Input
                 placeholder="Search by name, university, or major..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
-            <div className="w-48">
+            <div className="w-40">
               <Input
                 placeholder="Filter by skill..."
                 value={skillFilter}
                 onChange={(e) => setSkillFilter(e.target.value)}
+              />
+            </div>
+            <div className="w-40">
+              <Input
+                placeholder="Alumni of (school)..."
+                value={alumniOfFilter}
+                onChange={(e) => setAlumniOfFilter(e.target.value)}
+              />
+            </div>
+            <div className="w-40">
+              <Input
+                placeholder="Sports played..."
+                value={sportsPlayedFilter}
+                onChange={(e) => setSportsPlayedFilter(e.target.value)}
               />
             </div>
             <Button type="submit" className="bg-teal-600 hover:bg-teal-700">
@@ -232,6 +252,16 @@ export default function SearchStudentsPage() {
                     )}
                     {student.openToWork && (
                       <Badge variant="secondary" className="text-xs bg-green-100 text-green-700">Open to work</Badge>
+                    )}
+                    {student.alumniOf && (
+                      <span className="flex items-center gap-1">
+                        <School className="h-3 w-3" /> Alumni: {student.alumniOf}
+                      </span>
+                    )}
+                    {student.sportsPlayed && (
+                      <span className="flex items-center gap-1">
+                        <Trophy className="h-3 w-3" /> {student.sportsPlayed}
+                      </span>
                     )}
                   </div>
 
