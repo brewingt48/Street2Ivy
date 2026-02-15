@@ -250,9 +250,17 @@ export default function AdminTenantsPage() {
                           </Badge>
                         ) : null}
                       </div>
-                      <div className="flex items-center gap-1 mt-1">
+                      <div className="flex items-center gap-2 mt-1">
                         <p className="text-sm text-slate-500 font-mono">{t.subdomain}.proveground.com</p>
-                        <ExternalLink className="h-3 w-3 text-slate-400" />
+                        <a
+                          href={`/${t.subdomain}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={(e) => e.stopPropagation()}
+                          className="inline-flex items-center gap-1 text-xs text-teal-600 hover:text-teal-700 font-medium"
+                        >
+                          Visit <ExternalLink className="h-3 w-3" />
+                        </a>
                       </div>
                       {t.institutionDomain && (
                         <p className="text-xs text-slate-400 mt-0.5">{t.institutionDomain}</p>

@@ -264,17 +264,18 @@ export default function TenantDetailPage() {
               <h1 className="text-3xl font-bold text-slate-900 dark:text-white">{tenant.name}</h1>
               <Badge className={`border-0 ${statusColors[tenant.status] || ''}`}>{tenant.status}</Badge>
             </div>
-            <p className="text-slate-500 mt-1 font-mono text-sm">
-              /{tenant.subdomain}
+            <div className="flex items-center gap-3 mt-1">
+              <p className="text-slate-500 font-mono text-sm">/{tenant.subdomain}</p>
               <a
                 href={`/${tenant.subdomain}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex ml-2 text-teal-600 hover:text-teal-700"
+                className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium text-teal-700 bg-teal-50 hover:bg-teal-100 dark:bg-teal-900/30 dark:text-teal-400 dark:hover:bg-teal-900/50 rounded-md transition-colors"
               >
-                <ExternalLink className="h-3.5 w-3.5" />
+                <ExternalLink className="h-3 w-3" />
+                Visit Homepage
               </a>
-            </p>
+            </div>
           </div>
         </div>
 
