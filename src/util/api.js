@@ -169,7 +169,7 @@ export const deleteUserAccount = body => {
   return post('/api/delete-account', body);
 };
 
-// Street2Ivy: Search users via Integration API
+// ProveGround: Search users via Integration API
 //
 // Queries users by extended data fields (userType, state, skills, etc.)
 // This calls a server-side endpoint that uses the Integration API SDK
@@ -188,7 +188,7 @@ export const searchUsers = params => {
   });
 };
 
-// Street2Ivy: Invite a student to apply for a project
+// ProveGround: Invite a student to apply for a project
 //
 // Corporate partners can invite students to apply for their project listings.
 // This uses the trusted SDK on the server to initiate a transaction
@@ -199,7 +199,7 @@ export const inviteToApply = body => {
   return post('/api/invite-to-apply', body);
 };
 
-// Street2Ivy: Fetch company listings (open projects)
+// ProveGround: Fetch company listings (open projects)
 //
 // Fetch published listings for a corporate partner (by author ID)
 // Used on the search companies page to show a company's open projects.
@@ -217,7 +217,7 @@ export const fetchCompanyListings = (authorId, params = {}) => {
   });
 };
 
-// Street2Ivy: Fetch user statistics (projects completed, pending, etc.)
+// ProveGround: Fetch user statistics (projects completed, pending, etc.)
 //
 // Fetch project statistics for a user (student or corporate partner)
 // Used on search pages to show project stats alongside user info.
@@ -230,7 +230,7 @@ export const fetchUserStats = userId => {
   });
 };
 
-// Street2Ivy: Fetch company spending statistics
+// ProveGround: Fetch company spending statistics
 //
 // Fetch spending statistics for a specific corporate partner.
 // Accessible by students, educational admins, and system admins.
@@ -244,7 +244,7 @@ export const fetchCompanySpending = companyId => {
   });
 };
 
-// Street2Ivy: Fetch all companies spending report
+// ProveGround: Fetch all companies spending report
 //
 // Fetch spending statistics for all corporate partners.
 // Accessible by educational admins and system admins only.
@@ -258,7 +258,7 @@ export const fetchAllCompaniesSpending = () => {
 };
 
 // =====================================================
-// Street2Ivy: Educational Admin Dashboard APIs
+// ProveGround: Educational Admin Dashboard APIs
 // =====================================================
 
 // Fetch educational admin dashboard stats and student list
@@ -308,7 +308,7 @@ export const fetchEducationalAdminMessages = () => {
 };
 
 // =====================================================
-// Street2Ivy: Enhanced Corporate Dashboard APIs
+// ProveGround: Enhanced Corporate Dashboard APIs
 // =====================================================
 
 // Fetch enhanced corporate dashboard statistics
@@ -338,7 +338,7 @@ export const fetchCorporateInviteDetails = (inviteId) => {
 };
 
 // =====================================================
-// Street2Ivy: Student Performance Assessments
+// ProveGround: Student Performance Assessments
 // =====================================================
 
 // Fetch assessment criteria configuration
@@ -379,7 +379,7 @@ export const fetchStudentAssessments = studentId => {
 };
 
 // =====================================================
-// Street2Ivy: System Admin APIs
+// ProveGround: System Admin APIs
 // =====================================================
 
 // Fetch list of all users (admin only)

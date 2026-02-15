@@ -607,10 +607,10 @@ export const userFields = [
 ];
 
 /////////////////////////////////////
-// Street2Ivy user types           //
+// ProveGround user types           //
 /////////////////////////////////////
 /**
- * User types for Street2Ivy:
+ * User types for ProveGround:
  * - student: College students looking for career opportunities
  * - corporate-partner: Companies offering opportunities to students
  * - educational-admin: University administrators (hidden from public signup)

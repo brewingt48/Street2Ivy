@@ -243,7 +243,7 @@ const UserCard = props => {
     ensuredUser.id && ensuredCurrentUser.id && ensuredUser.id.uuid === ensuredCurrentUser.id.uuid;
   const { displayName, bio, publicData } = ensuredUser.attributes.profile;
 
-  // Street2Ivy: Check if user is a corporate partner
+  // ProveGround: Check if user is a corporate partner
   const isCorporatePartner = publicData?.userType === 'corporate-partner';
 
   const classes = classNames(rootClassName || css.root, className);

@@ -53,7 +53,7 @@
  *   - requiredMessage (optional):    Message for those fields, which are mandatory.
  */
 export const listingFields = [
-  // ─── Street2Ivy: Section 1 - Company Information ────────────────────────────
+  // ─── ProveGround: Section 1 - Company Information ────────────────────────────
   {
     key: 'companyName',
     scope: 'public',
@@ -169,7 +169,7 @@ export const listingFields = [
       isRequired: false,
     },
   },
-  // ─── Street2Ivy: Section 2 - Project Mentor Information ────────────────────────────
+  // ─── ProveGround: Section 2 - Project Mentor Information ────────────────────────────
   {
     key: 'mentorName',
     scope: 'public',
@@ -241,7 +241,7 @@ export const listingFields = [
       isRequired: false,
     },
   },
-  // ─── Street2Ivy: Project Details ────────────────────────────
+  // ─── ProveGround: Project Details ────────────────────────────
   {
     key: 'projectType',
     scope: 'public',
@@ -673,7 +673,7 @@ export const listingFields = [
       requiredMessage: 'Please select an industry category.',
     },
   },
-  // ─── Street2Ivy: Confidential Project Details (visible only in workspace) ────
+  // ─── ProveGround: Confidential Project Details (visible only in workspace) ────
   {
     key: 'confidentialBrief',
     scope: 'public', // Stored in publicData but only shown in workspace after acceptance
@@ -823,7 +823,7 @@ export const listingFields = [
  */
 
 export const listingTypes = [
-  // ─── Street2Ivy: Project listing type ──────────────────────────────
+  // ─── ProveGround: Project listing type ──────────────────────────────
   {
     listingType: 'project',
     label: 'Project',

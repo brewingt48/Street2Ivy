@@ -55,7 +55,7 @@ import defaultMessages from './translations/en.json';
 // The "./translations/en.json" has generic English translations
 // that should work as a default translation if some translation keys are missing
 // from the hosted translation.json (which can be edited in Console). The other files
-// (e.g. en.json) in that directory has Street2Ivy themed translations.
+// (e.g. en.json) in that directory has ProveGround themed translations.
 //
 // If you are using a non-english locale, point `messagesInLocale` to correct <lang>.json file.
 // That way the priority order would be:

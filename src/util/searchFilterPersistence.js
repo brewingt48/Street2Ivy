@@ -5,7 +5,7 @@
  * This improves UX by remembering user's preferred filters across sessions.
  */
 
-const STORAGE_KEY = 'street2ivy_search_filters';
+const STORAGE_KEY = 'proveground_search_filters';
 const MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
 
 /**

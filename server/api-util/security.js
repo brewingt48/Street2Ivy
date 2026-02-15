@@ -1,5 +1,5 @@
 /**
- * Security middleware and utilities for Street2Ivy API
+ * Security middleware and utilities for ProveGround API
  *
  * This module provides comprehensive security features including:
  * - Authentication & Authorization
@@ -413,7 +413,7 @@ const validatePassword = password => {
     'admin', 'monkey', 'dragon', 'master', 'login', 'abc123', 'starwars',
     'trustno1', 'iloveyou', 'sunshine', 'princess', 'football', 'shadow',
     'superman', 'michael', 'qwerty123', 'password1', 'password123',
-    'street2ivy', 'proveground', 'changeme', 'default',
+    'proveground', 'proveground', 'changeme', 'default',
   ];
   if (weakPasswords.some(weak => password.toLowerCase().includes(weak))) {
     errors.push('Password is too common. Please choose a stronger password.');

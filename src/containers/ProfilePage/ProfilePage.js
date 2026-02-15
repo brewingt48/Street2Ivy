@@ -370,7 +370,7 @@ export const MainContent = props => {
     currentUserType,
   } = props;
 
-  // Street2Ivy: detect corporate partner
+  // ProveGround: detect corporate partner
   const isCorporatePartner = publicData?.userType === 'corporate-partner' || publicData?.userType === 'corporate';
   const companyName = publicData?.companyName;
   const companyWebsite = publicData?.companyWebsite;

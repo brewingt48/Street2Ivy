@@ -6,7 +6,7 @@
     "membershipStartDate": "2024-01-01",
     "membershipEndDate": "2026-12-31",
     "aiCoachingEnabled": true,
-    "aiCoachingUrl": "https://coaching.street2ivy.com/test",
+    "aiCoachingUrl": "https://coaching.proveground.com/test",
     "createdAt": "2026-02-07T07:27:51.839Z",
     "updatedAt": "2026-02-07T07:27:51.840Z"
   },
@@ -17,7 +17,7 @@
     "membershipStartDate": "2024-01-01",
     "membershipEndDate": "2026-12-31",
     "aiCoachingEnabled": true,
-    "aiCoachingUrl": "https://coaching.street2ivy.com/test",
+    "aiCoachingUrl": "https://coaching.proveground.com/test",
     "createdAt": "2026-02-07T07:27:51.840Z",
     "updatedAt": "2026-02-07T07:27:51.840Z"
   }

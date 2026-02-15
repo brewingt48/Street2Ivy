@@ -222,7 +222,7 @@ export const showCreateListingLinkForUser = (config, currentUser) => {
   const { topbar } = config;
   const currentUserTypeConfig = getCurrentUserTypeConfig(config, currentUser);
 
-  // Street2Ivy: Hide listings link for system admins and educational admins
+  // ProveGround: Hide listings link for system admins and educational admins
   const userType = currentUser?.attributes?.profile?.publicData?.userType;
   const isAdmin = userType === 'system-admin' || userType === 'educational-admin';
   if (isAdmin) {

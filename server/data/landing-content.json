@@ -22,7 +22,7 @@
     "id": "hero",
     "section": "hero",
     "title": "Bridge the Gap Between Campus and Career",
-    "subtitle": "AI is automating the work that once trained the next generation. Street2Ivy connects ambitious students with corporate project teams — giving talent real experience and giving companies a low-risk pipeline to the best minds on any campus.",
+    "subtitle": "AI is automating the work that once trained the next generation. ProveGround connects ambitious students with corporate project teams — giving talent real experience and giving companies a low-risk pipeline to the best minds on any campus.",
     "primaryButtonText": "Get Started",
     "secondaryButtonText": "Sign In",
     "backgroundImage": "/api/uploads/hero-1770371112741-0qmgxw.png",
@@ -35,7 +35,7 @@
   "features": {
     "id": "features",
     "section": "features",
-    "sectionTitle": "Why Street2Ivy",
+    "sectionTitle": "Why ProveGround",
     "items": [
       {
         "id": "feature-1",
@@ -106,7 +106,7 @@
     "items": [
       {
         "id": "testimonial-1",
-        "quote": "Street2Ivy connected me with an amazing internship opportunity at a Fortune 500 company. The experience was invaluable!",
+        "quote": "ProveGround connected me with an amazing internship opportunity at a Fortune 500 company. The experience was invaluable!",
         "author": "Sarah Chen",
         "role": "Harvard University, Class of 2024",
         "initials": "SC",
@@ -114,7 +114,7 @@
       },
       {
         "id": "testimonial-2",
-        "quote": "The quality of talent we found through Street2Ivy exceeded our expectations. These students brought fresh perspectives to our projects.",
+        "quote": "The quality of talent we found through ProveGround exceeded our expectations. These students brought fresh perspectives to our projects.",
         "author": "Michael Roberts",
         "role": "VP of Innovation, Tech Corp",
         "initials": "MR",
@@ -122,7 +122,7 @@
       },
       {
         "id": "testimonial-3",
-        "quote": "As a first-generation college student, Street2Ivy gave me access to opportunities I never knew existed.",
+        "quote": "As a first-generation college student, ProveGround gave me access to opportunities I never knew existed.",
         "author": "James Williams",
         "role": "Yale University, Class of 2025",
         "initials": "JW",
@@ -130,7 +130,7 @@
       },
       {
         "id": "testimonial-4",
-        "quote": "We've hired three full-time employees from Street2Ivy projects. It's become our primary talent pipeline.",
+        "quote": "We've hired three full-time employees from ProveGround projects. It's become our primary talent pipeline.",
         "author": "Emily Thompson",
         "role": "HR Director, Global Finance Inc",
         "initials": "ET",
@@ -146,7 +146,7 @@
       },
       {
         "id": "testimonial-6",
-        "quote": "Street2Ivy's vetting process ensures we only work with the most motivated and talented students.",
+        "quote": "ProveGround's vetting process ensures we only work with the most motivated and talented students.",
         "author": "Lisa Anderson",
         "role": "CEO, StartUp Ventures",
         "initials": "LA",
@@ -161,7 +161,7 @@
     "id": "cta",
     "section": "cta",
     "title": "Ready to Get Started?",
-    "description": "Join thousands of students and companies already using Street2Ivy to create meaningful connections.",
+    "description": "Join thousands of students and companies already using ProveGround to create meaningful connections.",
     "buttonText": "Create Your Account",
     "isActive": true,
     "updatedAt": "2026-02-05T20:48:29.669Z",

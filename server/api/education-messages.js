@@ -4,7 +4,7 @@
  * Allows educational administrators to send messages to:
  * - All students from their institution
  * - Individual students from their institution
- * - System administrators (Street2Ivy support)
+ * - System administrators (ProveGround support)
  *
  * And receive messages from:
  * - System administrators
@@ -76,7 +76,7 @@ async function sendMessage(req, res) {
     if (recipientType === 'all-students') {
       recipientName = `All Students (${institutionName})`;
     } else if (recipientType === 'system-admin') {
-      recipientName = 'Street2Ivy Support';
+      recipientName = 'ProveGround Support';
     } else if (recipientType.startsWith('student-')) {
       actualRecipientId = recipientType.replace('student-', '');
       // Fetch student name

@@ -132,28 +132,28 @@ async function exportReport(req, res) {
         exportData = await generateOverviewExport(integrationSdk);
         headers = ['Metric', 'Value'];
         title = 'Platform Overview Report';
-        filename = `street2ivy-overview-${formatDate()}`;
+        filename = `proveground-overview-${formatDate()}`;
         break;
 
       case 'users':
         exportData = await generateUsersExport(integrationSdk);
         headers = ['User Type', 'Total', 'Active', 'Banned', 'New This Month'];
         title = 'Users Report';
-        filename = `street2ivy-users-${formatDate()}`;
+        filename = `proveground-users-${formatDate()}`;
         break;
 
       case 'institutions':
         exportData = await generateInstitutionsExport(integrationSdk);
         headers = ['Institution Name', 'Domain', 'Student Count', 'Admin Count'];
         title = 'Institutions Report';
-        filename = `street2ivy-institutions-${formatDate()}`;
+        filename = `proveground-institutions-${formatDate()}`;
         break;
 
       case 'transactions':
         exportData = await generateTransactionsExport(integrationSdk);
         headers = ['State', 'Count', 'Percentage'];
         title = 'Transactions Report';
-        filename = `street2ivy-transactions-${formatDate()}`;
+        filename = `proveground-transactions-${formatDate()}`;
         break;
 
       default:

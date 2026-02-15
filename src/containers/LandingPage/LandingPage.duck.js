@@ -1,4 +1,4 @@
-// Street2Ivy: Custom landing page doesn't need hosted assets
+// ProveGround: Custom landing page doesn't need hosted assets
 // The page is fully custom-built with React components
 
 export const ASSET_NAME = 'landing-page';

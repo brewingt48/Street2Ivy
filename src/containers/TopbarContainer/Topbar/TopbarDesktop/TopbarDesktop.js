@@ -88,7 +88,7 @@ const ProfileMenu = ({
     return currentPage === page || isAccountSettingsPage ? css.currentPage : null;
   };
 
-  // Street2Ivy: Determine user type for conditional navigation
+  // ProveGround: Determine user type for conditional navigation
   const userType = currentUser?.attributes?.profile?.publicData?.userType;
   const isCorporatePartner = userType === 'corporate-partner';
   const isStudent = userType === 'student';
@@ -267,7 +267,7 @@ const TopbarDesktop = props => {
   const authenticatedOnClientSide = mounted && isAuthenticated;
   const isAuthenticatedOrJustHydrated = isAuthenticated || !mounted;
 
-  // Street2Ivy: Check if user is admin or corporate partner or student
+  // ProveGround: Check if user is admin or corporate partner or student
   const userType = currentUser?.attributes?.profile?.publicData?.userType;
   const isSystemAdmin = userType === 'system-admin';
   const isEducationalAdmin = userType === 'educational-admin';

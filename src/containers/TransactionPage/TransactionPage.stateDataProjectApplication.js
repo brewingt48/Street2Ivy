@@ -7,7 +7,7 @@ import {
 
 /**
  * Get UI data mapped to specific transaction state & role
- * for the Street2Ivy project application process.
+ * for the ProveGround project application process.
  *
  * Process flow: Apply → Accept/Decline → Mark Completed → Reviews
  */

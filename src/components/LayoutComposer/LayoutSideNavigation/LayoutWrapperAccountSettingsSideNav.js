@@ -92,7 +92,7 @@ const LayoutWrapperAccountSettingsSideNav = props => {
 
   const { currentPage } = accountSettingsNavProps;
 
-  // Street2Ivy: Payment and payout tabs are hidden - payments handled outside platform
+  // ProveGround: Payment and payout tabs are hidden - payments handled outside platform
   const payoutDetailsMaybe = [];
   const paymentMethodsMaybe = [];
 

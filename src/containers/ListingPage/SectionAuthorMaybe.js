@@ -33,7 +33,7 @@ const SectionAuthorMaybe = props => {
   const processName = resolveLatestProcessName(transactionProcessAlias.split('/')[0]);
   const isInquiryProcess = processName === INQUIRY_PROCESS_NAME;
 
-  // Street2Ivy: Use company-focused heading for corporate partners
+  // ProveGround: Use company-focused heading for corporate partners
   const authorPublicData = listing.author?.attributes?.profile?.publicData;
   const isCorporatePartner = authorPublicData?.userType === 'corporate-partner';
   const sectionHeadingId = isCorporatePartner

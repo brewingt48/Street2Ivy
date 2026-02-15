@@ -7,7 +7,7 @@ import {
 
 /**
  * Get UI data mapped to specific transaction state & role
- * for the Street2Ivy project application process (InboxPage).
+ * for the ProveGround project application process (InboxPage).
  */
 export const getStateDataForProjectApplicationProcess = (txInfo, processInfo) => {
   const { transactionRole } = txInfo;

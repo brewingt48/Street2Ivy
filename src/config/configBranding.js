@@ -1,9 +1,9 @@
-// Placeholder branding assets — replace with final Street2Ivy designs
-import logoImageDesktop from '../assets/street2ivy-logo-desktop.png';
-import logoImageMobile from '../assets/street2ivy-logo-mobile.png';
-import brandImage from '../assets/street2ivy-brandImage-1500.png';
-import facebookImage from '../assets/street2ivy-facebook-sharing-1200x630.png';
-import twitterImage from '../assets/street2ivy-twitter-sharing-600x314.png';
+// Placeholder branding assets — replace with final ProveGround designs
+import logoImageDesktop from '../assets/proveground-logo-desktop.png';
+import logoImageMobile from '../assets/proveground-logo-mobile.png';
+import brandImage from '../assets/proveground-brandImage-1500.png';
+import facebookImage from '../assets/proveground-facebook-sharing-1200x630.png';
+import twitterImage from '../assets/proveground-twitter-sharing-600x314.png';
 
 /////////////////////////////////////////////////////////
 // This file contains configs that affect branding     //

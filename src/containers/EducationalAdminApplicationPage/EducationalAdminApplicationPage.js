@@ -310,7 +310,7 @@ const EducationalAdminApplicationPageComponent = props => {
                     id="reason"
                     value={formData.reason}
                     onChange={e => handleChange('reason', e.target.value)}
-                    placeholder="Tell us how you plan to use Street2Ivy to help your students..."
+                    placeholder="Tell us how you plan to use ProveGround to help your students..."
                     rows={4}
                     required
                   />
@@ -368,7 +368,7 @@ const EducationalAdminApplicationPageComponent = props => {
               <FormattedMessage
                 id="EducationalAdminApplicationPage.questionsMessage"
                 values={{
-                  email: <a href="mailto:partnerships@street2ivy.com">partnerships@street2ivy.com</a>,
+                  email: <a href="mailto:partnerships@proveground.com">partnerships@proveground.com</a>,
                 }}
               />
             </p>

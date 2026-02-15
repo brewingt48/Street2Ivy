@@ -51,7 +51,7 @@ async function checkDepositStatus(req, res) {
     const metadata = transaction.attributes.metadata || {};
     const depositConfirmed = metadata.depositConfirmed === true;
 
-    // For Street2Ivy, deposits are always required for project applications
+    // For ProveGround, deposits are always required for project applications
     const depositRequired = true;
     const canAcceptStudent = !depositRequired || depositConfirmed;
 
@@ -62,7 +62,7 @@ async function checkDepositStatus(req, res) {
       message = 'Deposit confirmed. You can accept this student.';
     } else {
       message =
-        'Please contact Street2Ivy to submit your deposit before accepting this student. Your deposit ensures payment to students upon project completion.';
+        'Please contact ProveGround to submit your deposit before accepting this student. Your deposit ensures payment to students upon project completion.';
     }
 
     res.status(200).json({

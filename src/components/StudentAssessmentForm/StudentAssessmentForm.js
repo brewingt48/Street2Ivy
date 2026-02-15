@@ -161,7 +161,7 @@ const StudentAssessmentForm = props => {
         <h4 className={css.purposeTitle}>Purpose</h4>
         <p className={css.purposeText}>
           This assessment helps students understand their performance, guides their professional
-          development, and contributes to their Street2Ivy track record. As AI automation eliminates
+          development, and contributes to their ProveGround track record. As AI automation eliminates
           traditional entry-level positions, your feedback is essential to helping students develop
           the sophisticated skills employers now require. Please provide honest, constructive feedback.
         </p>

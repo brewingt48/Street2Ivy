@@ -518,7 +518,7 @@ const MessagesPanel = props => {
                       {messageTab === 'received'
                         ? (msg.senderName || 'Unknown')
                         : (msg.recipientType === 'all-students' ? 'All Students' :
-                           msg.recipientType === 'system-admin' ? 'Street2Ivy Support' :
+                           msg.recipientType === 'system-admin' ? 'ProveGround Support' :
                            msg.recipientName || 'Unknown')}
                     </td>
                     <td className={css.messageSubjectCell}>
@@ -569,7 +569,7 @@ const MessagesPanel = props => {
               ) : (
                 <p><strong>To:</strong> {
                   selectedMessage.recipientType === 'all-students' ? 'All Students' :
-                  selectedMessage.recipientType === 'system-admin' ? 'Street2Ivy Support' :
+                  selectedMessage.recipientType === 'system-admin' ? 'ProveGround Support' :
                   selectedMessage.recipientName || 'Unknown'
                 }</p>
               )}

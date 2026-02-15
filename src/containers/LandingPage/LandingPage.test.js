@@ -8,7 +8,7 @@ import LandingPage from './LandingPage';
 const { waitFor, screen } = testingLibrary;
 
 describe('LandingPage', () => {
-  it('renders the custom Street2Ivy landing page without errors', async () => {
+  it('renders the custom ProveGround landing page without errors', async () => {
     // Test that the page renders without throwing
     const { container } = render(<LandingPage />);
 

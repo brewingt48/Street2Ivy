@@ -35,7 +35,7 @@ const AccessDeniedView = ({ reason, depositConfirmed, transactionState }) => {
       icon = '';
       title = 'Deposit Pending';
       message =
-        "Great news - you've been accepted for this project! However, access to the project workspace is pending until the corporate partner's deposit is confirmed by Street2Ivy. You will receive a notification once you have full access.";
+        "Great news - you've been accepted for this project! However, access to the project workspace is pending until the corporate partner's deposit is confirmed by ProveGround. You will receive a notification once you have full access.";
       break;
     case 'unauthorized':
     default:

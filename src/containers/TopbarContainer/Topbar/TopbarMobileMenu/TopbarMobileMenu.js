@@ -155,7 +155,7 @@ const TopbarMobileMenu = props => {
     return currentPage === page || isAccountSettingsPage || isInboxPage ? css.currentPage : null;
   };
 
-  // Street2Ivy: Determine user type for conditional navigation
+  // ProveGround: Determine user type for conditional navigation
   const userType = user?.attributes?.profile?.publicData?.userType;
   const isCorporatePartner = userType === 'corporate-partner';
   const isStudent = userType === 'student';

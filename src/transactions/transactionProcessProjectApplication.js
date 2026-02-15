@@ -1,5 +1,5 @@
 /**
- * Transaction process graph for Street2Ivy project applications:
+ * Transaction process graph for ProveGround project applications:
  *   - default-project-application
  *
  * Flow: Student applies → Corporate partner accepts/declines → Work completed → Reviews

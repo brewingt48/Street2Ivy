@@ -367,12 +367,12 @@ export const AuthenticationForms = props => {
   const getCareerServicesEmailLink = () => {
     if (!pendingSignupData) return '#';
 
-    const subject = encodeURIComponent('Request AI Career Coaching from Street2Ivy');
+    const subject = encodeURIComponent('Request AI Career Coaching from ProveGround');
     const body = encodeURIComponent(
       `Dear Career Services,\n\n` +
-      `I recently discovered that Street2Ivy offers AI-powered career coaching for students, including resume reviews, interview practice, and career path guidance.\n\n` +
-      `I believe this would be a valuable resource for our student body. Could you please look into partnering with Street2Ivy to make this feature available to us?\n\n` +
-      `You can learn more at https://street2ivy.com\n\n` +
+      `I recently discovered that ProveGround offers AI-powered career coaching for students, including resume reviews, interview practice, and career path guidance.\n\n` +
+      `I believe this would be a valuable resource for our student body. Could you please look into partnering with ProveGround to make this feature available to us?\n\n` +
+      `You can learn more at https://proveground.com\n\n` +
       `Thank you for your consideration.\n\n` +
       `Best regards,\n` +
       `${pendingSignupData.firstName} ${pendingSignupData.lastName}`
@@ -496,7 +496,7 @@ export const AuthenticationForms = props => {
               <span className={css.successIcon}>✅</span>
               <h2 className={css.modalTitle}>You're on the List!</h2>
               <p className={css.modalText}>
-                We've added you to our waitlist. We'll notify you as soon as your school joins Street2Ivy.
+                We've added you to our waitlist. We'll notify you as soon as your school joins ProveGround.
               </p>
               <p className={css.modalText}>
                 In the meantime, consider reaching out to your career services office to let them know you're interested!
@@ -515,7 +515,7 @@ export const AuthenticationForms = props => {
             // Initial state - institution not found
             <>
               <span className={css.modalIcon}>🎓</span>
-              <h2 className={css.modalTitle}>Your School Hasn't Joined Street2Ivy Yet</h2>
+              <h2 className={css.modalTitle}>Your School Hasn't Joined ProveGround Yet</h2>
               <p className={css.modalText}>
                 We're not yet partnered with <strong>{pendingSignupData?.emailDomain}</strong>, but we'd love to be!
               </p>
@@ -870,11 +870,11 @@ export const AuthenticationPageComponent = props => {
     [css.hideOnMobile]: showEmailVerification,
   });
 
-  // Street2Ivy: Get user type for role-based redirects
+  // ProveGround: Get user type for role-based redirects
   const currentUserType = user.attributes?.profile?.publicData?.userType;
   const isAdminUser = currentUserType === 'system-admin' || currentUserType === 'educational-admin';
 
-  // Street2Ivy: Admin users must use admin portal, regular users must use regular login
+  // ProveGround: Admin users must use admin portal, regular users must use regular login
   const adminOnRegularLogin = isAuthenticated && currentUserLoaded && isAdminUser && !isAdminPortal;
   const regularUserOnAdminPortal = isAuthenticated && currentUserLoaded && !isAdminUser && isAdminPortal;
 
@@ -909,12 +909,12 @@ export const AuthenticationPageComponent = props => {
     );
   }
 
-  // Street2Ivy: Redirect admin users to admin portal if they try to use regular login
+  // ProveGround: Redirect admin users to admin portal if they try to use regular login
   if (adminOnRegularLogin) {
     return <NamedRedirect name="AdminPortalLoginPage" />;
   }
 
-  // Street2Ivy: Redirect regular users away from admin portal
+  // ProveGround: Redirect regular users away from admin portal
   if (regularUserOnAdminPortal) {
     return <NamedRedirect name="LoginPage" />;
   }
@@ -923,7 +923,7 @@ export const AuthenticationPageComponent = props => {
     // Already authenticated, redirect back to the page the user tried to access
     return <Redirect to={from} />;
   } else if (shouldRedirectAfterLogin) {
-    // Street2Ivy: Redirect to appropriate dashboard based on user type
+    // ProveGround: Redirect to appropriate dashboard based on user type
     return <NamedRedirect name={getRedirectDestination()} />;
   } else if (show404) {
     // User type not found, show 404

@@ -2,7 +2,7 @@
  * Educational Admin Application API
  *
  * Handles applications from university career services staff
- * who want to become educational administrators on Street2Ivy.
+ * who want to become educational administrators on ProveGround.
  */
 
 const { getIntegrationSdk } = require('../api-util/integrationSdk');

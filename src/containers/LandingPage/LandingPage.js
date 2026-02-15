@@ -59,7 +59,7 @@ const useCountUp = (end, duration = 2000, startOnView = true) => {
   return { count, ref };
 };
 
-// Street2Ivy Premium Landing Page
+// ProveGround Premium Landing Page
 const LandingPageComponent = props => {
   const { currentUser } = props;
   const intl = useIntl();
@@ -262,7 +262,7 @@ const LandingPageComponent = props => {
       avatar: '👨‍💼'
     },
     {
-      quote: 'I go to a state school nobody\'s heard of. Before Street2Ivy, I couldn\'t even get interviews. Now I have three completed projects on my resume and a standing offer from a Series B startup.',
+      quote: 'I go to a state school nobody\'s heard of. Before ProveGround, I couldn\'t even get interviews. Now I have three completed projects on my resume and a standing offer from a Series B startup.',
       author: 'Jasmine Rodriguez',
       role: 'Junior, Marketing Major',
       avatar: '👩‍🎓'
@@ -355,7 +355,7 @@ const LandingPageComponent = props => {
                       </h1>
                       <p className={css.heroSubtitle}>
                         {heroContent?.subtitle ||
-                          'Street2Ivy connects ambitious companies with high-performing college students for real project work. No legacy recruiting. No overhead. Just results.'}
+                          'ProveGround connects ambitious companies with high-performing college students for real project work. No legacy recruiting. No overhead. Just results.'}
                       </p>
                       <div className={css.heroButtons}>
                         {!isAuthenticated ? (
@@ -407,12 +407,12 @@ const LandingPageComponent = props => {
                   </div>
                 </section>
 
-                {/* ================ Why Street2Ivy Section ================ */}
+                {/* ================ Why ProveGround Section ================ */}
                 <section className={css.whySection} id="why-section" data-animate>
                   <div className={css.sectionContainer}>
                     <span className={css.sectionLabel}>The Opportunity</span>
                     <h2 className={css.sectionTitle}>
-                      {featuresContent?.sectionTitle || 'Why Street2Ivy?'}
+                      {featuresContent?.sectionTitle || 'Why ProveGround?'}
                     </h2>
                     <p className={css.sectionSubtitle}>
                       A talent marketplace built on mutual value. Everyone wins when potential meets opportunity.
@@ -551,7 +551,7 @@ const LandingPageComponent = props => {
                           Your Personal AI Career Coach, Available 24/7
                         </h2>
                         <p className={css.aiDescription}>
-                          Every Street2Ivy student gets access to AI-powered career coaching that provides
+                          Every ProveGround student gets access to AI-powered career coaching that provides
                           personalized guidance — from resume optimization to interview prep to long-term career strategy.
                         </p>
 
@@ -758,7 +758,7 @@ const LandingPageComponent = props => {
                       <li>Real-time analytics and reporting</li>
                     </ul>
                     <a
-                      href="https://calendly.com/tavares-brewington-street2ivy/demo"
+                      href="https://calendly.com/tavares-brewington-proveground/demo"
                       target="_blank"
                       rel="noopener noreferrer"
                       className={css.ctaBtnInstitution}

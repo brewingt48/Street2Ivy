@@ -1,5 +1,5 @@
 /**
- * Email Notification Service for Street2Ivy
+ * Email Notification Service for ProveGround
  *
  * This module handles sending email notifications for key platform events:
  * - Transaction state changes (application received, accepted, declined, completed)
@@ -51,7 +51,7 @@ const NOTIFICATION_TEMPLATES = {
       You can track your application status in your dashboard.
 
       Best of luck!
-      The Street2Ivy Team
+      The ProveGround Team
     `,
   },
 
@@ -72,7 +72,7 @@ const NOTIFICATION_TEMPLATES = {
       Log in to your dashboard to get started.
 
       Congratulations!
-      The Street2Ivy Team
+      The ProveGround Team
     `,
   },
 
@@ -85,12 +85,12 @@ const NOTIFICATION_TEMPLATES = {
 
       After careful consideration, the corporate partner has decided to move forward with other candidates for this project.
 
-      Don't be discouraged! There are many other opportunities waiting for you on Street2Ivy.
+      Don't be discouraged! There are many other opportunities waiting for you on ProveGround.
 
       Browse more projects: {browseProjectsUrl}
 
       Keep applying and building your experience!
-      The Street2Ivy Team
+      The ProveGround Team
     `,
   },
 
@@ -109,7 +109,7 @@ const NOTIFICATION_TEMPLATES = {
       - Update your profile with your new skills
 
       Keep up the great work!
-      The Street2Ivy Team
+      The ProveGround Team
     `,
   },
 
@@ -130,7 +130,7 @@ const NOTIFICATION_TEMPLATES = {
       View and respond to this invitation: {invitationUrl}
 
       Good luck!
-      The Street2Ivy Team
+      The ProveGround Team
     `,
   },
 
@@ -145,7 +145,7 @@ const NOTIFICATION_TEMPLATES = {
 
       View full conversation: {conversationUrl}
 
-      The Street2Ivy Team
+      The ProveGround Team
     `,
   },
 
@@ -162,7 +162,7 @@ const NOTIFICATION_TEMPLATES = {
 
       Review their application: {applicationUrl}
 
-      The Street2Ivy Team
+      The ProveGround Team
     `,
   },
 
@@ -173,12 +173,12 @@ const NOTIFICATION_TEMPLATES = {
 
       {companyName} has submitted a performance assessment for your work on "{projectTitle}".
 
-      This assessment is now part of your Street2Ivy profile and can be viewed by other corporate partners.
+      This assessment is now part of your ProveGround profile and can be viewed by other corporate partners.
 
       View your assessment: {assessmentUrl}
 
       Keep building your experience!
-      The Street2Ivy Team
+      The ProveGround Team
     `,
   },
 };
@@ -335,7 +335,7 @@ async function notifyTransactionStateChange({
   const providerEmail = provider?.attributes?.email;
   const providerId = provider?.id?.uuid;
 
-  const baseUrl = process.env.REACT_APP_MARKETPLACE_ROOT_URL || 'https://street2ivy.com';
+  const baseUrl = process.env.REACT_APP_MARKETPLACE_ROOT_URL || 'https://proveground.com';
 
   switch (transitionName) {
     case 'request-project-application':
@@ -429,7 +429,7 @@ async function notifyInviteToApply({
   projectDescription,
   listingId,
 }) {
-  const baseUrl = process.env.REACT_APP_MARKETPLACE_ROOT_URL || 'https://street2ivy.com';
+  const baseUrl = process.env.REACT_APP_MARKETPLACE_ROOT_URL || 'https://proveground.com';
 
   await sendNotification({
     type: NOTIFICATION_TYPES.INVITE_RECEIVED,
@@ -456,7 +456,7 @@ async function notifyAssessmentSubmitted({
   projectTitle,
   transactionId,
 }) {
-  const baseUrl = process.env.REACT_APP_MARKETPLACE_ROOT_URL || 'https://street2ivy.com';
+  const baseUrl = process.env.REACT_APP_MARKETPLACE_ROOT_URL || 'https://proveground.com';
 
   await sendNotification({
     type: NOTIFICATION_TYPES.ASSESSMENT_RECEIVED,

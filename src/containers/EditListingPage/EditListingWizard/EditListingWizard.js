@@ -88,7 +88,7 @@ const tabsForListingType = (processName, listingTypeConfig) => {
       ? [DELIVERY]
       : [];
 
-  // For project listings (Street2Ivy use case), we don't need photos or style panels
+  // For project listings (ProveGround use case), we don't need photos or style panels
   // Photos panel only appears if images are required
   // Style panel (card color scheme) is removed as it provides minimal value for project listings
   const requiresPhotos = requireListingImage(listingTypeConfig);
@@ -105,7 +105,7 @@ const tabsForListingType = (processName, listingTypeConfig) => {
     ['default-purchase']: [DETAILS, PRICING_AND_STOCK, ...deliveryMaybe, ...photosTabMaybe],
     ['default-negotiation']: [DETAILS, ...locationMaybe, ...pricingMaybe, ...photosTabMaybe],
     ['default-inquiry']: [DETAILS, ...locationMaybe, ...pricingMaybe, ...photosTabMaybe],
-    // Project application process - for Street2Ivy corporate project postings
+    // Project application process - for ProveGround corporate project postings
     ['default-project-application']: [DETAILS],
   };
 

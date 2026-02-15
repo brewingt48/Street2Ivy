@@ -210,7 +210,7 @@ const TopbarComponent = props => {
     });
   };
 
-  // Street2Ivy: Hide "Post a new listing" button - only corporate partners can post via their dashboard
+  // ProveGround: Hide "Post a new listing" button - only corporate partners can post via their dashboard
   const showCreateListingsLink = false;
   const { customer: isCustomer, provider: isProvider } = getCurrentUserTypeRoles(
     config,
@@ -288,7 +288,7 @@ const TopbarComponent = props => {
 
   const { display: searchFormDisplay = SEARCH_DISPLAY_ALWAYS } = config?.topbar?.searchBar || {};
 
-  // Street2Ivy: Search functionality has been removed from the site
+  // ProveGround: Search functionality has been removed from the site
   // Users discover projects through their dashboard and recommendations
   const showSearchForm = false;
 

@@ -1150,11 +1150,11 @@ const mergeListingConfig = (hostedConfig, defaultConfigs, categoriesInUse) => {
   const { listingTypes: defaultListingTypes, listingFields: defaultListingFields, ...rest } =
     defaultConfigs.listing || {};
 
-  // Street2Ivy: Always merge default listing types and fields so that local
+  // ProveGround: Always merge default listing types and fields so that local
   // configuration (project listing type and fields) is always included
   const mergedListingTypes = union(hostedListingTypes, defaultListingTypes, 'listingType');
 
-  // Street2Ivy: Filter out free listing types (default-inquiry process)
+  // ProveGround: Filter out free listing types (default-inquiry process)
   // to only show the "project" listing type
   const listingTypes = mergedListingTypes.filter(lt => {
     const processAlias = lt.transactionType?.alias || '';
@@ -1184,7 +1184,7 @@ const mergeUserConfig = (hostedConfig, defaultConfigs) => {
     allUserTypes: defaultAllUserTypes,
   } = defaultConfigs.user;
 
-  // Street2Ivy: Use ONLY local user types from configUser.js
+  // ProveGround: Use ONLY local user types from configUser.js
   // This ensures the signup page shows "Student" and "Corporate Partner"
   // instead of the default "Provider" and "Customer" from hosted config.
   // The hosted config user types (provider/customer) are completely ignored.
@@ -1202,7 +1202,7 @@ const mergeUserConfig = (hostedConfig, defaultConfigs) => {
   return {
     userTypes: validUserTypes(userTypes),
     userFields: validUserFields(userFields, userTypesInUse),
-    // Street2Ivy: Include admin user types for admin portal signup
+    // ProveGround: Include admin user types for admin portal signup
     adminUserTypes: defaultAdminUserTypes || [],
   };
 };

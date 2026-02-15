@@ -199,50 +199,50 @@ router.post('/transition-privileged', transitionPrivileged);
 router.post('/transaction-transition', transactionTransition);
 router.post('/delete-account', strictRateLimit, deleteAccount); // SECURITY: strict rate limit
 
-// Street2Ivy: User search and invitation endpoints
+// ProveGround: User search and invitation endpoints
 router.get('/search-users', searchUsers);
 router.post('/invite-to-apply', inviteToApply);
 
-// Street2Ivy: Company/Corporate partner listings (for student search)
+// ProveGround: Company/Corporate partner listings (for student search)
 router.get('/company/:authorId/listings', companyListings);
 
-// Street2Ivy: Company spending stats (for students, education admins, system admins)
+// ProveGround: Company spending stats (for students, education admins, system admins)
 router.get('/company/:companyId/spending', companySpending);
 router.get('/companies/spending-report', companySpending.allCompanies);
 
-// Street2Ivy: User statistics (projects completed, pending, etc.)
+// ProveGround: User statistics (projects completed, pending, etc.)
 router.get('/user-stats/:userId', userStats);
 
-// Street2Ivy: Deposit status check (for corporate partners)
+// ProveGround: Deposit status check (for corporate partners)
 router.get('/check-deposit-status/:transactionId', checkDepositStatus);
 
-// Street2Ivy: Educational Admin endpoints
+// ProveGround: Educational Admin endpoints
 router.get('/education/dashboard', educationDashboard);
 router.get('/education/students/:studentId/transactions', educationStudentTransactions);
 router.post('/education/messages', educationMessages.send);
 router.get('/education/messages', educationMessages.list);
 
-// Street2Ivy: Educational Admin Application (public endpoint)
+// ProveGround: Educational Admin Application (public endpoint)
 router.post('/educational-admin/apply', standardRateLimit, educationalAdminApplication.submit);
 
-// Street2Ivy: Educational Admin Application Management (system admin only)
+// ProveGround: Educational Admin Application Management (system admin only)
 router.get('/admin/educational-admin-applications', educationalAdminApplication.list);
 router.get('/admin/educational-admin-applications/stats', educationalAdminApplication.stats);
 router.post('/admin/educational-admin-applications/:id/approve', educationalAdminApplication.approve);
 router.post('/admin/educational-admin-applications/:id/reject', educationalAdminApplication.reject);
 
-// Street2Ivy: Educational Admin Management (system admin only)
+// ProveGround: Educational Admin Management (system admin only)
 router.get('/admin/educational-admins', educationalAdminApplication.listEducationalAdmins);
 router.put('/admin/educational-admins/:userId/subscription', educationalAdminApplication.updateSubscription);
 
-// Street2Ivy: Enhanced Corporate Dashboard
+// ProveGround: Enhanced Corporate Dashboard
 router.get('/corporate/dashboard-stats', corporateDashboardStats);
 router.get('/corporate/applications', corporateApplications);
 router.get('/corporate/export/:type', corporateExport);
 router.get('/corporate/invites', corporateInvites.listInvites);
 router.get('/corporate/invites/:inviteId', corporateInvites.getInviteDetails);
 
-// Street2Ivy: System Admin endpoints
+// ProveGround: System Admin endpoints
 router.get('/admin/users', adminUsers.list);
 router.get('/admin/users/pending', adminUsers.pending);
 router.post('/admin/users/create-admin', strictRateLimit, adminUsers.createAdmin); // Create admin accounts - SECURITY: strict rate limit
@@ -279,20 +279,20 @@ router.get('/admin/audit-logs', async (req, res) => {
   res.json(logs);
 });
 
-// Street2Ivy: Deposit management endpoints (offline payment tracking)
+// ProveGround: Deposit management endpoints (offline payment tracking)
 router.get('/admin/deposits', adminDeposits.list);
 router.get('/admin/deposits/:transactionId', adminDeposits.status);
 router.post('/admin/deposits/:transactionId/confirm', adminDeposits.confirm);
 router.post('/admin/deposits/:transactionId/revoke', adminDeposits.revoke);
 
-// Street2Ivy: Corporate Partner Deposit Management (track by partner and project)
+// ProveGround: Corporate Partner Deposit Management (track by partner and project)
 router.get('/admin/corporate-deposits', adminCorporateDeposits.list);
 router.get('/admin/corporate-deposits/:partnerId', adminCorporateDeposits.getPartner);
 router.post('/admin/corporate-deposits/:transactionId/clear-hold', adminCorporateDeposits.clearHold);
 router.post('/admin/corporate-deposits/:transactionId/reinstate-hold', adminCorporateDeposits.reinstateHold);
 router.post('/admin/corporate-deposits/:partnerId/clear-all-holds', adminCorporateDeposits.clearAllHolds);
 
-// Street2Ivy: Institution membership management
+// ProveGround: Institution membership management
 router.get('/admin/institutions', adminInstitutions.list);
 router.get('/admin/institutions/:domain', adminInstitutions.get);
 router.post('/admin/institutions', adminInstitutions.createOrUpdate);
@@ -304,7 +304,7 @@ router.delete('/admin/institutions/:domain', adminInstitutions.delete);
 router.get('/institutions/check/:domain', adminInstitutions.checkMembership);
 router.get('/institutions/my-institution', adminInstitutions.getMyInstitution);
 
-// Street2Ivy: Content Management System (CMS) endpoints
+// ProveGround: Content Management System (CMS) endpoints
 router.get('/admin/content', adminContent.getContent);
 router.get('/admin/content/:section', adminContent.getSection);
 router.put('/admin/content/:section', adminContent.updateSection);
@@ -320,7 +320,7 @@ router.get('/content', adminContent.getPublicContent);
 router.get('/legal', adminContent.getLegalPagesList);
 router.get('/legal/:pageType', adminContent.getLegalPage);
 
-// Street2Ivy: Blog Management System (Admin endpoints)
+// ProveGround: Blog Management System (Admin endpoints)
 router.get('/admin/blog/posts', adminBlog.listPosts);
 router.get('/admin/blog/posts/:postId', adminBlog.getPost);
 router.post('/admin/blog/posts', adminBlog.createPost);
@@ -331,16 +331,16 @@ router.post('/admin/blog/categories', adminBlog.addCategory);
 router.delete('/admin/blog/categories/:category', adminBlog.deleteCategory);
 router.put('/admin/blog/settings', adminBlog.updateSettings);
 
-// Street2Ivy: Blog Public endpoints
+// ProveGround: Blog Public endpoints
 router.get('/blog/posts', adminBlog.listPublicPosts);
 router.get('/blog/posts/:slug', adminBlog.getPublicPost);
 
-// Street2Ivy: AI Coaching Configuration
+// ProveGround: AI Coaching Configuration
 router.get('/admin/coaching-config', adminCoachingConfig.getConfig);
 router.put('/admin/coaching-config', adminCoachingConfig.updateConfig);
 router.get('/coaching-config/public', adminCoachingConfig.getPublicConfig);
 
-// Street2Ivy: Student AI Coaching Access Management
+// ProveGround: Student AI Coaching Access Management
 router.get('/admin/student-coaching-access', adminStudentCoachingAccess.listBlocked);
 router.post('/admin/student-coaching-access/block', adminStudentCoachingAccess.block);
 router.post('/admin/student-coaching-access/unblock', adminStudentCoachingAccess.unblock);
@@ -348,50 +348,50 @@ router.get('/admin/student-coaching-access/check/:userId', adminStudentCoachingA
 router.get('/admin/institutions-coaching-summary', adminStudentCoachingAccess.getInstitutionsSummary);
 router.get('/admin/institution/:domain/students', adminStudentCoachingAccess.getInstitutionStudents);
 
-// Street2Ivy: Student Waitlist Management
+// ProveGround: Student Waitlist Management
 router.post('/student-waitlist', studentWaitlist.addToWaitlist);
 router.get('/admin/student-waitlist', studentWaitlist.listWaitlist);
 router.put('/admin/student-waitlist/:entryId', studentWaitlist.updateWaitlistEntry);
 router.delete('/admin/student-waitlist/:entryId', studentWaitlist.deleteWaitlistEntry);
 
-// Street2Ivy: File upload endpoints for admin
+// ProveGround: File upload endpoints for admin
 router.post('/admin/upload/logo', adminUpload.uploadLogo);
 router.post('/admin/upload/favicon', adminUpload.uploadFavicon);
 router.post('/admin/upload/hero-image', adminUpload.uploadHeroImage);
 router.post('/admin/upload/hero-video', adminUpload.uploadHeroVideo);
 router.delete('/admin/upload/:filename', adminUpload.deleteFile);
 
-// Street2Ivy: Secure Project Workspace (for accepted students with confirmed deposits)
+// ProveGround: Secure Project Workspace (for accepted students with confirmed deposits)
 router.get('/project-workspace/:transactionId', projectWorkspace.get);
 router.post('/project-workspace/:transactionId/messages', projectWorkspace.sendMessage);
 router.post('/project-workspace/:transactionId/mark-read', projectWorkspace.markRead);
 
-// Street2Ivy: Multi-Factor Authentication (MFA) — stub endpoints
+// ProveGround: Multi-Factor Authentication (MFA) — stub endpoints
 router.get('/mfa/status', mfa.getStatus);
 router.post('/mfa/enroll', mfa.enroll);
 router.post('/mfa/verify', mfa.verify);
 router.post('/mfa/disable', mfa.disable);
 
-// Street2Ivy: SSO/SAML Enterprise Identity Provider — stub endpoints
+// ProveGround: SSO/SAML Enterprise Identity Provider — stub endpoints
 router.get('/sso/config', sso.getConfig);
 router.get('/sso/initiate/:provider', sso.initiate);
 router.post('/sso/callback', sso.callback);
 router.get('/sso/metadata', sso.metadata);
 
-// Street2Ivy: Student Performance Assessments
+// ProveGround: Student Performance Assessments
 router.get('/assessments/criteria', assessments.getAssessmentCriteria);
 router.post('/assessments', assessments.submitAssessment);
 router.get('/assessments/pending', assessments.getPendingAssessments);
 router.get('/assessments/transaction/:transactionId', assessments.getAssessmentByTransaction);
 router.get('/assessments/student/:studentId', assessments.getStudentAssessments);
 
-// Street2Ivy: Notification Center
+// ProveGround: Notification Center
 router.get('/notifications', notifications.list);
 router.get('/notifications/unread-count', notifications.unreadCount);
 router.post('/notifications/:notificationId/read', notifications.markRead);
 router.post('/notifications/read-all', notifications.markAllRead);
 
-// Street2Ivy: Message Attachments
+// ProveGround: Message Attachments
 router.post('/attachments/upload', messageAttachments.uploadAttachment);
 router.get('/attachments', messageAttachments.getAttachments);
 router.get('/attachments/:id', messageAttachments.getAttachmentInfo);

@@ -5752,7 +5752,7 @@ const AICoachingConfigPanel = () => {
             <p className={css.modalDescription}>
               {editingInstitution
                 ? 'Update the institution details below.'
-                : 'Add a new institution to enable their students to access Street2Ivy.'}
+                : 'Add a new institution to enable their students to access ProveGround.'}
             </p>
 
             {institutionError && (

@@ -647,7 +647,7 @@ export const CorporateDashboardPageComponent = props => {
           {/* Onboarding Checklist */}
           {showOnboarding && (
             <OnboardingChecklist
-              title="Get Started with Street2Ivy"
+              title="Get Started with ProveGround"
               subtitle="Complete these steps to start connecting with top student talent"
               items={onboardingItems}
               variant="corporate"
