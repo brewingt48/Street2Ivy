@@ -73,8 +73,7 @@ export async function GET(request: NextRequest) {
 
     const students = await sql`
       SELECT u.id, u.display_name, u.email, u.university, u.major,
-             u.graduation_year, u.gpa, u.bio, u.hours_per_week, u.location,
-             u.open_to_work, u.metadata,
+             u.graduation_year, u.gpa, u.bio, u.metadata,
              COALESCE(
                (SELECT array_agg(s.name) FROM user_skills us JOIN skills s ON s.id = us.skill_id WHERE us.user_id = u.id),
                ARRAY[]::text[]
@@ -103,9 +102,9 @@ export async function GET(request: NextRequest) {
           graduationYear: s.graduation_year,
           gpa: s.gpa,
           bio: s.bio,
-          hoursPerWeek: s.hours_per_week,
-          location: s.location,
-          openToWork: s.open_to_work,
+          hoursPerWeek: null,
+          location: null,
+          openToWork: false,
           skills: s.skills || [],
           alumniOf: (metadata.alumniOf as string) || null,
           sportsPlayed: (metadata.sportsPlayed as string) || null,
