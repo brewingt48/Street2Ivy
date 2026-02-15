@@ -6,34 +6,52 @@ import { ChevronDown } from 'lucide-react';
 
 /*
  * Carousel images — diverse, inclusive imagery showing:
- * 1-3: Competition & performance (diverse athletes, debate, dance)
- * 4-6: Corporate / professional settings (diverse young professionals)
- * The arc: discipline + competition → corporate leadership
+ * Sports: Football, basketball, track/relay — competitive university athletes
+ * Corporate: Young, athletic-looking diverse professionals in office settings
+ * The arc: competition + discipline → corporate leadership
  */
 const carouselImages = [
+  // --- SPORTS ---
+  {
+    src: 'https://images.unsplash.com/photo-1560272564-c83b66b1ad12?w=1920&q=80',
+    alt: 'College football players competing on the field under stadium lights',
+  },
+  {
+    src: 'https://images.unsplash.com/photo-1461896836934-bd45ba688b62?w=1920&q=80',
+    alt: 'Diverse basketball players battling in an intense college game',
+  },
   {
     src: 'https://images.unsplash.com/photo-1517649763962-0c623066013b?w=1920&q=80',
     alt: 'Diverse athletes competing in a relay race, passing the baton',
   },
   {
-    src: 'https://images.unsplash.com/photo-1577416412292-747c6607f055?w=1920&q=80',
-    alt: 'Basketball players in intense competition during a college game',
+    src: 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=1920&q=80',
+    alt: 'Football huddle — team discipline and leadership on the field',
   },
   {
-    src: 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=1920&q=80',
-    alt: 'Diverse group of students celebrating achievement together',
+    src: 'https://images.unsplash.com/photo-1546519638-68e109498ffc?w=1920&q=80',
+    alt: 'Basketball player driving to the hoop with determination',
+  },
+  // --- CORPORATE / TRANSITION ---
+  {
+    src: 'https://images.unsplash.com/photo-1600880292089-90a7e086ee0c?w=1920&q=80',
+    alt: 'Young diverse professionals shaking hands in a modern corporate office',
   },
   {
-    src: 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=1920&q=80',
-    alt: 'Diverse young professionals collaborating in a modern office',
+    src: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=1920&q=80',
+    alt: 'Diverse young team collaborating around a table in a bright office',
   },
   {
     src: 'https://images.unsplash.com/photo-1573164713714-d95e436ab8d6?w=1920&q=80',
-    alt: 'Young professional woman presenting to a boardroom with confidence',
+    alt: 'Young professional woman presenting confidently to a boardroom',
   },
   {
     src: 'https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=1920&q=80',
-    alt: 'Diverse team of young professionals shaking hands after a successful deal',
+    alt: 'Diverse team of young professionals closing a deal with a handshake',
+  },
+  {
+    src: 'https://images.unsplash.com/photo-1556761175-5973dc0f32e7?w=1920&q=80',
+    alt: 'Young diverse professionals in a glass-walled office celebrating success',
   },
 ];
 

@@ -11,6 +11,8 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Calendar, Eye, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Navbar } from '@/components/home/Navbar';
+import { Footer } from '@/components/home/Footer';
 
 interface BlogPost {
   id: string;
@@ -48,7 +50,9 @@ export default function PublicBlogPage() {
   }, [page]);
 
   return (
-    <div className="max-w-6xl mx-auto px-4 md:px-6 py-12">
+    <>
+    <Navbar />
+    <div className="max-w-6xl mx-auto px-4 md:px-6 pt-28 pb-12">
       <div className="text-center mb-12">
         <h1 className="text-4xl font-bold text-slate-900 dark:text-white">Blog</h1>
         <p className="text-lg text-slate-500 dark:text-slate-400 mt-2">
@@ -127,5 +131,7 @@ export default function PublicBlogPage() {
         </>
       )}
     </div>
+    <Footer />
+    </>
   );
 }

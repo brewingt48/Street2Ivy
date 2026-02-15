@@ -11,6 +11,8 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ArrowLeft, Calendar, Eye, User } from 'lucide-react';
+import { Navbar } from '@/components/home/Navbar';
+import { Footer } from '@/components/home/Footer';
 
 interface BlogPost {
   id: string;
@@ -53,32 +55,32 @@ export default function PublicBlogPostPage() {
 
   if (loading) {
     return (
-      <div className="max-w-3xl mx-auto px-4 md:px-6 py-12">
+      <><Navbar /><div className="max-w-3xl mx-auto px-4 md:px-6 pt-28 pb-12">
         <Skeleton className="h-8 w-3/4 mb-4" />
         <Skeleton className="h-4 w-1/2 mb-8" />
         <Skeleton className="h-64 mb-4" />
         <Skeleton className="h-4 w-full mb-2" />
         <Skeleton className="h-4 w-full mb-2" />
         <Skeleton className="h-4 w-3/4" />
-      </div>
+      </div><Footer /></>
     );
   }
 
   if (error || !post) {
     return (
-      <div className="max-w-3xl mx-auto px-4 md:px-6 py-20 text-center">
+      <><Navbar /><div className="max-w-3xl mx-auto px-4 md:px-6 pt-28 pb-20 text-center">
         <h1 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">{error || 'Post not found'}</h1>
         <Link href="/blog">
           <Button variant="outline">
             <ArrowLeft className="h-4 w-4 mr-2" /> Back to Blog
           </Button>
         </Link>
-      </div>
+      </div><Footer /></>
     );
   }
 
   return (
-    <article className="max-w-3xl mx-auto px-4 md:px-6 py-12">
+    <><Navbar /><article className="max-w-3xl mx-auto px-4 md:px-6 pt-28 pb-12">
       <Link href="/blog" className="inline-flex items-center text-sm text-teal-600 hover:text-teal-700 dark:text-teal-400 mb-6">
         <ArrowLeft className="h-4 w-4 mr-1" /> Back to Blog
       </Link>
@@ -125,6 +127,6 @@ export default function PublicBlogPostPage() {
         className="prose prose-slate dark:prose-invert max-w-none mt-8"
         dangerouslySetInnerHTML={{ __html: post.content }}
       />
-    </article>
+    </article><Footer /></>
   );
 }
