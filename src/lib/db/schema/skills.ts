@@ -1,4 +1,4 @@
-import { pgTable, uuid, text, timestamp, primaryKey } from 'drizzle-orm/pg-core';
+import { pgTable, uuid, text, integer, timestamp, primaryKey } from 'drizzle-orm/pg-core';
 import { users } from './users';
 
 export const skills = pgTable('skills', {
@@ -20,6 +20,7 @@ export const userSkills = pgTable(
     skillId: uuid('skill_id')
       .notNull()
       .references(() => skills.id, { onDelete: 'cascade' }),
+    proficiencyLevel: integer('proficiency_level').default(3),
   },
   (table) => ({
     pk: primaryKey({ columns: [table.userId, table.skillId] }),

@@ -1,20 +1,24 @@
 /**
  * Smart Matching Engine — Student ↔ Project Scoring
  *
- * Multi-factor scoring algorithm that learns from matching patterns:
+ * LEGACY ENGINE — This file is maintained for backward compatibility.
  *
+ * The ProveGround Match Engine™ (src/lib/match-engine/) is the new 6-signal
+ * bi-directional scoring system. When the 'matchEngine' feature is enabled
+ * for a tenant, this module delegates to the new engine. Otherwise, it falls
+ * back to the original 5-factor algorithm below.
+ *
+ * Original 5-factor algorithm:
  * 1. SKILL MATCH (40%): Jaccard similarity of student skills vs required skills
- * 2. CATEGORY AFFINITY (20%): Learned from past applications — how often a student
- *    applies to / succeeds in a given category
+ * 2. CATEGORY AFFINITY (20%): Learned from past applications
  * 3. AVAILABILITY (15%): Does the student's hours/week fit the project?
  * 4. RECENCY BOOST (10%): Newer projects get a slight boost
  * 5. SUCCESS HISTORY (15%): Students who were accepted in similar projects score higher
- *
- * The engine uses application outcome data to weight category affinity and success
- * history, so it improves as more applications are processed.
  */
 
 import { sql } from '@/lib/db';
+import { getStudentMatches as newGetStudentMatches, getListingMatches as newGetListingMatches } from '@/lib/match-engine';
+import { hasFeature } from '@/lib/tenant/features';
 
 export interface MatchScore {
   listingId: string;
@@ -52,12 +56,52 @@ export interface StudentMatchScore {
 
 /**
  * Get recommended projects for a student, scored by match quality.
- * Learns from the student's application history to improve recommendations.
+ * Delegates to ProveGround Match Engine™ when the feature is enabled.
+ * Falls back to legacy 5-factor algorithm otherwise.
  */
 export async function getRecommendedProjects(
   userId: string,
   limit = 10
 ): Promise<MatchScore[]> {
+  // Check if new Match Engine is enabled for user's tenant
+  try {
+    const [user] = await sql`SELECT tenant_id FROM users WHERE id = ${userId}`;
+    if (user?.tenant_id) {
+      const enabled = await hasFeature(user.tenant_id as string, 'matchEngine');
+      if (enabled) {
+        // Delegate to new Match Engine
+        const results = await newGetStudentMatches(userId, {
+          limit,
+          tenantId: user.tenant_id as string,
+        });
+        return results.map((r) => ({
+          listingId: r.listingId,
+          title: r.listing.title,
+          description: r.listing.description,
+          category: r.listing.category,
+          company: r.listing.companyName,
+          compensation: r.listing.compensation,
+          remoteAllowed: r.listing.remoteAllowed,
+          skillsRequired: r.listing.skillsRequired,
+          matchScore: r.compositeScore,
+          matchBreakdown: {
+            skillMatch: r.signals?.skills?.score || 0,
+            categoryAffinity: r.signals?.network?.score || 0,
+            availability: r.signals?.temporal?.score || 0,
+            recencyBoost: r.signals?.growth?.score || 0,
+            successHistory: r.signals?.trust?.score || 0,
+          },
+          matchedSkills: r.matchedSkills,
+          missingSkills: r.missingSkills,
+          publishedAt: r.listing.publishedAt || '',
+        }));
+      }
+    }
+  } catch {
+    // Fall through to legacy engine on any error
+  }
+
+  // --- Legacy 5-factor algorithm ---
   // 1. Get student's skills
   const studentSkills = await sql`
     SELECT s.name, s.category
@@ -235,11 +279,40 @@ export async function getRecommendedProjects(
 
 /**
  * Get recommended students for a project listing (for corporate partners).
+ * Delegates to ProveGround Match Engine™ when the feature is enabled.
  */
 export async function getRecommendedStudents(
   listingId: string,
   limit = 20
 ): Promise<StudentMatchScore[]> {
+  // Check if new Match Engine is enabled
+  try {
+    const [listing] = await sql`SELECT tenant_id FROM listings WHERE id = ${listingId}`;
+    if (listing?.tenant_id) {
+      const enabled = await hasFeature(listing.tenant_id as string, 'matchEngine');
+      if (enabled) {
+        const results = await newGetListingMatches(listingId, {
+          limit,
+          tenantId: listing.tenant_id as string,
+        });
+        return results.map((r) => ({
+          studentId: r.studentId,
+          firstName: r.firstName,
+          lastName: r.lastName,
+          email: r.email,
+          university: r.university,
+          gpa: null,
+          matchScore: r.compositeScore,
+          matchedSkills: r.matchedSkills,
+          missingSkills: r.missingSkills,
+        }));
+      }
+    }
+  } catch {
+    // Fall through to legacy engine
+  }
+
+  // --- Legacy algorithm ---
   // 1. Get listing details
   const [listing] = await sql`
     SELECT skills_required, category, hours_per_week

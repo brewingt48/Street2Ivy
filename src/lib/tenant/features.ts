@@ -93,6 +93,27 @@ export const FEATURE_DEFINITIONS: Record<string, {
     description: 'Industry trend matching and talent demand analysis',
     plans: ['enterprise'],
   },
+  // --- ProveGround Match Engine™ ---
+  matchEngine: {
+    label: 'Match Engine',
+    description: '6-signal bi-directional match scoring with schedule awareness',
+    plans: ['professional', 'enterprise'],
+  },
+  matchEngineSchedule: {
+    label: 'Schedule Management',
+    description: 'Student schedule management for schedule-aware matching',
+    plans: ['professional', 'enterprise'],
+  },
+  matchEngineAttractive: {
+    label: 'Corporate Attractiveness',
+    description: 'Reverse-direction scoring — how attractive is a listing to students',
+    plans: ['enterprise'],
+  },
+  matchEngineAdmin: {
+    label: 'Match Engine Admin',
+    description: 'Admin API for match engine configuration and monitoring',
+    plans: ['enterprise'],
+  },
 };
 
 /** Plan defaults — includes new premium features */
@@ -115,6 +136,10 @@ export const PLAN_DEFAULTS: Record<string, Record<string, unknown>> = {
     aiProjectScoping: false,
     aiPortfolioIntelligence: false,
     aiTalentInsights: false,
+    matchEngine: false,
+    matchEngineSchedule: false,
+    matchEngineAttractive: false,
+    matchEngineAdmin: false,
   },
   professional: {
     maxStudents: 500,
@@ -134,6 +159,10 @@ export const PLAN_DEFAULTS: Record<string, Record<string, unknown>> = {
     aiProjectScoping: true,
     aiPortfolioIntelligence: false,
     aiTalentInsights: false,
+    matchEngine: true,
+    matchEngineSchedule: true,
+    matchEngineAttractive: false,
+    matchEngineAdmin: false,
   },
   enterprise: {
     maxStudents: -1, // unlimited
@@ -153,6 +182,10 @@ export const PLAN_DEFAULTS: Record<string, Record<string, unknown>> = {
     aiProjectScoping: true,
     aiPortfolioIntelligence: true,
     aiTalentInsights: true,
+    matchEngine: true,
+    matchEngineSchedule: true,
+    matchEngineAttractive: true,
+    matchEngineAdmin: true,
   },
 };
 

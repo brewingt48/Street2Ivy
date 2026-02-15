@@ -23,3 +23,4 @@ export * from './sessions';
 export * from './audit';
 export * from './waitlist';
 export * from './network';
+export * from './matching';
