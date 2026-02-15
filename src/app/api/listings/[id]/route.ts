@@ -9,19 +9,19 @@ import { getCurrentSession } from '@/lib/auth/middleware';
 import { z } from 'zod';
 
 const updateListingSchema = z.object({
-  title: z.string().min(3).max(200).optional(),
-  description: z.string().min(10).max(10000).optional(),
+  title: z.string().min(3, 'Title must be at least 3 characters').max(200).optional(),
+  description: z.string().min(10, 'Description must be at least 10 characters').max(10000).optional(),
   category: z.string().max(100).optional().nullable(),
   location: z.string().max(200).optional().nullable(),
   remoteAllowed: z.boolean().optional(),
   compensation: z.string().max(200).optional().nullable(),
-  hoursPerWeek: z.number().int().min(1).max(80).optional().nullable(),
+  hoursPerWeek: z.union([z.number().int().min(1).max(80), z.string().transform((v) => { const n = parseInt(v); return isNaN(n) ? undefined : n; }), z.null()]).optional(),
   duration: z.string().max(100).optional().nullable(),
   startDate: z.string().optional().nullable(),
   endDate: z.string().optional().nullable(),
-  maxApplicants: z.number().int().min(1).max(1000).optional().nullable(),
+  maxApplicants: z.union([z.number().int().min(1).max(1000), z.string().transform((v) => { const n = parseInt(v); return isNaN(n) ? undefined : n; }), z.null()]).optional(),
   requiresNda: z.boolean().optional(),
-  skillsRequired: z.array(z.string()).optional(),
+  skillsRequired: z.array(z.string()).optional().nullable(),
 });
 
 export async function GET(

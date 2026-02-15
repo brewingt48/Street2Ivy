@@ -66,7 +66,7 @@ export default function NewListingPage() {
     setSaving(true); setError('');
     try {
       const res = await fetch('/api/listings', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(buildPayload()) });
-      if (!res.ok) { const d = await res.json(); throw new Error(d.error || 'Failed to save'); }
+      if (!res.ok) { const d = await res.json(); const details = d.details ? Object.entries(d.details).map(([k, v]) => `${k}: ${(v as string[]).join(', ')}`).join('; ') : ''; throw new Error(details || d.error || 'Failed to save'); }
       router.push('/corporate/projects');
     } catch (err) { setError(err instanceof Error ? err.message : 'Failed to save'); } finally { setSaving(false); }
   };
@@ -76,7 +76,7 @@ export default function NewListingPage() {
     setPublishing(true); setError('');
     try {
       const createRes = await fetch('/api/listings', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(buildPayload()) });
-      if (!createRes.ok) { const d = await createRes.json(); throw new Error(d.error || 'Failed to create'); }
+      if (!createRes.ok) { const d = await createRes.json(); const details = d.details ? Object.entries(d.details).map(([k, v]) => `${k}: ${(v as string[]).join(', ')}`).join('; ') : ''; throw new Error(details || d.error || 'Failed to create'); }
       const { listing } = await createRes.json();
       await fetch(`/api/listings/${listing.id}/publish`, { method: 'POST' });
       router.push('/corporate/projects');

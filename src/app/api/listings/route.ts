@@ -9,19 +9,19 @@ import { getCurrentSession } from '@/lib/auth/middleware';
 import { z } from 'zod';
 
 const createListingSchema = z.object({
-  title: z.string().min(3).max(200),
-  description: z.string().min(10).max(10000),
-  category: z.string().max(100).optional(),
-  location: z.string().max(200).optional(),
+  title: z.string().min(3, 'Title must be at least 3 characters').max(200),
+  description: z.string().min(10, 'Description must be at least 10 characters').max(10000),
+  category: z.string().max(100).optional().nullable(),
+  location: z.string().max(200).optional().nullable(),
   remoteAllowed: z.boolean().optional(),
-  compensation: z.string().max(200).optional(),
-  hoursPerWeek: z.number().int().min(1).max(80).optional(),
-  duration: z.string().max(100).optional(),
-  startDate: z.string().optional(),
-  endDate: z.string().optional(),
-  maxApplicants: z.number().int().min(1).max(1000).optional(),
+  compensation: z.string().max(200).optional().nullable(),
+  hoursPerWeek: z.union([z.number().int().min(1).max(80), z.string().transform((v) => { const n = parseInt(v); return isNaN(n) ? undefined : n; }), z.null()]).optional(),
+  duration: z.string().max(100).optional().nullable(),
+  startDate: z.string().optional().nullable(),
+  endDate: z.string().optional().nullable(),
+  maxApplicants: z.union([z.number().int().min(1).max(1000), z.string().transform((v) => { const n = parseInt(v); return isNaN(n) ? undefined : n; }), z.null()]).optional(),
   requiresNda: z.boolean().optional(),
-  skillsRequired: z.array(z.string()).optional(),
+  skillsRequired: z.array(z.string()).optional().nullable(),
 });
 
 export async function GET() {
