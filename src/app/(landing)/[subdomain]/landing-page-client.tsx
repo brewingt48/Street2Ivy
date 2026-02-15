@@ -282,12 +282,12 @@ export function LandingPageClient({ tenant, stats, partners }: LandingPageClient
               </p>
               <p className="text-sm text-gray-500 mt-1">Alumni Partners</p>
             </div>
-            <div className="flex items-center justify-center gap-2">
+            <a href="/" className="flex items-center justify-center gap-2 hover:opacity-80 transition-opacity">
               <Sparkles className="h-5 w-5 text-amber-500" />
               <p className="text-sm text-gray-500">
-                Powered by <span className="font-semibold text-gray-700">Proveground</span>
+                Powered by <span className="font-semibold text-gray-700 hover:text-teal-700 transition-colors">Proveground</span>
               </p>
-            </div>
+            </a>
           </div>
         </div>
       </section>
@@ -897,9 +897,7 @@ export function LandingPageClient({ tenant, stats, partners }: LandingPageClient
         <p>
           &copy; {new Date().getFullYear()} {displayName}. Powered by{' '}
           <a
-            href="https://proveground.com"
-            target="_blank"
-            rel="noopener noreferrer"
+            href="/"
             className="text-white hover:underline"
           >
             Proveground
