@@ -15,11 +15,7 @@ import {
   AlertCircle,
   CheckCircle2,
   Loader2,
-  Brain,
   Clock,
-  Battery,
-  TrendingUp,
-  Shield,
 } from 'lucide-react';
 
 interface EngineStats {
@@ -45,26 +41,9 @@ interface EngineStats {
 }
 
 interface EngineConfig {
-  signalWeights: {
-    temporal: number;
-    skills: number;
-    sustainability: number;
-    growth: number;
-    trust: number;
-    network: number;
-  };
   minScoreThreshold: number;
   isDefault?: boolean;
 }
-
-const signalLabels: Record<string, { label: string; icon: React.ElementType; color: string }> = {
-  temporal: { label: 'Temporal Fit', icon: Clock, color: 'text-blue-500' },
-  skills: { label: 'Skills', icon: Brain, color: 'text-teal-500' },
-  sustainability: { label: 'Sustainability', icon: Battery, color: 'text-green-500' },
-  growth: { label: 'Growth', icon: TrendingUp, color: 'text-purple-500' },
-  trust: { label: 'Trust', icon: Shield, color: 'text-amber-500' },
-  network: { label: 'Network', icon: Users, color: 'text-indigo-500' },
-};
 
 export default function MatchEngineDashboard() {
   const [stats, setStats] = useState<EngineStats | null>(null);
@@ -135,7 +114,7 @@ export default function MatchEngineDashboard() {
             Proveground&apos;s Proprietary <strong>Match Engine&trade;</strong>
           </h1>
           <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-            Proprietary bi-directional matching system &mdash; six signals, one composite score
+            Proprietary bi-directional matching system &mdash; multi-dimensional scoring
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -284,13 +263,13 @@ export default function MatchEngineDashboard() {
             </div>
           )}
 
-          {/* Signal Weights */}
-          {config && config.signalWeights && (
+          {/* Engine Configuration Overview */}
+          {config && (
             <Card>
               <CardHeader>
                 <CardTitle className="text-base flex items-center gap-2">
                   <Settings2 className="h-4 w-4 text-teal-600" />
-                  Signal Weights
+                  Engine Configuration
                   {config.isDefault !== false && (
                     <Badge variant="secondary" className="text-xs">
                       Default
@@ -298,41 +277,21 @@ export default function MatchEngineDashboard() {
                   )}
                 </CardTitle>
                 <CardDescription>
-                  How each signal contributes to the composite match score
+                  Proveground&apos;s proprietary <strong>Match Engine&trade;</strong> uses a multi-dimensional assessment to produce a single composite score
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                  {Object.entries(config.signalWeights).map(([key, weight]) => {
-                    const cfg = signalLabels[key] || {
-                      label: key,
-                      icon: Brain,
-                      color: 'text-slate-500',
-                    };
-                    const Icon = cfg.icon;
-                    return (
-                      <div
-                        key={key}
-                        className="flex items-center gap-3 p-3 rounded-lg border border-slate-100 dark:border-slate-800"
-                      >
-                        <Icon className={`h-5 w-5 ${cfg.color}`} />
-                        <div className="flex-1">
-                          <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                            {cfg.label}
-                          </p>
-                          <div className="h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full mt-1 overflow-hidden">
-                            <div
-                              className="h-full bg-teal-500 rounded-full"
-                              style={{ width: `${weight * 100}%` }}
-                            />
-                          </div>
-                        </div>
-                        <span className="text-sm font-semibold text-slate-900 dark:text-white">
-                          {Math.round(weight * 100)}%
-                        </span>
-                      </div>
-                    );
-                  })}
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="p-4 rounded-lg bg-slate-50 dark:bg-slate-800/50">
+                    <p className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Minimum Score Threshold</p>
+                    <p className="text-2xl font-bold text-slate-900 dark:text-white">{config.minScoreThreshold}</p>
+                    <p className="text-xs text-slate-500 mt-1">Scores below this threshold are filtered from results</p>
+                  </div>
+                  <div className="p-4 rounded-lg bg-slate-50 dark:bg-slate-800/50">
+                    <p className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Scoring Dimensions</p>
+                    <p className="text-2xl font-bold text-slate-900 dark:text-white">Multi-Factor</p>
+                    <p className="text-xs text-slate-500 mt-1">Proprietary algorithm evaluates multiple dimensions per match</p>
+                  </div>
                 </div>
               </CardContent>
             </Card>

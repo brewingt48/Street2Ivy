@@ -736,9 +736,9 @@ export function LandingPageClient({ tenant, stats, partners }: LandingPageClient
               variants={fadeUp}
               className="text-gray-500 text-lg leading-relaxed max-w-3xl mx-auto"
             >
-              When {displayName} launches its marketplace, it connects to the entire Proveground
-              ecosystem &mdash; a unified talent network where institutions, alumni, and industry
-              partners share opportunities and grow together.
+              {displayName} is part of the Proveground ecosystem &mdash; a unified talent network
+              where institutions, alumni, and industry partners share opportunities and grow
+              together. Your marketplace is live. The network is working for you.
             </motion.p>
           </motion.div>
 
