@@ -16,9 +16,11 @@ export async function GET() {
     const invites = await sql`
       SELECT ci.id, ci.corporate_partner_id, ci.listing_id, ci.project_title,
              ci.message, ci.status, ci.sent_at, ci.responded_at,
-             u.display_name as corporate_name, u.company_name
+             u.display_name as corporate_name, u.company_name, u.bio as corporate_bio,
+             l.description as listing_description
       FROM corporate_invites ci
       LEFT JOIN users u ON u.id = ci.corporate_partner_id
+      LEFT JOIN listings l ON l.id = ci.listing_id
       WHERE ci.student_id = ${session.data.userId}
       ORDER BY ci.sent_at DESC
     `;
@@ -29,9 +31,11 @@ export async function GET() {
         corporatePartnerId: inv.corporate_partner_id,
         corporateName: inv.corporate_name || inv.company_name || 'Company',
         companyName: inv.company_name,
+        corporateBio: inv.corporate_bio,
         listingId: inv.listing_id,
         projectTitle: inv.project_title,
         message: inv.message,
+        listingDescription: inv.listing_description,
         status: inv.status,
         sentAt: inv.sent_at,
         respondedAt: inv.responded_at,

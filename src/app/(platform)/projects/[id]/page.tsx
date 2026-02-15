@@ -34,6 +34,11 @@ import {
   CheckCircle2,
   XCircle,
   AlertCircle,
+  Globe,
+  TrendingUp,
+  School,
+  Trophy,
+  ExternalLink,
 } from 'lucide-react';
 
 interface ProjectDetail {
@@ -62,6 +67,15 @@ interface ProjectDetail {
     displayName: string;
     avatarUrl: string | null;
     bio: string | null;
+    companyName: string | null;
+    companyWebsite: string | null;
+    companyDescription: string | null;
+    companyIndustry: string | null;
+    companySize: string | null;
+    stockSymbol: string | null;
+    isPubliclyTraded: boolean;
+    alumniOf: string | null;
+    sportsPlayed: string | null;
   };
 }
 
@@ -243,26 +257,121 @@ export default function ProjectDetailPage() {
           )}
 
           {/* About the Company */}
-          {project.author.bio && (
-            <Card>
-              <CardHeader>
-                <CardTitle>About the Company</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-start gap-4">
-                  <div className="h-12 w-12 rounded-full bg-teal-100 flex items-center justify-center text-teal-700 font-bold text-lg shrink-0">
-                    {(project.author.firstName?.[0] || '?').toUpperCase()}
-                  </div>
-                  <div>
-                    <p className="font-medium">
-                      {project.author.displayName || `${project.author.firstName} ${project.author.lastName}`}
-                    </p>
-                    <p className="text-sm text-slate-500 mt-1">{project.author.bio}</p>
-                  </div>
+          <Card>
+            <CardHeader>
+              <CardTitle>About the Company</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-start gap-4">
+                <div className="h-12 w-12 rounded-full bg-teal-100 flex items-center justify-center text-teal-700 font-bold text-lg shrink-0">
+                  {(project.author.companyName?.[0] || project.author.firstName?.[0] || '?').toUpperCase()}
                 </div>
-              </CardContent>
-            </Card>
-          )}
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <p className="font-semibold text-lg">
+                      {project.author.companyName || project.author.displayName || `${project.author.firstName} ${project.author.lastName}`}
+                    </p>
+                    {project.author.isPubliclyTraded && project.author.stockSymbol ? (
+                      <a
+                        href={`https://www.google.com/finance/quote/${project.author.stockSymbol}:NYSE?hl=en`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1"
+                      >
+                        <Badge className="bg-blue-100 text-blue-700 border-0 hover:bg-blue-200 cursor-pointer">
+                          <TrendingUp className="h-3 w-3 mr-1" />
+                          ${project.author.stockSymbol}
+                        </Badge>
+                      </a>
+                    ) : (
+                      <Badge variant="outline" className="border-slate-300 text-slate-500">
+                        Privately Held
+                      </Badge>
+                    )}
+                  </div>
+                  {project.author.companyName && (
+                    <p className="text-sm text-slate-500">
+                      Sponsor: {project.author.displayName || `${project.author.firstName} ${project.author.lastName}`}
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              {project.author.companyDescription && (
+                <p className="text-sm text-slate-600 dark:text-slate-300">{project.author.companyDescription}</p>
+              )}
+              {project.author.bio && !project.author.companyDescription && (
+                <p className="text-sm text-slate-600 dark:text-slate-300">{project.author.bio}</p>
+              )}
+
+              <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm">
+                {project.author.companyWebsite && (
+                  <a
+                    href={project.author.companyWebsite.startsWith('http') ? project.author.companyWebsite : `https://${project.author.companyWebsite}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 text-teal-600 hover:text-teal-700 hover:underline"
+                  >
+                    <Globe className="h-4 w-4" />
+                    {project.author.companyWebsite.replace(/^https?:\/\//, '').replace(/\/$/, '')}
+                    <ExternalLink className="h-3 w-3" />
+                  </a>
+                )}
+                {project.author.isPubliclyTraded && project.author.stockSymbol && (
+                  <a
+                    href={`https://news.google.com/search?q=${encodeURIComponent(project.author.companyName || project.author.stockSymbol)}&hl=en-US`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 text-blue-600 hover:text-blue-700 hover:underline"
+                  >
+                    <TrendingUp className="h-4 w-4" />
+                    Company News
+                    <ExternalLink className="h-3 w-3" />
+                  </a>
+                )}
+              </div>
+
+              {(project.author.companyIndustry || project.author.companySize) && (
+                <div className="flex flex-wrap gap-2 text-xs">
+                  {project.author.companyIndustry && (
+                    <Badge variant="secondary">
+                      <Briefcase className="h-3 w-3 mr-1" />
+                      {project.author.companyIndustry}
+                    </Badge>
+                  )}
+                  {project.author.companySize && (
+                    <Badge variant="secondary">
+                      <Users className="h-3 w-3 mr-1" />
+                      {project.author.companySize} employees
+                    </Badge>
+                  )}
+                </div>
+              )}
+
+              {(project.author.alumniOf || project.author.sportsPlayed) && (
+                <>
+                  <Separator />
+                  <div className="space-y-1">
+                    <p className="text-xs font-medium text-slate-400 uppercase tracking-wide">Sponsor Background</p>
+                    <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-slate-600 dark:text-slate-300">
+                      {project.author.alumniOf && (
+                        <span className="flex items-center gap-1">
+                          <School className="h-3.5 w-3.5 text-slate-400" />
+                          Alumni of {project.author.alumniOf}
+                        </span>
+                      )}
+                      {project.author.sportsPlayed && (
+                        <span className="flex items-center gap-1">
+                          <Trophy className="h-3.5 w-3.5 text-slate-400" />
+                          {project.author.sportsPlayed}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </>
+              )}
+            </CardContent>
+          </Card>
         </div>
 
         {/* Sidebar */}

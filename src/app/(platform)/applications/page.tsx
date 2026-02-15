@@ -242,7 +242,7 @@ export default function ApplicationsPage() {
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => router.push(`/projects/${app.listingId}`)}
+                        onClick={() => router.push(`/applications/${app.id}`)}
                       >
                         View
                         <ArrowRight className="ml-1 h-3 w-3" />

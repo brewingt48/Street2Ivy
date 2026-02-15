@@ -15,7 +15,9 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { FileText, Clock, CheckCircle2, XCircle, ChevronDown, ChevronUp, Mail, GraduationCap, Download } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Separator } from '@/components/ui/separator';
+import { FileText, Clock, CheckCircle2, XCircle, ChevronDown, ChevronUp, Mail, GraduationCap, Download, Star } from 'lucide-react';
 import { ExportButton } from '@/components/analytics/export-button';
 
 interface Application {
@@ -70,6 +72,22 @@ export default function CorporateApplicationsPage() {
   const [reviewerNotes, setReviewerNotes] = useState('');
   const [responding, setResponding] = useState(false);
 
+  // Onboarding fields (for accept action)
+  const [workDescription, setWorkDescription] = useState('');
+  const [paymentInfo, setPaymentInfo] = useState('');
+  const [systemAccess, setSystemAccess] = useState('');
+  const [contactName, setContactName] = useState('');
+  const [contactEmail, setContactEmail] = useState('');
+  const [contactPhone, setContactPhone] = useState('');
+  const [additionalNotes, setAdditionalNotes] = useState('');
+
+  // Feedback fields (for complete action)
+  const [feedbackRating, setFeedbackRating] = useState(0);
+  const [feedbackComments, setFeedbackComments] = useState('');
+  const [feedbackStrengths, setFeedbackStrengths] = useState('');
+  const [feedbackImprovements, setFeedbackImprovements] = useState('');
+  const [feedbackRecommend, setFeedbackRecommend] = useState(false);
+
   const fetchApps = async (status: string) => {
     setLoading(true);
     try {
@@ -92,12 +110,34 @@ export default function CorporateApplicationsPage() {
       const res = await fetch(`/api/corporate/applications/${respondingApp.id}/respond`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: respondAction, rejectionReason: rejectionReason || undefined, reviewerNotes: reviewerNotes || undefined }),
+        body: JSON.stringify({
+          action: respondAction,
+          rejectionReason: rejectionReason || undefined,
+          reviewerNotes: reviewerNotes || undefined,
+          ...(respondAction === 'accept' ? {
+            onboarding: { workDescription, paymentInfo, systemAccess, contactName, contactEmail, contactPhone: contactPhone || undefined, additionalNotes: additionalNotes || undefined }
+          } : {}),
+          ...(respondAction === 'complete' ? {
+            feedback: { overallRating: feedbackRating, overallComments: feedbackComments, strengths: feedbackStrengths || undefined, areasForImprovement: feedbackImprovements || undefined, recommendForFuture: feedbackRecommend }
+          } : {}),
+        }),
       });
       if (res.ok) {
         setRespondingApp(null);
         setRejectionReason('');
         setReviewerNotes('');
+        setWorkDescription('');
+        setPaymentInfo('');
+        setSystemAccess('');
+        setContactName('');
+        setContactEmail('');
+        setContactPhone('');
+        setAdditionalNotes('');
+        setFeedbackRating(0);
+        setFeedbackComments('');
+        setFeedbackStrengths('');
+        setFeedbackImprovements('');
+        setFeedbackRecommend(false);
         fetchApps(statusFilter);
       }
     } catch (err) { console.error(err); }
@@ -245,8 +285,24 @@ export default function CorporateApplicationsPage() {
       )}
 
       {/* Respond Dialog */}
-      <Dialog open={!!respondingApp} onOpenChange={() => { setRespondingApp(null); setRejectionReason(''); setReviewerNotes(''); }}>
-        <DialogContent>
+      <Dialog open={!!respondingApp} onOpenChange={() => {
+        setRespondingApp(null);
+        setRejectionReason('');
+        setReviewerNotes('');
+        setWorkDescription('');
+        setPaymentInfo('');
+        setSystemAccess('');
+        setContactName('');
+        setContactEmail('');
+        setContactPhone('');
+        setAdditionalNotes('');
+        setFeedbackRating(0);
+        setFeedbackComments('');
+        setFeedbackStrengths('');
+        setFeedbackImprovements('');
+        setFeedbackRecommend(false);
+      }}>
+        <DialogContent className={respondAction === 'accept' || respondAction === 'complete' ? 'max-w-2xl' : ''}>
           <DialogHeader>
             <DialogTitle>
               {respondAction === 'accept' ? 'Accept Application' : respondAction === 'decline' ? 'Decline Application' : 'Mark as Complete'}
@@ -255,13 +311,95 @@ export default function CorporateApplicationsPage() {
               {respondingApp?.studentName} &mdash; {respondingApp?.listingTitle}
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4">
+          <div className="space-y-4 max-h-[70vh] overflow-y-auto pr-1">
             {respondAction === 'decline' && (
               <div className="space-y-2">
                 <Label>Reason for declining (optional)</Label>
                 <Textarea value={rejectionReason} onChange={(e) => setRejectionReason(e.target.value)} placeholder="Provide feedback to the student..." rows={3} />
               </div>
             )}
+
+            {respondAction === 'accept' && (
+              <>
+                <div>
+                  <h3 className="text-sm font-semibold text-slate-900 dark:text-white">Onboarding Information</h3>
+                  <Separator className="mt-2" />
+                </div>
+                <div className="space-y-2">
+                  <Label>Work Description <span className="text-red-500">*</span></Label>
+                  <Textarea value={workDescription} onChange={(e) => setWorkDescription(e.target.value)} placeholder="Describe the work the student will be doing..." rows={3} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Payment Setup <span className="text-red-500">*</span></Label>
+                  <Textarea value={paymentInfo} onChange={(e) => setPaymentInfo(e.target.value)} placeholder="Payment details, rate, schedule..." rows={2} />
+                </div>
+                <div className="space-y-2">
+                  <Label>System Access <span className="text-red-500">*</span></Label>
+                  <Textarea value={systemAccess} onChange={(e) => setSystemAccess(e.target.value)} placeholder="Tools, accounts, and systems the student will need access to..." rows={2} />
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Contact Name <span className="text-red-500">*</span></Label>
+                    <Input value={contactName} onChange={(e) => setContactName(e.target.value)} placeholder="Primary contact name" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Contact Email <span className="text-red-500">*</span></Label>
+                    <Input type="email" value={contactEmail} onChange={(e) => setContactEmail(e.target.value)} placeholder="contact@company.com" />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label>Contact Phone (optional)</Label>
+                  <Input value={contactPhone} onChange={(e) => setContactPhone(e.target.value)} placeholder="Phone number" />
+                </div>
+                <div className="space-y-2">
+                  <Label>Additional Notes (optional)</Label>
+                  <Textarea value={additionalNotes} onChange={(e) => setAdditionalNotes(e.target.value)} placeholder="Any other information the student should know..." rows={2} />
+                </div>
+              </>
+            )}
+
+            {respondAction === 'complete' && (
+              <>
+                <div>
+                  <h3 className="text-sm font-semibold text-slate-900 dark:text-white">Student Feedback</h3>
+                  <Separator className="mt-2" />
+                </div>
+                <div className="space-y-2">
+                  <Label>Overall Rating <span className="text-red-500">*</span></Label>
+                  <div className="flex items-center gap-1">
+                    {[1, 2, 3, 4, 5].map((s) => (
+                      <button key={s} type="button" onClick={() => setFeedbackRating(s)} className="p-0.5 focus:outline-none">
+                        <Star className={`h-6 w-6 ${s <= feedbackRating ? 'fill-amber-400 text-amber-400' : 'text-slate-300'}`} />
+                      </button>
+                    ))}
+                    {feedbackRating > 0 && <span className="ml-2 text-sm text-slate-500">{feedbackRating}/5</span>}
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label>Overall Comments <span className="text-red-500">*</span></Label>
+                  <Textarea value={feedbackComments} onChange={(e) => setFeedbackComments(e.target.value)} placeholder="Share your overall feedback about the student's performance..." rows={3} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Strengths (optional)</Label>
+                  <Textarea value={feedbackStrengths} onChange={(e) => setFeedbackStrengths(e.target.value)} placeholder="What did the student do well?" rows={2} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Areas for Improvement (optional)</Label>
+                  <Textarea value={feedbackImprovements} onChange={(e) => setFeedbackImprovements(e.target.value)} placeholder="What could the student improve on?" rows={2} />
+                </div>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    id="recommend-checkbox"
+                    checked={feedbackRecommend}
+                    onChange={(e) => setFeedbackRecommend(e.target.checked)}
+                    className="h-4 w-4 rounded border-slate-300 text-teal-600 focus:ring-teal-500"
+                  />
+                  <Label htmlFor="recommend-checkbox" className="cursor-pointer">Recommend this student for future opportunities</Label>
+                </div>
+              </>
+            )}
+
             <div className="space-y-2">
               <Label>Internal notes (optional)</Label>
               <Textarea value={reviewerNotes} onChange={(e) => setReviewerNotes(e.target.value)} placeholder="Notes for your records..." rows={2} />
@@ -269,7 +407,15 @@ export default function CorporateApplicationsPage() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setRespondingApp(null)}>Cancel</Button>
-            <Button onClick={handleRespond} disabled={responding} className={respondAction === 'accept' ? 'bg-green-600 hover:bg-green-700' : respondAction === 'decline' ? 'bg-red-600 hover:bg-red-700' : 'bg-blue-600 hover:bg-blue-700'}>
+            <Button
+              onClick={handleRespond}
+              disabled={
+                responding ||
+                (respondAction === 'accept' && (!workDescription || !paymentInfo || !systemAccess || !contactName || !contactEmail)) ||
+                (respondAction === 'complete' && (feedbackRating === 0 || !feedbackComments))
+              }
+              className={respondAction === 'accept' ? 'bg-green-600 hover:bg-green-700' : respondAction === 'decline' ? 'bg-red-600 hover:bg-red-700' : 'bg-blue-600 hover:bg-blue-700'}
+            >
               {responding ? 'Processing...' : respondAction === 'accept' ? 'Accept' : respondAction === 'decline' ? 'Decline' : 'Complete'}
             </Button>
           </DialogFooter>

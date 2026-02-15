@@ -19,6 +19,9 @@ export async function GET(
         u.id as author_id, u.first_name as author_first_name,
         u.last_name as author_last_name, u.display_name as author_display_name,
         u.avatar_url as author_avatar_url, u.bio as author_bio,
+        u.company_name as author_company_name,
+        u.public_data as author_public_data,
+        u.metadata as author_metadata,
         (SELECT COUNT(*) FROM project_applications pa WHERE pa.listing_id = l.id) as application_count
       FROM listings l
       JOIN users u ON u.id = l.author_id
@@ -71,14 +74,27 @@ export async function GET(
         publishedAt: l.published_at,
         createdAt: l.created_at,
         applicationCount: parseInt(l.application_count as string),
-        author: {
-          id: l.author_id,
-          firstName: l.author_first_name,
-          lastName: l.author_last_name,
-          displayName: l.author_display_name,
-          avatarUrl: l.author_avatar_url,
-          bio: l.author_bio,
-        },
+        author: (() => {
+          const publicData = (l.author_public_data || {}) as Record<string, unknown>;
+          const metadata = (l.author_metadata || {}) as Record<string, unknown>;
+          return {
+            id: l.author_id,
+            firstName: l.author_first_name,
+            lastName: l.author_last_name,
+            displayName: l.author_display_name,
+            avatarUrl: l.author_avatar_url,
+            bio: l.author_bio,
+            companyName: l.author_company_name || null,
+            companyWebsite: (publicData.companyWebsite as string) || null,
+            companyDescription: (publicData.companyDescription as string) || null,
+            companyIndustry: (publicData.companyIndustry as string) || null,
+            companySize: (publicData.companySize as string) || null,
+            stockSymbol: (publicData.stockSymbol as string) || null,
+            isPubliclyTraded: (publicData.isPubliclyTraded as boolean) ?? false,
+            alumniOf: (metadata.alumniOf as string) || null,
+            sportsPlayed: (metadata.sportsPlayed as string) || null,
+          };
+        })(),
       },
       userApplication,
     });

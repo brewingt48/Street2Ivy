@@ -12,6 +12,7 @@ export * from './invites';
 export * from './messages';
 export * from './notifications';
 export * from './assessments';
+export * from './ratings';
 export * from './attachments';
 export * from './nda';
 export * from './coaching';

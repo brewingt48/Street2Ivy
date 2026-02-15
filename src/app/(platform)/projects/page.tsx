@@ -41,6 +41,8 @@ import {
   Trophy,
   Star,
   Building2,
+  Globe,
+  TrendingUp,
 } from 'lucide-react';
 
 interface ProjectListing {
@@ -66,6 +68,10 @@ interface ProjectListing {
     firstName: string;
     lastName: string;
     displayName: string;
+    companyName: string | null;
+    companyWebsite: string | null;
+    stockSymbol: string | null;
+    isPubliclyTraded: boolean;
     alumniOf: string | null;
     sportsPlayed: string | null;
     avgRating: number | null;
@@ -256,13 +262,46 @@ export default function ProjectsPage() {
                     <CardDescription className="mt-1">
                       <span className="flex items-center gap-1.5 font-medium text-slate-700 dark:text-slate-200">
                         <Building2 className="h-3.5 w-3.5 text-teal-600" />
-                        Posted by {project.author.displayName || `${project.author.firstName} ${project.author.lastName}`}
+                        {project.author.companyName || project.author.displayName || `${project.author.firstName} ${project.author.lastName}`}
                         {project.author.avgRating ? (
                           <span className="inline-flex items-center gap-0.5 text-amber-600 ml-1">
                             <Star className="h-3 w-3 fill-amber-500 text-amber-500" />
                             <span className="text-xs font-medium">{Number(project.author.avgRating).toFixed(1)}</span>
                           </span>
                         ) : null}
+                      </span>
+                      {project.author.companyName && (
+                        <span className="flex items-center gap-1 mt-0.5 text-xs text-slate-500">
+                          Sponsor: {project.author.displayName || `${project.author.firstName} ${project.author.lastName}`}
+                        </span>
+                      )}
+                      <span className="flex items-center gap-1.5 mt-0.5 flex-wrap">
+                        {project.author.companyWebsite && (
+                          <a
+                            href={project.author.companyWebsite.startsWith('http') ? project.author.companyWebsite : `https://${project.author.companyWebsite}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={(e) => e.stopPropagation()}
+                            className="inline-flex items-center gap-0.5 text-xs text-teal-600 hover:text-teal-700 hover:underline"
+                          >
+                            <Globe className="h-3 w-3" /> Website
+                          </a>
+                        )}
+                        {project.author.isPubliclyTraded && project.author.stockSymbol ? (
+                          <a
+                            href={`https://www.google.com/finance/quote/${project.author.stockSymbol}:NYSE?hl=en`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={(e) => e.stopPropagation()}
+                            className="inline-flex items-center gap-0.5 text-xs font-medium text-blue-600 hover:text-blue-700 hover:underline"
+                          >
+                            <TrendingUp className="h-3 w-3" /> ${project.author.stockSymbol}
+                          </a>
+                        ) : (
+                          <span className="inline-flex items-center gap-0.5 text-xs text-slate-400">
+                            Privately Held
+                          </span>
+                        )}
                       </span>
                       {project.category && (
                         <span className="flex items-center gap-1 mt-0.5 text-xs text-slate-500">

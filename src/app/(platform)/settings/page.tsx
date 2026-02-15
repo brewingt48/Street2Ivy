@@ -56,6 +56,8 @@ interface Profile {
   companyWebsite: string | null;
   companySize: string | null;
   companyIndustry: string | null;
+  stockSymbol: string | null;
+  isPubliclyTraded: boolean | null;
   sportsPlayed: string | null;
   activities: string | null;
 }
@@ -89,6 +91,8 @@ export default function SettingsPage() {
   const [companyWebsite, setCompanyWebsite] = useState('');
   const [companySize, setCompanySize] = useState('');
   const [companyIndustry, setCompanyIndustry] = useState('');
+  const [stockSymbol, setStockSymbol] = useState('');
+  const [isPubliclyTraded, setIsPubliclyTraded] = useState(false);
 
   // Student sports/activities
   const [sportsPlayed, setSportsPlayed] = useState('');
@@ -134,6 +138,8 @@ export default function SettingsPage() {
         setCompanyWebsite(p.companyWebsite || '');
         setCompanySize(p.companySize || '');
         setCompanyIndustry(p.companyIndustry || '');
+        setStockSymbol(p.stockSymbol || '');
+        setIsPubliclyTraded(p.isPubliclyTraded || false);
         setSportsPlayed(p.sportsPlayed || '');
         setActivities(p.activities || '');
 
@@ -167,6 +173,8 @@ export default function SettingsPage() {
           companyWebsite: companyWebsite || undefined,
           companySize: companySize || undefined,
           companyIndustry: companyIndustry || undefined,
+          stockSymbol: stockSymbol || undefined,
+          isPubliclyTraded: isPubliclyTraded,
           sportsPlayed: sportsPlayed || undefined,
           activities: activities || undefined,
         }),
@@ -446,6 +454,39 @@ export default function SettingsPage() {
                   placeholder="e.g. Technology, Finance, Healthcare"
                 />
               </div>
+
+              <Separator className="my-2" />
+              <div className="flex items-center gap-2 mb-2">
+                <h4 className="text-sm font-semibold text-slate-700 dark:text-slate-300">Stock &amp; Public Company Info</h4>
+              </div>
+
+              <div className="flex items-center gap-6 mb-3">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={isPubliclyTraded}
+                    onChange={(e) => setIsPubliclyTraded(e.target.checked)}
+                    className="rounded border-slate-300"
+                  />
+                  <span className="text-sm">Publicly traded company</span>
+                </label>
+              </div>
+
+              {isPubliclyTraded && (
+                <div className="space-y-2">
+                  <Label htmlFor="stockSymbol">Stock Ticker Symbol</Label>
+                  <Input
+                    id="stockSymbol"
+                    value={stockSymbol}
+                    onChange={(e) => setStockSymbol(e.target.value.toUpperCase())}
+                    placeholder="e.g. AAPL, MSFT, GOOGL"
+                    className="max-w-xs"
+                  />
+                  <p className="text-xs text-slate-400">
+                    Students will see a link to live stock performance and news
+                  </p>
+                </div>
+              )}
             </>
           )}
 
@@ -847,6 +888,24 @@ export default function SettingsPage() {
                     <p className="font-medium text-slate-700 dark:text-slate-200">{companySize} employees</p>
                   </div>
                 )}
+                <div className="flex items-center gap-2">
+                  {isPubliclyTraded ? (
+                    <>
+                      {stockSymbol && (
+                        <Badge className="bg-blue-100 text-blue-700 border-0">
+                          {stockSymbol}
+                        </Badge>
+                      )}
+                      <Badge variant="outline" className="border-green-300 text-green-700">
+                        Publicly Traded
+                      </Badge>
+                    </>
+                  ) : (
+                    <Badge variant="outline" className="border-slate-300 text-slate-600">
+                      Privately Held
+                    </Badge>
+                  )}
+                </div>
                 {!companyName && !jobTitle && !department && !companyDescription && !companyWebsite && !companyIndustry && !companySize && (
                   <p className="text-slate-400 italic">Complete your company profile to see a preview</p>
                 )}

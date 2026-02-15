@@ -40,6 +40,10 @@ interface Corporate {
   name: string;
   email: string;
   companyName: string | null;
+  companyWebsite: string | null;
+  companyIndustry: string | null;
+  stockSymbol: string | null;
+  isPubliclyTraded: boolean;
   isActive: boolean;
   approvalStatus: string;
   avgRating: number | null;
@@ -203,6 +207,22 @@ export default function EducationCorporatesPage() {
                     {corp.companyName && (
                       <p className="text-xs text-slate-500 flex items-center gap-1 mt-0.5">
                         <Briefcase className="h-3 w-3" /> {corp.companyName}
+                        {corp.companyWebsite && (
+                          <a
+                            href={corp.companyWebsite.startsWith('http') ? corp.companyWebsite : `https://${corp.companyWebsite}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-teal-600 hover:underline ml-1"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            (website)
+                          </a>
+                        )}
+                        {corp.isPubliclyTraded && corp.stockSymbol ? (
+                          <span className="text-blue-600 font-medium ml-1">${corp.stockSymbol}</span>
+                        ) : (
+                          <span className="text-slate-400 ml-1">(Private)</span>
+                        )}
                       </p>
                     )}
                   </div>

@@ -60,7 +60,9 @@ export async function GET(request: NextRequest) {
         l.requires_nda, l.skills_required, l.published_at, l.created_at,
         u.id as author_id, u.first_name as author_first_name,
         u.last_name as author_last_name, u.display_name as author_display_name,
+        u.company_name as author_company_name,
         u.metadata as author_metadata,
+        u.public_data as author_public_data,
         (SELECT COUNT(*) FROM project_applications pa WHERE pa.listing_id = l.id) as application_count
       FROM listings l
       JOIN users u ON u.id = l.author_id
@@ -92,15 +94,14 @@ export async function GET(request: NextRequest) {
     let authorRatings: Record<string, { avg: number; count: number }> = {};
     if (authorIds.length > 0) {
       const ratings = await sql`
-        SELECT assessor_id, AVG(overall_average) as avg_rating, COUNT(*) as rating_count
-        FROM assessments
-        WHERE assessor_id = ANY(${authorIds})
-          AND overall_average IS NOT NULL
-        GROUP BY assessor_id
+        SELECT corporate_id, AVG(rating)::numeric(3,2) as avg_rating, COUNT(*) as rating_count
+        FROM corporate_ratings
+        WHERE corporate_id = ANY(${authorIds})
+        GROUP BY corporate_id
       `;
       authorRatings = Object.fromEntries(
         ratings.map((r: Record<string, unknown>) => [
-          r.assessor_id as string,
+          r.corporate_id as string,
           { avg: Number(r.avg_rating), count: Number(r.rating_count) },
         ])
       );
@@ -109,6 +110,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       listings: listings.map((l: Record<string, unknown>) => {
         const authorMeta = (l.author_metadata || {}) as Record<string, unknown>;
+        const authorPublicData = (l.author_public_data || {}) as Record<string, unknown>;
         const rating = authorRatings[l.author_id as string];
         return {
           id: l.id,
@@ -133,6 +135,10 @@ export async function GET(request: NextRequest) {
             firstName: l.author_first_name,
             lastName: l.author_last_name,
             displayName: l.author_display_name,
+            companyName: (l.author_company_name as string) || null,
+            companyWebsite: (authorPublicData.companyWebsite as string) || null,
+            stockSymbol: (authorPublicData.stockSymbol as string) || null,
+            isPubliclyTraded: (authorPublicData.isPubliclyTraded as boolean) ?? false,
             alumniOf: (authorMeta.alumniOf as string) || null,
             sportsPlayed: (authorMeta.sportsPlayed as string) || null,
             avgRating: rating?.avg || null,

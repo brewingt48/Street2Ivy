@@ -29,7 +29,7 @@ export async function GET(request: NextRequest) {
       const pattern = `%${q}%`;
       users = await sql`
         SELECT u.id, u.display_name, u.email, u.company_name, u.is_active,
-               u.metadata, u.created_at,
+               u.metadata, u.public_data, u.created_at,
                COUNT(DISTINCT l.id) as listing_count
         FROM users u
         LEFT JOIN listings l ON l.author_id = u.id
@@ -49,7 +49,7 @@ export async function GET(request: NextRequest) {
     } else {
       users = await sql`
         SELECT u.id, u.display_name, u.email, u.company_name, u.is_active,
-               u.metadata, u.created_at,
+               u.metadata, u.public_data, u.created_at,
                COUNT(DISTINCT l.id) as listing_count
         FROM users u
         LEFT JOIN listings l ON l.author_id = u.id
@@ -71,15 +71,14 @@ export async function GET(request: NextRequest) {
     let ratingsMap: Record<string, { avg: number; count: number }> = {};
     if (corporateIds.length > 0) {
       const ratings = await sql`
-        SELECT assessor_id, AVG(overall_average) as avg_rating, COUNT(*) as rating_count
-        FROM assessments
-        WHERE assessor_id = ANY(${corporateIds})
-          AND overall_average IS NOT NULL
-        GROUP BY assessor_id
+        SELECT corporate_id, AVG(rating)::numeric(3,2) as avg_rating, COUNT(*) as rating_count
+        FROM corporate_ratings
+        WHERE corporate_id = ANY(${corporateIds})
+        GROUP BY corporate_id
       `;
       ratingsMap = Object.fromEntries(
         ratings.map((r: Record<string, unknown>) => [
-          r.assessor_id as string,
+          r.corporate_id as string,
           { avg: Number(r.avg_rating), count: Number(r.rating_count) },
         ])
       );
@@ -88,12 +87,17 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       corporates: users.map((u: Record<string, unknown>) => {
         const metadata = (u.metadata || {}) as Record<string, unknown>;
+        const publicData = (u.public_data || {}) as Record<string, unknown>;
         const rating = ratingsMap[u.id as string];
         return {
           id: u.id,
           name: u.display_name,
           email: u.email,
           companyName: u.company_name,
+          companyWebsite: (publicData.companyWebsite as string) || null,
+          companyIndustry: (publicData.companyIndustry as string) || null,
+          stockSymbol: (publicData.stockSymbol as string) || null,
+          isPubliclyTraded: (publicData.isPubliclyTraded as boolean) ?? false,
           isActive: u.is_active,
           approvalStatus: (metadata.approvalStatus as string) || 'approved',
           avgRating: rating?.avg || null,

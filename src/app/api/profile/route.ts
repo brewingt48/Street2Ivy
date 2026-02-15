@@ -25,6 +25,8 @@ const updateProfileSchema = z.object({
   companyWebsite: z.string().max(500).optional(),
   companySize: z.string().max(100).optional(),
   companyIndustry: z.string().max(200).optional(),
+  stockSymbol: z.string().max(20).optional(),
+  isPubliclyTraded: z.boolean().optional(),
   sportsPlayed: z.string().max(500).optional(),
   activities: z.string().max(500).optional(),
 });
@@ -96,6 +98,8 @@ export async function GET() {
         companyWebsite: (user.public_data as any)?.companyWebsite || null,
         companySize: (user.public_data as any)?.companySize || null,
         companyIndustry: (user.public_data as any)?.companyIndustry || null,
+        stockSymbol: (user.public_data as any)?.stockSymbol || null,
+        isPubliclyTraded: (user.public_data as any)?.isPubliclyTraded ?? null,
         sportsPlayed: (user.metadata as any)?.sportsPlayed || null,
         activities: (user.metadata as any)?.activities || null,
         createdAt: user.created_at,
@@ -153,7 +157,7 @@ export async function PATCH(request: NextRequest) {
     }
 
     // Handle public_data fields (merge with existing)
-    const publicDataFields = ['companyDescription', 'companyWebsite', 'companySize', 'companyIndustry'];
+    const publicDataFields = ['companyDescription', 'companyWebsite', 'companySize', 'companyIndustry', 'stockSymbol', 'isPubliclyTraded'];
     const publicDataUpdates: Record<string, unknown> = {};
     for (const field of publicDataFields) {
       if ((data as Record<string, unknown>)[field] !== undefined) {

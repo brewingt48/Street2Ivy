@@ -29,6 +29,8 @@ import {
   Home,
   HelpCircle,
   TrendingUp,
+  Mail,
+  AlertTriangle,
 } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
@@ -111,12 +113,14 @@ function getNavItems(role: string): NavSection[] {
             { href: '/dashboard/analytics', label: 'Analytics', icon: TrendingUp },
             { href: '/projects', label: 'Browse Projects', icon: Search },
             { href: '/applications', label: 'My Applications', icon: FileText },
+            { href: '/invites', label: 'Invites', icon: Mail },
             { href: '/inbox', label: 'Messages', icon: Inbox },
           ],
         },
         {
           title: 'Account',
           items: [
+            { href: '/report-issue', label: 'Report Issue', icon: AlertTriangle },
             { href: '/settings', label: 'Settings', icon: Settings },
           ],
         },
@@ -150,6 +154,7 @@ function getNavItems(role: string): NavSection[] {
             { href: '/education/analytics', label: 'Analytics', icon: TrendingUp },
             { href: '/education/students', label: 'Students', icon: GraduationCap },
             { href: '/education/corporates', label: 'Corporate Partners', icon: Briefcase },
+            { href: '/education/reports', label: 'Issue Reports', icon: AlertTriangle },
             { href: '/education/waitlist', label: 'Waitlist', icon: ClipboardList },
             { href: '/inbox', label: 'Messages', icon: Inbox },
           ],

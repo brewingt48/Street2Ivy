@@ -29,7 +29,9 @@ export async function GET(request: NextRequest) {
       students = await sql`
         SELECT u.id, u.display_name, u.email, u.university, u.major, u.graduation_year,
                u.gpa, u.is_active, u.created_at,
-               (SELECT COUNT(*) FROM project_applications pa WHERE pa.student_id = u.id) as application_count
+               (SELECT COUNT(*) FROM project_applications pa WHERE pa.student_id = u.id) as application_count,
+               (SELECT AVG(rating)::numeric(3,2) FROM student_ratings sr WHERE sr.student_id = u.id) as avg_private_rating,
+               (SELECT COUNT(*) FROM student_ratings sr WHERE sr.student_id = u.id) as private_rating_count
         FROM users u
         WHERE u.role = 'student'
           AND u.tenant_id = ${tenantId}
@@ -48,7 +50,9 @@ export async function GET(request: NextRequest) {
       students = await sql`
         SELECT u.id, u.display_name, u.email, u.university, u.major, u.graduation_year,
                u.gpa, u.is_active, u.created_at,
-               (SELECT COUNT(*) FROM project_applications pa WHERE pa.student_id = u.id) as application_count
+               (SELECT COUNT(*) FROM project_applications pa WHERE pa.student_id = u.id) as application_count,
+               (SELECT AVG(rating)::numeric(3,2) FROM student_ratings sr WHERE sr.student_id = u.id) as avg_private_rating,
+               (SELECT COUNT(*) FROM student_ratings sr WHERE sr.student_id = u.id) as private_rating_count
         FROM users u
         WHERE u.role = 'student'
           AND u.tenant_id = ${tenantId}
@@ -73,6 +77,8 @@ export async function GET(request: NextRequest) {
         isActive: s.is_active,
         createdAt: s.created_at,
         applicationCount: parseInt(s.application_count as string),
+        avgPrivateRating: s.avg_private_rating ? Number(s.avg_private_rating) : null,
+        privateRatingCount: parseInt(s.private_rating_count as string) || 0,
       })),
       total,
       page,

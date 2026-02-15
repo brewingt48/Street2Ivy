@@ -370,6 +370,51 @@ CREATE INDEX idx_assessments_student ON assessments(student_id);
 CREATE INDEX idx_assessments_transaction ON assessments(transaction_id);
 
 -- ============================================================================
+-- 14b. CORPORATE_RATINGS — Public ratings students give to corporate partners
+-- ============================================================================
+
+CREATE TABLE corporate_ratings (
+  id                UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  application_id    UUID NOT NULL REFERENCES project_applications(id) ON DELETE CASCADE,
+  student_id        UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  corporate_id      UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  listing_id        UUID REFERENCES listings(id) ON DELETE SET NULL,
+  project_title     TEXT,
+  rating            INTEGER NOT NULL CHECK (rating >= 1 AND rating <= 5),
+  review_text       TEXT,
+  created_at        TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  UNIQUE (application_id, student_id)
+);
+
+CREATE INDEX idx_corporate_ratings_corporate ON corporate_ratings(corporate_id);
+CREATE INDEX idx_corporate_ratings_student ON corporate_ratings(student_id);
+CREATE INDEX idx_corporate_ratings_application ON corporate_ratings(application_id);
+
+-- ============================================================================
+-- 14c. STUDENT_RATINGS — Private ratings corporate partners give to students
+-- ============================================================================
+
+CREATE TABLE student_ratings (
+  id                    UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  application_id        UUID NOT NULL REFERENCES project_applications(id) ON DELETE CASCADE,
+  student_id            UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  corporate_id          UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  listing_id            UUID REFERENCES listings(id) ON DELETE SET NULL,
+  project_title         TEXT,
+  rating                INTEGER NOT NULL CHECK (rating >= 1 AND rating <= 5),
+  review_text           TEXT,
+  strengths             TEXT,
+  areas_for_improvement TEXT,
+  recommend_for_future  BOOLEAN DEFAULT FALSE,
+  created_at            TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  UNIQUE (application_id, corporate_id)
+);
+
+CREATE INDEX idx_student_ratings_student ON student_ratings(student_id);
+CREATE INDEX idx_student_ratings_corporate ON student_ratings(corporate_id);
+CREATE INDEX idx_student_ratings_application ON student_ratings(application_id);
+
+-- ============================================================================
 -- 15. BLOCKED_COACHING_STUDENTS — AI coaching blocklist
 -- ============================================================================
 
