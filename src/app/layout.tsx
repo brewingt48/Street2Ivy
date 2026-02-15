@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { DM_Sans, Playfair_Display } from 'next/font/google';
+import { DM_Sans, Playfair_Display, Bebas_Neue } from 'next/font/google';
 import { ThemeProvider } from '@/components/theme/theme-provider';
 import './globals.css';
 
@@ -11,6 +11,12 @@ const dmSans = DM_Sans({
 const playfair = Playfair_Display({
   subsets: ['latin'],
   variable: '--font-playfair',
+});
+
+const bebasNeue = Bebas_Neue({
+  weight: '400',
+  subsets: ['latin'],
+  variable: '--font-bebas',
 });
 
 export const metadata: Metadata = {
@@ -40,7 +46,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" suppressHydrationWarning className={`${dmSans.variable} ${playfair.variable}`}>
+    <html lang="en" suppressHydrationWarning className={`${dmSans.variable} ${playfair.variable} ${bebasNeue.variable}`}>
       <body className={dmSans.className}>
         <ThemeProvider
           attribute="class"

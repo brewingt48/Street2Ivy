@@ -18,6 +18,7 @@ const config: Config = {
       fontFamily: {
         sans: ['var(--font-dm-sans)', 'system-ui', 'sans-serif'],
         serif: ['var(--font-playfair)', 'Georgia', 'serif'],
+        display: ['var(--font-bebas)', 'Impact', 'sans-serif'],
       },
       colors: {
         border: 'hsl(var(--border))',
