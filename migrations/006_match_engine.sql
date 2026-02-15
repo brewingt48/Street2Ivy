@@ -1,5 +1,5 @@
 -- Migration 006: ProveGround Match Engine™
--- Creates all tables for the 6-signal bi-directional schedule-aware matching algorithm
+-- Creates all tables for the proprietary bi-directional schedule-aware matching algorithm
 --
 -- Tables created:
 --   sport_seasons, academic_calendars, student_schedules,

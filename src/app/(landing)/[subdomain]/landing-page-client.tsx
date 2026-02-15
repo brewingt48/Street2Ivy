@@ -1,6 +1,7 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { useState, useEffect, useRef } from 'react';
+import { motion, useInView } from 'framer-motion';
 import {
   Search,
   Sparkles,
@@ -18,6 +19,10 @@ import {
   Target,
   Trophy,
   Handshake,
+  Lock,
+  Share2,
+  Brain,
+  MessageSquare,
 } from 'lucide-react';
 
 /* --- Types --- */
@@ -116,7 +121,7 @@ export function LandingPageClient({ tenant, stats, partners }: LandingPageClient
     'You didn\u2019t train this hard to sit on the sideline.';
   const subheadline =
     tenant.hero_subheadline ??
-    'AI is reshaping every industry. The skills it can\u2019t replace \u2014 discipline, leadership, judgment \u2014 are the ones you\u2019ve already built. Turn your competitive edge into career momentum.';
+    'The discipline, resilience, and leadership you\u2019ve built through competition are exactly what the world needs now. Turn your competitive edge into career momentum \u2014 and prove what you\u2019re made of.';
 
   const studentCount = Number(stats.student_count) || 0;
   const listingCount = Number(stats.listing_count) || 0;
@@ -407,7 +412,7 @@ export function LandingPageClient({ tenant, stats, partners }: LandingPageClient
             className="text-center mb-14"
           >
             <motion.h2 variants={fadeUp} className="text-3xl sm:text-4xl font-bold mb-4">
-              Three audiences. One proving ground.
+              Three paths. One destination.
             </motion.h2>
           </motion.div>
 
@@ -431,7 +436,7 @@ export function LandingPageClient({ tenant, stats, partners }: LandingPageClient
               </div>
               <h3 className="text-xl font-semibold mb-3">For Students</h3>
               <p className="text-gray-500 leading-relaxed mb-4">
-                Stop waiting. Start proving. Access real projects from alumni and corporate partners. Build a verified track record. Step into your career with proof, not promises.
+                Your work speaks for itself. Access real projects and internships from alumni and industry leaders who believe in what you can do. Build a verified portfolio that opens doors no r&eacute;sum&eacute; alone ever could.
               </p>
               <a
                 href={`/register?tenant=${tenant.subdomain}&role=student`}
@@ -455,7 +460,7 @@ export function LandingPageClient({ tenant, stats, partners }: LandingPageClient
               </div>
               <h3 className="text-xl font-semibold mb-3">For Alumni &amp; Partners</h3>
               <p className="text-gray-500 leading-relaxed mb-4">
-                Invest in the next class. Post real project work for the students coming up behind you. Find your next hire through a scoped engagement before making a full commitment.
+                Shape the talent pipeline. Post meaningful project work for the next generation of professionals. Discover top talent through real engagement &mdash; and build lasting relationships that benefit everyone.
               </p>
               <a
                 href={`/register?tenant=${tenant.subdomain}&role=alumni`}
@@ -479,7 +484,7 @@ export function LandingPageClient({ tenant, stats, partners }: LandingPageClient
               </div>
               <h3 className="text-xl font-semibold mb-3">For Programs</h3>
               <p className="text-gray-500 leading-relaxed mb-4">
-                Move first. Lead the shift. Launch a fully branded marketplace filled with real internships and projects. Give your students a new path forward while AI rewrites the rules.
+                Lead with vision. Launch a fully branded talent marketplace that connects your students to real-world opportunity. Position your program at the forefront of what modern career development looks like.
               </p>
               <a
                 href="/for-universities"
@@ -703,44 +708,118 @@ export function LandingPageClient({ tenant, stats, partners }: LandingPageClient
       )}
 
       {/* ================================================================
-          SECTION 8 -- NETWORK EFFECT CALLOUT
+          SECTION 8 -- AI COACHING (feature-gated)
+         ================================================================ */}
+      {!!tenant.features?.aiCoaching && (
+        <AICoachingSection primary={primary} subdomain={tenant.subdomain} />
+      )}
+
+      {/* ================================================================
+          SECTION 8.5 -- NETWORK ECOSYSTEM
          ================================================================ */}
       <section className="py-20 px-6 bg-white">
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-6xl mx-auto">
           <motion.div
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, amount: 0.3 }}
             variants={stagger}
-            className="text-center"
+            className="text-center mb-14"
           >
-            <motion.h2 variants={fadeUp} className="text-3xl sm:text-4xl font-bold mb-6">
-              One program starts it. The network multiplies it.
+            <motion.h2 variants={fadeUp} className="text-3xl sm:text-4xl font-bold mb-4">
+              Stronger together.
             </motion.h2>
             <motion.p
               variants={fadeUp}
-              className="text-gray-500 text-lg leading-relaxed max-w-3xl mx-auto mb-8"
+              className="text-gray-500 text-lg leading-relaxed max-w-3xl mx-auto"
             >
               When {displayName} launches its marketplace, it connects to the entire Proveground
-              Network &mdash; a cross-program, cross-school talent pipeline that compounds with
-              every new partner and every completed project.
+              ecosystem &mdash; a unified talent network where institutions, alumni, and industry
+              partners share opportunities and grow together.
             </motion.p>
-            <motion.div variants={fadeUp} className="flex flex-wrap justify-center gap-6">
-              {[
-                { icon: <Trophy className="h-5 w-5" />, label: 'Athletic Programs' },
-                { icon: <Shield className="h-5 w-5" />, label: 'Career Services' },
-                { icon: <Users className="h-5 w-5" />, label: 'Alumni Networks' },
-                { icon: <Globe className="h-5 w-5" />, label: 'Proveground Network' },
-              ].map((item) => (
-                <div
-                  key={item.label}
-                  className="flex items-center gap-2 px-4 py-2 rounded-full bg-gray-50 border border-gray-200"
-                >
-                  <span style={{ color: primary }}>{item.icon}</span>
-                  <span className="text-sm font-medium text-gray-700">{item.label}</span>
-                </div>
-              ))}
+          </motion.div>
+
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.2 }}
+            variants={stagger}
+            className="grid md:grid-cols-3 gap-8 mb-12"
+          >
+            {/* Exclusive */}
+            <motion.div
+              variants={fadeUp}
+              className="bg-gray-50 rounded-2xl p-8 border border-gray-100 hover:shadow-lg transition-shadow"
+            >
+              <div
+                className="inline-flex items-center justify-center w-14 h-14 rounded-full mb-5"
+                style={{ backgroundColor: `${primary}15` }}
+              >
+                <Lock className="h-7 w-7" style={{ color: primary }} />
+              </div>
+              <h3 className="text-xl font-semibold mb-3">Exclusive Opportunities</h3>
+              <p className="text-gray-500 leading-relaxed">
+                Your marketplace is private to your program. Listings are visible only to your students, vetted by your team. Quality and trust, by design.
+              </p>
             </motion.div>
+
+            {/* Network Sharing */}
+            <motion.div
+              variants={fadeUp}
+              className="bg-gray-50 rounded-2xl p-8 border border-gray-100 hover:shadow-lg transition-shadow"
+            >
+              <div
+                className="inline-flex items-center justify-center w-14 h-14 rounded-full mb-5"
+                style={{ backgroundColor: `${primary}15` }}
+              >
+                <Share2 className="h-7 w-7" style={{ color: primary }} />
+              </div>
+              <h3 className="text-xl font-semibold mb-3">Network Sharing</h3>
+              <p className="text-gray-500 leading-relaxed">
+                Choose to share select opportunities across the Proveground network. Partner institutions see what you publish, and you see theirs &mdash; expanding reach while preserving control.
+              </p>
+            </motion.div>
+
+            {/* Open Ecosystem */}
+            <motion.div
+              variants={fadeUp}
+              className="bg-gray-50 rounded-2xl p-8 border border-gray-100 hover:shadow-lg transition-shadow"
+            >
+              <div
+                className="inline-flex items-center justify-center w-14 h-14 rounded-full mb-5"
+                style={{ backgroundColor: `${primary}15` }}
+              >
+                <Globe className="h-7 w-7" style={{ color: primary }} />
+              </div>
+              <h3 className="text-xl font-semibold mb-3">Open Ecosystem</h3>
+              <p className="text-gray-500 leading-relaxed">
+                Corporate partners and alumni post directly into the network. Every institution connected to Proveground gains access &mdash; creating a talent pipeline that grows stronger together.
+              </p>
+            </motion.div>
+          </motion.div>
+
+          {/* Credibility strip */}
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.3 }}
+            variants={fadeUp}
+            className="flex flex-wrap justify-center gap-6"
+          >
+            {([
+              { Icon: Trophy, label: 'Athletic Programs' },
+              { Icon: Shield, label: 'Career Services' },
+              { Icon: Users, label: 'Alumni Networks' },
+              { Icon: Globe, label: 'Proveground Network' },
+            ] as const).map((item) => (
+              <div
+                key={item.label}
+                className="flex items-center gap-2 px-4 py-2 rounded-full bg-gray-50 border border-gray-200"
+              >
+                <item.Icon className="h-5 w-5" style={{ color: primary }} />
+                <span className="text-sm font-medium text-gray-700">{item.label}</span>
+              </div>
+            ))}
           </motion.div>
         </div>
       </section>
@@ -773,8 +852,8 @@ export function LandingPageClient({ tenant, stats, partners }: LandingPageClient
             className="text-lg mb-10 max-w-xl mx-auto"
             style={{ color: `${secondary}bb` }}
           >
-            Students, partners, and programs who move now won&rsquo;t just keep up &mdash;
-            they&rsquo;ll set the pace.
+            Where talent is proven, not presumed. Students, partners, and programs
+            building the future &mdash; together.
           </motion.p>
 
           <motion.div variants={fadeUp} className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -815,5 +894,163 @@ export function LandingPageClient({ tenant, stats, partners }: LandingPageClient
         </p>
       </footer>
     </div>
+  );
+}
+
+/* ================================================================
+   AI COACHING SUB-COMPONENT — renders when aiCoaching feature is on
+   ================================================================ */
+
+const coachMessages = [
+  {
+    type: 'user' as const,
+    text: 'I have a consulting project presentation next week and I\u2019ve never presented to a C-suite audience before.',
+  },
+  {
+    type: 'coach' as const,
+    text: 'Let\u2019s get you ready. C-suite audiences care about three things: bottom-line impact, risk profile, and timeline. Let\u2019s restructure your deck around those pillars.',
+  },
+  {
+    type: 'user' as const,
+    text: 'Can we start with the opening?',
+  },
+];
+
+function AICoachingSection({ primary, subdomain }: { primary: string; subdomain: string }) {
+  const ref = useRef(null);
+  const isInView = useInView(ref, { once: true, amount: 0.3 });
+  const [showTyping, setShowTyping] = useState(false);
+
+  useEffect(() => {
+    if (isInView) {
+      const timer = setTimeout(() => setShowTyping(true), 2200);
+      return () => clearTimeout(timer);
+    }
+  }, [isInView]);
+
+  return (
+    <section ref={ref} className="py-20 px-6 bg-gray-50">
+      <div className="max-w-6xl mx-auto">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+          {/* Left — Copy */}
+          <div>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={isInView ? { opacity: 1, y: 0 } : {}}
+              transition={{ duration: 0.5 }}
+              className="flex items-center gap-3 mb-4"
+            >
+              <span className="text-sm font-semibold uppercase tracking-widest" style={{ color: primary }}>
+                AI-Powered
+              </span>
+              <span className="text-gray-300 text-xs">|</span>
+              <span className="text-gray-400 text-xs font-medium tracking-wide">
+                Powered by Anthropic
+              </span>
+            </motion.div>
+
+            <motion.h2
+              initial={{ opacity: 0, y: 20 }}
+              animate={isInView ? { opacity: 1, y: 0 } : {}}
+              transition={{ duration: 0.6, delay: 0.1 }}
+              className="text-3xl sm:text-4xl font-bold mb-5 leading-tight"
+            >
+              AI should prepare you for the future, not replace you.
+            </motion.h2>
+
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              animate={isInView ? { opacity: 1, y: 0 } : {}}
+              transition={{ duration: 0.6, delay: 0.2 }}
+              className="text-gray-500 text-base leading-relaxed mb-6"
+            >
+              Personalized career coaching powered by Anthropic&rsquo;s Claude &mdash; from interview
+              prep to project strategy. Not a chatbot. A coach that meets you where you are.
+            </motion.p>
+
+            <motion.a
+              initial={{ opacity: 0, y: 20 }}
+              animate={isInView ? { opacity: 1, y: 0 } : {}}
+              transition={{ duration: 0.6, delay: 0.3 }}
+              href={`/register?tenant=${subdomain}&role=student`}
+              className="inline-flex items-center gap-2 font-semibold transition-colors group"
+              style={{ color: primary }}
+            >
+              Explore AI Coaching
+              <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+            </motion.a>
+          </div>
+
+          {/* Right — Chat mockup */}
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={isInView ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.7, delay: 0.2 }}
+            className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm"
+          >
+            {/* Chat header */}
+            <div className="flex items-center justify-between mb-5 pb-4 border-b border-gray-200">
+              <div className="flex items-center gap-3">
+                <div
+                  className="w-8 h-8 rounded-full flex items-center justify-center"
+                  style={{ backgroundColor: `${primary}15` }}
+                >
+                  <Sparkles className="h-4 w-4" style={{ color: primary }} />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-gray-900">Proveground Coach</p>
+                  <p className="text-xs text-green-500 flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-green-500 inline-block" />
+                    Online
+                  </p>
+                </div>
+              </div>
+              <span className="text-[10px] text-gray-400 font-medium tracking-wide uppercase">
+                Powered by Anthropic
+              </span>
+            </div>
+
+            {/* Messages */}
+            <div className="space-y-3">
+              {coachMessages.map((msg, i) => (
+                <motion.div
+                  key={i}
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={isInView ? { opacity: 1, y: 0 } : {}}
+                  transition={{ duration: 0.4, delay: 0.5 + i * 0.25 }}
+                  className={`flex ${msg.type === 'user' ? 'justify-end' : 'justify-start'}`}
+                >
+                  <div
+                    className={`max-w-[85%] rounded-2xl px-4 py-3 text-sm leading-relaxed ${
+                      msg.type === 'user'
+                        ? 'bg-gray-100 text-gray-900 rounded-br-md'
+                        : 'bg-white text-gray-700 border border-gray-200 rounded-bl-md shadow-sm'
+                    }`}
+                  >
+                    {msg.text}
+                  </div>
+                </motion.div>
+              ))}
+
+              {showTyping && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="flex justify-start"
+                >
+                  <div className="bg-white border border-gray-200 rounded-2xl rounded-bl-md px-4 py-3 shadow-sm">
+                    <div className="flex gap-1.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-gray-300 animate-bounce [animation-delay:0ms]" />
+                      <span className="w-1.5 h-1.5 rounded-full bg-gray-300 animate-bounce [animation-delay:150ms]" />
+                      <span className="w-1.5 h-1.5 rounded-full bg-gray-300 animate-bounce [animation-delay:300ms]" />
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </div>
+          </motion.div>
+        </div>
+      </div>
+    </section>
   );
 }

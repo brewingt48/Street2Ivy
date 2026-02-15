@@ -36,8 +36,12 @@ import {
   User,
   Star,
   Mail,
+  Calendar,
+  Target,
 } from 'lucide-react';
 import { HelpSupportCard } from '@/components/shared/help-support-card';
+import { MatchScoreBadge } from '@/components/matching/MatchScoreBadge';
+import { MatchBreakdown } from '@/components/matching/MatchBreakdown';
 
 interface DashboardData {
   stats: {
@@ -83,8 +87,21 @@ interface Recommendation {
   compensation: string | null;
   remoteAllowed: boolean;
   matchScore: number;
+  matchBreakdown: {
+    skillMatch: number;
+    categoryAffinity: number;
+    availability: number;
+    recencyBoost: number;
+    successHistory: number;
+  };
   matchedSkills: string[];
   missingSkills: string[];
+}
+
+interface TenantFeatures {
+  matchEngine?: boolean;
+  matchEngineSchedule?: boolean;
+  [key: string]: unknown;
 }
 
 const statusConfig: Record<string, { label: string; color: string; icon: typeof Clock }> = {
@@ -102,6 +119,8 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [userName, setUserName] = useState('');
   const [institution, setInstitution] = useState<{domain: string; name: string; ai_coaching_enabled: boolean; ai_coaching_url: string} | null>(null);
+  const [tenantFeatures, setTenantFeatures] = useState<TenantFeatures>({});
+  const [expandedRec, setExpandedRec] = useState<string | null>(null);
 
   useEffect(() => {
     Promise.all([
@@ -109,14 +128,16 @@ export default function DashboardPage() {
       fetch('/api/auth/me').then((r) => r.json()),
       fetch('/api/matching?type=projects&limit=6').then((r) => r.json()).catch(() => ({ recommendations: [] })),
       fetch('/api/profile').then((r) => r.json()).catch(() => ({})),
+      fetch('/api/tenant/features').then((r) => r.json()).catch(() => ({ features: {} })),
     ])
-      .then(([dashboard, auth, matching, profileData]) => {
+      .then(([dashboard, auth, matching, profileData, featuresData]) => {
         setData(dashboard);
         setUserName(auth.user?.firstName || '');
         setRecommendations(matching.recommendations || []);
         if (profileData.institution) {
           setInstitution(profileData.institution);
         }
+        setTenantFeatures(featuresData.features || {});
       })
       .catch(console.error)
       .finally(() => setLoading(false));
@@ -321,16 +342,49 @@ export default function DashboardPage() {
         </Link>
       </div>
 
+      {/* Match Engine™ Schedule Card — only for athletic tenants */}
+      {tenantFeatures.matchEngineSchedule && (
+        <Card className="border-teal-200 dark:border-teal-800 bg-gradient-to-r from-teal-50 to-emerald-50 dark:from-teal-900/20 dark:to-emerald-900/20">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Calendar className="h-5 w-5 text-teal-600" />
+              My Schedule
+            </CardTitle>
+            <CardDescription>
+              Manage your sport seasons, academic calendar, and availability to improve your match scores.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button
+              className="bg-teal-600 hover:bg-teal-700"
+              onClick={() => router.push('/student/schedule')}
+            >
+              <Calendar className="h-4 w-4 mr-2" />
+              Manage Schedule
+              <ArrowRight className="ml-2 h-4 w-4" />
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Recommended Projects — Smart Matching */}
       {recommendations.length > 0 && (
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
             <div>
               <CardTitle className="flex items-center gap-2">
-                <Sparkles className="h-5 w-5 text-amber-500" />
+                {tenantFeatures.matchEngine ? (
+                  <Target className="h-5 w-5 text-teal-600" />
+                ) : (
+                  <Sparkles className="h-5 w-5 text-amber-500" />
+                )}
                 Recommended For You
               </CardTitle>
-              <CardDescription>These projects are suggested by our matching algorithm based on your skills, past application history, and availability. Higher match scores mean better skill alignment.</CardDescription>
+              <CardDescription>
+                {tenantFeatures.matchEngine
+                  ? 'Projects matched using our proprietary Match Engine\u2122 based on your skills, schedule, and career trajectory.'
+                  : 'Projects suggested by our matching algorithm based on your skills, past application history, and availability.'}
+              </CardDescription>
             </div>
             <Link href="/projects">
               <Button variant="ghost" size="sm">
@@ -351,12 +405,9 @@ export default function DashboardPage() {
                       {rec.title}
                     </h3>
                     <div className="flex flex-col items-end ml-2 flex-shrink-0">
-                      <Badge className="bg-teal-50 text-teal-700 border-0 text-xs">
-                        <TrendingUp className="h-3 w-3 mr-1" />
-                        {rec.matchScore}%
-                      </Badge>
+                      <MatchScoreBadge score={rec.matchScore} size="sm" />
                       <span className="text-[10px] text-slate-400 mt-0.5">
-                        {rec.matchedSkills.length} of {rec.matchedSkills.length + rec.missingSkills.length} required skills
+                        {rec.matchedSkills.length} of {rec.matchedSkills.length + rec.missingSkills.length} skills
                       </span>
                     </div>
                   </div>
@@ -386,6 +437,38 @@ export default function DashboardPage() {
                       </span>
                     )}
                   </div>
+
+                  {/* Expandable Match Breakdown — Match Engine™ only */}
+                  {tenantFeatures.matchEngine && expandedRec === rec.listingId && (
+                    <div className="mt-3 pt-3 border-t border-slate-100 dark:border-slate-800" onClick={(e) => e.stopPropagation()}>
+                      <MatchBreakdown
+                        compositeScore={rec.matchScore}
+                        signals={[
+                          { name: 'skills', score: (rec.matchBreakdown?.skillMatch || 0) / 100, weight: 0.30 },
+                          { name: 'temporal', score: (rec.matchBreakdown?.availability || 0) / 100, weight: 0.25 },
+                          { name: 'sustainability', score: 0.5, weight: 0.15 },
+                          { name: 'growth', score: (rec.matchBreakdown?.recencyBoost || 0) / 100, weight: 0.10 },
+                          { name: 'trust', score: (rec.matchBreakdown?.successHistory || 0) / 100, weight: 0.10 },
+                          { name: 'network', score: (rec.matchBreakdown?.categoryAffinity || 0) / 100, weight: 0.10 },
+                        ]}
+                        matchedSkills={rec.matchedSkills}
+                        missingSkills={rec.missingSkills}
+                        defaultExpanded
+                      />
+                    </div>
+                  )}
+
+                  {tenantFeatures.matchEngine && (
+                    <button
+                      className="mt-2 text-xs text-teal-600 hover:text-teal-700 dark:text-teal-400 font-medium"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setExpandedRec(expandedRec === rec.listingId ? null : rec.listingId);
+                      }}
+                    >
+                      {expandedRec === rec.listingId ? 'Hide breakdown' : 'View match breakdown'}
+                    </button>
+                  )}
                 </div>
               ))}
             </div>
@@ -491,7 +574,11 @@ export default function DashboardPage() {
             </div>
             <div>
               <p className="font-medium text-slate-900 dark:text-white mb-1">Recommended For You</p>
-              <p>Projects matched to your skills using our smart matching algorithm. The percentage shows how well your skills align.</p>
+              <p>
+                {tenantFeatures.matchEngine
+                  ? 'Projects matched using our proprietary Match Engine\u2122. Click "View match breakdown" to see how each signal contributes to your score.'
+                  : 'Projects matched to your skills using our smart matching algorithm. The percentage shows how well your skills align.'}
+              </p>
             </div>
             <div>
               <p className="font-medium text-slate-900 dark:text-white mb-1">Profile Completeness</p>

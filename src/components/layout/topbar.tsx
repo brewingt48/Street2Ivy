@@ -25,9 +25,10 @@ interface TopbarProps {
     displayName: string | null;
     avatarUrl: string | null;
   };
+  tenantFeatures?: Record<string, unknown>;
 }
 
-export function Topbar({ user }: TopbarProps) {
+export function Topbar({ user, tenantFeatures = {} }: TopbarProps) {
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60 dark:bg-slate-900/95 dark:border-slate-800">
       <div className="flex h-14 items-center px-4 md:px-6">
@@ -40,7 +41,7 @@ export function Topbar({ user }: TopbarProps) {
             </Button>
           </SheetTrigger>
           <SheetContent side="left" className="p-0 w-64">
-            <Sidebar user={user} mobile />
+            <Sidebar user={user} mobile tenantFeatures={tenantFeatures} />
           </SheetContent>
         </Sheet>
 

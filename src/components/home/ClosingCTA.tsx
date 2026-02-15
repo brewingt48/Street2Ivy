@@ -34,8 +34,8 @@ export function ClosingCTA() {
           transition={{ duration: 0.6, delay: 0.15 }}
           className="text-[#3a3a3a]/80 text-base leading-relaxed max-w-lg mx-auto mb-8"
         >
-          Students, partners, and programs who move now won&apos;t just keep up &mdash;
-          they&apos;ll set the pace.
+          Where talent is proven, not presumed. Students, partners, and programs
+          building the future &mdash; together.
         </motion.p>
 
         <motion.div

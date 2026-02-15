@@ -92,7 +92,7 @@ export default function MatchEngineDashboard() {
         const configData = await configRes.json();
         setConfig(configData.config);
       } else if (configRes.status === 403) {
-        setError('Match Engine Admin requires Enterprise plan.');
+        setError('Match Engine\u2122 Admin requires Enterprise plan.');
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load data');
@@ -132,10 +132,10 @@ export default function MatchEngineDashboard() {
         <div>
           <h1 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
             <Target className="h-6 w-6 text-teal-600" />
-            ProveGround Match Engine
+            ProveGround Match Engine&#8482;
           </h1>
           <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-            6-signal bi-directional matching system
+            Proprietary bi-directional matching system
           </p>
         </div>
         <div className="flex items-center gap-2">

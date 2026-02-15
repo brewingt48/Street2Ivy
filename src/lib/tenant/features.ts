@@ -95,8 +95,8 @@ export const FEATURE_DEFINITIONS: Record<string, {
   },
   // --- ProveGround Match Engine™ ---
   matchEngine: {
-    label: 'Match Engine',
-    description: '6-signal bi-directional match scoring with schedule awareness',
+    label: 'Match Engine\u2122',
+    description: 'Proprietary bi-directional match scoring with schedule awareness',
     plans: ['professional', 'enterprise'],
   },
   matchEngineSchedule: {
@@ -110,8 +110,8 @@ export const FEATURE_DEFINITIONS: Record<string, {
     plans: ['enterprise'],
   },
   matchEngineAdmin: {
-    label: 'Match Engine Admin',
-    description: 'Admin API for match engine configuration and monitoring',
+    label: 'Match Engine\u2122 Admin',
+    description: 'Admin API for Match Engine\u2122 configuration and monitoring',
     plans: ['enterprise'],
   },
 };

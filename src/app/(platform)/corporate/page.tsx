@@ -35,6 +35,7 @@ import {
   User,
 } from 'lucide-react';
 import { HelpSupportCard } from '@/components/shared/help-support-card';
+import { MatchScoreBadge } from '@/components/matching/MatchScoreBadge';
 
 interface DashboardData {
   listings: { active: number; draft: number; closed: number; total: number };
@@ -76,15 +77,18 @@ export default function CorporateDashboardPage() {
   const [recommendations, setRecommendations] = useState<StudentRecommendation[]>([]);
   const [loading, setLoading] = useState(true);
   const [userName, setUserName] = useState('');
+  const [hasMatchEngine, setHasMatchEngine] = useState(false);
 
   useEffect(() => {
     Promise.all([
       fetch('/api/corporate/dashboard').then((r) => r.json()),
       fetch('/api/auth/me').then((r) => r.json()),
+      fetch('/api/tenant/features').then((r) => r.json()).catch(() => ({ features: {} })),
     ])
-      .then(([dashboard, auth]) => {
+      .then(([dashboard, auth, featuresData]) => {
         setData(dashboard);
         setUserName(auth.user?.firstName || '');
+        setHasMatchEngine(!!(featuresData.features || {}).matchEngine);
 
         // If there are active listings, fetch student recommendations for the first one
         if (dashboard.listings?.active > 0) {
@@ -228,7 +232,11 @@ export default function CorporateDashboardPage() {
                 <Sparkles className="h-5 w-5 text-amber-500" />
                 Recommended Students
               </CardTitle>
-              <CardDescription>Students matched to your listing&apos;s required skills using our algorithm. The percentage shows how many of your required skills each student has.</CardDescription>
+              <CardDescription>
+                {hasMatchEngine
+                  ? 'Students matched to your listing using our proprietary Match Engine\u2122. Scores reflect skills alignment, reliability, and growth trajectory.'
+                  : 'Students matched to your listing\u0027s required skills using our algorithm. The percentage shows how many of your required skills each student has.'}
+              </CardDescription>
             </div>
             <Link href="/corporate/search-students">
               <Button variant="ghost" size="sm">
@@ -253,10 +261,7 @@ export default function CorporateDashboardPage() {
                         {rec.firstName} {rec.lastName}
                       </h3>
                     </div>
-                    <Badge className="bg-teal-50 text-teal-700 border-0 text-xs flex-shrink-0">
-                      <TrendingUp className="h-3 w-3 mr-1" />
-                      {rec.matchScore}%
-                    </Badge>
+                    <MatchScoreBadge score={rec.matchScore} size="sm" />
                   </div>
 
                   {(rec.university || rec.major) && (
@@ -359,7 +364,11 @@ export default function CorporateDashboardPage() {
             </div>
             <div>
               <p className="font-medium text-slate-900 dark:text-white mb-1">Recommended Students</p>
-              <p>Students matched to your active listings using our skills-based algorithm. The percentage shows skill alignment.</p>
+              <p>
+                {hasMatchEngine
+                  ? 'Students matched to your active listings using our proprietary Match Engine\u2122. Scores factor in skills, schedule fit, and career growth.'
+                  : 'Students matched to your active listings using our skills-based algorithm. The percentage shows skill alignment.'}
+              </p>
             </div>
           </div>
         </CardContent>

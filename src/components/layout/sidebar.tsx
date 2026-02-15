@@ -46,18 +46,25 @@ interface SidebarProps {
     lastName: string;
   };
   mobile?: boolean;
+  tenantFeatures?: Record<string, unknown>;
 }
 
 interface NavItem {
   href: string;
   label: string;
   icon: React.ComponentType<{ className?: string }>;
+  featureGate?: string; // Only show if this feature is enabled
 }
 
-export function Sidebar({ user, mobile }: SidebarProps) {
+export function Sidebar({ user, mobile, tenantFeatures = {} }: SidebarProps) {
   const pathname = usePathname();
 
-  const navItems = getNavItems(user.role);
+  const navItems = getNavItems(user.role).map((section) => ({
+    ...section,
+    items: section.items.filter((item) =>
+      !item.featureGate || !!tenantFeatures[item.featureGate]
+    ),
+  }));
 
   return (
     <div className={cn('flex flex-col h-full', mobile ? 'pt-6' : '')}>
@@ -119,7 +126,7 @@ function getNavItems(role: string): NavSection[] {
             { href: '/applications', label: 'My Applications', icon: FileText },
             { href: '/reviews', label: 'My Reviews', icon: Star },
             { href: '/invites', label: 'Invites', icon: Mail },
-            { href: '/student/schedule', label: 'My Schedule', icon: Calendar },
+            { href: '/student/schedule', label: 'My Schedule', icon: Calendar, featureGate: 'matchEngineSchedule' },
             { href: '/coaching', label: 'AI Coach', icon: Sparkles },
             { href: '/inbox', label: 'Messages', icon: Inbox },
           ],
@@ -166,7 +173,7 @@ function getNavItems(role: string): NavSection[] {
             { href: '/education/reports', label: 'Issue Reports', icon: AlertTriangle },
             { href: '/education/waitlist', label: 'Waitlist', icon: ClipboardList },
             { href: '/education/ai-insights', label: 'AI Insights', icon: Sparkles },
-            { href: '/education/match-engine', label: 'Match Engine', icon: Target },
+            { href: '/education/match-engine', label: 'Match Engine\u2122', icon: Target, featureGate: 'matchEngine' },
             { href: '/inbox', label: 'Messages', icon: Inbox },
           ],
         },

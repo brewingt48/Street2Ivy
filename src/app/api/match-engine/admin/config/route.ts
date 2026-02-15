@@ -40,7 +40,7 @@ export async function GET() {
     if (tenantId) {
       const allowed = await hasFeature(tenantId, 'matchEngineAdmin');
       if (!allowed) {
-        return NextResponse.json({ error: 'Match Engine Admin requires Enterprise plan' }, { status: 403 });
+        return NextResponse.json({ error: 'Match Engine™ Admin requires Enterprise plan' }, { status: 403 });
       }
     }
 
@@ -91,7 +91,7 @@ export async function PUT(request: Request) {
 
     const allowed = await hasFeature(tenantId, 'matchEngineAdmin');
     if (!allowed) {
-      return NextResponse.json({ error: 'Match Engine Admin requires Enterprise plan' }, { status: 403 });
+      return NextResponse.json({ error: 'Match Engine™ Admin requires Enterprise plan' }, { status: 403 });
     }
 
     const body = await request.json();

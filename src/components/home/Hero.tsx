@@ -5,13 +5,12 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronDown } from 'lucide-react';
 
 /*
- * Carousel images — diverse, inclusive imagery showing:
- * Sports: American college football, basketball, women's sports, track/relay
- * Corporate: Diverse young people presenting, shaking hands in offices — NO typing/laptops
- * The arc: competition + discipline → corporate leadership
+ * Carousel images — all college sports, grouped by sport.
+ * Prioritizes diversity: women, men, people of color.
+ * No corporate photos — the focus is the athlete.
  */
 const carouselImages = [
-  // --- SPORTS: Football ---
+  // --- FOOTBALL (grouped) ---
   {
     src: 'https://images.unsplash.com/photo-1560272564-c83b66b1ad12?w=1920&q=80',
     alt: 'College football players competing on the field under stadium lights',
@@ -20,11 +19,7 @@ const carouselImages = [
     src: 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=1920&q=80',
     alt: 'Football team huddle — discipline and leadership on the field',
   },
-  {
-    src: 'https://images.unsplash.com/photo-1508398938709-c8f9718bab03?w=1920&q=80',
-    alt: 'American football quarterback preparing to throw under pressure',
-  },
-  // --- SPORTS: Basketball ---
+  // --- BASKETBALL (grouped) ---
   {
     src: 'https://images.unsplash.com/photo-1546519638-68e109498ffc?w=1920&q=80',
     alt: 'Basketball player driving to the hoop with determination',
@@ -33,35 +28,50 @@ const carouselImages = [
     src: 'https://images.unsplash.com/photo-1519861531473-9200262188bf?w=1920&q=80',
     alt: 'Intense basketball game — players competing under the lights',
   },
-  // --- SPORTS: Women's / Female Athletes ---
+  // --- WOMEN'S SOCCER (grouped) ---
   {
-    src: 'https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=1920&q=80',
-    alt: 'Female athlete sprinting on a track with power and focus',
+    src: 'https://images.unsplash.com/photo-1551958219-acbc608c6377?w=1920&q=80',
+    alt: 'Women\u2019s college soccer — athletes battling for possession on the pitch',
   },
   {
-    src: 'https://images.unsplash.com/photo-1587280501635-68a0e82cd5ff?w=1920&q=80',
-    alt: 'Women\'s volleyball team competing in an intense college match',
+    src: 'https://images.unsplash.com/photo-1431324155629-1a6deb1dec8d?w=1920&q=80',
+    alt: 'College soccer match — diverse players sprinting downfield',
+  },
+  // --- TRACK & FIELD (grouped) ---
+  {
+    src: 'https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=1920&q=80',
+    alt: 'Female sprinter exploding off the blocks with power and focus',
   },
   {
     src: 'https://images.unsplash.com/photo-1517649763962-0c623066013b?w=1920&q=80',
     alt: 'Diverse athletes competing in a relay race, passing the baton',
   },
-  // --- CORPORATE: Presenting & Handshakes (no typing/laptops) ---
+  // --- VOLLEYBALL (grouped) ---
   {
-    src: 'https://images.unsplash.com/photo-1573164713714-d95e436ab8d6?w=1920&q=80',
-    alt: 'Young professional woman presenting confidently to a boardroom',
+    src: 'https://images.unsplash.com/photo-1587280501635-68a0e82cd5ff?w=1920&q=80',
+    alt: 'Women\u2019s volleyball team competing in an intense college match',
   },
   {
-    src: 'https://images.unsplash.com/photo-1600880292089-90a7e086ee0c?w=1920&q=80',
-    alt: 'Young diverse professionals shaking hands in a modern corporate office',
+    src: 'https://images.unsplash.com/photo-1612872087720-bb876e2e67d1?w=1920&q=80',
+    alt: 'College volleyball — athlete leaping for a powerful spike at the net',
+  },
+  // --- LACROSSE (grouped) ---
+  {
+    src: 'https://images.unsplash.com/photo-1496318447583-f524534e9ce1?w=1920&q=80',
+    alt: 'College lacrosse player cradling the ball downfield at full speed',
   },
   {
-    src: 'https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=1920&q=80',
-    alt: 'Diverse team of young professionals closing a deal with a handshake',
+    src: 'https://images.unsplash.com/photo-1529768167801-9173d94c2a42?w=1920&q=80',
+    alt: 'Women\u2019s lacrosse — athletes competing with agility and precision',
+  },
+  // --- SWIMMING (grouped) ---
+  {
+    src: 'https://images.unsplash.com/photo-1530549387789-4c1017266635?w=1920&q=80',
+    alt: 'College swimmer cutting through the water with explosive form',
   },
   {
-    src: 'https://images.unsplash.com/photo-1551836022-d5d88e9218df?w=1920&q=80',
-    alt: 'Young diverse professional presenting to colleagues in a glass conference room',
+    src: 'https://images.unsplash.com/photo-1519315901367-f34ff9154487?w=1920&q=80',
+    alt: 'Swimmers diving off the blocks at a collegiate competition',
   },
 ];
 
@@ -83,7 +93,7 @@ export function Hero({ mode = 'carousel' }: HeroProps) {
 
   useEffect(() => {
     if (mode !== 'carousel') return;
-    const timer = setInterval(nextSlide, 5000);
+    const timer = setInterval(nextSlide, 3500);
     return () => clearInterval(timer);
   }, [mode, nextSlide]);
 
@@ -111,10 +121,10 @@ export function Hero({ mode = 'carousel' }: HeroProps) {
           <AnimatePresence mode="wait">
             <motion.div
               key={currentSlide}
-              initial={{ opacity: 0, scale: 1.05 }}
-              animate={{ opacity: 1, scale: 1.12 }}
+              initial={{ opacity: 0, scale: 1.02 }}
+              animate={{ opacity: 1, scale: 1.08 }}
               exit={{ opacity: 0 }}
-              transition={{ opacity: { duration: 1.2 }, scale: { duration: 8, ease: 'linear' } }}
+              transition={{ opacity: { duration: 0.6 }, scale: { duration: 4, ease: 'linear' } }}
               className="absolute inset-0 bg-cover bg-center"
               style={{ backgroundImage: `url(${carouselImages[currentSlide].src})` }}
               role="img"
@@ -156,9 +166,9 @@ export function Hero({ mode = 'carousel' }: HeroProps) {
           transition={{ duration: 0.6, delay: 0.8 }}
           className="mt-5 text-base sm:text-lg text-white/75 max-w-xl mx-auto leading-relaxed"
         >
-          AI is reshaping every industry. The skills it can&apos;t replace &mdash; discipline,
-          leadership, judgment &mdash; are the ones you&apos;ve already built. Turn your
-          competitive edge into career momentum.
+          The discipline, resilience, and leadership you&apos;ve built through competition
+          are exactly what the world needs now. Turn your competitive edge into
+          career momentum &mdash; and prove what you&apos;re made of.
         </motion.p>
 
         {/* CTAs — clean, two buttons */}

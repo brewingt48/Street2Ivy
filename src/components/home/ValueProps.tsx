@@ -7,20 +7,20 @@ import { GraduationCap, Handshake, Building2 } from 'lucide-react';
 const cards = [
   {
     icon: GraduationCap,
-    headline: 'Stop waiting. Start proving.',
-    body: 'Access real internships and projects from alumni and corporate partners. Build a verified track record. Step into your career with proof, not promises.',
+    headline: 'Your work speaks for itself.',
+    body: 'Access real projects and internships from alumni and industry leaders who believe in what you can do. Build a verified portfolio that opens doors no résumé alone ever could.',
     label: 'For Students',
   },
   {
     icon: Handshake,
-    headline: 'Invest in the next class.',
-    body: 'Post real project work for the students coming up behind you. Find your next hire through a scoped engagement before making a full commitment.',
+    headline: 'Shape the talent pipeline.',
+    body: 'Post meaningful project work for the next generation of professionals. Discover top talent through real engagement — and build lasting relationships that benefit everyone.',
     label: 'For Alumni & Partners',
   },
   {
     icon: Building2,
-    headline: 'Move first. Lead the shift.',
-    body: 'Launch a fully branded marketplace filled with real internships and projects. Give your students a new path forward while AI rewrites the rules.',
+    headline: 'Lead with vision.',
+    body: 'Launch a fully branded talent marketplace that connects your students to real-world opportunity. Position your program at the forefront of what modern career development looks like.',
     label: 'For Programs',
   },
 ];
@@ -47,7 +47,7 @@ export function ValueProps() {
             transition={{ duration: 0.6, delay: 0.1 }}
             className="font-display text-4xl sm:text-5xl md:text-6xl text-[#1a1a2e] tracking-wide"
           >
-            Three audiences. One proving ground.
+            Three paths. One destination.
           </motion.h2>
         </div>
 

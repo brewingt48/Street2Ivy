@@ -3,7 +3,7 @@
  *
  * LEGACY ENGINE — This file is maintained for backward compatibility.
  *
- * The ProveGround Match Engine™ (src/lib/match-engine/) is the new 6-signal
+ * The ProveGround Match Engine™ (src/lib/match-engine/) is the new proprietary
  * bi-directional scoring system. When the 'matchEngine' feature is enabled
  * for a tenant, this module delegates to the new engine. Otherwise, it falls
  * back to the original 5-factor algorithm below.

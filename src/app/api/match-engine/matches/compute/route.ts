@@ -25,7 +25,7 @@ export async function POST(request: Request) {
     if (tenantId) {
       const allowed = await hasFeature(tenantId, 'matchEngine');
       if (!allowed) {
-        return NextResponse.json({ error: 'Match Engine requires Professional plan or higher' }, { status: 403 });
+        return NextResponse.json({ error: 'Match Engine™ requires Professional plan or higher' }, { status: 403 });
       }
     }
 

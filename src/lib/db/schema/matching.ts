@@ -1,7 +1,7 @@
 /**
  * ProveGround Match Engine™ — Drizzle Schema
  *
- * Tables for the 6-signal bi-directional schedule-aware matching algorithm.
+ * Tables for the proprietary bi-directional schedule-aware matching algorithm.
  */
 
 import {

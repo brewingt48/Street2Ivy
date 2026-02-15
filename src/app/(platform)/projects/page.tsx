@@ -46,6 +46,7 @@ import {
 } from 'lucide-react';
 
 import { FileText } from 'lucide-react';
+import { MatchScoreBadge } from '@/components/matching/MatchScoreBadge';
 
 interface ProjectListing {
   id: string;
@@ -97,6 +98,25 @@ export default function ProjectsPage() {
   const [pagination, setPagination] = useState<Pagination | null>(null);
   const [categories, setCategories] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
+  const [matchScores, setMatchScores] = useState<Record<string, number>>({});
+  const [hasMatchEngine, setHasMatchEngine] = useState(false);
+
+  // Fetch tenant features and match scores on mount
+  useEffect(() => {
+    Promise.all([
+      fetch('/api/tenant/features').then((r) => r.json()).catch(() => ({ features: {} })),
+      fetch('/api/matching?type=projects&limit=50').then((r) => r.json()).catch(() => ({ recommendations: [] })),
+    ]).then(([featuresData, matchingData]) => {
+      const features = featuresData.features || {};
+      setHasMatchEngine(!!features.matchEngine);
+      // Build a lookup map: listingId → matchScore
+      const scores: Record<string, number> = {};
+      (matchingData.recommendations || []).forEach((rec: { listingId: string; matchScore: number }) => {
+        scores[rec.listingId] = rec.matchScore;
+      });
+      setMatchScores(scores);
+    });
+  }, []);
 
   // Filter state
   const [search, setSearch] = useState(searchParams.get('q') || '');
@@ -348,6 +368,9 @@ export default function ProjectsPage() {
                     </CardDescription>
                   </div>
                   <div className="flex flex-col items-end gap-1 ml-2 shrink-0">
+                    {matchScores[project.id] !== undefined && (
+                      <MatchScoreBadge score={matchScores[project.id]} size="sm" />
+                    )}
                     {project.listingType === 'internship' && (
                       <Badge className="bg-purple-100 text-purple-700 border-0 text-xs">
                         <Briefcase className="h-3 w-3 mr-1" />
