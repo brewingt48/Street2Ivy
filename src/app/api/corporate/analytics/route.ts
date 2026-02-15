@@ -104,18 +104,26 @@ export async function GET(request: NextRequest) {
     ];
 
     // Application timeline
-    const timeline = await sql`
-      SELECT
-        DATE_TRUNC(${interval}, submitted_at)::date as date,
-        COUNT(*) as received,
-        COUNT(*) FILTER (WHERE status = 'accepted') as accepted
-      FROM project_applications
-      WHERE corporate_id = ${userId}
-        AND submitted_at >= ${start}::timestamp
-        AND submitted_at <= ${end}::timestamp + interval '1 day'
-      GROUP BY DATE_TRUNC(${interval}, submitted_at)
-      ORDER BY date
-    `;
+    const timeline = interval === 'day'
+      ? await sql`
+          SELECT DATE_TRUNC('day', submitted_at)::date as date,
+            COUNT(*) as received, COUNT(*) FILTER (WHERE status = 'accepted') as accepted
+          FROM project_applications
+          WHERE corporate_id = ${userId} AND submitted_at >= ${start}::timestamp AND submitted_at <= ${end}::timestamp + interval '1 day'
+          GROUP BY DATE_TRUNC('day', submitted_at)::date ORDER BY date`
+      : interval === 'week'
+      ? await sql`
+          SELECT DATE_TRUNC('week', submitted_at)::date as date,
+            COUNT(*) as received, COUNT(*) FILTER (WHERE status = 'accepted') as accepted
+          FROM project_applications
+          WHERE corporate_id = ${userId} AND submitted_at >= ${start}::timestamp AND submitted_at <= ${end}::timestamp + interval '1 day'
+          GROUP BY DATE_TRUNC('week', submitted_at)::date ORDER BY date`
+      : await sql`
+          SELECT DATE_TRUNC('month', submitted_at)::date as date,
+            COUNT(*) as received, COUNT(*) FILTER (WHERE status = 'accepted') as accepted
+          FROM project_applications
+          WHERE corporate_id = ${userId} AND submitted_at >= ${start}::timestamp AND submitted_at <= ${end}::timestamp + interval '1 day'
+          GROUP BY DATE_TRUNC('month', submitted_at)::date ORDER BY date`;
 
     // Listing performance
     const listingPerf = await sql`
@@ -170,7 +178,7 @@ export async function GET(request: NextRequest) {
       },
       applicationFunnel: funnelData,
       applicationTimeline: timeline.map((r: Record<string, unknown>) => ({
-        date: (r.date as Date).toISOString().split('T')[0],
+        date: r.date instanceof Date ? r.date.toISOString().split('T')[0] : String(r.date),
         received: parseInt(r.received as string),
         accepted: parseInt(r.accepted as string),
       })),

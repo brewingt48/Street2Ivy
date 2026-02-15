@@ -57,32 +57,57 @@ export async function GET(request: NextRequest) {
     const completedApps = parseInt(appStats[0].completed as string);
 
     // User growth timeline
-    const userGrowth = await sql`
-      SELECT
-        DATE_TRUNC(${interval}, created_at)::date as date,
-        COUNT(*) FILTER (WHERE role = 'student') as students,
-        COUNT(*) FILTER (WHERE role = 'corporate_partner') as corporates,
-        COUNT(*) FILTER (WHERE role = 'educational_admin') as edu_admins
-      FROM users
-      WHERE created_at >= ${start}::timestamp
-        AND created_at <= ${end}::timestamp + interval '1 day'
-      GROUP BY DATE_TRUNC(${interval}, created_at)
-      ORDER BY date
-    `;
+    const userGrowth = interval === 'day'
+      ? await sql`
+          SELECT DATE_TRUNC('day', created_at)::date as date,
+            COUNT(*) FILTER (WHERE role = 'student') as students,
+            COUNT(*) FILTER (WHERE role = 'corporate_partner') as corporates,
+            COUNT(*) FILTER (WHERE role = 'educational_admin') as edu_admins
+          FROM users
+          WHERE created_at >= ${start}::timestamp AND created_at <= ${end}::timestamp + interval '1 day'
+          GROUP BY DATE_TRUNC('day', created_at)::date ORDER BY date`
+      : interval === 'week'
+      ? await sql`
+          SELECT DATE_TRUNC('week', created_at)::date as date,
+            COUNT(*) FILTER (WHERE role = 'student') as students,
+            COUNT(*) FILTER (WHERE role = 'corporate_partner') as corporates,
+            COUNT(*) FILTER (WHERE role = 'educational_admin') as edu_admins
+          FROM users
+          WHERE created_at >= ${start}::timestamp AND created_at <= ${end}::timestamp + interval '1 day'
+          GROUP BY DATE_TRUNC('week', created_at)::date ORDER BY date`
+      : await sql`
+          SELECT DATE_TRUNC('month', created_at)::date as date,
+            COUNT(*) FILTER (WHERE role = 'student') as students,
+            COUNT(*) FILTER (WHERE role = 'corporate_partner') as corporates,
+            COUNT(*) FILTER (WHERE role = 'educational_admin') as edu_admins
+          FROM users
+          WHERE created_at >= ${start}::timestamp AND created_at <= ${end}::timestamp + interval '1 day'
+          GROUP BY DATE_TRUNC('month', created_at)::date ORDER BY date`;
 
     // Application volume timeline
-    const appVolume = await sql`
-      SELECT
-        DATE_TRUNC(${interval}, submitted_at)::date as date,
-        COUNT(*) as submitted,
-        COUNT(*) FILTER (WHERE status = 'accepted') as accepted,
-        COUNT(*) FILTER (WHERE status = 'completed') as completed
-      FROM project_applications
-      WHERE submitted_at >= ${start}::timestamp
-        AND submitted_at <= ${end}::timestamp + interval '1 day'
-      GROUP BY DATE_TRUNC(${interval}, submitted_at)
-      ORDER BY date
-    `;
+    const appVolume = interval === 'day'
+      ? await sql`
+          SELECT DATE_TRUNC('day', submitted_at)::date as date,
+            COUNT(*) as submitted, COUNT(*) FILTER (WHERE status = 'accepted') as accepted,
+            COUNT(*) FILTER (WHERE status = 'completed') as completed
+          FROM project_applications
+          WHERE submitted_at >= ${start}::timestamp AND submitted_at <= ${end}::timestamp + interval '1 day'
+          GROUP BY DATE_TRUNC('day', submitted_at)::date ORDER BY date`
+      : interval === 'week'
+      ? await sql`
+          SELECT DATE_TRUNC('week', submitted_at)::date as date,
+            COUNT(*) as submitted, COUNT(*) FILTER (WHERE status = 'accepted') as accepted,
+            COUNT(*) FILTER (WHERE status = 'completed') as completed
+          FROM project_applications
+          WHERE submitted_at >= ${start}::timestamp AND submitted_at <= ${end}::timestamp + interval '1 day'
+          GROUP BY DATE_TRUNC('week', submitted_at)::date ORDER BY date`
+      : await sql`
+          SELECT DATE_TRUNC('month', submitted_at)::date as date,
+            COUNT(*) as submitted, COUNT(*) FILTER (WHERE status = 'accepted') as accepted,
+            COUNT(*) FILTER (WHERE status = 'completed') as completed
+          FROM project_applications
+          WHERE submitted_at >= ${start}::timestamp AND submitted_at <= ${end}::timestamp + interval '1 day'
+          GROUP BY DATE_TRUNC('month', submitted_at)::date ORDER BY date`;
 
     // Users by role
     const usersByRole = await sql`
@@ -147,13 +172,13 @@ export async function GET(request: NextRequest) {
         platformCompletionRate: totalApps > 0 ? Math.round((completedApps / totalApps) * 100) : 0,
       },
       userGrowth: userGrowth.map((r: Record<string, unknown>) => ({
-        date: (r.date as Date).toISOString().split('T')[0],
+        date: r.date instanceof Date ? r.date.toISOString().split('T')[0] : String(r.date),
         students: parseInt(r.students as string),
         corporates: parseInt(r.corporates as string),
         eduAdmins: parseInt(r.edu_admins as string),
       })),
       applicationVolume: appVolume.map((r: Record<string, unknown>) => ({
-        date: (r.date as Date).toISOString().split('T')[0],
+        date: r.date instanceof Date ? r.date.toISOString().split('T')[0] : String(r.date),
         submitted: parseInt(r.submitted as string),
         accepted: parseInt(r.accepted as string),
         completed: parseInt(r.completed as string),

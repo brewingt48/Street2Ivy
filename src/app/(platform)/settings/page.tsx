@@ -29,6 +29,8 @@ import {
   CheckCircle2,
   AlertCircle,
   Save,
+  Building2,
+  Eye,
 } from 'lucide-react';
 
 interface Profile {
@@ -47,6 +49,15 @@ interface Profile {
   avatarUrl: string | null;
   emailVerified: boolean;
   createdAt: string;
+  companyName: string | null;
+  jobTitle: string | null;
+  department: string | null;
+  companyDescription: string | null;
+  companyWebsite: string | null;
+  companySize: string | null;
+  companyIndustry: string | null;
+  sportsPlayed: string | null;
+  activities: string | null;
 }
 
 interface Skill {
@@ -69,6 +80,19 @@ export default function SettingsPage() {
   const [major, setMajor] = useState('');
   const [graduationYear, setGraduationYear] = useState('');
   const [gpa, setGpa] = useState('');
+
+  // Corporate fields
+  const [companyName, setCompanyName] = useState('');
+  const [jobTitle, setJobTitle] = useState('');
+  const [department, setDepartment] = useState('');
+  const [companyDescription, setCompanyDescription] = useState('');
+  const [companyWebsite, setCompanyWebsite] = useState('');
+  const [companySize, setCompanySize] = useState('');
+  const [companyIndustry, setCompanyIndustry] = useState('');
+
+  // Student sports/activities
+  const [sportsPlayed, setSportsPlayed] = useState('');
+  const [activities, setActivities] = useState('');
 
   // Skills form
   const [selectedSkillIds, setSelectedSkillIds] = useState<Set<string>>(new Set());
@@ -103,6 +127,15 @@ export default function SettingsPage() {
         setMajor(p.major || '');
         setGraduationYear(p.graduationYear ? String(p.graduationYear) : '');
         setGpa(p.gpa || '');
+        setCompanyName(p.companyName || '');
+        setJobTitle(p.jobTitle || '');
+        setDepartment(p.department || '');
+        setCompanyDescription(p.companyDescription || '');
+        setCompanyWebsite(p.companyWebsite || '');
+        setCompanySize(p.companySize || '');
+        setCompanyIndustry(p.companyIndustry || '');
+        setSportsPlayed(p.sportsPlayed || '');
+        setActivities(p.activities || '');
 
         setSelectedSkillIds(new Set((profileData.skills || []).map((s: Skill) => s.id)));
         setAllSkills(skillsData.skills || []);
@@ -127,6 +160,15 @@ export default function SettingsPage() {
           major: major || undefined,
           graduationYear: graduationYear ? parseInt(graduationYear) : undefined,
           gpa: gpa || undefined,
+          companyName: companyName || undefined,
+          jobTitle: jobTitle || undefined,
+          department: department || undefined,
+          companyDescription: companyDescription || undefined,
+          companyWebsite: companyWebsite || undefined,
+          companySize: companySize || undefined,
+          companyIndustry: companyIndustry || undefined,
+          sportsPlayed: sportsPlayed || undefined,
+          activities: activities || undefined,
         }),
       });
       if (!res.ok) {
@@ -316,6 +358,97 @@ export default function SettingsPage() {
             />
           </div>
 
+          {/* Corporate Partner: Company Information */}
+          {profile?.role === 'corporate_partner' && (
+            <>
+              <Separator />
+              <div className="flex items-center gap-2 mb-2">
+                <Building2 className="h-5 w-5 text-teal-600" />
+                <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Company Information</h3>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="companyName">Company Name</Label>
+                  <Input
+                    id="companyName"
+                    value={companyName}
+                    onChange={(e) => setCompanyName(e.target.value)}
+                    placeholder="e.g. Acme Corp"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="jobTitle">Job Title</Label>
+                  <Input
+                    id="jobTitle"
+                    value={jobTitle}
+                    onChange={(e) => setJobTitle(e.target.value)}
+                    placeholder="e.g. Hiring Manager"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="department">Department</Label>
+                <Input
+                  id="department"
+                  value={department}
+                  onChange={(e) => setDepartment(e.target.value)}
+                  placeholder="e.g. Engineering"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="companyDescription">Company Description</Label>
+                <Textarea
+                  id="companyDescription"
+                  value={companyDescription}
+                  onChange={(e) => setCompanyDescription(e.target.value)}
+                  placeholder="Describe your company..."
+                  rows={3}
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="companyWebsite">Company Website</Label>
+                  <Input
+                    id="companyWebsite"
+                    value={companyWebsite}
+                    onChange={(e) => setCompanyWebsite(e.target.value)}
+                    placeholder="https://example.com"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="companySize">Company Size</Label>
+                  <select
+                    id="companySize"
+                    value={companySize}
+                    onChange={(e) => setCompanySize(e.target.value)}
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                  >
+                    <option value="">Select size...</option>
+                    <option value="1-10">1-10</option>
+                    <option value="11-50">11-50</option>
+                    <option value="51-200">51-200</option>
+                    <option value="201-500">201-500</option>
+                    <option value="500+">500+</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="companyIndustry">Company Industry</Label>
+                <Input
+                  id="companyIndustry"
+                  value={companyIndustry}
+                  onChange={(e) => setCompanyIndustry(e.target.value)}
+                  placeholder="e.g. Technology, Finance, Healthcare"
+                />
+              </div>
+            </>
+          )}
+
           <div className="space-y-2">
             <Label htmlFor="phone">Phone</Label>
             <Input
@@ -370,6 +503,33 @@ export default function SettingsPage() {
               />
             </div>
           </div>
+
+          {/* Student: Sports & Activities */}
+          {profile?.role === 'student' && (
+            <>
+              <div className="space-y-2">
+                <Label htmlFor="sportsPlayed">Sports Played</Label>
+                <Input
+                  id="sportsPlayed"
+                  value={sportsPlayed}
+                  onChange={(e) => setSportsPlayed(e.target.value)}
+                  placeholder="e.g. Basketball, Track & Field"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="activities">Activities</Label>
+                <Input
+                  id="activities"
+                  value={activities}
+                  onChange={(e) => setActivities(e.target.value)}
+                  placeholder="e.g. Debate Club, Student Government"
+                />
+              </div>
+              <p className="text-xs text-slate-400">
+                Adding sports and activities helps corporate partners find you
+              </p>
+            </>
+          )}
         </CardContent>
         <CardFooter className="flex justify-end">
           <Button
@@ -556,6 +716,156 @@ export default function SettingsPage() {
                 )}
               </p>
             </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Profile Preview */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Eye className="h-5 w-5 text-teal-600" />
+            Profile Preview
+          </CardTitle>
+          <CardDescription>
+            This is how your public profile appears to others
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 p-6 space-y-4">
+            {/* Name */}
+            <div>
+              <h3 className="text-xl font-bold text-slate-900 dark:text-white">
+                {firstName || lastName ? `${firstName} ${lastName}`.trim() : 'Your Name'}
+              </h3>
+              <p className="text-sm text-slate-500 capitalize">
+                {profile?.role?.replace('_', ' ')}
+              </p>
+            </div>
+
+            <Separator />
+
+            {profile?.role === 'student' && (
+              <div className="space-y-3 text-sm">
+                {university && (
+                  <div>
+                    <p className="text-slate-400 text-xs uppercase tracking-wide">University</p>
+                    <p className="font-medium text-slate-700 dark:text-slate-200">{university}</p>
+                  </div>
+                )}
+                {major && (
+                  <div>
+                    <p className="text-slate-400 text-xs uppercase tracking-wide">Major</p>
+                    <p className="font-medium text-slate-700 dark:text-slate-200">{major}</p>
+                  </div>
+                )}
+                {gpa && (
+                  <div>
+                    <p className="text-slate-400 text-xs uppercase tracking-wide">GPA</p>
+                    <p className="font-medium text-slate-700 dark:text-slate-200">{gpa}</p>
+                  </div>
+                )}
+                {bio && (
+                  <div>
+                    <p className="text-slate-400 text-xs uppercase tracking-wide">Bio</p>
+                    <p className="text-slate-700 dark:text-slate-200">{bio}</p>
+                  </div>
+                )}
+                {selectedSkillIds.size > 0 && (
+                  <div>
+                    <p className="text-slate-400 text-xs uppercase tracking-wide mb-1">Skills</p>
+                    <div className="flex flex-wrap gap-1">
+                      {allSkills
+                        .filter((s) => selectedSkillIds.has(s.id))
+                        .map((s) => (
+                          <Badge key={s.id} variant="secondary" className="text-xs">
+                            {s.name}
+                          </Badge>
+                        ))}
+                    </div>
+                  </div>
+                )}
+                {sportsPlayed && (
+                  <div>
+                    <p className="text-slate-400 text-xs uppercase tracking-wide">Sports</p>
+                    <p className="font-medium text-slate-700 dark:text-slate-200">{sportsPlayed}</p>
+                  </div>
+                )}
+                {activities && (
+                  <div>
+                    <p className="text-slate-400 text-xs uppercase tracking-wide">Activities</p>
+                    <p className="font-medium text-slate-700 dark:text-slate-200">{activities}</p>
+                  </div>
+                )}
+                {!university && !major && !gpa && !bio && selectedSkillIds.size === 0 && !sportsPlayed && !activities && (
+                  <p className="text-slate-400 italic">Complete your profile to see a preview</p>
+                )}
+              </div>
+            )}
+
+            {profile?.role === 'corporate_partner' && (
+              <div className="space-y-3 text-sm">
+                {companyName && (
+                  <div>
+                    <p className="text-slate-400 text-xs uppercase tracking-wide">Company</p>
+                    <p className="font-medium text-slate-700 dark:text-slate-200">{companyName}</p>
+                  </div>
+                )}
+                {jobTitle && (
+                  <div>
+                    <p className="text-slate-400 text-xs uppercase tracking-wide">Job Title</p>
+                    <p className="font-medium text-slate-700 dark:text-slate-200">{jobTitle}</p>
+                  </div>
+                )}
+                {department && (
+                  <div>
+                    <p className="text-slate-400 text-xs uppercase tracking-wide">Department</p>
+                    <p className="font-medium text-slate-700 dark:text-slate-200">{department}</p>
+                  </div>
+                )}
+                {companyDescription && (
+                  <div>
+                    <p className="text-slate-400 text-xs uppercase tracking-wide">Company Description</p>
+                    <p className="text-slate-700 dark:text-slate-200">{companyDescription}</p>
+                  </div>
+                )}
+                {companyWebsite && (
+                  <div>
+                    <p className="text-slate-400 text-xs uppercase tracking-wide">Website</p>
+                    <p className="font-medium text-teal-600">{companyWebsite}</p>
+                  </div>
+                )}
+                {companyIndustry && (
+                  <div>
+                    <p className="text-slate-400 text-xs uppercase tracking-wide">Industry</p>
+                    <p className="font-medium text-slate-700 dark:text-slate-200">{companyIndustry}</p>
+                  </div>
+                )}
+                {companySize && (
+                  <div>
+                    <p className="text-slate-400 text-xs uppercase tracking-wide">Company Size</p>
+                    <p className="font-medium text-slate-700 dark:text-slate-200">{companySize} employees</p>
+                  </div>
+                )}
+                {!companyName && !jobTitle && !department && !companyDescription && !companyWebsite && !companyIndustry && !companySize && (
+                  <p className="text-slate-400 italic">Complete your company profile to see a preview</p>
+                )}
+              </div>
+            )}
+
+            {profile?.role !== 'student' && profile?.role !== 'corporate_partner' && (
+              <div className="space-y-3 text-sm">
+                {bio && (
+                  <div>
+                    <p className="text-slate-400 text-xs uppercase tracking-wide">Bio</p>
+                    <p className="text-slate-700 dark:text-slate-200">{bio}</p>
+                  </div>
+                )}
+                {!bio && (
+                  <p className="text-slate-400 italic">Complete your profile to see a preview</p>
+                )}
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>

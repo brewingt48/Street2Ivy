@@ -33,6 +33,8 @@ import {
   MapPin,
   TrendingUp,
   Info,
+  User,
+  ExternalLink,
 } from 'lucide-react';
 import { HelpSupportCard } from '@/components/shared/help-support-card';
 
@@ -88,17 +90,22 @@ export default function DashboardPage() {
   const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
   const [loading, setLoading] = useState(true);
   const [userName, setUserName] = useState('');
+  const [institution, setInstitution] = useState<{domain: string; name: string; ai_coaching_enabled: boolean; ai_coaching_url: string} | null>(null);
 
   useEffect(() => {
     Promise.all([
       fetch('/api/students/dashboard').then((r) => r.json()),
       fetch('/api/auth/me').then((r) => r.json()),
       fetch('/api/matching?type=projects&limit=6').then((r) => r.json()).catch(() => ({ recommendations: [] })),
+      fetch('/api/profile').then((r) => r.json()).catch(() => ({})),
     ])
-      .then(([dashboard, auth, matching]) => {
+      .then(([dashboard, auth, matching, profileData]) => {
         setData(dashboard);
         setUserName(auth.user?.firstName || '');
         setRecommendations(matching.recommendations || []);
+        if (profileData.institution) {
+          setInstitution(profileData.institution);
+        }
       })
       .catch(console.error)
       .finally(() => setLoading(false));
@@ -134,6 +141,10 @@ export default function DashboardPage() {
           </p>
         </div>
         <div className="flex items-center gap-2">
+          <Button variant="outline" onClick={() => router.push('/settings')}>
+            <User className="mr-2 h-4 w-4" />
+            View My Profile
+          </Button>
           <Button variant="outline" onClick={() => router.push('/projects')}>
             <Search className="mr-2 h-4 w-4" />
             Search Projects
@@ -223,6 +234,43 @@ export default function DashboardPage() {
         </Link>
       </div>
 
+      {/* AI Coaching */}
+      {institution?.ai_coaching_enabled ? (
+        <Card className="border-purple-200 dark:border-purple-800 bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Sparkles className="h-5 w-5 text-purple-600" />
+              AI Career Coach
+            </CardTitle>
+            <CardDescription>
+              Get personalized career guidance, resume tips, and interview preparation powered by AI
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button
+              className="bg-purple-600 hover:bg-purple-700"
+              onClick={() => window.open(institution.ai_coaching_url, '_blank')}
+            >
+              Launch AI Coach
+              <ExternalLink className="ml-2 h-4 w-4" />
+            </Button>
+          </CardContent>
+        </Card>
+      ) : institution ? (
+        <Card className="border-slate-200 dark:border-slate-700">
+          <CardContent className="py-4">
+            <p className="text-sm text-slate-500 dark:text-slate-400 flex items-center gap-2">
+              <Sparkles className="h-4 w-4 text-slate-400" />
+              AI Coaching is not yet available for your institution. Ask your university to enable it.
+            </p>
+          </CardContent>
+        </Card>
+      ) : (
+        <p className="text-xs text-slate-400 dark:text-slate-500">
+          AI Coaching is available through participating institutions.
+        </p>
+      )}
+
       {/* Analytics Link */}
       <div className="flex justify-end">
         <Link href="/dashboard/analytics">
@@ -243,7 +291,7 @@ export default function DashboardPage() {
                 <Sparkles className="h-5 w-5 text-amber-500" />
                 Recommended For You
               </CardTitle>
-              <CardDescription>Projects matched to your skills and interests</CardDescription>
+              <CardDescription>These projects are suggested by our matching algorithm based on your skills, past application history, and availability. Higher match scores mean better skill alignment.</CardDescription>
             </div>
             <Link href="/projects">
               <Button variant="ghost" size="sm">
@@ -263,10 +311,15 @@ export default function DashboardPage() {
                     <h3 className="font-medium text-sm text-slate-900 dark:text-white group-hover:text-teal-600 transition-colors line-clamp-1">
                       {rec.title}
                     </h3>
-                    <Badge className="bg-teal-50 text-teal-700 border-0 text-xs ml-2 flex-shrink-0">
-                      <TrendingUp className="h-3 w-3 mr-1" />
-                      {rec.matchScore}%
-                    </Badge>
+                    <div className="flex flex-col items-end ml-2 flex-shrink-0">
+                      <Badge className="bg-teal-50 text-teal-700 border-0 text-xs">
+                        <TrendingUp className="h-3 w-3 mr-1" />
+                        {rec.matchScore}%
+                      </Badge>
+                      <span className="text-[10px] text-slate-400 mt-0.5">
+                        {rec.matchedSkills.length} of {rec.matchedSkills.length + rec.missingSkills.length} required skills
+                      </span>
+                    </div>
                   </div>
 
                   {rec.company && (

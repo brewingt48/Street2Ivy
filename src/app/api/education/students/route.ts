@@ -13,6 +13,8 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
 
+    const tenantId = session.data.tenantId;
+
     const { searchParams } = new URL(request.url);
     const q = searchParams.get('q') || '';
     const page = Math.max(1, parseInt(searchParams.get('page') || '1'));
@@ -30,6 +32,7 @@ export async function GET(request: NextRequest) {
                (SELECT COUNT(*) FROM project_applications pa WHERE pa.student_id = u.id) as application_count
         FROM users u
         WHERE u.role = 'student'
+          AND u.tenant_id = ${tenantId}
           AND (u.display_name ILIKE ${pattern} OR u.email ILIKE ${pattern} OR u.university ILIKE ${pattern})
         ORDER BY u.created_at DESC
         LIMIT ${limit} OFFSET ${offset}
@@ -37,6 +40,7 @@ export async function GET(request: NextRequest) {
       const countResult = await sql`
         SELECT COUNT(*) as count FROM users
         WHERE role = 'student'
+          AND tenant_id = ${tenantId}
           AND (display_name ILIKE ${pattern} OR email ILIKE ${pattern} OR university ILIKE ${pattern})
       `;
       total = parseInt(countResult[0].count as string);
@@ -47,11 +51,12 @@ export async function GET(request: NextRequest) {
                (SELECT COUNT(*) FROM project_applications pa WHERE pa.student_id = u.id) as application_count
         FROM users u
         WHERE u.role = 'student'
+          AND u.tenant_id = ${tenantId}
         ORDER BY u.created_at DESC
         LIMIT ${limit} OFFSET ${offset}
       `;
       const countResult = await sql`
-        SELECT COUNT(*) as count FROM users WHERE role = 'student'
+        SELECT COUNT(*) as count FROM users WHERE role = 'student' AND tenant_id = ${tenantId}
       `;
       total = parseInt(countResult[0].count as string);
     }

@@ -21,17 +21,18 @@ export async function GET(request: NextRequest) {
     const range = (request.nextUrl.searchParams.get('range') || '30d') as RangeKey;
     const { start, end } = getDateRange(range);
     const interval = getTimelineInterval(range);
+    const tenantId = session.data.tenantId;
 
     // Total students
     const studentCount = await sql`
-      SELECT COUNT(*) as count FROM users WHERE role = 'student' AND is_active = true
+      SELECT COUNT(*) as count FROM users WHERE role = 'student' AND is_active = true AND tenant_id = ${tenantId}
     `;
     const totalStudents = parseInt(studentCount[0].count as string);
 
     // Average GPA
     const avgGpaResult = await sql`
       SELECT ROUND(AVG(gpa::numeric), 2) as avg_gpa
-      FROM users WHERE role = 'student' AND is_active = true AND gpa IS NOT NULL
+      FROM users WHERE role = 'student' AND is_active = true AND tenant_id = ${tenantId} AND gpa IS NOT NULL
     `;
 
     // Application stats for students
@@ -46,7 +47,7 @@ export async function GET(request: NextRequest) {
         COUNT(*) FILTER (WHERE pa.status = 'rejected') as rejected
       FROM project_applications pa
       JOIN users u ON u.id = pa.student_id
-      WHERE u.role = 'student' AND u.is_active = true
+      WHERE u.role = 'student' AND u.is_active = true AND u.tenant_id = ${tenantId}
         AND pa.submitted_at >= ${start}::timestamp
         AND pa.submitted_at <= ${end}::timestamp + interval '1 day'
     `;
@@ -58,24 +59,36 @@ export async function GET(request: NextRequest) {
     `;
 
     // Enrollment timeline
-    const enrollmentTimeline = await sql`
-      SELECT
-        DATE_TRUNC(${interval}, created_at)::date as date,
-        COUNT(*) as new_students
-      FROM users
-      WHERE role = 'student' AND is_active = true
-        AND created_at >= ${start}::timestamp
-        AND created_at <= ${end}::timestamp + interval '1 day'
-      GROUP BY DATE_TRUNC(${interval}, created_at)
-      ORDER BY date
-    `;
+    const enrollmentTimeline = interval === 'day'
+      ? await sql`
+          SELECT DATE_TRUNC('day', created_at)::date as date,
+            COUNT(*) as new_students
+          FROM users
+          WHERE role = 'student' AND is_active = true AND tenant_id = ${tenantId}
+            AND created_at >= ${start}::timestamp AND created_at <= ${end}::timestamp + interval '1 day'
+          GROUP BY DATE_TRUNC('day', created_at)::date ORDER BY date`
+      : interval === 'week'
+      ? await sql`
+          SELECT DATE_TRUNC('week', created_at)::date as date,
+            COUNT(*) as new_students
+          FROM users
+          WHERE role = 'student' AND is_active = true AND tenant_id = ${tenantId}
+            AND created_at >= ${start}::timestamp AND created_at <= ${end}::timestamp + interval '1 day'
+          GROUP BY DATE_TRUNC('week', created_at)::date ORDER BY date`
+      : await sql`
+          SELECT DATE_TRUNC('month', created_at)::date as date,
+            COUNT(*) as new_students
+          FROM users
+          WHERE role = 'student' AND is_active = true AND tenant_id = ${tenantId}
+            AND created_at >= ${start}::timestamp AND created_at <= ${end}::timestamp + interval '1 day'
+          GROUP BY DATE_TRUNC('month', created_at)::date ORDER BY date`;
 
     // Applications by status
     const statusBreakdown = await sql`
       SELECT pa.status, COUNT(*) as count
       FROM project_applications pa
       JOIN users u ON u.id = pa.student_id
-      WHERE u.role = 'student' AND u.is_active = true
+      WHERE u.role = 'student' AND u.is_active = true AND u.tenant_id = ${tenantId}
         AND pa.submitted_at >= ${start}::timestamp
         AND pa.submitted_at <= ${end}::timestamp + interval '1 day'
       GROUP BY pa.status
@@ -88,7 +101,7 @@ export async function GET(request: NextRequest) {
       FROM user_skills us
       JOIN skills s ON s.id = us.skill_id
       JOIN users u ON u.id = us.user_id
-      WHERE u.role = 'student' AND u.is_active = true
+      WHERE u.role = 'student' AND u.is_active = true AND u.tenant_id = ${tenantId}
       GROUP BY s.name
       ORDER BY student_count DESC
       LIMIT 10
@@ -105,7 +118,7 @@ export async function GET(request: NextRequest) {
       LEFT JOIN project_applications pa ON pa.student_id = u.id
         AND pa.submitted_at >= ${start}::timestamp
         AND pa.submitted_at <= ${end}::timestamp + interval '1 day'
-      WHERE u.role = 'student' AND u.is_active = true
+      WHERE u.role = 'student' AND u.is_active = true AND u.tenant_id = ${tenantId}
       GROUP BY u.id, u.display_name, u.email, u.university, u.gpa
       ORDER BY applications DESC
       LIMIT 100
@@ -122,7 +135,7 @@ export async function GET(request: NextRequest) {
       LEFT JOIN project_applications pa ON pa.corporate_id = u.id
         AND pa.submitted_at >= ${start}::timestamp
         AND pa.submitted_at <= ${end}::timestamp + interval '1 day'
-      WHERE u.role = 'corporate_partner' AND u.is_active = true
+      WHERE u.role = 'corporate_partner' AND u.is_active = true AND u.tenant_id = ${tenantId}
       GROUP BY u.display_name
       HAVING COUNT(DISTINCT l.id) > 0
       ORDER BY students_hired DESC
@@ -139,7 +152,7 @@ export async function GET(request: NextRequest) {
         waitlistPending: parseInt(waitlistCount[0].count as string),
       },
       enrollmentTimeline: enrollmentTimeline.map((r: Record<string, unknown>) => ({
-        date: (r.date as Date).toISOString().split('T')[0],
+        date: r.date instanceof Date ? r.date.toISOString().split('T')[0] : String(r.date),
         newStudents: parseInt(r.new_students as string),
       })),
       applicationsByStatus: statusBreakdown.map((r: Record<string, unknown>) => ({

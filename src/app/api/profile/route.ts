@@ -18,6 +18,15 @@ const updateProfileSchema = z.object({
   graduationYear: z.number().int().min(2000).max(2040).optional(),
   gpa: z.string().max(10).optional(),
   avatarUrl: z.string().url().optional().nullable(),
+  companyName: z.string().max(200).optional(),
+  jobTitle: z.string().max(200).optional(),
+  department: z.string().max(200).optional(),
+  companyDescription: z.string().max(2000).optional(),
+  companyWebsite: z.string().max(500).optional(),
+  companySize: z.string().max(100).optional(),
+  companyIndustry: z.string().max(200).optional(),
+  sportsPlayed: z.string().max(500).optional(),
+  activities: z.string().max(500).optional(),
 });
 
 export async function GET() {
@@ -31,7 +40,8 @@ export async function GET() {
       SELECT id, email, role, first_name, last_name, display_name,
              bio, phone, university, major, graduation_year, gpa,
              avatar_url, email_verified, institution_domain,
-             tenant_id, public_data, created_at
+             tenant_id, company_name, job_title, department,
+             public_data, metadata, created_at
       FROM users
       WHERE id = ${session.data.userId}
     `;
@@ -79,6 +89,15 @@ export async function GET() {
         avatarUrl: user.avatar_url,
         emailVerified: user.email_verified,
         institutionDomain: user.institution_domain,
+        companyName: user.company_name,
+        jobTitle: user.job_title,
+        department: user.department,
+        companyDescription: (user.public_data as any)?.companyDescription || null,
+        companyWebsite: (user.public_data as any)?.companyWebsite || null,
+        companySize: (user.public_data as any)?.companySize || null,
+        companyIndustry: (user.public_data as any)?.companyIndustry || null,
+        sportsPlayed: (user.metadata as any)?.sportsPlayed || null,
+        activities: (user.metadata as any)?.activities || null,
         createdAt: user.created_at,
       },
       skills,
@@ -121,19 +140,51 @@ export async function PATCH(request: NextRequest) {
     if (data.graduationYear !== undefined) { updates.push('graduation_year'); values.graduation_year = data.graduationYear; }
     if (data.gpa !== undefined) { updates.push('gpa'); values.gpa = data.gpa; }
     if (data.avatarUrl !== undefined) { updates.push('avatar_url'); values.avatar_url = data.avatarUrl; }
+    if (data.companyName !== undefined) { updates.push('company_name'); values.company_name = data.companyName; }
+    if (data.jobTitle !== undefined) { updates.push('job_title'); values.job_title = data.jobTitle; }
+    if (data.department !== undefined) { updates.push('department'); values.department = data.department; }
 
-    if (updates.length === 0) {
-      return NextResponse.json({ error: 'No fields to update' }, { status: 400 });
+    if (updates.length > 0) {
+      await sql`
+        UPDATE users
+        SET ${sql(values, ...updates)}, updated_at = NOW()
+        WHERE id = ${session.data.userId}
+      `;
     }
 
-    // Use raw SQL for dynamic column updates
-    const setClauses = updates.map((col) => `${col} = $${col}`);
+    // Handle public_data fields (merge with existing)
+    const publicDataFields = ['companyDescription', 'companyWebsite', 'companySize', 'companyIndustry'];
+    const publicDataUpdates: Record<string, unknown> = {};
+    for (const field of publicDataFields) {
+      if ((data as Record<string, unknown>)[field] !== undefined) {
+        publicDataUpdates[field] = (data as Record<string, unknown>)[field];
+      }
+    }
+    if (Object.keys(publicDataUpdates).length > 0) {
+      await sql`
+        UPDATE users SET public_data = public_data || ${JSON.stringify(publicDataUpdates)}::jsonb, updated_at = NOW()
+        WHERE id = ${session.data.userId}
+      `;
+    }
 
-    await sql`
-      UPDATE users
-      SET ${sql(values, ...updates)}, updated_at = NOW()
-      WHERE id = ${session.data.userId}
-    `;
+    // Handle metadata fields (merge with existing)
+    const metadataFields = ['sportsPlayed', 'activities'];
+    const metadataUpdates: Record<string, unknown> = {};
+    for (const field of metadataFields) {
+      if ((data as Record<string, unknown>)[field] !== undefined) {
+        metadataUpdates[field] = (data as Record<string, unknown>)[field];
+      }
+    }
+    if (Object.keys(metadataUpdates).length > 0) {
+      await sql`
+        UPDATE users SET metadata = metadata || ${JSON.stringify(metadataUpdates)}::jsonb, updated_at = NOW()
+        WHERE id = ${session.data.userId}
+      `;
+    }
+
+    if (updates.length === 0 && Object.keys(publicDataUpdates).length === 0 && Object.keys(metadataUpdates).length === 0) {
+      return NextResponse.json({ error: 'No fields to update' }, { status: 400 });
+    }
 
     return NextResponse.json({ success: true });
   } catch (error) {

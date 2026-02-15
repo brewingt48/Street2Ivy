@@ -40,6 +40,7 @@ import {
   School,
   Trophy,
   Star,
+  Building2,
 } from 'lucide-react';
 
 interface ProjectListing {
@@ -253,8 +254,9 @@ export default function ProjectsPage() {
                       {project.title}
                     </CardTitle>
                     <CardDescription className="mt-1">
-                      <span className="flex items-center gap-1">
-                        {project.author.displayName || `${project.author.firstName} ${project.author.lastName}`}
+                      <span className="flex items-center gap-1.5 font-medium text-slate-700 dark:text-slate-200">
+                        <Building2 className="h-3.5 w-3.5 text-teal-600" />
+                        Posted by {project.author.displayName || `${project.author.firstName} ${project.author.lastName}`}
                         {project.author.avgRating ? (
                           <span className="inline-flex items-center gap-0.5 text-amber-600 ml-1">
                             <Star className="h-3 w-3 fill-amber-500 text-amber-500" />
@@ -262,6 +264,11 @@ export default function ProjectsPage() {
                           </span>
                         ) : null}
                       </span>
+                      {project.category && (
+                        <span className="flex items-center gap-1 mt-0.5 text-xs text-slate-500">
+                          <Briefcase className="h-3 w-3" /> Industry: {project.category}
+                        </span>
+                      )}
                       {project.author.alumniOf && (
                         <span className="flex items-center gap-1 mt-0.5 text-xs text-slate-400">
                           <School className="h-3 w-3" /> Alumni: {project.author.alumniOf}

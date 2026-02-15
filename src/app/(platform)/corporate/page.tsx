@@ -32,6 +32,7 @@ import {
   Search,
   GraduationCap,
   Info,
+  User,
 } from 'lucide-react';
 import { HelpSupportCard } from '@/components/shared/help-support-card';
 
@@ -132,6 +133,10 @@ export default function CorporateDashboardPage() {
           </p>
         </div>
         <div className="flex items-center gap-2">
+          <Button variant="outline" onClick={() => router.push('/settings')}>
+            <User className="h-4 w-4 mr-2" />
+            My Profile
+          </Button>
           <Button variant="outline" onClick={() => router.push('/corporate/search-students')}>
             <Search className="h-4 w-4 mr-2" />
             Find Students
@@ -223,7 +228,7 @@ export default function CorporateDashboardPage() {
                 <Sparkles className="h-5 w-5 text-amber-500" />
                 Recommended Students
               </CardTitle>
-              <CardDescription>Top-matched students for your active listings</CardDescription>
+              <CardDescription>Students matched to your listing&apos;s required skills using our algorithm. The percentage shows how many of your required skills each student has.</CardDescription>
             </div>
             <Link href="/corporate/search-students">
               <Button variant="ghost" size="sm">

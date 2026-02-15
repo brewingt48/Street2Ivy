@@ -71,18 +71,26 @@ export async function GET(request: NextRequest) {
     `;
 
     // Application timeline (for line chart)
-    const timeline = await sql`
-      SELECT
-        DATE_TRUNC(${interval}, submitted_at)::date as date,
-        COUNT(*) as submitted,
-        COUNT(*) FILTER (WHERE status = 'accepted') as accepted
-      FROM project_applications
-      WHERE student_id = ${userId}
-        AND submitted_at >= ${start}::timestamp
-        AND submitted_at <= ${end}::timestamp + interval '1 day'
-      GROUP BY DATE_TRUNC(${interval}, submitted_at)
-      ORDER BY date
-    `;
+    const timeline = interval === 'day'
+      ? await sql`
+          SELECT DATE_TRUNC('day', submitted_at)::date as date,
+            COUNT(*) as submitted, COUNT(*) FILTER (WHERE status = 'accepted') as accepted
+          FROM project_applications
+          WHERE student_id = ${userId} AND submitted_at >= ${start}::timestamp AND submitted_at <= ${end}::timestamp + interval '1 day'
+          GROUP BY DATE_TRUNC('day', submitted_at)::date ORDER BY date`
+      : interval === 'week'
+      ? await sql`
+          SELECT DATE_TRUNC('week', submitted_at)::date as date,
+            COUNT(*) as submitted, COUNT(*) FILTER (WHERE status = 'accepted') as accepted
+          FROM project_applications
+          WHERE student_id = ${userId} AND submitted_at >= ${start}::timestamp AND submitted_at <= ${end}::timestamp + interval '1 day'
+          GROUP BY DATE_TRUNC('week', submitted_at)::date ORDER BY date`
+      : await sql`
+          SELECT DATE_TRUNC('month', submitted_at)::date as date,
+            COUNT(*) as submitted, COUNT(*) FILTER (WHERE status = 'accepted') as accepted
+          FROM project_applications
+          WHERE student_id = ${userId} AND submitted_at >= ${start}::timestamp AND submitted_at <= ${end}::timestamp + interval '1 day'
+          GROUP BY DATE_TRUNC('month', submitted_at)::date ORDER BY date`;
 
     // Top skill matches (skills the student has that matched listings)
     const topSkills = await sql`
@@ -127,7 +135,7 @@ export async function GET(request: NextRequest) {
         count: parseInt(r.count as string),
       })),
       applicationTimeline: timeline.map((r: Record<string, unknown>) => ({
-        date: (r.date as Date).toISOString().split('T')[0],
+        date: r.date instanceof Date ? r.date.toISOString().split('T')[0] : String(r.date),
         submitted: parseInt(r.submitted as string),
         accepted: parseInt(r.accepted as string),
       })),

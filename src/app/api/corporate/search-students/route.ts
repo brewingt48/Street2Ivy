@@ -18,6 +18,7 @@ export async function GET(request: NextRequest) {
     const skill = searchParams.get('skill') || '';
     const alumniOf = searchParams.get('alumniOf') || '';
     const sportsPlayed = searchParams.get('sportsPlayed') || '';
+    const activities = searchParams.get('activities') || '';
     const page = Math.max(1, parseInt(searchParams.get('page') || '1'));
     const limit = Math.min(50, Math.max(1, parseInt(searchParams.get('limit') || '20')));
     const offset = (page - 1) * limit;
@@ -56,6 +57,13 @@ export async function GET(request: NextRequest) {
       const sportsPattern = `%${sportsPlayed}%`;
       conditions.push(
         sql`u.metadata->>'sportsPlayed' ILIKE ${sportsPattern}`
+      );
+    }
+
+    if (activities) {
+      const activitiesPattern = `%${activities}%`;
+      conditions.push(
+        sql`u.metadata->>'activities' ILIKE ${activitiesPattern}`
       );
     }
 
@@ -101,6 +109,7 @@ export async function GET(request: NextRequest) {
           skills: s.skills || [],
           alumniOf: (metadata.alumniOf as string) || null,
           sportsPlayed: (metadata.sportsPlayed as string) || null,
+          activities: (metadata.activities as string) || null,
         };
       }),
       total,

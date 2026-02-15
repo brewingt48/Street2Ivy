@@ -16,7 +16,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Search, Send, GraduationCap, MapPin, Clock, Star, ChevronLeft, ChevronRight, School, Trophy } from 'lucide-react';
+import { Search, Send, GraduationCap, MapPin, Clock, Star, ChevronLeft, ChevronRight, School, Trophy, Activity } from 'lucide-react';
 
 interface Student {
   id: string;
@@ -33,6 +33,7 @@ interface Student {
   openToWork: boolean;
   alumniOf: string | null;
   sportsPlayed: string | null;
+  activities: string | null;
 }
 
 interface Listing {
@@ -48,6 +49,7 @@ export default function SearchStudentsPage() {
   const [skillFilter, setSkillFilter] = useState('');
   const [alumniOfFilter, setAlumniOfFilter] = useState('');
   const [sportsPlayedFilter, setSportsPlayedFilter] = useState('');
+  const [activitiesFilter, setActivitiesFilter] = useState('');
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
@@ -66,6 +68,7 @@ export default function SearchStudentsPage() {
       if (skillFilter) params.set('skill', skillFilter);
       if (alumniOfFilter) params.set('alumniOf', alumniOfFilter);
       if (sportsPlayedFilter) params.set('sportsPlayed', sportsPlayedFilter);
+      if (activitiesFilter) params.set('activities', activitiesFilter);
       const res = await fetch(`/api/corporate/search-students?${params}`);
       const data = await res.json();
       setStudents(data.students || []);
@@ -75,7 +78,7 @@ export default function SearchStudentsPage() {
     } finally {
       setLoading(false);
     }
-  }, [page, searchQuery, skillFilter, alumniOfFilter, sportsPlayedFilter]);
+  }, [page, searchQuery, skillFilter, alumniOfFilter, sportsPlayedFilter, activitiesFilter]);
 
   useEffect(() => {
     fetchStudents();
@@ -164,6 +167,13 @@ export default function SearchStudentsPage() {
                 placeholder="Sports played..."
                 value={sportsPlayedFilter}
                 onChange={(e) => setSportsPlayedFilter(e.target.value)}
+              />
+            </div>
+            <div className="w-40">
+              <Input
+                placeholder="Activities..."
+                value={activitiesFilter}
+                onChange={(e) => setActivitiesFilter(e.target.value)}
               />
             </div>
             <Button type="submit" className="bg-teal-600 hover:bg-teal-700">
@@ -261,6 +271,11 @@ export default function SearchStudentsPage() {
                     {student.sportsPlayed && (
                       <span className="flex items-center gap-1">
                         <Trophy className="h-3 w-3" /> {student.sportsPlayed}
+                      </span>
+                    )}
+                    {student.activities && (
+                      <span className="flex items-center gap-1">
+                        <Activity className="h-3 w-3" /> {student.activities}
                       </span>
                     )}
                   </div>
