@@ -113,10 +113,10 @@ export function LandingPageClient({ tenant, stats, partners }: LandingPageClient
   const displayName = tenant.display_name ?? tenant.name;
   const headline =
     tenant.hero_headline ??
-    'AI is changing every industry. The athletes who adapt first, win.';
+    'You didn\u2019t train this hard to sit on the sideline.';
   const subheadline =
     tenant.hero_subheadline ??
-    'The discipline you built on the field \u2014 resilience, execution, performing under pressure \u2014 those are the skills AI can\u2019t replace. Proveground turns your competitive edge into career momentum.';
+    'AI is reshaping every industry. The skills it can\u2019t replace \u2014 discipline, leadership, judgment \u2014 are the ones you\u2019ve already built. Turn your competitive edge into career momentum.';
 
   const studentCount = Number(stats.student_count) || 0;
   const listingCount = Number(stats.listing_count) || 0;
@@ -228,9 +228,9 @@ export function LandingPageClient({ tenant, stats, partners }: LandingPageClient
           {/* AI competitive edge highlights */}
           <motion.div variants={fadeUp} className="mt-8 flex flex-wrap justify-center gap-3">
             {[
-              { icon: Trophy, text: 'Train for what\u2019s next' },
-              { icon: Target, text: 'Outperform the algorithm' },
-              { icon: Rocket, text: 'Compete early, win often' },
+              { icon: Trophy, text: 'Prove it with real work' },
+              { icon: Target, text: 'Skills AI can\u2019t replace' },
+              { icon: Rocket, text: 'From the field to the boardroom' },
             ].map((item) => (
               <span
                 key={item.text}
@@ -297,11 +297,10 @@ export function LandingPageClient({ tenant, stats, partners }: LandingPageClient
             className="text-center mb-14"
           >
             <motion.h2 variants={fadeUp} className="text-3xl sm:text-4xl font-bold mb-4">
-              Built for performers. Designed for results.
+              Four steps. Real work. Earned reputation.
             </motion.h2>
             <motion.p variants={fadeUp} className="text-gray-500 max-w-2xl mx-auto">
-              Every marketplace on Proveground follows the same competitive loop &mdash; launch, post,
-              perform, earn.
+              The same competitive loop that built you on the field &mdash; now applied to your career.
             </motion.p>
           </motion.div>
 
@@ -326,10 +325,9 @@ export function LandingPageClient({ tenant, stats, partners }: LandingPageClient
               <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: primary }}>
                 Step 1
               </p>
-              <h3 className="text-xl font-semibold mb-3">Your Program Launches a Marketplace</h3>
+              <h3 className="text-xl font-semibold mb-3">Launch Your Marketplace</h3>
               <p className="text-gray-500 leading-relaxed">
-                A coach, administrator, or department head activates the program&rsquo;s branded
-                marketplace &mdash; built to compete from day one.
+                Your program gets a fully branded marketplace — your colors, your identity, your competitive advantage.
               </p>
             </motion.div>
 
@@ -347,10 +345,9 @@ export function LandingPageClient({ tenant, stats, partners }: LandingPageClient
               <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: primary }}>
                 Step 2
               </p>
-              <h3 className="text-xl font-semibold mb-3">Alumni &amp; Partners Post Real Projects</h3>
+              <h3 className="text-xl font-semibold mb-3">Partners Post Real Work</h3>
               <p className="text-gray-500 leading-relaxed">
-                Alumni-owned businesses and corporate partners post paid projects, consulting
-                engagements, and contract work &mdash; not busy work.
+                Alumni and corporate partners bring real internships and scoped projects. No simulations.
               </p>
             </motion.div>
 
@@ -368,10 +365,9 @@ export function LandingPageClient({ tenant, stats, partners }: LandingPageClient
               <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: primary }}>
                 Step 3
               </p>
-              <h3 className="text-xl font-semibold mb-3">Students Get Matched &amp; Get to Work</h3>
+              <h3 className="text-xl font-semibold mb-3">Students Deliver &amp; Earn Reviews</h3>
               <p className="text-gray-500 leading-relaxed">
-                AI-powered matching pairs student-athletes with the right projects based on skill,
-                availability, and competitive drive. Then they deliver.
+                Real results. Verified reviews. Reputation built one engagement at a time.
               </p>
             </motion.div>
 
@@ -389,10 +385,9 @@ export function LandingPageClient({ tenant, stats, partners }: LandingPageClient
               <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: primary }}>
                 Step 4
               </p>
-              <h3 className="text-xl font-semibold mb-3">Reputation Builds With Every Project</h3>
+              <h3 className="text-xl font-semibold mb-3">Reputation Opens Doors</h3>
               <p className="text-gray-500 leading-relaxed">
-                Every completed project earns reviews, builds a verified portfolio, and proves
-                performance &mdash; the same way stats speak on the field.
+                A track record that speaks louder than a GPA. Verified work that proves what you can do.
               </p>
             </motion.div>
           </motion.div>
@@ -412,7 +407,7 @@ export function LandingPageClient({ tenant, stats, partners }: LandingPageClient
             className="text-center mb-14"
           >
             <motion.h2 variants={fadeUp} className="text-3xl sm:text-4xl font-bold mb-4">
-              One platform. Three competitive advantages.
+              Three audiences. One proving ground.
             </motion.h2>
           </motion.div>
 
@@ -434,11 +429,9 @@ export function LandingPageClient({ tenant, stats, partners }: LandingPageClient
               >
                 <Trophy className="h-7 w-7" style={{ color: primary }} />
               </div>
-              <h3 className="text-xl font-semibold mb-3">For Student-Athletes &amp; Students</h3>
+              <h3 className="text-xl font-semibold mb-3">For Students</h3>
               <p className="text-gray-500 leading-relaxed mb-4">
-                Your competitive edge doesn&rsquo;t expire when you leave the field. Compete for real
-                projects, deliver professional-grade work, and build a reputation that proves you
-                perform under pressure &mdash; not just on a resume, but on the scoreboard that matters.
+                Stop waiting. Start proving. Access real projects from alumni and corporate partners. Build a verified track record. Step into your career with proof, not promises.
               </p>
               <a
                 href={`/register?tenant=${tenant.subdomain}&role=student`}
@@ -460,11 +453,9 @@ export function LandingPageClient({ tenant, stats, partners }: LandingPageClient
               >
                 <Handshake className="h-7 w-7" style={{ color: primary }} />
               </div>
-              <h3 className="text-xl font-semibold mb-3">For Alumni &amp; Corporate Partners</h3>
+              <h3 className="text-xl font-semibold mb-3">For Alumni &amp; Partners</h3>
               <p className="text-gray-500 leading-relaxed mb-4">
-                Invest in talent you already believe in. Post real projects, tap into a pipeline of
-                disciplined performers who know how to compete, and build your bench of future hires
-                &mdash; all while strengthening the program that built you.
+                Invest in the next class. Post real project work for the students coming up behind you. Find your next hire through a scoped engagement before making a full commitment.
               </p>
               <a
                 href={`/register?tenant=${tenant.subdomain}&role=alumni`}
@@ -486,11 +477,9 @@ export function LandingPageClient({ tenant, stats, partners }: LandingPageClient
               >
                 <Shield className="h-7 w-7" style={{ color: primary }} />
               </div>
-              <h3 className="text-xl font-semibold mb-3">For Universities &amp; Athletic Programs</h3>
+              <h3 className="text-xl font-semibold mb-3">For Programs</h3>
               <p className="text-gray-500 leading-relaxed mb-4">
-                A recruiting advantage that extends beyond the field. Launch a branded career
-                marketplace that proves your program develops complete competitors &mdash; athletes who
-                perform in the classroom, in the market, and in life.
+                Move first. Lead the shift. Launch a fully branded marketplace filled with real internships and projects. Give your students a new path forward while AI rewrites the rules.
               </p>
               <a
                 href="/for-universities"
@@ -726,17 +715,15 @@ export function LandingPageClient({ tenant, stats, partners }: LandingPageClient
             className="text-center"
           >
             <motion.h2 variants={fadeUp} className="text-3xl sm:text-4xl font-bold mb-6">
-              One program starts it. The whole network benefits.
+              One program starts it. The network multiplies it.
             </motion.h2>
             <motion.p
               variants={fadeUp}
               className="text-gray-500 text-lg leading-relaxed max-w-3xl mx-auto mb-8"
             >
-              When {displayName} launches its marketplace, it doesn&rsquo;t stay siloed. Football
-              connects to the athletic department. The athletic department connects to career services.
-              Career services connects to the entire Proveground Network &mdash; unlocking a
-              cross-program, cross-school talent pipeline that compounds with every new partner and
-              every completed project.
+              When {displayName} launches its marketplace, it connects to the entire Proveground
+              Network &mdash; a cross-program, cross-school talent pipeline that compounds with
+              every new partner and every completed project.
             </motion.p>
             <motion.div variants={fadeUp} className="flex flex-wrap justify-center gap-6">
               {[
@@ -779,16 +766,15 @@ export function LandingPageClient({ tenant, stats, partners }: LandingPageClient
             className="text-3xl sm:text-4xl font-bold mb-4"
             style={{ color: secondary }}
           >
-            The best talent doesn&rsquo;t wait to be discovered.
+            This is your ground.
           </motion.h2>
           <motion.p
             variants={fadeUp}
             className="text-lg mb-10 max-w-xl mx-auto"
             style={{ color: `${secondary}bb` }}
           >
-            They compete, deliver, and prove it &mdash; project by project. Whether you are a
-            student-athlete ready to perform or an alumni partner ready to build your bench,
-            the marketplace is open.
+            Students, partners, and programs who move now won&rsquo;t just keep up &mdash;
+            they&rsquo;ll set the pace.
           </motion.p>
 
           <motion.div variants={fadeUp} className="flex flex-col sm:flex-row gap-4 justify-center">

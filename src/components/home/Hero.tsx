@@ -6,52 +6,62 @@ import { ChevronDown } from 'lucide-react';
 
 /*
  * Carousel images — diverse, inclusive imagery showing:
- * Sports: Football, basketball, track/relay — competitive university athletes
- * Corporate: Young, athletic-looking diverse professionals in office settings
+ * Sports: American college football, basketball, women's sports, track/relay
+ * Corporate: Diverse young people presenting, shaking hands in offices — NO typing/laptops
  * The arc: competition + discipline → corporate leadership
  */
 const carouselImages = [
-  // --- SPORTS ---
+  // --- SPORTS: Football ---
   {
     src: 'https://images.unsplash.com/photo-1560272564-c83b66b1ad12?w=1920&q=80',
     alt: 'College football players competing on the field under stadium lights',
   },
   {
-    src: 'https://images.unsplash.com/photo-1461896836934-bd45ba688b62?w=1920&q=80',
-    alt: 'Diverse basketball players battling in an intense college game',
+    src: 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=1920&q=80',
+    alt: 'Football team huddle — discipline and leadership on the field',
+  },
+  {
+    src: 'https://images.unsplash.com/photo-1508398938709-c8f9718bab03?w=1920&q=80',
+    alt: 'American football quarterback preparing to throw under pressure',
+  },
+  // --- SPORTS: Basketball ---
+  {
+    src: 'https://images.unsplash.com/photo-1546519638-68e109498ffc?w=1920&q=80',
+    alt: 'Basketball player driving to the hoop with determination',
+  },
+  {
+    src: 'https://images.unsplash.com/photo-1519861531473-9200262188bf?w=1920&q=80',
+    alt: 'Intense basketball game — players competing under the lights',
+  },
+  // --- SPORTS: Women's / Female Athletes ---
+  {
+    src: 'https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=1920&q=80',
+    alt: 'Female athlete sprinting on a track with power and focus',
+  },
+  {
+    src: 'https://images.unsplash.com/photo-1587280501635-68a0e82cd5ff?w=1920&q=80',
+    alt: 'Women\'s volleyball team competing in an intense college match',
   },
   {
     src: 'https://images.unsplash.com/photo-1517649763962-0c623066013b?w=1920&q=80',
     alt: 'Diverse athletes competing in a relay race, passing the baton',
   },
-  {
-    src: 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=1920&q=80',
-    alt: 'Football huddle — team discipline and leadership on the field',
-  },
-  {
-    src: 'https://images.unsplash.com/photo-1546519638-68e109498ffc?w=1920&q=80',
-    alt: 'Basketball player driving to the hoop with determination',
-  },
-  // --- CORPORATE / TRANSITION ---
-  {
-    src: 'https://images.unsplash.com/photo-1600880292089-90a7e086ee0c?w=1920&q=80',
-    alt: 'Young diverse professionals shaking hands in a modern corporate office',
-  },
-  {
-    src: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=1920&q=80',
-    alt: 'Diverse young team collaborating around a table in a bright office',
-  },
+  // --- CORPORATE: Presenting & Handshakes (no typing/laptops) ---
   {
     src: 'https://images.unsplash.com/photo-1573164713714-d95e436ab8d6?w=1920&q=80',
     alt: 'Young professional woman presenting confidently to a boardroom',
+  },
+  {
+    src: 'https://images.unsplash.com/photo-1600880292089-90a7e086ee0c?w=1920&q=80',
+    alt: 'Young diverse professionals shaking hands in a modern corporate office',
   },
   {
     src: 'https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=1920&q=80',
     alt: 'Diverse team of young professionals closing a deal with a handshake',
   },
   {
-    src: 'https://images.unsplash.com/photo-1556761175-5973dc0f32e7?w=1920&q=80',
-    alt: 'Young diverse professionals in a glass-walled office celebrating success',
+    src: 'https://images.unsplash.com/photo-1551836022-d5d88e9218df?w=1920&q=80',
+    alt: 'Young diverse professional presenting to colleagues in a glass conference room',
   },
 ];
 
