@@ -225,17 +225,6 @@ export function LandingPageClient({ tenant, stats, partners }: LandingPageClient
             </a>
           </motion.div>
 
-          {/* Tertiary link for universities */}
-          <motion.div variants={fadeUp} className="mt-6">
-            <a
-              href="/for-universities"
-              className="inline-flex items-center gap-1 text-sm font-medium transition-colors hover:underline"
-              style={{ color: `${secondary}99` }}
-            >
-              For Universities &amp; Programs
-              <ArrowRight className="h-4 w-4" />
-            </a>
-          </motion.div>
         </motion.div>
       </section>
 
