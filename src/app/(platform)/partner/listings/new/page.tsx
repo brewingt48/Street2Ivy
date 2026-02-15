@@ -308,7 +308,7 @@ export default function CreateListingPage() {
         <Card>
           <CardHeader>
             <CardTitle>Compensation</CardTitle>
-            <CardDescription>Budget and payment details</CardDescription>
+            <CardDescription>Budget and payment details. All work agreements, contracts, and payments are arranged directly between you and the student, outside the platform.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-center gap-3">

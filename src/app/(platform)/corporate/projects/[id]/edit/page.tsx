@@ -137,7 +137,10 @@ export default function EditListingPage() {
       </Card>
 
       <Card>
-        <CardHeader><CardTitle>Compensation & Schedule</CardTitle></CardHeader>
+        <CardHeader>
+          <CardTitle>Compensation & Schedule</CardTitle>
+          <p className="text-xs text-slate-400 mt-1">This information helps students evaluate the opportunity. All work agreements, contracts, and payments are arranged directly between you and the student, outside the platform.</p>
+        </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2"><Label>Compensation</Label><Input value={compensation} onChange={(e) => setCompensation(e.target.value)} /></div>

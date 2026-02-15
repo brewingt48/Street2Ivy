@@ -184,6 +184,9 @@ export default function ProjectsPage() {
         <p className="text-slate-500 dark:text-slate-400 mt-1">
           Discover projects and internships from top companies
         </p>
+        <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">
+          Proveground connects you with opportunities. All work, contracts, and payments are arranged directly between you and the partner.
+        </p>
       </div>
 
       {/* Type Filter Tabs */}

@@ -199,6 +199,7 @@ export default function DashboardPage() {
               <li>&bull; <strong>Add your skills</strong> in Settings &mdash; Proveground&apos;s proprietary <strong>Match Engine&trade;</strong> uses them to pair you with the right projects</li>
               <li>&bull; <strong>Browse Projects</strong> to find opportunities matched to your interests, schedule, and expertise</li>
               <li>&bull; <strong>Check your messages</strong> regularly &mdash; partners may reach out with invitations</li>
+              <li>&bull; <strong>Note:</strong> Proveground connects you with opportunities &mdash; all work, contracts, and payments are arranged directly between you and the partner, outside the platform</li>
             </ul>
           </div>
         </div>

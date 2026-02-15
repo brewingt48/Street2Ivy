@@ -181,6 +181,9 @@ export default function ApplyPage() {
               Your application for <span className="font-medium">{project.title}</span> has been
               submitted. You&apos;ll receive a notification when the company responds.
             </p>
+            <p className="text-xs text-slate-400 mt-3 max-w-sm mx-auto">
+              If accepted, all work details, contracts, and payment will be arranged directly between you and the partner.
+            </p>
             <div className="flex justify-center gap-3 mt-6">
               <Button variant="outline" onClick={() => router.push('/dashboard')}>
                 Go to Dashboard
@@ -320,6 +323,9 @@ export default function ApplyPage() {
                   onChange={(e) => setHoursPerWeek(e.target.value)}
                 />
               </div>
+            </div>
+            <div className="bg-slate-50 dark:bg-slate-800/50 rounded-lg p-3 text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+              <strong>Please note:</strong> Proveground is a matching and discovery platform. By submitting this application, you are expressing interest in the opportunity. All work agreements, contracts, and payments are arranged directly between you and the partner, outside the platform.
             </div>
           </CardContent>
           <CardFooter className="flex justify-between">

@@ -415,6 +415,9 @@ export default function ProjectDetailPage() {
                 {project.applicationCount} applicant{project.applicationCount !== 1 ? 's' : ''}
                 {project.maxApplicants && ` of ${project.maxApplicants} max`}
               </div>
+              <p className="text-xs text-slate-400 text-center mt-2 leading-relaxed">
+                Proveground connects you with this opportunity. All work, contracts, and payments are arranged directly between you and the partner, outside the platform.
+              </p>
             </CardContent>
           </Card>
 

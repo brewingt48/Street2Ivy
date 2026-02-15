@@ -187,7 +187,12 @@ export default function NewListingPage() {
       </Card>
 
       <Card>
-        <CardHeader><CardTitle>Compensation & Schedule</CardTitle></CardHeader>
+        <CardHeader>
+          <CardTitle>Compensation & Schedule</CardTitle>
+          <CardDescription className="text-xs">
+            This information helps students evaluate the opportunity. All work agreements, contracts, and payments are arranged directly between you and the student, outside the platform.
+          </CardDescription>
+        </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2"><Label>Compensation</Label><Input placeholder="e.g. $25/hr or $2,000 fixed" value={compensation} onChange={(e) => setCompensation(e.target.value)} /></div>

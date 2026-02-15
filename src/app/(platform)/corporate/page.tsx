@@ -163,6 +163,7 @@ export default function CorporateDashboardPage() {
               <li>&bull; <strong>Applications</strong> &mdash; Review student applications, accept or decline, and mark projects as complete</li>
               <li>&bull; <strong>Find Students</strong> &mdash; Search the student pool or let Proveground&apos;s proprietary <strong>Match Engine&trade;</strong> surface the best candidates</li>
               <li>&bull; <strong>Messages</strong> &mdash; Communicate with students about applications and project details</li>
+              <li>&bull; <strong>Note:</strong> Proveground is a matching and discovery platform &mdash; all work agreements, contracts, and payments are arranged directly between you and the student, outside the platform</li>
             </ul>
           </div>
         </div>

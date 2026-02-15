@@ -78,6 +78,15 @@ export function ValueProps() {
             </motion.div>
           ))}
         </div>
+
+        <motion.p
+          initial={{ opacity: 0, y: 20 }}
+          animate={isInView ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.5, delay: 0.6 }}
+          className="text-center text-xs text-[#3a3a3a]/50 mt-10"
+        >
+          Proveground is a matching and discovery platform. All work, contracts, and payments are arranged directly between participants, outside the platform.
+        </motion.p>
       </div>
     </section>
   );

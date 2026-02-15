@@ -399,6 +399,16 @@ export function LandingPageClient({ tenant, stats, partners }: LandingPageClient
               </p>
             </motion.div>
           </motion.div>
+
+          <motion.p
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.3 }}
+            variants={fadeUp}
+            className="text-center text-xs text-gray-400 mt-8"
+          >
+            Proveground is a matching and discovery platform. All work, contracts, and payments are arranged directly between participants, outside the platform.
+          </motion.p>
         </div>
       </section>
 

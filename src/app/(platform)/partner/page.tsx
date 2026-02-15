@@ -169,6 +169,9 @@ export default function PartnerDashboardPage() {
                 &bull; <strong>Manage Listings</strong> &mdash; Publish drafts,
                 close listings, or update details
               </li>
+              <li>
+                &bull; <strong>Note:</strong> Proveground is a matching and discovery platform &mdash; all work agreements, contracts, and payments are arranged directly between you and the student, outside the platform
+              </li>
             </ul>
           </div>
         </div>
