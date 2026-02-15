@@ -32,6 +32,8 @@ import {
   XCircle,
   RefreshCw,
   AlertTriangle,
+  Trophy,
+  Globe,
 } from 'lucide-react';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 
@@ -44,6 +46,12 @@ interface TenantDetail {
   institutionDomain: string | null;
   branding: Record<string, string>;
   features: Record<string, unknown>;
+  marketplaceType: string;
+  sport: string | null;
+  teamName: string | null;
+  conference: string | null;
+  sharedNetworkEnabled: boolean;
+  networkTier: string;
   createdAt: string;
   updatedAt: string;
   stats: {
@@ -92,6 +100,13 @@ export default function TenantDetailPage() {
   const [editSecondaryColor, setEditSecondaryColor] = useState('#C8A951');
   const [editLogoUrl, setEditLogoUrl] = useState('');
   const [editAllowedDomains, setEditAllowedDomains] = useState('');
+  // Athletic & network fields
+  const [editMarketplaceType, setEditMarketplaceType] = useState<'institution' | 'athletic'>('institution');
+  const [editSport, setEditSport] = useState('');
+  const [editTeamName, setEditTeamName] = useState('');
+  const [editConference, setEditConference] = useState('');
+  const [editSharedNetwork, setEditSharedNetwork] = useState(false);
+  const [editNetworkTier, setEditNetworkTier] = useState<'basic' | 'full'>('basic');
 
   const fetchTenant = useCallback(async () => {
     try {
@@ -110,6 +125,13 @@ export default function TenantDetailPage() {
         const features = (data.tenant.features || {}) as Record<string, unknown>;
         const domains = (features.allowedDomains || []) as string[];
         setEditAllowedDomains(domains.join(', '));
+        // Athletic fields
+        setEditMarketplaceType((data.tenant.marketplaceType as 'institution' | 'athletic') || 'institution');
+        setEditSport(data.tenant.sport || '');
+        setEditTeamName(data.tenant.teamName || '');
+        setEditConference(data.tenant.conference || '');
+        setEditSharedNetwork(data.tenant.sharedNetworkEnabled || false);
+        setEditNetworkTier((data.tenant.networkTier as 'basic' | 'full') || 'basic');
       }
     } catch (err) {
       console.error(err);
@@ -141,6 +163,12 @@ export default function TenantDetailPage() {
           features: {
             allowedDomains: domainsArray,
           },
+          marketplaceType: editMarketplaceType,
+          sport: editSport || null,
+          teamName: editTeamName || null,
+          conference: editConference || null,
+          sharedNetworkEnabled: editSharedNetwork,
+          networkTier: editNetworkTier,
         }),
       });
       if (res.ok) {
@@ -237,9 +265,9 @@ export default function TenantDetailPage() {
               <Badge className={`border-0 ${statusColors[tenant.status] || ''}`}>{tenant.status}</Badge>
             </div>
             <p className="text-slate-500 mt-1 font-mono text-sm">
-              {tenant.subdomain}.campus2career.com
+              /{tenant.subdomain}
               <a
-                href={`https://${tenant.subdomain}.campus2career.com`}
+                href={`/${tenant.subdomain}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex ml-2 text-teal-600 hover:text-teal-700"
@@ -402,6 +430,137 @@ export default function TenantDetailPage() {
                 <Button className="bg-teal-600 hover:bg-teal-700" onClick={handleSave} disabled={saving}>
                   <Save className="h-4 w-4 mr-2" /> {saving ? 'Saving...' : 'Save Changes'}
                 </Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Athletic Program & Network */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Trophy className="h-5 w-5 text-purple-600" /> Athletic Program & Network
+              </CardTitle>
+              <CardDescription>
+                Designate this tenant as an athletic program and configure shared network access.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {/* Marketplace Type Toggle */}
+              <div>
+                <Label className="text-sm font-medium text-slate-700 dark:text-slate-300">Marketplace Type</Label>
+                <div className="grid grid-cols-2 gap-3 mt-2">
+                  {[
+                    { value: 'institution' as const, label: 'Standard Institution', desc: 'University, college, or training program', icon: Building2 },
+                    { value: 'athletic' as const, label: 'Athletic Program', desc: 'Sports team with alumni network', icon: Trophy },
+                  ].map((opt) => {
+                    const Icon = opt.icon;
+                    const isActive = editMarketplaceType === opt.value;
+                    return (
+                      <button
+                        key={opt.value}
+                        onClick={() => {
+                          setEditMarketplaceType(opt.value);
+                          if (opt.value === 'athletic') {
+                            setEditSharedNetwork(true);
+                            setEditNetworkTier('full');
+                          }
+                        }}
+                        className={`text-left p-4 rounded-xl border-2 transition-all ${
+                          isActive
+                            ? 'border-purple-500 bg-purple-50 dark:bg-purple-900/20'
+                            : 'border-slate-200 hover:border-slate-300 dark:border-slate-700'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2 mb-1">
+                          <Icon className={`h-4 w-4 ${isActive ? 'text-purple-600' : 'text-slate-400'}`} />
+                          <p className={`font-semibold text-sm ${isActive ? 'text-purple-700 dark:text-purple-400' : 'text-slate-900 dark:text-white'}`}>
+                            {opt.label}
+                          </p>
+                          {isActive && <Check className="h-4 w-4 text-purple-600 ml-auto" />}
+                        </div>
+                        <p className="text-xs text-slate-500">{opt.desc}</p>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Athletic Fields (shown when Athletic is selected) */}
+              {editMarketplaceType === 'athletic' && (
+                <div className="space-y-4 p-4 rounded-lg bg-purple-50/50 border border-purple-100 dark:bg-purple-900/10 dark:border-purple-800">
+                  <p className="text-xs font-semibold uppercase tracking-wider text-purple-600">Athletic Details</p>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div className="space-y-2">
+                      <Label>Sport</Label>
+                      <select
+                        value={editSport}
+                        onChange={(e) => setEditSport(e.target.value)}
+                        className="w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm dark:bg-slate-800 dark:border-slate-700"
+                      >
+                        <option value="">Select sport...</option>
+                        {['Football', 'Basketball', 'Baseball', 'Soccer', 'Track & Field', 'Swimming', 'Lacrosse', 'Hockey', 'Tennis', 'Volleyball', 'Wrestling', 'Softball', 'Golf', 'Rowing', 'Other'].map((s) => (
+                          <option key={s} value={s}>{s}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Team Name</Label>
+                      <Input
+                        value={editTeamName}
+                        onChange={(e) => setEditTeamName(e.target.value)}
+                        placeholder="e.g. Crusaders"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Conference</Label>
+                      <Input
+                        value={editConference}
+                        onChange={(e) => setEditConference(e.target.value)}
+                        placeholder="e.g. Patriot League"
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Network Settings */}
+              <div className="space-y-3">
+                <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">Shared Network</p>
+                <div className="flex items-center justify-between p-3 rounded-lg border">
+                  <div className="flex items-center gap-3">
+                    <Globe className={`h-5 w-5 ${editSharedNetwork ? 'text-green-600' : 'text-slate-400'}`} />
+                    <div>
+                      <p className="text-sm font-medium text-slate-700 dark:text-slate-300">Shared Network Enabled</p>
+                      <p className="text-xs text-slate-400">Allow this tenant to access the cross-institutional partner network</p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setEditSharedNetwork(!editSharedNetwork)}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                      editSharedNetwork ? 'bg-green-500' : 'bg-slate-300'
+                    }`}
+                  >
+                    <span
+                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                        editSharedNetwork ? 'translate-x-6' : 'translate-x-1'
+                      }`}
+                    />
+                  </button>
+                </div>
+
+                {editSharedNetwork && (
+                  <div className="flex items-center gap-3">
+                    <Label className="text-sm whitespace-nowrap">Network Tier</Label>
+                    <select
+                      value={editNetworkTier}
+                      onChange={(e) => setEditNetworkTier(e.target.value as 'basic' | 'full')}
+                      className="rounded-md border border-slate-200 bg-white px-3 py-2 text-sm dark:bg-slate-800 dark:border-slate-700"
+                    >
+                      <option value="basic">Basic — Limited network access</option>
+                      <option value="full">Full — Complete network access</option>
+                    </select>
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>

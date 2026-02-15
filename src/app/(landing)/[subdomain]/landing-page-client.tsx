@@ -607,6 +607,45 @@ export function LandingPageClient({ tenant, stats, partners }: LandingPageClient
       )}
 
       {/* ================================================================
+          SECTION 6.5 -- PHOTO GALLERY
+         ================================================================ */}
+      {Array.isArray(tenant.gallery_images) && tenant.gallery_images.length > 0 && (
+        <section className="py-20 px-6 bg-gray-50">
+          <div className="max-w-6xl mx-auto">
+            <motion.div
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, amount: 0.2 }}
+              variants={stagger}
+            >
+              <motion.h2 variants={fadeUp} className="text-3xl sm:text-4xl font-bold text-center mb-12">
+                Gallery
+              </motion.h2>
+              <motion.div
+                variants={fadeUp}
+                className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"
+              >
+                {(tenant.gallery_images as string[]).map((img, i) => (
+                  <div
+                    key={i}
+                    className="relative aspect-[4/3] rounded-xl overflow-hidden group cursor-pointer"
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={img}
+                      alt={`${displayName} gallery ${i + 1}`}
+                      className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                    />
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300" />
+                  </div>
+                ))}
+              </motion.div>
+            </motion.div>
+          </div>
+        </section>
+      )}
+
+      {/* ================================================================
           SECTION 7 -- SOCIAL LINKS + CONTACT
          ================================================================ */}
       {(Object.keys(socialLinks).length > 0 || contactInfo.email || contactInfo.phone) && (

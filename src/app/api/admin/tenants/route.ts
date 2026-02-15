@@ -52,6 +52,11 @@ const createTenantSchema = z.object({
       inviteManagement: z.boolean().optional(),
     })
     .optional(),
+  // Athletic program fields
+  marketplaceType: z.enum(['institution', 'athletic']).default('institution'),
+  sport: z.string().max(100).optional().nullable(),
+  teamName: z.string().max(100).optional().nullable(),
+  conference: z.string().max(200).optional().nullable(),
 });
 
 /** Generate a secure random password */
@@ -132,7 +137,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { subdomain, name, displayName, institutionDomain, institutionType, allowedDomains, plan, adminEmail, adminFirstName, adminLastName, branding, features } = parsed.data;
+    const { subdomain, name, displayName, institutionDomain, institutionType, allowedDomains, plan, adminEmail, adminFirstName, adminLastName, branding, features, marketplaceType, sport, teamName, conference } = parsed.data;
 
     // Check subdomain uniqueness
     const existing = await sql`SELECT id FROM tenants WHERE subdomain = ${subdomain}`;
@@ -181,11 +186,23 @@ export async function POST(request: NextRequest) {
         `;
       }
 
-      // 2. Create tenant
+      // 2. Create tenant (with athletic fields if applicable)
+      const isAthletic = marketplaceType === 'athletic';
       const [tenant] = await tx`
-        INSERT INTO tenants (subdomain, name, display_name, institution_domain, branding, features)
-        VALUES (${subdomain}, ${name}, ${displayName || name}, ${institutionDomain || null}, ${brandingJson}, ${featuresJson})
-        RETURNING id, subdomain, name, display_name, status, institution_domain, branding, features, created_at
+        INSERT INTO tenants (
+          subdomain, name, display_name, institution_domain, branding, features,
+          marketplace_type, sport, team_name, conference,
+          shared_network_enabled, network_tier
+        )
+        VALUES (
+          ${subdomain}, ${name}, ${displayName || name}, ${institutionDomain || null},
+          ${brandingJson}, ${featuresJson},
+          ${marketplaceType}, ${sport || null}, ${teamName || null}, ${conference || null},
+          ${isAthletic ? true : false}, ${isAthletic ? 'full' : 'basic'}
+        )
+        RETURNING id, subdomain, name, display_name, status, institution_domain, branding, features,
+                  marketplace_type, sport, team_name, conference, shared_network_enabled, network_tier,
+                  created_at
       `;
 
       // 3. Create edu admin user with hashed password
@@ -218,6 +235,12 @@ export async function POST(request: NextRequest) {
           institutionDomain: result.tenant.institution_domain,
           branding: result.tenant.branding,
           features: result.tenant.features,
+          marketplaceType: result.tenant.marketplace_type,
+          sport: result.tenant.sport,
+          teamName: result.tenant.team_name,
+          conference: result.tenant.conference,
+          sharedNetworkEnabled: result.tenant.shared_network_enabled,
+          networkTier: result.tenant.network_tier,
           createdAt: result.tenant.created_at,
         },
         admin: {

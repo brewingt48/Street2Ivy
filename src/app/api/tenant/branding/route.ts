@@ -44,7 +44,9 @@ export async function GET() {
     }
 
     const [tenant] = await sql`
-      SELECT id, branding, features
+      SELECT id, branding, features,
+             hero_video_url, hero_video_poster_url, hero_headline, hero_subheadline,
+             gallery_images, about_content, social_links, contact_info
       FROM tenants
       WHERE id = ${tenantId}
     `;
@@ -53,18 +55,17 @@ export async function GET() {
       return NextResponse.json({ error: 'Tenant not found' }, { status: 404 });
     }
 
-    const branding = (tenant.branding || {}) as Record<string, unknown>;
-
+    // Read from individual columns (source of truth for landing page)
     return NextResponse.json({
       branding: {
-        heroVideoUrl: branding.heroVideoUrl || '',
-        heroHeadline: branding.heroHeadline || '',
-        heroSubheadline: branding.heroSubheadline || '',
-        heroVideoPosterUrl: branding.heroVideoPosterUrl || '',
-        galleryImages: (branding.galleryImages as string[]) || [],
-        aboutContent: branding.aboutContent || '',
-        socialLinks: (branding.socialLinks as Record<string, string>) || {},
-        contactInfo: (branding.contactInfo as Record<string, string>) || {},
+        heroVideoUrl: tenant.hero_video_url || '',
+        heroHeadline: tenant.hero_headline || '',
+        heroSubheadline: tenant.hero_subheadline || '',
+        heroVideoPosterUrl: tenant.hero_video_poster_url || '',
+        galleryImages: (tenant.gallery_images as string[]) || [],
+        aboutContent: tenant.about_content || '',
+        socialLinks: (tenant.social_links as Record<string, string>) || {},
+        contactInfo: (tenant.contact_info as Record<string, string>) || {},
       },
     });
   } catch (error) {
@@ -111,9 +112,16 @@ export async function PUT(request: NextRequest) {
       );
     }
 
+    // Get current individual column values for merge
+    const [current] = await sql`
+      SELECT hero_video_url, hero_video_poster_url, hero_headline, hero_subheadline,
+             gallery_images, about_content, social_links, contact_info
+      FROM tenants WHERE id = ${tenantId}
+    `;
+
+    // Also keep branding JSON in sync for backward compatibility
     const currentBranding = (tenant.branding || {}) as Record<string, unknown>;
     const newBranding = { ...currentBranding };
-
     if (updates.heroVideoUrl !== undefined) newBranding.heroVideoUrl = updates.heroVideoUrl;
     if (updates.heroHeadline !== undefined) newBranding.heroHeadline = updates.heroHeadline;
     if (updates.heroSubheadline !== undefined) newBranding.heroSubheadline = updates.heroSubheadline;
@@ -126,15 +134,49 @@ export async function PUT(request: NextRequest) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const brandingJson = sql.json(newBranding as any);
 
+    // Resolve individual column values
+    const heroVideoUrl = updates.heroVideoUrl !== undefined ? updates.heroVideoUrl : (current.hero_video_url || null);
+    const heroVideoPosterUrl = updates.heroVideoPosterUrl !== undefined ? updates.heroVideoPosterUrl : (current.hero_video_poster_url || null);
+    const heroHeadline = updates.heroHeadline !== undefined ? updates.heroHeadline : (current.hero_headline || null);
+    const heroSubheadline = updates.heroSubheadline !== undefined ? updates.heroSubheadline : (current.hero_subheadline || null);
+    const aboutContent = updates.aboutContent !== undefined ? updates.aboutContent : (current.about_content || null);
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const galleryJson = updates.galleryImages !== undefined ? sql.json(updates.galleryImages as any) : sql.json((current.gallery_images || []) as any);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const socialJson = updates.socialLinks !== undefined ? sql.json(updates.socialLinks as any) : sql.json((current.social_links || {}) as any);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const contactJson = updates.contactInfo !== undefined ? sql.json(updates.contactInfo as any) : sql.json((current.contact_info || {}) as any);
+
+    // Write to BOTH branding JSON and individual columns (landing page reads individual columns)
     const [updated] = await sql`
       UPDATE tenants
-      SET branding = ${brandingJson}, updated_at = NOW()
+      SET branding = ${brandingJson},
+          hero_video_url = ${heroVideoUrl},
+          hero_video_poster_url = ${heroVideoPosterUrl},
+          hero_headline = ${heroHeadline},
+          hero_subheadline = ${heroSubheadline},
+          gallery_images = ${galleryJson},
+          about_content = ${aboutContent},
+          social_links = ${socialJson},
+          contact_info = ${contactJson},
+          updated_at = NOW()
       WHERE id = ${tenantId}
-      RETURNING id, branding
+      RETURNING id, hero_video_url, hero_video_poster_url, hero_headline, hero_subheadline,
+                gallery_images, about_content, social_links, contact_info
     `;
 
     return NextResponse.json({
-      branding: updated.branding,
+      branding: {
+        heroVideoUrl: updated.hero_video_url || '',
+        heroHeadline: updated.hero_headline || '',
+        heroSubheadline: updated.hero_subheadline || '',
+        heroVideoPosterUrl: updated.hero_video_poster_url || '',
+        galleryImages: updated.gallery_images || [],
+        aboutContent: updated.about_content || '',
+        socialLinks: updated.social_links || {},
+        contactInfo: updated.contact_info || {},
+      },
     });
   } catch (error) {
     console.error('Tenant branding PUT error:', error);

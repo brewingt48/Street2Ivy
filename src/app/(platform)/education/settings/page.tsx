@@ -256,12 +256,12 @@ export default function EducationSettingsPage() {
         <div className="flex items-center gap-2">
           <Badge variant="outline" className="capitalize">{planName} Plan</Badge>
           <a
-            href={`https://${tenant.subdomain}.campus2career.com`}
+            href={`/${tenant.subdomain}`}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-1 text-sm text-teal-600 hover:text-teal-700"
           >
-            View Site <ExternalLink className="h-3.5 w-3.5" />
+            View Landing Page <ExternalLink className="h-3.5 w-3.5" />
           </a>
         </div>
       </div>

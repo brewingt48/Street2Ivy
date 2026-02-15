@@ -36,6 +36,7 @@ import {
   Sparkles,
   Users,
   Zap,
+  Trophy,
 } from 'lucide-react';
 
 interface CreatedTenant {
@@ -101,6 +102,11 @@ export default function NewTenantPage() {
   const [adminEmail, setAdminEmail] = useState('');
   const [adminFirstName, setAdminFirstName] = useState('');
   const [adminLastName, setAdminLastName] = useState('');
+  // Athletic fields
+  const [marketplaceType, setMarketplaceType] = useState<'institution' | 'athletic'>('institution');
+  const [sport, setSport] = useState('');
+  const [teamName, setTeamName] = useState('');
+  const [conference, setConference] = useState('');
 
   const canAdvance = () => {
     switch (step) {
@@ -136,6 +142,10 @@ export default function NewTenantPage() {
           adminFirstName: adminFirstName.trim(),
           adminLastName: adminLastName.trim(),
           branding: { primaryColor, secondaryColor },
+          marketplaceType,
+          sport: sport || undefined,
+          teamName: teamName || undefined,
+          conference: conference || undefined,
         }),
       });
 
@@ -456,6 +466,81 @@ export default function NewTenantPage() {
                   </div>
                 </div>
               </div>
+
+              {/* Athletic Program Toggle */}
+              <div className="border-t pt-5 space-y-4">
+                <Label className="text-sm font-medium text-slate-700">Marketplace Type</Label>
+                <div className="grid grid-cols-2 gap-3">
+                  {[
+                    { value: 'institution' as const, label: 'Standard Institution', desc: 'University, college, or training program', icon: Building2 },
+                    { value: 'athletic' as const, label: 'Athletic Program', desc: 'Sports team with alumni network', icon: Trophy },
+                  ].map((opt) => {
+                    const Icon = opt.icon;
+                    const isActive = marketplaceType === opt.value;
+                    return (
+                      <button
+                        key={opt.value}
+                        type="button"
+                        onClick={() => setMarketplaceType(opt.value)}
+                        className={`text-left p-4 rounded-xl border-2 transition-all ${
+                          isActive
+                            ? 'border-purple-500 bg-purple-50'
+                            : 'border-slate-200 hover:border-slate-300'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2 mb-1">
+                          <Icon className={`h-4 w-4 ${isActive ? 'text-purple-600' : 'text-slate-400'}`} />
+                          <p className={`font-semibold text-sm ${isActive ? 'text-purple-700' : 'text-slate-900'}`}>
+                            {opt.label}
+                          </p>
+                          {isActive && <Check className="h-4 w-4 text-purple-600 ml-auto" />}
+                        </div>
+                        <p className="text-xs text-slate-500">{opt.desc}</p>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {marketplaceType === 'athletic' && (
+                  <div className="space-y-4 p-4 rounded-lg bg-purple-50/50 border border-purple-100">
+                    <p className="text-xs font-semibold uppercase tracking-wider text-purple-600">Athletic Details</p>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                      <div className="space-y-2">
+                        <Label>Sport</Label>
+                        <select
+                          value={sport}
+                          onChange={(e) => setSport(e.target.value)}
+                          className="w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm"
+                        >
+                          <option value="">Select sport...</option>
+                          {['Football', 'Basketball', 'Baseball', 'Soccer', 'Track & Field', 'Swimming', 'Lacrosse', 'Hockey', 'Tennis', 'Volleyball', 'Wrestling', 'Softball', 'Golf', 'Rowing', 'Other'].map((s) => (
+                            <option key={s} value={s}>{s}</option>
+                          ))}
+                        </select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Team Name</Label>
+                        <Input
+                          value={teamName}
+                          onChange={(e) => setTeamName(e.target.value)}
+                          placeholder="e.g. Crusaders"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Conference</Label>
+                        <Input
+                          value={conference}
+                          onChange={(e) => setConference(e.target.value)}
+                          placeholder="e.g. Patriot League"
+                        />
+                      </div>
+                    </div>
+                    <div className="rounded-lg bg-purple-100/50 p-3 text-xs text-purple-700">
+                      <strong>Note:</strong> Athletic tenants automatically get shared network access enabled with full network tier.
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           )}
 
@@ -618,6 +703,46 @@ export default function NewTenantPage() {
                       <div className="w-6 h-6 rounded-full border" style={{ backgroundColor: secondaryColor }} />
                     </div>
                   </div>
+                  <div>
+                    <Label className="text-xs text-slate-500 uppercase tracking-wider">Marketplace Type</Label>
+                    <p className="text-slate-700 capitalize flex items-center gap-2">
+                      {marketplaceType === 'athletic' ? (
+                        <>
+                          <Trophy className="h-4 w-4 text-purple-600" /> Athletic Program
+                        </>
+                      ) : (
+                        <>
+                          <Building2 className="h-4 w-4 text-slate-500" /> Standard Institution
+                        </>
+                      )}
+                    </p>
+                  </div>
+                  {marketplaceType === 'athletic' && (
+                    <>
+                      {sport && (
+                        <div>
+                          <Label className="text-xs text-slate-500 uppercase tracking-wider">Sport</Label>
+                          <p className="text-slate-700">{sport}</p>
+                        </div>
+                      )}
+                      {teamName && (
+                        <div>
+                          <Label className="text-xs text-slate-500 uppercase tracking-wider">Team Name</Label>
+                          <p className="text-slate-700">{teamName}</p>
+                        </div>
+                      )}
+                      {conference && (
+                        <div>
+                          <Label className="text-xs text-slate-500 uppercase tracking-wider">Conference</Label>
+                          <p className="text-slate-700">{conference}</p>
+                        </div>
+                      )}
+                      <div>
+                        <Label className="text-xs text-slate-500 uppercase tracking-wider">Network</Label>
+                        <p className="text-green-600 text-sm">Shared network enabled (Full tier)</p>
+                      </div>
+                    </>
+                  )}
                 </div>
 
                 <div className="space-y-4">

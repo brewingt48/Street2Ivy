@@ -44,6 +44,13 @@ const updateTenantSchema = z.object({
       allowedDomains: z.array(z.string()).optional(),
     })
     .optional(),
+  // Athletic program fields
+  marketplaceType: z.enum(['institution', 'athletic']).optional(),
+  sport: z.string().max(100).optional().nullable(),
+  teamName: z.string().max(100).optional().nullable(),
+  conference: z.string().max(200).optional().nullable(),
+  sharedNetworkEnabled: z.boolean().optional(),
+  networkTier: z.enum(['basic', 'full']).optional(),
 });
 
 export async function GET(
@@ -62,6 +69,8 @@ export async function GET(
       SELECT
         t.id, t.subdomain, t.name, t.display_name, t.status,
         t.institution_domain, t.branding, t.features,
+        t.marketplace_type, t.sport, t.team_name, t.conference,
+        t.shared_network_enabled, t.network_tier,
         t.created_at, t.updated_at,
         COUNT(DISTINCT u.id) FILTER (WHERE u.role = 'student') AS student_count,
         COUNT(DISTINCT u.id) FILTER (WHERE u.role = 'corporate_partner') AS corporate_count,
@@ -107,6 +116,12 @@ export async function GET(
         institutionDomain: tenant.institution_domain,
         branding: tenant.branding,
         features: tenant.features,
+        marketplaceType: tenant.marketplace_type || 'institution',
+        sport: tenant.sport,
+        teamName: tenant.team_name,
+        conference: tenant.conference,
+        sharedNetworkEnabled: tenant.shared_network_enabled || false,
+        networkTier: tenant.network_tier || 'basic',
         createdAt: tenant.created_at,
         updatedAt: tenant.updated_at,
         stats: {
@@ -180,7 +195,12 @@ export async function PUT(
     }
 
     // For JSONB fields, merge with existing
-    const [current] = await sql`SELECT branding, features FROM tenants WHERE id = ${id}`;
+    const [current] = await sql`
+      SELECT branding, features, name, display_name, status,
+             marketplace_type, sport, team_name, conference,
+             shared_network_enabled, network_tier
+      FROM tenants WHERE id = ${id}
+    `;
     if (!current) {
       return NextResponse.json({ error: 'Tenant not found' }, { status: 404 });
     }
@@ -196,6 +216,14 @@ export async function PUT(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const featuresJson = sql.json(newFeatures as any);
 
+    // Athletic / network fields
+    const marketplaceType = updates.marketplaceType ?? current.marketplace_type ?? 'institution';
+    const sport = updates.sport !== undefined ? updates.sport : current.sport;
+    const teamName = updates.teamName !== undefined ? updates.teamName : current.team_name;
+    const conference = updates.conference !== undefined ? updates.conference : current.conference;
+    const sharedNetworkEnabled = updates.sharedNetworkEnabled ?? current.shared_network_enabled ?? false;
+    const networkTier = updates.networkTier ?? current.network_tier ?? 'basic';
+
     const [updated] = await sql`
       UPDATE tenants
       SET
@@ -204,9 +232,17 @@ export async function PUT(
         status = ${updates.status ?? current.status ?? 'active'},
         branding = ${brandingJson},
         features = ${featuresJson},
+        marketplace_type = ${marketplaceType},
+        sport = ${sport},
+        team_name = ${teamName},
+        conference = ${conference},
+        shared_network_enabled = ${sharedNetworkEnabled},
+        network_tier = ${networkTier},
         updated_at = NOW()
       WHERE id = ${id}
-      RETURNING id, subdomain, name, display_name, status, branding, features, updated_at
+      RETURNING id, subdomain, name, display_name, status, branding, features,
+                marketplace_type, sport, team_name, conference,
+                shared_network_enabled, network_tier, updated_at
     `;
 
     return NextResponse.json({
@@ -218,6 +254,12 @@ export async function PUT(
         status: updated.status,
         branding: updated.branding,
         features: updated.features,
+        marketplaceType: updated.marketplace_type,
+        sport: updated.sport,
+        teamName: updated.team_name,
+        conference: updated.conference,
+        sharedNetworkEnabled: updated.shared_network_enabled,
+        networkTier: updated.network_tier,
         updatedAt: updated.updated_at,
       },
     });
