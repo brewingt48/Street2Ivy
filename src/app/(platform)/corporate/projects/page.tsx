@@ -32,6 +32,12 @@ import {
   Trash2,
   XCircle,
   AlertTriangle,
+  Sparkles,
+  TrendingUp,
+  GraduationCap,
+  ChevronDown,
+  ChevronUp,
+  Mail,
 } from 'lucide-react';
 
 interface Listing {
@@ -45,6 +51,18 @@ interface Listing {
   pendingCount: number;
   compensation: string | null;
   remoteAllowed: boolean;
+}
+
+interface StudentRecommendation {
+  userId: string;
+  firstName: string;
+  lastName: string;
+  matchScore: number;
+  matchedSkills: string[];
+  missingSkills: string[];
+  university: string | null;
+  major: string | null;
+  gpa: string | null;
 }
 
 const statusStyles: Record<string, { label: string; color: string }> = {
@@ -62,6 +80,9 @@ export default function CorporateProjectsPage() {
   const [deleting, setDeleting] = useState(false);
   const [closeTarget, setCloseTarget] = useState<Listing | null>(null);
   const [closing, setClosing] = useState(false);
+  const [expandedSuggestions, setExpandedSuggestions] = useState<string | null>(null);
+  const [recommendations, setRecommendations] = useState<Record<string, StudentRecommendation[]>>({});
+  const [loadingRecs, setLoadingRecs] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     fetch('/api/listings')
@@ -100,6 +121,27 @@ export default function CorporateProjectsPage() {
       console.error('Failed to delete listing:', err);
     } finally {
       setDeleting(false);
+    }
+  };
+
+  const toggleSuggestions = async (listingId: string) => {
+    if (expandedSuggestions === listingId) {
+      setExpandedSuggestions(null);
+      return;
+    }
+    setExpandedSuggestions(listingId);
+    // Fetch recommendations if not already cached
+    if (!recommendations[listingId]) {
+      setLoadingRecs(prev => ({ ...prev, [listingId]: true }));
+      try {
+        const res = await fetch(`/api/matching?type=students&listingId=${listingId}&limit=8`);
+        const data = await res.json();
+        setRecommendations(prev => ({ ...prev, [listingId]: data.recommendations || [] }));
+      } catch (err) {
+        console.error('Failed to fetch recommendations:', err);
+      } finally {
+        setLoadingRecs(prev => ({ ...prev, [listingId]: false }));
+      }
     }
   };
 
@@ -202,6 +244,82 @@ export default function CorporateProjectsPage() {
                       </Button>
                     </div>
                   </div>
+
+                  {/* Suggested Students toggle for published listings */}
+                  {listing.status === 'published' && (
+                    <div className="mt-3 pt-3 border-t">
+                      <button
+                        onClick={() => toggleSuggestions(listing.id)}
+                        className="flex items-center gap-2 text-sm text-teal-600 hover:text-teal-700 font-medium transition-colors"
+                      >
+                        <Sparkles className="h-4 w-4" />
+                        Suggested Students
+                        {expandedSuggestions === listing.id ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                      </button>
+
+                      {expandedSuggestions === listing.id && (
+                        <div className="mt-3">
+                          {loadingRecs[listing.id] ? (
+                            <div className="grid gap-2 md:grid-cols-2 lg:grid-cols-4">
+                              {[1, 2, 3, 4].map((i) => <Skeleton key={i} className="h-24 rounded-lg" />)}
+                            </div>
+                          ) : (recommendations[listing.id] || []).length === 0 ? (
+                            <p className="text-sm text-slate-400 py-4 text-center">
+                              No matching students found. Try adding more skills to your listing.
+                            </p>
+                          ) : (
+                            <>
+                              <p className="text-xs text-slate-400 mb-2">
+                                Students matched to this listing&apos;s required skills. The percentage shows skill alignment.
+                              </p>
+                              <div className="grid gap-2 md:grid-cols-2 lg:grid-cols-4">
+                                {(recommendations[listing.id] || []).map((rec) => (
+                                  <div
+                                    key={rec.userId}
+                                    className="border rounded-lg p-3 hover:shadow-sm transition-shadow cursor-pointer group bg-slate-50/50 dark:bg-slate-800/30"
+                                    onClick={() => router.push('/corporate/search-students')}
+                                  >
+                                    <div className="flex items-start justify-between mb-1.5">
+                                      <div className="flex items-center gap-2">
+                                        <div className="w-7 h-7 rounded-full bg-teal-50 flex items-center justify-center shrink-0">
+                                          <GraduationCap className="h-3.5 w-3.5 text-teal-600" />
+                                        </div>
+                                        <h4 className="font-medium text-sm text-slate-900 dark:text-white group-hover:text-teal-600 transition-colors truncate">
+                                          {rec.firstName} {rec.lastName}
+                                        </h4>
+                                      </div>
+                                      <Badge className="bg-teal-50 text-teal-700 border-0 text-xs shrink-0">
+                                        <TrendingUp className="h-3 w-3 mr-0.5" />{rec.matchScore}%
+                                      </Badge>
+                                    </div>
+                                    {(rec.university || rec.major) && (
+                                      <p className="text-xs text-slate-500 mb-1 truncate">
+                                        {rec.university}{rec.university && rec.major ? ' · ' : ''}{rec.major}
+                                      </p>
+                                    )}
+                                    {rec.gpa && <p className="text-xs text-slate-400 mb-1">GPA: {rec.gpa}</p>}
+                                    <div className="flex items-center gap-1 flex-wrap">
+                                      {rec.matchedSkills.slice(0, 2).map((skill) => (
+                                        <Badge key={skill} variant="outline" className="text-xs py-0 px-1.5">{skill}</Badge>
+                                      ))}
+                                      {rec.matchedSkills.length > 2 && (
+                                        <span className="text-xs text-slate-400">+{rec.matchedSkills.length - 2}</span>
+                                      )}
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                              <div className="mt-2 flex justify-end">
+                                <Button variant="ghost" size="sm" className="text-teal-600" onClick={() => router.push('/corporate/search-students')}>
+                                  View All Students →
+                                </Button>
+                              </div>
+                            </>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             );

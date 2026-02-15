@@ -137,6 +137,7 @@ function getNavItems(role: string): NavSection[] {
             { href: '/corporate/projects', label: 'My Listings', icon: Briefcase },
             { href: '/corporate/applications', label: 'Applications', icon: ClipboardList },
             { href: '/corporate/reviews', label: 'My Reviews', icon: Star },
+            { href: '/corporate/invites', label: 'Sent Invites', icon: Mail },
             { href: '/corporate/search-students', label: 'Find Students', icon: Search },
             { href: '/inbox', label: 'Messages', icon: Inbox },
           ],
