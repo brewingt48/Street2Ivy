@@ -1,17 +1,24 @@
 /**
  * GET /api/corporate/ratings — Public ratings for a corporate partner
+ * Pass ?corporateId=... for any corporate, or omit for session-based (own ratings)
  */
 
 import { NextRequest, NextResponse } from 'next/server';
 import { sql } from '@/lib/db';
+import { getCurrentSession } from '@/lib/auth/middleware';
 
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const corporateId = searchParams.get('corporateId');
+    let corporateId = searchParams.get('corporateId');
 
+    // If no corporateId provided, use the current session user
     if (!corporateId) {
-      return NextResponse.json({ error: 'corporateId is required' }, { status: 400 });
+      const session = await getCurrentSession();
+      if (!session) {
+        return NextResponse.json({ error: 'corporateId is required or must be authenticated' }, { status: 400 });
+      }
+      corporateId = session.data.userId;
     }
 
     // Get individual ratings with student display names

@@ -94,6 +94,20 @@ export async function getRecommendedProjects(
     appliedListingIds.add(a.listing_id as string);
   });
 
+  // 2b. Get student's invite history (exclude declined/accepted invites from recommendations)
+  const inviteHistory = await sql`
+    SELECT listing_id, status
+    FROM corporate_invites
+    WHERE student_id = ${userId}
+      AND status IN ('declined', 'accepted')
+  `;
+  const excludedInviteListingIds = new Set<string>();
+  inviteHistory.forEach((i: Record<string, unknown>) => {
+    if (i.listing_id) {
+      excludedInviteListingIds.add(i.listing_id as string);
+    }
+  });
+
   const totalApps = appHistory.length || 1;
 
   // 3. Get student profile for availability matching
@@ -119,7 +133,14 @@ export async function getRecommendedProjects(
 
   // 5. Score each listing
   const scored: MatchScore[] = listings
-    .filter((l: Record<string, unknown>) => !appliedListingIds.has(l.id as string))
+    .filter((l: Record<string, unknown>) => {
+      const id = l.id as string;
+      // Exclude projects already applied to
+      if (appliedListingIds.has(id)) return false;
+      // Exclude projects where invite was declined or accepted (already in pipeline)
+      if (excludedInviteListingIds.has(id)) return false;
+      return true;
+    })
     .map((l: Record<string, unknown>) => {
       const requiredSkills = ((l.skills_required as string[]) || []).map((s) =>
         typeof s === 'string' ? s.toLowerCase() : ''

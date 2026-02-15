@@ -88,6 +88,18 @@ export default function CorporateApplicationsPage() {
   const [feedbackImprovements, setFeedbackImprovements] = useState('');
   const [feedbackRecommend, setFeedbackRecommend] = useState(false);
 
+  // Rating dialog state
+  const [ratingApp, setRatingApp] = useState<Application | null>(null);
+  const [studentRating, setStudentRating] = useState(0);
+  const [studentReviewText, setStudentReviewText] = useState('');
+  const [studentStrengths, setStudentStrengths] = useState('');
+  const [studentImprovements, setStudentImprovements] = useState('');
+  const [studentRecommend, setStudentRecommend] = useState(false);
+  const [ratingSubmitting, setRatingSubmitting] = useState(false);
+
+  // Track which apps are already rated
+  const [ratedApps, setRatedApps] = useState<Set<string>>(new Set());
+
   const fetchApps = async (status: string) => {
     setLoading(true);
     try {
@@ -142,6 +154,35 @@ export default function CorporateApplicationsPage() {
       }
     } catch (err) { console.error(err); }
     finally { setResponding(false); }
+  };
+
+  const handleRateStudent = async () => {
+    if (!ratingApp || studentRating === 0) return;
+    setRatingSubmitting(true);
+    try {
+      const res = await fetch('/api/corporate/rate-student', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          applicationId: ratingApp.id,
+          rating: studentRating,
+          reviewText: studentReviewText || undefined,
+          strengths: studentStrengths || undefined,
+          areasForImprovement: studentImprovements || undefined,
+          recommendForFuture: studentRecommend,
+        }),
+      });
+      if (res.ok) {
+        setRatedApps(prev => new Set(Array.from(prev).concat(ratingApp.id)));
+        setRatingApp(null);
+        setStudentRating(0);
+        setStudentReviewText('');
+        setStudentStrengths('');
+        setStudentImprovements('');
+        setStudentRecommend(false);
+      }
+    } catch (err) { console.error(err); }
+    finally { setRatingSubmitting(false); }
   };
 
   const totalCount = Object.values(counts).reduce((a, b) => a + b, 0);
@@ -236,6 +277,21 @@ export default function CorporateApplicationsPage() {
                         <Button size="sm" className="bg-blue-600 hover:bg-blue-700" onClick={() => { setRespondingApp(app); setRespondAction('complete'); }}>
                           <CheckCircle2 className="h-3 w-3 mr-1" /> Complete
                         </Button>
+                      )}
+                      {app.status === 'completed' && !ratedApps.has(app.id) && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="text-amber-600 hover:text-amber-700 border-amber-200 hover:bg-amber-50"
+                          onClick={() => { setRatingApp(app); }}
+                        >
+                          <Star className="h-3 w-3 mr-1" /> Rate Student
+                        </Button>
+                      )}
+                      {app.status === 'completed' && ratedApps.has(app.id) && (
+                        <Badge variant="outline" className="text-amber-600 border-amber-200">
+                          <Star className="h-3 w-3 mr-1 fill-amber-400" /> Rated
+                        </Badge>
                       )}
                       <Button variant="ghost" size="sm" onClick={() => setExpandedId(isExpanded ? null : app.id)}>
                         {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
@@ -417,6 +473,55 @@ export default function CorporateApplicationsPage() {
               className={respondAction === 'accept' ? 'bg-green-600 hover:bg-green-700' : respondAction === 'decline' ? 'bg-red-600 hover:bg-red-700' : 'bg-blue-600 hover:bg-blue-700'}
             >
               {responding ? 'Processing...' : respondAction === 'accept' ? 'Accept' : respondAction === 'decline' ? 'Decline' : 'Complete'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Rate Student Dialog */}
+      <Dialog open={!!ratingApp} onOpenChange={() => { setRatingApp(null); setStudentRating(0); setStudentReviewText(''); setStudentStrengths(''); setStudentImprovements(''); setStudentRecommend(false); }}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Star className="h-5 w-5 text-amber-500" /> Rate Student
+            </DialogTitle>
+            <DialogDescription>
+              Private rating for {ratingApp?.studentName} — {ratingApp?.listingTitle}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label>Rating <span className="text-red-500">*</span></Label>
+              <div className="flex items-center gap-1">
+                {[1, 2, 3, 4, 5].map((s) => (
+                  <button key={s} type="button" onClick={() => setStudentRating(s)} className="p-0.5 focus:outline-none">
+                    <Star className={`h-6 w-6 ${s <= studentRating ? 'fill-amber-400 text-amber-400' : 'text-slate-300'}`} />
+                  </button>
+                ))}
+                {studentRating > 0 && <span className="ml-2 text-sm text-slate-500">{studentRating}/5</span>}
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label>Review (optional)</Label>
+              <Textarea value={studentReviewText} onChange={(e) => setStudentReviewText(e.target.value)} placeholder="Share your experience working with this student..." rows={3} />
+            </div>
+            <div className="space-y-2">
+              <Label>Strengths (optional)</Label>
+              <Textarea value={studentStrengths} onChange={(e) => setStudentStrengths(e.target.value)} placeholder="What did the student do well?" rows={2} />
+            </div>
+            <div className="space-y-2">
+              <Label>Areas for Improvement (optional)</Label>
+              <Textarea value={studentImprovements} onChange={(e) => setStudentImprovements(e.target.value)} placeholder="What could be improved?" rows={2} />
+            </div>
+            <div className="flex items-center gap-2">
+              <input type="checkbox" id="rate-recommend" checked={studentRecommend} onChange={(e) => setStudentRecommend(e.target.checked)} className="h-4 w-4 rounded border-slate-300 text-teal-600 focus:ring-teal-500" />
+              <Label htmlFor="rate-recommend" className="cursor-pointer">Recommend for future opportunities</Label>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setRatingApp(null)}>Cancel</Button>
+            <Button onClick={handleRateStudent} disabled={ratingSubmitting || studentRating === 0} className="bg-amber-600 hover:bg-amber-700">
+              {ratingSubmitting ? 'Submitting...' : 'Submit Rating'}
             </Button>
           </DialogFooter>
         </DialogContent>

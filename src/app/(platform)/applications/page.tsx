@@ -26,6 +26,7 @@ import {
   ArrowRight,
   AlertCircle,
   Download,
+  Star,
 } from 'lucide-react';
 import { ExportButton } from '@/components/analytics/export-button';
 
@@ -237,6 +238,16 @@ export default function ApplicationsPage() {
                           disabled={withdrawing === app.id}
                         >
                           {withdrawing === app.id ? 'Withdrawing...' : 'Withdraw'}
+                        </Button>
+                      )}
+                      {app.status === 'completed' && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-amber-600 hover:text-amber-700 hover:bg-amber-50"
+                          onClick={(e) => { e.stopPropagation(); router.push(`/applications/${app.id}`); }}
+                        >
+                          <Star className="h-3.5 w-3.5 mr-1" /> View Review
                         </Button>
                       )}
                       <Button

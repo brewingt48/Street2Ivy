@@ -20,6 +20,7 @@ export async function GET(
         u.last_name as author_last_name, u.display_name as author_display_name,
         u.avatar_url as author_avatar_url, u.bio as author_bio,
         u.company_name as author_company_name,
+        u.job_title as author_job_title,
         u.public_data as author_public_data,
         u.metadata as author_metadata,
         (SELECT COUNT(*) FROM project_applications pa WHERE pa.listing_id = l.id) as application_count
@@ -33,6 +34,13 @@ export async function GET(
     }
 
     const l = listings[0];
+
+    // Get author's corporate rating
+    const authorRatings = await sql`
+      SELECT AVG(rating)::numeric(3,2) as avg_rating, COUNT(*) as rating_count
+      FROM corporate_ratings
+      WHERE corporate_id = ${l.author_id}
+    `;
 
     // Check if current user has already applied
     let userApplication = null;
@@ -84,6 +92,7 @@ export async function GET(
             displayName: l.author_display_name,
             avatarUrl: l.author_avatar_url,
             bio: l.author_bio,
+            jobTitle: l.author_job_title || null,
             companyName: l.author_company_name || null,
             companyWebsite: (publicData.companyWebsite as string) || null,
             companyDescription: (publicData.companyDescription as string) || null,
@@ -95,6 +104,10 @@ export async function GET(
             sportsPlayed: (metadata.sportsPlayed as string) || null,
           };
         })(),
+        authorRating: authorRatings[0]?.avg_rating ? {
+          average: Number(authorRatings[0].avg_rating),
+          count: Number(authorRatings[0].rating_count),
+        } : null,
       },
       userApplication,
     });

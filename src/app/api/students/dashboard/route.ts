@@ -67,6 +67,19 @@ export async function GET() {
       WHERE recipient_id = ${userId} AND read_at IS NULL
     `;
 
+    // Get reviews received count
+    const reviewsReceived = await sql`
+      SELECT
+        (SELECT COUNT(*) FROM assessments WHERE student_id = ${userId} AND sent_to_student = true) +
+        (SELECT COUNT(*) FROM student_ratings WHERE student_id = ${userId})
+        as total
+    `;
+
+    // Get reviews given count
+    const reviewsGiven = await sql`
+      SELECT COUNT(*) as count FROM corporate_ratings WHERE student_id = ${userId}
+    `;
+
     return NextResponse.json({
       stats: {
         applications: {
@@ -81,6 +94,10 @@ export async function GET() {
         emailVerified: u.email_verified,
         availableProjects: parseInt(projectCount[0].count),
         unreadMessages: parseInt(unreadCount[0].count),
+        reviews: {
+          received: parseInt(reviewsReceived[0].total),
+          given: parseInt(reviewsGiven[0].count),
+        },
       },
       recentApplications: recentApplications.map((a: Record<string, unknown>) => ({
         id: a.id,
