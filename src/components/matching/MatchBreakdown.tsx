@@ -35,12 +35,12 @@ interface MatchBreakdownProps {
 }
 
 const signalConfig: Record<string, { icon: React.ElementType; label: string; color: string }> = {
-  temporal: { icon: Clock, label: 'Temporal Fit', color: 'text-blue-500' },
-  skills: { icon: Brain, label: 'Skills Alignment', color: 'text-teal-500' },
-  sustainability: { icon: Battery, label: 'Sustainability', color: 'text-green-500' },
-  growth: { icon: TrendingUp, label: 'Growth Trajectory', color: 'text-purple-500' },
-  trust: { icon: Shield, label: 'Trust & Reliability', color: 'text-amber-500' },
-  network: { icon: Users, label: 'Network Affinity', color: 'text-indigo-500' },
+  temporal: { icon: Clock, label: 'Schedule Fit', color: 'text-blue-500' },
+  skills: { icon: Brain, label: 'Skills', color: 'text-teal-500' },
+  sustainability: { icon: Battery, label: 'Workload Balance', color: 'text-green-500' },
+  growth: { icon: TrendingUp, label: 'Career Growth', color: 'text-purple-500' },
+  trust: { icon: Shield, label: 'Track Record', color: 'text-amber-500' },
+  network: { icon: Users, label: 'Network', color: 'text-indigo-500' },
 };
 
 function SignalBar({ signal }: { signal: SignalBreakdown }) {
@@ -59,9 +59,6 @@ function SignalBar({ signal }: { signal: SignalBreakdown }) {
           <Icon className={cn('h-3.5 w-3.5', config.color)} />
           <span className="font-medium text-slate-700 dark:text-slate-300">
             {config.label}
-          </span>
-          <span className="text-xs text-slate-400">
-            ({Math.round(signal.weight * 100)}%)
           </span>
         </div>
         <span className="font-semibold text-slate-900 dark:text-white">
@@ -84,7 +81,7 @@ function SignalBar({ signal }: { signal: SignalBreakdown }) {
         />
       </div>
       <div className="text-xs text-slate-400">
-        Contributes {weightedScore} points to composite
+        Score contribution
       </div>
     </div>
   );
