@@ -34,6 +34,12 @@ import {
   Info,
   User,
   Target,
+  Lightbulb,
+  DollarSign,
+  MapPin,
+  Star as StarIcon,
+  CheckCircle2,
+  Zap,
 } from 'lucide-react';
 import { HelpSupportCard } from '@/components/shared/help-support-card';
 import { MatchScoreBadge } from '@/components/matching/MatchScoreBadge';
@@ -65,6 +71,17 @@ interface StudentRecommendation {
   gpa: string | null;
 }
 
+interface AttractivenessData {
+  attractivenessScore: number;
+  signals: {
+    compensation: { score: number; details: Record<string, unknown> };
+    flexibility: { score: number; details: Record<string, unknown> };
+    reputation: { score: number; details: Record<string, unknown> };
+    completionRate: { score: number; details: Record<string, unknown> };
+    growthOpportunity: { score: number; details: Record<string, unknown> };
+  };
+}
+
 const statusConfig: Record<string, { label: string; color: string }> = {
   pending: { label: 'Pending', color: 'bg-yellow-100 text-yellow-700' },
   accepted: { label: 'Accepted', color: 'bg-green-100 text-green-700' },
@@ -79,6 +96,7 @@ export default function CorporateDashboardPage() {
   const [loading, setLoading] = useState(true);
   const [userName, setUserName] = useState('');
   const [hasMatchEngine, setHasMatchEngine] = useState(false);
+  const [attractiveness, setAttractiveness] = useState<AttractivenessData | null>(null);
 
   useEffect(() => {
     Promise.all([
@@ -89,20 +107,33 @@ export default function CorporateDashboardPage() {
       .then(([dashboard, auth, featuresData]) => {
         setData(dashboard);
         setUserName(auth.user?.firstName || '');
-        setHasMatchEngine(!!(featuresData.features || {}).matchEngine);
+        const features = featuresData.features || {};
+        setHasMatchEngine(!!features.matchEngine);
 
-        // If there are active listings, fetch student recommendations for the first one
+        // If there are active listings, fetch student recommendations and attractiveness for the first one
         if (dashboard.listings?.active > 0) {
           fetch('/api/listings/corporate?status=published&limit=1')
             .then((r) => r.json())
             .then((listingsData) => {
               const firstListing = (listingsData.listings || [])[0];
               if (firstListing) {
-                return fetch(`/api/matching?type=students&listingId=${firstListing.id}&limit=6`)
+                // Fetch recommendations
+                fetch(`/api/matching?type=students&listingId=${firstListing.id}&limit=6`)
                   .then((r) => r.json())
                   .then((matchingData) => {
                     setRecommendations(matchingData.recommendations || []);
-                  });
+                  })
+                  .catch(console.error);
+
+                // Fetch attractiveness score (best-effort, works for all tenants with matchEngine)
+                if (features.matchEngine) {
+                  fetch(`/api/match-engine/attractiveness/${firstListing.id}`)
+                    .then((r) => r.ok ? r.json() : null)
+                    .then((attrData) => {
+                      if (attrData) setAttractiveness(attrData);
+                    })
+                    .catch(() => {});
+                }
               }
             })
             .catch(console.error);
@@ -327,6 +358,188 @@ export default function CorporateDashboardPage() {
                 <p>Invite top matches directly, review incoming applications, and build lasting relationships with verified student talent.</p>
               </div>
             </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Listing Attractiveness — Match Engine™ Suggestions */}
+      {hasMatchEngine && (
+        <Card className="border-teal-200 dark:border-teal-800">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <Lightbulb className="h-5 w-5 text-amber-500" />
+              Make Your Listings More Attractive
+            </CardTitle>
+            <CardDescription>
+              Proveground&apos;s <strong>Match Engine&trade;</strong> evaluates how attractive your listings are to students. Here&apos;s how to stand out and attract top talent.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {attractiveness ? (
+              <div className="space-y-4">
+                {/* Overall Score */}
+                <div className="flex items-center gap-4 p-4 rounded-lg bg-slate-50 dark:bg-slate-800/50">
+                  <div className="text-center">
+                    <div className={`text-3xl font-bold ${
+                      attractiveness.attractivenessScore >= 80 ? 'text-emerald-600' :
+                      attractiveness.attractivenessScore >= 60 ? 'text-teal-600' :
+                      attractiveness.attractivenessScore >= 40 ? 'text-amber-600' :
+                      'text-red-500'
+                    }`}>
+                      {attractiveness.attractivenessScore}
+                    </div>
+                    <p className="text-xs text-slate-500 mt-0.5">out of 100</p>
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-slate-900 dark:text-white">
+                      Listing Attractiveness Score
+                    </p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                      {attractiveness.attractivenessScore >= 80
+                        ? 'Excellent — your listing is highly attractive to students.'
+                        : attractiveness.attractivenessScore >= 60
+                          ? 'Good — a few improvements could help you attract even more top talent.'
+                          : attractiveness.attractivenessScore >= 40
+                            ? 'Fair — there are several ways to make your listing more competitive.'
+                            : 'Needs improvement — follow the suggestions below to attract more students.'}
+                    </p>
+                    <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2 mt-2">
+                      <div
+                        className={`h-2 rounded-full transition-all ${
+                          attractiveness.attractivenessScore >= 80 ? 'bg-emerald-500' :
+                          attractiveness.attractivenessScore >= 60 ? 'bg-teal-500' :
+                          attractiveness.attractivenessScore >= 40 ? 'bg-amber-500' :
+                          'bg-red-400'
+                        }`}
+                        style={{ width: `${attractiveness.attractivenessScore}%` }}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Actionable Suggestions Based on Signals */}
+                <div className="space-y-2">
+                  <p className="text-sm font-medium text-slate-700 dark:text-slate-300">Suggestions to Improve</p>
+                  <div className="grid gap-2 md:grid-cols-2">
+                    {attractiveness.signals.compensation.score < 70 && (
+                      <div className="flex items-start gap-2.5 p-3 rounded-lg border border-amber-200 dark:border-amber-800/50 bg-amber-50/50 dark:bg-amber-900/10">
+                        <DollarSign className="h-4 w-4 text-amber-600 mt-0.5 shrink-0" />
+                        <div>
+                          <p className="text-sm font-medium text-slate-900 dark:text-white">Improve Compensation</p>
+                          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                            {attractiveness.signals.compensation.score < 40
+                              ? 'Consider offering competitive pay ($18+/hr). Paid listings attract 3x more applicants.'
+                              : 'Listing specific pay rates (e.g., "$20/hr") rather than "competitive" increases applications.'}
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                    {attractiveness.signals.flexibility.score < 70 && (
+                      <div className="flex items-start gap-2.5 p-3 rounded-lg border border-blue-200 dark:border-blue-800/50 bg-blue-50/50 dark:bg-blue-900/10">
+                        <MapPin className="h-4 w-4 text-blue-600 mt-0.5 shrink-0" />
+                        <div>
+                          <p className="text-sm font-medium text-slate-900 dark:text-white">Add Flexibility</p>
+                          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                            {!attractiveness.signals.flexibility.details.remote
+                              ? 'Enable remote work — remote-friendly listings see significantly more applicants from student-athletes with busy schedules.'
+                              : 'Consider reducing required hours per week. Students with sports commitments prefer 10-20 hrs/week.'}
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                    {attractiveness.signals.reputation.score < 70 && (
+                      <div className="flex items-start gap-2.5 p-3 rounded-lg border border-purple-200 dark:border-purple-800/50 bg-purple-50/50 dark:bg-purple-900/10">
+                        <StarIcon className="h-4 w-4 text-purple-600 mt-0.5 shrink-0" />
+                        <div>
+                          <p className="text-sm font-medium text-slate-900 dark:text-white">Build Your Reputation</p>
+                          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                            Complete past projects successfully and encourage students to leave reviews. Partners with 4+ star ratings attract top talent.
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                    {attractiveness.signals.completionRate.score < 70 && (
+                      <div className="flex items-start gap-2.5 p-3 rounded-lg border border-green-200 dark:border-green-800/50 bg-green-50/50 dark:bg-green-900/10">
+                        <CheckCircle2 className="h-4 w-4 text-green-600 mt-0.5 shrink-0" />
+                        <div>
+                          <p className="text-sm font-medium text-slate-900 dark:text-white">Improve Completion Rate</p>
+                          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                            Mark projects as complete when finished. A high completion rate signals reliability and helps attract future applicants.
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                    {attractiveness.signals.growthOpportunity.score < 70 && (
+                      <div className="flex items-start gap-2.5 p-3 rounded-lg border border-teal-200 dark:border-teal-800/50 bg-teal-50/50 dark:bg-teal-900/10">
+                        <Zap className="h-4 w-4 text-teal-600 mt-0.5 shrink-0" />
+                        <div>
+                          <p className="text-sm font-medium text-slate-900 dark:text-white">Highlight Growth Opportunities</p>
+                          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                            Mention mentorship, training, leadership experience, or full-time potential in your listing description. Students prioritize career development.
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                    {attractiveness.attractivenessScore >= 80 && (
+                      <div className="flex items-start gap-2.5 p-3 rounded-lg border border-emerald-200 dark:border-emerald-800/50 bg-emerald-50/50 dark:bg-emerald-900/10 md:col-span-2">
+                        <CheckCircle2 className="h-4 w-4 text-emerald-600 mt-0.5 shrink-0" />
+                        <div>
+                          <p className="text-sm font-medium text-slate-900 dark:text-white">Looking Great!</p>
+                          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                            Your listing scores well across all attractiveness dimensions. Keep maintaining your reputation and you&apos;ll continue attracting top student talent.
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ) : (
+              /* No attractiveness data — show general tips */
+              <div className="space-y-2">
+                <p className="text-sm text-slate-600 dark:text-slate-300 mb-3">
+                  Improve your listings to attract more and better student applicants:
+                </p>
+                <div className="grid gap-2 md:grid-cols-2">
+                  <div className="flex items-start gap-2.5 p-3 rounded-lg border">
+                    <DollarSign className="h-4 w-4 text-amber-600 mt-0.5 shrink-0" />
+                    <div>
+                      <p className="text-sm font-medium text-slate-900 dark:text-white">Offer Competitive Pay</p>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                        Paid listings with specific rates (e.g., &quot;$20/hr&quot;) attract significantly more applicants than unpaid or vague compensation.
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-2.5 p-3 rounded-lg border">
+                    <MapPin className="h-4 w-4 text-blue-600 mt-0.5 shrink-0" />
+                    <div>
+                      <p className="text-sm font-medium text-slate-900 dark:text-white">Enable Remote Work</p>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                        Remote-friendly positions attract more student-athletes who have complex schedules with sports and academics.
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-2.5 p-3 rounded-lg border">
+                    <StarIcon className="h-4 w-4 text-purple-600 mt-0.5 shrink-0" />
+                    <div>
+                      <p className="text-sm font-medium text-slate-900 dark:text-white">Build Your Reputation</p>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                        Complete projects and encourage students to leave reviews. Partners with strong ratings attract the best talent.
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-2.5 p-3 rounded-lg border">
+                    <Zap className="h-4 w-4 text-teal-600 mt-0.5 shrink-0" />
+                    <div>
+                      <p className="text-sm font-medium text-slate-900 dark:text-white">Highlight Growth</p>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                        Mention mentorship, training, leadership, or full-time potential. Students prioritize career development opportunities.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
           </CardContent>
         </Card>
       )}

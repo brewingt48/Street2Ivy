@@ -345,27 +345,26 @@ export default function DashboardPage() {
 
       {/* Match Engine™ Schedule Card — only for athletic tenants */}
       {tenantFeatures.matchEngineSchedule && (
-        <Card className="border-teal-200 dark:border-teal-800 bg-gradient-to-r from-teal-50 to-emerald-50 dark:from-teal-900/20 dark:to-emerald-900/20">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Calendar className="h-5 w-5 text-teal-600" />
-              My Schedule
-            </CardTitle>
-            <CardDescription>
-              Manage your sport seasons, academic calendar, and availability to improve your match scores.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Button
-              className="bg-teal-600 hover:bg-teal-700"
-              onClick={() => router.push('/student/schedule')}
-            >
-              <Calendar className="h-4 w-4 mr-2" />
-              Manage Schedule
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </Button>
-          </CardContent>
-        </Card>
+        <Link href="/student/schedule">
+          <Card className="border-teal-200 dark:border-teal-800 bg-gradient-to-r from-teal-50 to-emerald-50 dark:from-teal-900/20 dark:to-emerald-900/20 hover:shadow-md transition-shadow cursor-pointer">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Calendar className="h-5 w-5 text-teal-600" />
+                My Schedule
+              </CardTitle>
+              <CardDescription>
+                Manage your sport seasons, academic calendar, and availability to improve your match scores.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="inline-flex items-center gap-2 px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white text-sm font-medium rounded-md transition-colors">
+                <Calendar className="h-4 w-4" />
+                Manage Schedule
+                <ArrowRight className="h-4 w-4" />
+              </div>
+            </CardContent>
+          </Card>
+        </Link>
       )}
 
       {/* How the Match Engine Works — Instructions */}
