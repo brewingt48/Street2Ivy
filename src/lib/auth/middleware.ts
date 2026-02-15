@@ -7,13 +7,14 @@
 
 import { headers } from 'next/headers';
 import { NextResponse } from 'next/server';
-import { getSession } from './session';
+import { getSession, touchSession } from './session';
 import { sql } from '@/lib/db';
 import type { AuthUser, Session } from './types';
 
 /**
  * Get the current session from the request.
  * Reads the session ID from the x-session-id header (set by Edge middleware).
+ * Touches the session (updates lastActivity) asynchronously on success.
  */
 export async function getCurrentSession(): Promise<Session | null> {
   const headersList = headers();
@@ -21,7 +22,14 @@ export async function getCurrentSession(): Promise<Session | null> {
 
   if (!sessionId) return null;
 
-  return await getSession(sessionId);
+  const session = await getSession(sessionId);
+
+  // Touch session to update lastActivity (fire-and-forget, don't block response)
+  if (session) {
+    touchSession(sessionId).catch(() => {});
+  }
+
+  return session;
 }
 
 /**

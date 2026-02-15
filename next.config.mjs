@@ -9,9 +9,25 @@ const nextConfig = {
   },
   images: {
     remotePatterns: [
+      // Bucketeer S3 (Heroku file storage addon)
       {
         protocol: 'https',
-        hostname: '**',
+        hostname: 'bucketeer-*.s3.amazonaws.com',
+      },
+      // Google user avatars (OAuth)
+      {
+        protocol: 'https',
+        hostname: '*.googleusercontent.com',
+      },
+      // Imgix CDN (if used for image optimization)
+      {
+        protocol: 'https',
+        hostname: '*.imgix.net',
+      },
+      // Gravatar
+      {
+        protocol: 'https',
+        hostname: '*.gravatar.com',
       },
     ],
   },
@@ -21,6 +37,20 @@ const nextConfig = {
     serverComponentsExternalPackages: ['postgres'],
   },
   async headers() {
+    // Content Security Policy — remove 'unsafe-eval', add upgrade-insecure-requests
+    const csp = [
+      "default-src 'self'",
+      "script-src 'self' 'unsafe-inline'",
+      "style-src 'self' 'unsafe-inline'",
+      "img-src 'self' blob: data: https:",
+      "font-src 'self' data:",
+      "connect-src 'self' https://api.mailgun.net",
+      "frame-ancestors 'self'",
+      "form-action 'self'",
+      "base-uri 'self'",
+      "upgrade-insecure-requests",
+    ].join('; ');
+
     return [
       {
         source: '/(.*)',
@@ -31,6 +61,7 @@ const nextConfig = {
           { key: 'X-Content-Type-Options', value: 'nosniff' },
           { key: 'Referrer-Policy', value: 'origin-when-cross-origin' },
           { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=()' },
+          { key: 'Content-Security-Policy', value: csp },
         ],
       },
     ];

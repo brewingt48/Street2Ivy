@@ -1,30 +1,29 @@
+/**
+ * GET /api/health
+ *
+ * Health check endpoint for monitoring and load balancers.
+ * Returns minimal info — no database names, environment, or error details.
+ */
+
 import { NextResponse } from 'next/server';
 import { sql } from '@/lib/db';
 
 export async function GET() {
   try {
-    // Test database connection
-    const result = await sql`SELECT NOW() as now, current_database() as db`;
-    const dbInfo = result[0];
+    // Test database connection (don't expose any database metadata)
+    await sql`SELECT 1`;
 
     return NextResponse.json({
       status: 'ok',
       timestamp: new Date().toISOString(),
-      database: {
-        connected: true,
-        name: dbInfo.db,
-        serverTime: dbInfo.now,
-      },
-      environment: process.env.NODE_ENV || 'development',
-      version: '1.0.0',
+      database: { connected: true },
     });
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       {
         status: 'error',
         timestamp: new Date().toISOString(),
         database: { connected: false },
-        error: error instanceof Error ? error.message : 'Unknown error',
       },
       { status: 500 }
     );

@@ -9,7 +9,36 @@ import { extractSubdomain } from '@/lib/tenant/resolve';
  * 1. Resolve tenant from subdomain
  * 2. Pass tenant info via request headers to server components
  * 3. Handle auth redirects for protected routes
+ * 4. CSRF validation on mutation requests
+ * 5. Block null bytes in URLs
+ * 6. Enforce request body size limits
  */
+
+// Paths exempt from CSRF validation (bootstrapping, external callbacks, reads)
+const CSRF_EXEMPT_PATHS = [
+  '/api/auth/login',
+  '/api/auth/register',
+  '/api/auth/forgot-password',
+  '/api/auth/reset-password',
+  '/api/auth/verify-email',
+  '/api/csrf-token',
+  '/api/health',
+  '/api/cron/',
+  '/api/public/',
+];
+
+// Max body sizes (checked via Content-Length header)
+const MAX_BODY_SIZE_DEFAULT = 1 * 1024 * 1024; // 1 MB
+const MAX_BODY_SIZE_UPLOAD = 10 * 1024 * 1024;  // 10 MB
+
+function isCsrfExempt(pathname: string): boolean {
+  return CSRF_EXEMPT_PATHS.some((p) => pathname.startsWith(p));
+}
+
+function isUploadPath(pathname: string): boolean {
+  return pathname.includes('/upload') || pathname.includes('/attachment');
+}
+
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
@@ -22,26 +51,60 @@ export function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
+  // ── Security: Block null bytes in URL path ──
+  if (pathname.includes('\0') || pathname.includes('%00')) {
+    return NextResponse.json(
+      { error: 'Invalid request' },
+      { status: 400 }
+    );
+  }
+
+  // ── Security: Enforce request body size limits ──
+  const contentLength = request.headers.get('content-length');
+  if (contentLength && pathname.startsWith('/api/')) {
+    const size = parseInt(contentLength, 10);
+    const maxSize = isUploadPath(pathname) ? MAX_BODY_SIZE_UPLOAD : MAX_BODY_SIZE_DEFAULT;
+    if (!isNaN(size) && size > maxSize) {
+      return NextResponse.json(
+        { error: 'Request body too large' },
+        { status: 413 }
+      );
+    }
+  }
+
+  // ── Security: CSRF validation for mutation requests ──
+  const method = request.method.toUpperCase();
+  if (
+    !['GET', 'HEAD', 'OPTIONS'].includes(method) &&
+    pathname.startsWith('/api/') &&
+    !isCsrfExempt(pathname)
+  ) {
+    const cookieToken = request.cookies.get('csrf-token')?.value;
+    const headerToken = request.headers.get('x-csrf-token');
+
+    if (!cookieToken || !headerToken || cookieToken !== headerToken) {
+      return NextResponse.json(
+        { error: 'Invalid CSRF token', code: 'CSRF_INVALID' },
+        { status: 403 }
+      );
+    }
+  }
+
   const response = NextResponse.next();
 
-  // Resolve tenant from subdomain
+  // ── Tenant resolution ──
   const hostname = request.headers.get('host') || '';
   const subdomain = extractSubdomain(hostname);
-
-  // Set default tenant ID (from env) or resolved tenant
   const defaultTenantId = process.env.TENANT_ID || '';
 
   if (subdomain) {
-    // Subdomain-based tenant resolution will be enhanced in Phase 1
-    // For now, pass the subdomain through
     response.headers.set('x-tenant-subdomain', subdomain);
   }
 
-  // Always set the default tenant ID for now
   response.headers.set('x-tenant-id', defaultTenantId);
   response.headers.set('x-tenant-subdomain', subdomain || 'proveground');
 
-  // Read session cookie for auth context
+  // ── Session context ──
   const sessionId = request.cookies.get('s2i.sid')?.value;
   if (sessionId) {
     response.headers.set('x-session-id', sessionId);

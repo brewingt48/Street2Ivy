@@ -24,6 +24,7 @@ export interface SessionData {
   role: AuthUser['role'];
   tenantId: string | null;
   createdAt: number; // epoch ms
+  lastActivity?: number; // epoch ms — updated on each request
 }
 
 export interface Session {

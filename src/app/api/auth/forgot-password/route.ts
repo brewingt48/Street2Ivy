@@ -2,19 +2,36 @@
  * POST /api/auth/forgot-password
  *
  * Generate a password reset token and send a reset email.
- * Stores the token in the user's metadata JSONB field.
+ * Stores a SHA-256 hash of the token in the user's metadata JSONB field.
+ * The plaintext token is sent in the email — never stored.
  *
  * Always returns 200 to prevent email enumeration.
+ *
+ * Security: rate limiting (5/min), token hashing (SHA-256)
  */
 
 import { NextRequest, NextResponse } from 'next/server';
 import { forgotPasswordSchema } from '@/lib/auth/validation';
 import { sql } from '@/lib/db';
-import { randomBytes } from 'crypto';
+import { randomBytes, createHash } from 'crypto';
 import { sendEmail, passwordResetEmail } from '@/lib/email/send';
+import { checkRateLimit, RATE_LIMITS } from '@/lib/security/rate-limit';
 
 export async function POST(request: NextRequest) {
   try {
+    // Rate limit by IP (strict — 5/min for email-sending endpoints)
+    const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+    const rateResult = checkRateLimit(`email:${ip}`, RATE_LIMITS.email);
+    if (!rateResult.allowed) {
+      return NextResponse.json(
+        { error: 'Too many requests. Please try again later.' },
+        {
+          status: 429,
+          headers: { 'Retry-After': String(Math.ceil(rateResult.retryAfterMs / 1000)) },
+        }
+      );
+    }
+
     const body = await request.json();
     const parsed = forgotPasswordSchema.safeParse(body);
 
@@ -39,18 +56,20 @@ export async function POST(request: NextRequest) {
       const resetToken = randomBytes(32).toString('hex');
       const resetExpires = new Date(Date.now() + 60 * 60 * 1000).toISOString();
 
-      // Store token in user metadata
+      // Store SHA-256 hash of token — never store plaintext
+      const tokenHash = createHash('sha256').update(resetToken).digest('hex');
+
       await sql`
         UPDATE users
         SET metadata = COALESCE(metadata, '{}'::jsonb) || ${JSON.stringify({
-          resetToken,
+          resetTokenHash: tokenHash,
           resetExpires,
         })}::jsonb,
         updated_at = NOW()
         WHERE id = ${user.id}
       `;
 
-      // Send password reset email
+      // Send plaintext token in email (user clicks link with token in URL)
       const resetEmailData = passwordResetEmail({
         firstName: user.first_name as string,
         resetToken,

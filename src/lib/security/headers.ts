@@ -40,10 +40,12 @@ export const securityHeaders = [
  * Content Security Policy
  *
  * Allows inline styles/scripts for Next.js SSR while restricting external sources.
+ * 'unsafe-eval' removed per NIST/OWASP guidance — defeats XSS protection.
+ * 'unsafe-inline' kept for now (Next.js SSR requires it without nonce-based setup).
  */
 export const cspHeader = [
   "default-src 'self'",
-  "script-src 'self' 'unsafe-eval' 'unsafe-inline'",
+  "script-src 'self' 'unsafe-inline'",
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' blob: data: https:",
   "font-src 'self' data:",
@@ -51,4 +53,5 @@ export const cspHeader = [
   "frame-ancestors 'self'",
   "form-action 'self'",
   "base-uri 'self'",
+  "upgrade-insecure-requests",
 ].join('; ');
