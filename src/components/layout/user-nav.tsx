@@ -38,8 +38,14 @@ export function UserNav({ user }: UserNavProps) {
   const displayName = user.displayName || `${user.firstName} ${user.lastName}`;
 
   const handleLogout = async () => {
-    await fetch('/api/auth/logout', { method: 'POST' });
-    router.push('/');
+    const res = await fetch('/api/auth/logout', { method: 'POST' });
+    const data = await res.json().catch(() => ({}));
+    // Redirect to tenant homepage if available, otherwise main site
+    if (data.subdomain) {
+      router.push(`/${data.subdomain}`);
+    } else {
+      router.push('/');
+    }
     router.refresh();
   };
 

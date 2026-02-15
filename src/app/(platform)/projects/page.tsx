@@ -43,9 +43,9 @@ import {
   Building2,
   Globe,
   TrendingUp,
+  Shield,
+  FileText,
 } from 'lucide-react';
-
-import { FileText } from 'lucide-react';
 import { MatchScoreBadge } from '@/components/matching/MatchScoreBadge';
 
 interface ProjectListing {
@@ -67,6 +67,8 @@ interface ProjectListing {
   publishedAt: string;
   createdAt: string;
   applicationCount: number;
+  isInstitutionExclusive: boolean;
+  tenantName: string | null;
   author: {
     id: string;
     firstName: string;
@@ -125,6 +127,7 @@ export default function ProjectsPage() {
   const [remoteOnly, setRemoteOnly] = useState(searchParams.get('remote') === 'true');
   const [alumniOfFilter, setAlumniOfFilter] = useState(searchParams.get('alumniOf') || '');
   const [sportsPlayedFilter, setSportsPlayedFilter] = useState(searchParams.get('sportsPlayed') || '');
+  const [scopeFilter, setScopeFilter] = useState(searchParams.get('scope') || '');
   const [page, setPage] = useState(parseInt(searchParams.get('page') || '1'));
 
   const fetchProjects = useCallback(async () => {
@@ -137,6 +140,7 @@ export default function ProjectsPage() {
       if (remoteOnly) params.set('remote', 'true');
       if (alumniOfFilter) params.set('alumniOf', alumniOfFilter);
       if (sportsPlayedFilter) params.set('sportsPlayed', sportsPlayedFilter);
+      if (scopeFilter) params.set('scope', scopeFilter);
       params.set('page', String(page));
       params.set('limit', '12');
 
@@ -150,7 +154,7 @@ export default function ProjectsPage() {
     } finally {
       setLoading(false);
     }
-  }, [search, listingTypeFilter, category, remoteOnly, alumniOfFilter, sportsPlayedFilter, page]);
+  }, [search, listingTypeFilter, category, remoteOnly, alumniOfFilter, sportsPlayedFilter, scopeFilter, page]);
 
   useEffect(() => {
     fetchProjects();
@@ -169,10 +173,11 @@ export default function ProjectsPage() {
     setRemoteOnly(false);
     setAlumniOfFilter('');
     setSportsPlayedFilter('');
+    setScopeFilter('');
     setPage(1);
   };
 
-  const hasActiveFilters = search || listingTypeFilter || category || remoteOnly || alumniOfFilter || sportsPlayedFilter;
+  const hasActiveFilters = search || listingTypeFilter || category || remoteOnly || alumniOfFilter || sportsPlayedFilter || scopeFilter;
 
   return (
     <div className="space-y-6">
@@ -190,7 +195,7 @@ export default function ProjectsPage() {
       </div>
 
       {/* Type Filter Tabs */}
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 flex-wrap">
         {[
           { value: '', label: 'All', icon: null },
           { value: 'project', label: 'Projects', icon: FileText },
@@ -208,6 +213,30 @@ export default function ProjectsPage() {
             >
               {Icon && <Icon className="h-4 w-4 mr-1.5" />}
               {t.label}
+            </Button>
+          );
+        })}
+
+        <div className="w-px h-6 bg-slate-200 dark:bg-slate-700 mx-1" />
+
+        {/* Scope filter: Institution vs Network */}
+        {[
+          { value: '', label: 'All Sources', icon: null },
+          { value: 'institution', label: 'My Institution', icon: Shield },
+          { value: 'network', label: 'Network', icon: Globe },
+        ].map((s) => {
+          const isActive = scopeFilter === s.value;
+          const Icon = s.icon;
+          return (
+            <Button
+              key={`scope-${s.value}`}
+              variant={isActive ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => { setScopeFilter(s.value); setPage(1); }}
+              className={isActive ? (s.value === 'institution' ? 'bg-purple-600 hover:bg-purple-700' : s.value === 'network' ? 'bg-blue-600 hover:bg-blue-700' : 'bg-teal-600 hover:bg-teal-700') : ''}
+            >
+              {Icon && <Icon className="h-4 w-4 mr-1.5" />}
+              {s.label}
             </Button>
           );
         })}
@@ -374,8 +403,19 @@ export default function ProjectsPage() {
                     {matchScores[project.id] !== undefined && (
                       <MatchScoreBadge score={matchScores[project.id]} size="sm" />
                     )}
-                    {project.listingType === 'internship' && (
+                    {project.isInstitutionExclusive ? (
                       <Badge className="bg-purple-100 text-purple-700 border-0 text-xs">
+                        <Shield className="h-3 w-3 mr-1" />
+                        Your Institution
+                      </Badge>
+                    ) : (
+                      <Badge className="bg-blue-50 text-blue-600 border-0 text-xs">
+                        <Globe className="h-3 w-3 mr-1" />
+                        Network
+                      </Badge>
+                    )}
+                    {project.listingType === 'internship' && (
+                      <Badge className="bg-purple-50 text-purple-600 border-0 text-xs">
                         <Briefcase className="h-3 w-3 mr-1" />
                         Internship
                       </Badge>

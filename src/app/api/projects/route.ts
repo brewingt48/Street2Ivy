@@ -1,12 +1,19 @@
 /**
  * GET /api/projects — Browse/search published project listings
+ *
+ * Supports scope filter: ?scope=institution|network|all
+ * Returns isInstitutionExclusive flag per listing.
  */
 
 import { NextRequest, NextResponse } from 'next/server';
 import { sql } from '@/lib/db';
+import { getCurrentSession } from '@/lib/auth/middleware';
 
 export async function GET(request: NextRequest) {
   try {
+    const session = await getCurrentSession();
+    const studentTenantId = session?.data?.tenantId || null;
+
     const { searchParams } = new URL(request.url);
     const search = searchParams.get('q') || '';
     const category = searchParams.get('category') || '';
@@ -15,6 +22,7 @@ export async function GET(request: NextRequest) {
     const skill = searchParams.get('skill') || '';
     const alumniOf = searchParams.get('alumniOf') || '';
     const sportsPlayed = searchParams.get('sportsPlayed') || '';
+    const scope = searchParams.get('scope') || '';
     const page = parseInt(searchParams.get('page') || '1');
     const limit = Math.min(parseInt(searchParams.get('limit') || '20'), 50);
     const offset = (page - 1) * limit;
@@ -52,17 +60,30 @@ export async function GET(request: NextRequest) {
       conditions.push(sql`u.metadata->>'sportsPlayed' ILIKE ${sportsPattern}`);
     }
 
+    // Scope filter: institution-exclusive vs network-wide
+    if (scope === 'institution' && studentTenantId) {
+      conditions.push(sql`l.tenant_id = ${studentTenantId}`);
+    } else if (scope === 'network') {
+      if (studentTenantId) {
+        conditions.push(sql`(l.tenant_id IS NULL OR l.tenant_id != ${studentTenantId})`);
+      } else {
+        conditions.push(sql`l.tenant_id IS NULL`);
+      }
+    }
+
     const whereClause = conditions.reduce((acc, cond, i) =>
       i === 0 ? cond : sql`${acc} AND ${cond}`
     );
 
-    // Get listings with author info
+    // Get listings with author info and tenant scope
     const listings = await sql`
       SELECT
         l.id, l.title, l.description, l.category, l.listing_type, l.location,
         l.remote_allowed, l.compensation, l.hours_per_week,
         l.duration, l.start_date, l.end_date, l.max_applicants,
         l.requires_nda, l.skills_required, l.published_at, l.created_at,
+        l.tenant_id as listing_tenant_id,
+        t.name as tenant_name,
         u.id as author_id, u.first_name as author_first_name,
         u.last_name as author_last_name, u.display_name as author_display_name,
         u.company_name as author_company_name,
@@ -71,6 +92,7 @@ export async function GET(request: NextRequest) {
         (SELECT COUNT(*) FROM project_applications pa WHERE pa.listing_id = l.id) as application_count
       FROM listings l
       JOIN users u ON u.id = l.author_id
+      LEFT JOIN tenants t ON t.id = l.tenant_id
       WHERE ${whereClause}
       ORDER BY l.published_at DESC NULLS LAST, l.created_at DESC
       LIMIT ${limit}
@@ -117,6 +139,8 @@ export async function GET(request: NextRequest) {
         const authorMeta = (l.author_metadata || {}) as Record<string, unknown>;
         const authorPublicData = (l.author_public_data || {}) as Record<string, unknown>;
         const rating = authorRatings[l.author_id as string];
+        const listingTenantId = l.listing_tenant_id as string | null;
+        const isInstitutionExclusive = !!(listingTenantId && studentTenantId && listingTenantId === studentTenantId);
         return {
           id: l.id,
           title: l.title,
@@ -136,6 +160,8 @@ export async function GET(request: NextRequest) {
           publishedAt: l.published_at,
           createdAt: l.created_at,
           applicationCount: parseInt(l.application_count as string),
+          isInstitutionExclusive,
+          tenantName: (l.tenant_name as string) || null,
           author: {
             id: l.author_id,
             firstName: l.author_first_name,

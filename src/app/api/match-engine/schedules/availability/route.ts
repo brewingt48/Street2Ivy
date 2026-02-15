@@ -55,7 +55,31 @@ export async function GET(request: Request) {
       isActive: s.is_active as boolean,
     }));
 
-    const windows = getAvailabilityWindows(scheduleEntries, startDate, endDate);
+    const rawWindows = getAvailabilityWindows(scheduleEntries, startDate, endDate);
+
+    // Transform to the shape the frontend AvailabilityCalendar expects
+    const windows = rawWindows.map((w) => {
+      const availableHours = w.availableHoursPerWeek;
+      const totalCommittedHours = Math.max(0, 40 - availableHours);
+      const sportConflicts = w.constraints.filter((c: string) => !c.startsWith('Travel:'));
+      const travelConflicts = w.constraints.filter((c: string) => c.startsWith('Travel:')).length;
+
+      let overallAvailability: 'high' | 'medium' | 'low' | 'none';
+      if (availableHours >= 30) overallAvailability = 'high';
+      else if (availableHours >= 15) overallAvailability = 'medium';
+      else if (availableHours > 0) overallAvailability = 'low';
+      else overallAvailability = 'none';
+
+      return {
+        weekStart: w.startDate,
+        weekEnd: w.endDate,
+        availableHours,
+        totalCommittedHours,
+        sportConflicts,
+        travelConflicts,
+        overallAvailability,
+      };
+    });
 
     return NextResponse.json({ windows, startDate, endDate });
   } catch (error) {
