@@ -106,7 +106,7 @@ export function MatchBreakdown({
         <div className="flex items-center justify-between">
           <CardTitle className="text-base flex items-center gap-2">
             <Brain className="h-4 w-4 text-teal-600" />
-            Match Analysis
+            <strong>Match Engine&trade;</strong> Analysis
           </CardTitle>
           <Button
             variant="ghost"

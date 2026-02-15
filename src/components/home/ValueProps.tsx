@@ -8,19 +8,19 @@ const cards = [
   {
     icon: GraduationCap,
     headline: 'Your work speaks for itself.',
-    body: 'Access real projects from alumni and industry leaders. Our Match Engine\u2122 pairs you with opportunities that fit your skills, schedule, and growth trajectory \u2014 so every engagement builds toward the career you want.',
+    body: 'Access real projects from alumni and industry leaders. Proveground\u2019s proprietary Match Engine\u2122 pairs you with opportunities that fit your skills, schedule, and growth trajectory \u2014 so every engagement builds toward the career you want.',
     label: 'For Students',
   },
   {
     icon: Handshake,
     headline: 'Shape the talent pipeline.',
-    body: 'Post meaningful projects and let the Match Engine\u2122 surface the right students for the work. Discover top talent through verified engagement \u2014 not guesswork \u2014 and build lasting relationships that benefit everyone.',
+    body: 'Post meaningful projects and let Proveground\u2019s proprietary Match Engine\u2122 surface the right students for the work. Discover top talent through verified engagement \u2014 not guesswork \u2014 and build lasting relationships that benefit everyone.',
     label: 'For Alumni & Partners',
   },
   {
     icon: Building2,
     headline: 'Lead with vision.',
-    body: 'Launch a fully branded talent marketplace powered by proprietary matching. The Match Engine\u2122 connects your students to the right opportunities across the entire Proveground network \u2014 schedule-aware, skill-matched, and data-driven.',
+    body: 'Launch a fully branded talent marketplace powered by Proveground\u2019s proprietary Match Engine\u2122 \u2014 connecting your students to the right opportunities across the entire network. Schedule-aware, skill-matched, and data-driven.',
     label: 'For Programs',
   },
 ];

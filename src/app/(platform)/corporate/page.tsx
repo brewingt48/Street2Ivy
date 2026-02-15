@@ -33,6 +33,7 @@ import {
   GraduationCap,
   Info,
   User,
+  Target,
 } from 'lucide-react';
 import { HelpSupportCard } from '@/components/shared/help-support-card';
 import { MatchScoreBadge } from '@/components/matching/MatchScoreBadge';
@@ -160,7 +161,7 @@ export default function CorporateDashboardPage() {
             <ul className="space-y-1 text-teal-700 dark:text-teal-400">
               <li>&bull; <strong>New Listing</strong> &mdash; Create a project listing describing the work, skills needed, and compensation</li>
               <li>&bull; <strong>Applications</strong> &mdash; Review student applications, accept or decline, and mark projects as complete</li>
-              <li>&bull; <strong>Find Students</strong> &mdash; Search the student pool to proactively invite qualified candidates</li>
+              <li>&bull; <strong>Find Students</strong> &mdash; Search the student pool or let Proveground&apos;s proprietary <strong>Match Engine&trade;</strong> surface the best candidates</li>
               <li>&bull; <strong>Messages</strong> &mdash; Communicate with students about applications and project details</li>
             </ul>
           </div>
@@ -234,7 +235,7 @@ export default function CorporateDashboardPage() {
               </CardTitle>
               <CardDescription>
                 {hasMatchEngine
-                  ? 'Students matched to your listing using our proprietary Match Engine\u2122. Scores reflect skills alignment, reliability, and growth trajectory.'
+                  ? <>Students matched to your listing using Proveground&apos;s proprietary <strong>Match Engine&trade;</strong>. Scores reflect skills alignment, schedule fit, reliability, and growth trajectory.</>
                   : 'Students matched to your listing\u0027s required skills using our algorithm. The percentage shows how many of your required skills each student has.'}
               </CardDescription>
             </div>
@@ -293,6 +294,37 @@ export default function CorporateDashboardPage() {
                   </div>
                 </div>
               ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* How the Match Engine Works — Corporate Partner Guide */}
+      {hasMatchEngine && (
+        <Card className="border-slate-200 dark:border-slate-700">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <Target className="h-5 w-5 text-teal-600" />
+              How Proveground&apos;s <strong>Match Engine&trade;</strong> Works for Partners
+            </CardTitle>
+            <CardDescription>
+              Our proprietary matching technology surfaces the best student talent for your projects automatically.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-4 md:grid-cols-3 text-sm text-slate-600 dark:text-slate-300">
+              <div>
+                <p className="font-semibold text-slate-900 dark:text-white mb-1">1. Post a Listing</p>
+                <p>Describe the project, required skills, timeline, and compensation. The <strong>Match Engine&trade;</strong> uses this to find the best student matches.</p>
+              </div>
+              <div>
+                <p className="font-semibold text-slate-900 dark:text-white mb-1">2. Review Matches</p>
+                <p>Students appear in &quot;Recommended&quot; with a composite score (0&ndash;100%). Higher scores mean stronger fit across skills, availability, trust, and growth trajectory.</p>
+              </div>
+              <div>
+                <p className="font-semibold text-slate-900 dark:text-white mb-1">3. Engage &amp; Hire</p>
+                <p>Invite top matches directly, review incoming applications, and build lasting relationships with verified student talent.</p>
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -366,7 +398,7 @@ export default function CorporateDashboardPage() {
               <p className="font-medium text-slate-900 dark:text-white mb-1">Recommended Students</p>
               <p>
                 {hasMatchEngine
-                  ? 'Students matched to your active listings using our proprietary Match Engine\u2122. Scores factor in skills, schedule fit, and career growth.'
+                  ? <>Students matched to your active listings using Proveground&apos;s proprietary <strong>Match Engine&trade;</strong>. Scores factor in skills, schedule fit, trust, and growth trajectory across six proprietary signals.</>
                   : 'Students matched to your active listings using our skills-based algorithm. The percentage shows skill alignment.'}
               </p>
             </div>

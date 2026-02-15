@@ -132,10 +132,10 @@ export default function MatchEngineDashboard() {
         <div>
           <h1 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
             <Target className="h-6 w-6 text-teal-600" />
-            ProveGround Match Engine&#8482;
+            Proveground&apos;s Proprietary <strong>Match Engine&trade;</strong>
           </h1>
           <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-            Proprietary bi-directional matching system
+            Proprietary bi-directional matching system &mdash; six signals, one composite score
           </p>
         </div>
         <div className="flex items-center gap-2">

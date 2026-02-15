@@ -335,7 +335,7 @@ export function LandingPageClient({ tenant, stats, partners }: LandingPageClient
               </p>
               <h3 className="text-xl font-semibold mb-3">Find Your Match</h3>
               <p className="text-gray-500 leading-relaxed">
-                The Match Engine&trade; pairs you with real projects from alumni and industry partners &mdash; matched to your skills, your schedule, and your goals.
+                Proveground&apos;s proprietary <strong>Match Engine&trade;</strong> pairs you with real projects from alumni and industry partners &mdash; matched to your skills, your schedule, and your goals.
               </p>
             </motion.div>
 
@@ -439,7 +439,7 @@ export function LandingPageClient({ tenant, stats, partners }: LandingPageClient
               </div>
               <h3 className="text-xl font-semibold mb-3">For Students</h3>
               <p className="text-gray-500 leading-relaxed mb-4">
-                Your work speaks for itself. Our Match Engine&trade; pairs you with projects that fit your skills, schedule, and growth trajectory &mdash; so every engagement builds toward the career you want.
+                Your work speaks for itself. Proveground&apos;s proprietary <strong>Match Engine&trade;</strong> pairs you with projects that fit your skills, schedule, and growth trajectory &mdash; so every engagement builds toward the career you want.
               </p>
               <a
                 href={`/register?tenant=${tenant.subdomain}&role=student`}
@@ -463,7 +463,7 @@ export function LandingPageClient({ tenant, stats, partners }: LandingPageClient
               </div>
               <h3 className="text-xl font-semibold mb-3">For Alumni &amp; Partners</h3>
               <p className="text-gray-500 leading-relaxed mb-4">
-                Shape the talent pipeline. Post meaningful projects and let the Match Engine&trade; surface the right students for the work. Discover top talent through verified engagement &mdash; not guesswork.
+                Shape the talent pipeline. Post meaningful projects and let Proveground&apos;s proprietary <strong>Match Engine&trade;</strong> surface the right students for the work. Discover top talent through verified engagement &mdash; not guesswork.
               </p>
               <a
                 href={`/register?tenant=${tenant.subdomain}&role=alumni`}
@@ -487,7 +487,7 @@ export function LandingPageClient({ tenant, stats, partners }: LandingPageClient
               </div>
               <h3 className="text-xl font-semibold mb-3">For Programs</h3>
               <p className="text-gray-500 leading-relaxed mb-4">
-                Lead with vision. Launch a branded talent marketplace powered by the Match Engine&trade; &mdash; connecting your students to the right opportunities across the network, schedule-aware and data-driven.
+                Lead with vision. Launch a branded talent marketplace powered by Proveground&apos;s proprietary <strong>Match Engine&trade;</strong> &mdash; connecting your students to the right opportunities across the network, schedule-aware and data-driven.
               </p>
               <a
                 href="/for-universities"

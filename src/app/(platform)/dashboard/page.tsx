@@ -196,8 +196,8 @@ export default function DashboardPage() {
             <p className="font-medium mb-1">Getting Started Tips</p>
             <ul className="space-y-1 text-teal-700 dark:text-teal-400">
               <li>&bull; <strong>Complete your profile</strong> to improve your visibility to corporate partners</li>
-              <li>&bull; <strong>Add your skills</strong> in Settings &mdash; our matching algorithm uses them to recommend projects</li>
-              <li>&bull; <strong>Browse Projects</strong> to find opportunities that match your interests and expertise</li>
+              <li>&bull; <strong>Add your skills</strong> in Settings &mdash; Proveground&apos;s proprietary <strong>Match Engine&trade;</strong> uses them to pair you with the right projects</li>
+              <li>&bull; <strong>Browse Projects</strong> to find opportunities matched to your interests, schedule, and expertise</li>
               <li>&bull; <strong>Check your messages</strong> regularly &mdash; partners may reach out with invitations</li>
             </ul>
           </div>
@@ -367,6 +367,53 @@ export default function DashboardPage() {
         </Card>
       )}
 
+      {/* How the Match Engine Works — Instructions */}
+      {tenantFeatures.matchEngine && (
+        <Card className="border-slate-200 dark:border-slate-700">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <Target className="h-5 w-5 text-teal-600" />
+              How Proveground&apos;s <strong>Match Engine&trade;</strong> Works
+            </CardTitle>
+            <CardDescription>
+              Our proprietary matching technology pairs you with the right opportunities automatically.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-4 md:grid-cols-2 text-sm text-slate-600 dark:text-slate-300">
+              <div className="space-y-3">
+                <div>
+                  <p className="font-semibold text-slate-900 dark:text-white mb-1">1. Complete Your Profile</p>
+                  <p>Add your skills, major, GPA, and experience. The more information the <strong>Match Engine&trade;</strong> has, the better your matches will be.</p>
+                </div>
+                <div>
+                  <p className="font-semibold text-slate-900 dark:text-white mb-1">2. Set Your Schedule</p>
+                  <p>If your program supports it, update your sport seasons, academic calendar, and weekly availability so matches respect your time commitments.</p>
+                </div>
+                <div>
+                  <p className="font-semibold text-slate-900 dark:text-white mb-1">3. Review Your Matches</p>
+                  <p>Projects appear in &quot;Recommended For You&quot; with a match score (0&ndash;100%). Higher scores mean a stronger fit across all six signals.</p>
+                </div>
+              </div>
+              <div className="space-y-3">
+                <div>
+                  <p className="font-semibold text-slate-900 dark:text-white mb-1">The 6 Matching Signals</p>
+                  <p>Every match is scored across six proprietary dimensions:</p>
+                </div>
+                <ul className="space-y-1.5 text-sm">
+                  <li className="flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-teal-500" /> <strong>Skills Alignment</strong> &mdash; How well your skills match the project requirements</li>
+                  <li className="flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-blue-500" /> <strong>Temporal Fit</strong> &mdash; Whether the project timeline works with your schedule</li>
+                  <li className="flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-green-500" /> <strong>Sustainability</strong> &mdash; Can you manage this workload alongside your other commitments</li>
+                  <li className="flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-purple-500" /> <strong>Growth Trajectory</strong> &mdash; How much this project will advance your career development</li>
+                  <li className="flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-amber-500" /> <strong>Trust &amp; Reliability</strong> &mdash; Your track record of completing projects successfully</li>
+                  <li className="flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-indigo-500" /> <strong>Network Affinity</strong> &mdash; Connections between your program and the partner organization</li>
+                </ul>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Recommended Projects — Smart Matching */}
       {recommendations.length > 0 && (
         <Card>
@@ -382,7 +429,7 @@ export default function DashboardPage() {
               </CardTitle>
               <CardDescription>
                 {tenantFeatures.matchEngine
-                  ? 'Projects matched using our proprietary Match Engine\u2122 based on your skills, schedule, and career trajectory.'
+                  ? <>Projects matched using Proveground&apos;s proprietary <strong>Match Engine&trade;</strong> based on your skills, schedule, and career trajectory.</>
                   : 'Projects suggested by our matching algorithm based on your skills, past application history, and availability.'}
               </CardDescription>
             </div>
@@ -576,7 +623,7 @@ export default function DashboardPage() {
               <p className="font-medium text-slate-900 dark:text-white mb-1">Recommended For You</p>
               <p>
                 {tenantFeatures.matchEngine
-                  ? 'Projects matched using our proprietary Match Engine\u2122. Click "View match breakdown" to see how each signal contributes to your score.'
+                  ? <>Projects matched using Proveground&apos;s proprietary <strong>Match Engine&trade;</strong>. Click &quot;View match breakdown&quot; to see how each of the six signals &mdash; Skills, Temporal Fit, Sustainability, Growth, Trust, and Network &mdash; contributes to your composite score.</>
                   : 'Projects matched to your skills using our smart matching algorithm. The percentage shows how well your skills align.'}
               </p>
             </div>
