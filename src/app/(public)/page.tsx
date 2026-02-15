@@ -118,11 +118,11 @@ function HeroSection({ settings }: { settings: HomepageSettings }) {
         muted
         loop
         playsInline
-        poster="https://images.pexels.com/photos/3184465/pexels-photo-3184465.jpeg?auto=compress&cs=tinysrgb&w=1920"
+        poster="https://images.pexels.com/photos/3621104/pexels-photo-3621104.jpeg?auto=compress&cs=tinysrgb&w=1920"
         className="absolute inset-0 w-full h-full object-cover"
       >
         <source
-          src="https://videos.pexels.com/video-files/3255275/3255275-uhd_2560_1440_25fps.mp4"
+          src="https://videos.pexels.com/video-files/5190065/5190065-uhd_2560_1440_25fps.mp4"
           type="video/mp4"
         />
       </video>
@@ -677,7 +677,7 @@ function VideoSection() {
           <div className="relative aspect-video max-w-4xl mx-auto rounded-2xl overflow-hidden shadow-2xl bg-navy-900 group cursor-pointer">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src="https://images.pexels.com/photos/3184465/pexels-photo-3184465.jpeg?auto=compress&cs=tinysrgb&w=1280"
+              src="https://images.pexels.com/photos/3621104/pexels-photo-3621104.jpeg?auto=compress&cs=tinysrgb&w=1280"
               alt="Campus2Career platform demo"
               className="w-full h-full object-cover opacity-70 group-hover:opacity-80 transition-opacity"
             />
