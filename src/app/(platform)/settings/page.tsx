@@ -31,6 +31,7 @@ import {
   Save,
   Building2,
   Eye,
+  Lock,
 } from 'lucide-react';
 
 interface Profile {
@@ -107,6 +108,10 @@ export default function SettingsPage() {
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
 
+  // Privacy preferences
+  const [aiTrainingOptOut, setAiTrainingOptOut] = useState(false);
+  const [aiCoachingEnabled, setAiCoachingEnabled] = useState(true);
+
   // UI state
   const [profileSaving, setProfileSaving] = useState(false);
   const [profileMsg, setProfileMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
@@ -114,13 +119,16 @@ export default function SettingsPage() {
   const [skillsMsg, setSkillsMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [passwordSaving, setPasswordSaving] = useState(false);
   const [passwordMsg, setPasswordMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [privacySaving, setPrivacySaving] = useState(false);
+  const [privacyMsg, setPrivacyMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   useEffect(() => {
     Promise.all([
       fetch('/api/profile').then((r) => r.json()),
       fetch('/api/skills').then((r) => r.json()),
+      fetch('/api/profile/privacy').then((r) => r.json()).catch(() => ({ preferences: {} })),
     ])
-      .then(([profileData, skillsData]) => {
+      .then(([profileData, skillsData, privacyData]) => {
         const p = profileData.profile;
         setProfile(p);
         setFirstName(p.firstName || '');
@@ -145,6 +153,10 @@ export default function SettingsPage() {
 
         setSelectedSkillIds(new Set((profileData.skills || []).map((s: Skill) => s.id)));
         setAllSkills(skillsData.skills || []);
+        if (privacyData.preferences) {
+          setAiTrainingOptOut(privacyData.preferences.aiTrainingOptOut ?? false);
+          setAiCoachingEnabled(privacyData.preferences.aiCoachingEnabled ?? true);
+        }
       })
       .catch(console.error)
       .finally(() => setLoading(false));
@@ -250,6 +262,27 @@ export default function SettingsPage() {
       setPasswordMsg({ type: 'error', text: err instanceof Error ? err.message : 'Failed to change' });
     } finally {
       setPasswordSaving(false);
+    }
+  };
+
+  const handlePrivacySave = async () => {
+    setPrivacySaving(true);
+    setPrivacyMsg(null);
+    try {
+      const res = await fetch('/api/profile/privacy', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ aiTrainingOptOut, aiCoachingEnabled }),
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || 'Failed to save');
+      }
+      setPrivacyMsg({ type: 'success', text: 'Privacy preferences updated' });
+    } catch (err) {
+      setPrivacyMsg({ type: 'error', text: err instanceof Error ? err.message : 'Failed to save' });
+    } finally {
+      setPrivacySaving(false);
     }
   };
 
@@ -718,6 +751,93 @@ export default function SettingsPage() {
             variant="outline"
           >
             {passwordSaving ? 'Changing...' : 'Change Password'}
+          </Button>
+        </CardFooter>
+      </Card>
+
+      {/* Privacy & Data */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Lock className="h-5 w-5 text-teal-600" />
+            Privacy & Data
+          </CardTitle>
+          <CardDescription>
+            Control how your data is used within Proveground
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-5">
+          {privacyMsg && (
+            <div
+              className={`p-3 text-sm rounded-md flex items-center gap-2 ${
+                privacyMsg.type === 'success'
+                  ? 'text-green-600 bg-green-50'
+                  : 'text-red-600 bg-red-50'
+              }`}
+            >
+              {privacyMsg.type === 'success' ? (
+                <CheckCircle2 className="h-4 w-4" />
+              ) : (
+                <AlertCircle className="h-4 w-4" />
+              )}
+              {privacyMsg.text}
+            </div>
+          )}
+
+          <div className="space-y-4">
+            <div className="flex items-start justify-between gap-4 p-4 rounded-lg border border-slate-200 dark:border-slate-700">
+              <div className="flex-1">
+                <p className="text-sm font-medium text-slate-900 dark:text-white">
+                  AI Model Training Opt-Out
+                </p>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
+                  When enabled, your data (profile, skills, coaching conversations, and activity) will <strong>not</strong> be used to train or improve AI models. Your data will still be processed to provide you with AI coaching features in real-time, but it will not be retained for model training purposes.
+                </p>
+              </div>
+              <label className="relative inline-flex items-center cursor-pointer shrink-0 mt-1">
+                <input
+                  type="checkbox"
+                  checked={aiTrainingOptOut}
+                  onChange={(e) => setAiTrainingOptOut(e.target.checked)}
+                  className="sr-only peer"
+                />
+                <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-teal-300 dark:peer-focus:ring-teal-800 rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-slate-600 peer-checked:bg-teal-600"></div>
+              </label>
+            </div>
+
+            <div className="flex items-start justify-between gap-4 p-4 rounded-lg border border-slate-200 dark:border-slate-700">
+              <div className="flex-1">
+                <p className="text-sm font-medium text-slate-900 dark:text-white">
+                  AI Coaching Features
+                </p>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
+                  Enable or disable all AI coaching features including career coaching, resume review, interview prep, and match insights. When disabled, you will not have access to any AI-powered features.
+                </p>
+              </div>
+              <label className="relative inline-flex items-center cursor-pointer shrink-0 mt-1">
+                <input
+                  type="checkbox"
+                  checked={aiCoachingEnabled}
+                  onChange={(e) => setAiCoachingEnabled(e.target.checked)}
+                  className="sr-only peer"
+                />
+                <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-teal-300 dark:peer-focus:ring-teal-800 rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-slate-600 peer-checked:bg-teal-600"></div>
+              </label>
+            </div>
+          </div>
+
+          <div className="bg-slate-50 dark:bg-slate-800/50 rounded-lg p-3 text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+            <strong>Your data, your choice.</strong> Proveground uses AI to provide career coaching and matching services. You can opt out of AI model training at any time without affecting your ability to use the platform. If you disable AI coaching entirely, you will not have access to AI-powered features, but all other platform functionality remains available.
+          </div>
+        </CardContent>
+        <CardFooter className="flex justify-end">
+          <Button
+            onClick={handlePrivacySave}
+            disabled={privacySaving}
+            className="bg-teal-600 hover:bg-teal-700"
+          >
+            <Save className="h-4 w-4 mr-2" />
+            {privacySaving ? 'Saving...' : 'Save Privacy Preferences'}
           </Button>
         </CardFooter>
       </Card>
