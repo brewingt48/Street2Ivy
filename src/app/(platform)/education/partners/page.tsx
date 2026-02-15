@@ -282,34 +282,124 @@ export default function PartnersNetworkPage() {
         />
       </div>
 
+      {/* What's the difference? Explainer */}
+      <Card className="border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/30">
+        <CardContent className="pt-4 pb-4">
+          <div className="grid md:grid-cols-2 gap-4">
+            <div className="flex gap-3">
+              <div className="p-2 rounded-lg bg-purple-100 dark:bg-purple-900/30 h-fit">
+                <Star className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+                  Exclusive Partners
+                  <Badge className="bg-purple-100 text-purple-700 border-0 text-xs">Exclusive</Badge>
+                </p>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                  Partners recruited directly by your institution. They work <strong>only with your students</strong> and
+                  don&apos;t appear on any other institution&apos;s dashboard. Ideal for alumni mentors and dedicated corporate sponsors.
+                </p>
+              </div>
+            </div>
+            <div className="flex gap-3">
+              <div className="p-2 rounded-lg bg-teal-100 dark:bg-teal-900/30 h-fit">
+                <Globe className="h-5 w-5 text-teal-600 dark:text-teal-400" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+                  Network Partners
+                  <Badge className="bg-teal-100 text-teal-700 border-0 text-xs">Network</Badge>
+                </p>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                  Partners from the <strong>shared Campus2Career marketplace</strong>. They post projects visible to students
+                  across multiple institutions. Your students can apply, but so can students from other schools.
+                </p>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Summary Stats */}
+      <div className="grid gap-4 md:grid-cols-3">
+        <Card>
+          <CardContent className="pt-4 pb-4 flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-purple-50 dark:bg-purple-900/30">
+              <Star className="h-5 w-5 text-purple-600" />
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-slate-900 dark:text-white">{exclusivePartners.length}</p>
+              <p className="text-xs text-slate-500">Exclusive Partners</p>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-4 pb-4 flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-teal-50 dark:bg-teal-900/30">
+              <Globe className="h-5 w-5 text-teal-600" />
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-slate-900 dark:text-white">{networkPartners.length}</p>
+              <p className="text-xs text-slate-500">Network Partners</p>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-4 pb-4 flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-blue-50 dark:bg-blue-900/30">
+              <Users className="h-5 w-5 text-blue-600" />
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-slate-900 dark:text-white">{partners.length}</p>
+              <p className="text-xs text-slate-500">Total Partners</p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
       {/* Exclusive Partners Section */}
       <div>
-        <h2 className="text-lg font-semibold text-slate-900 dark:text-white mb-3 flex items-center gap-2">
-          <Star className="h-5 w-5 text-amber-500" />
-          Exclusive & Preferred Partners
-          <Badge variant="outline" className="ml-2">{exclusivePartners.length}</Badge>
+        <h2 className="text-lg font-semibold text-slate-900 dark:text-white mb-1 flex items-center gap-2">
+          <Star className="h-5 w-5 text-purple-500" />
+          Exclusive Partners
+          <Badge className="bg-purple-100 text-purple-700 border-0 ml-1">{exclusivePartners.length}</Badge>
         </h2>
+        <p className="text-xs text-slate-500 dark:text-slate-400 mb-3 ml-7">
+          These partners work exclusively with your institution. Only your students can see their projects and apply.
+        </p>
 
         {exclusivePartners.length === 0 ? (
-          <Card>
+          <Card className="border-dashed border-purple-200 dark:border-purple-800">
             <CardContent className="text-center py-10">
-              <Building2 className="h-10 w-10 text-slate-300 mx-auto mb-3" />
-              <p className="text-sm text-slate-500">No exclusive or preferred partners yet</p>
-              <p className="text-xs text-slate-400 mt-1">Invite alumni or corporate partners to build your exclusive network</p>
+              <div className="h-12 w-12 rounded-full bg-purple-50 dark:bg-purple-900/30 mx-auto mb-3 flex items-center justify-center">
+                <Star className="h-6 w-6 text-purple-300" />
+              </div>
+              <p className="text-sm font-medium text-slate-600 dark:text-slate-300">No exclusive partners yet</p>
+              <p className="text-xs text-slate-400 mt-1 max-w-sm mx-auto">
+                Invite alumni or corporate partners to create a private, dedicated network just for your students.
+              </p>
+              <div className="flex justify-center gap-2 mt-4">
+                <Button variant="outline" size="sm" onClick={() => setShowAlumniInvite(true)}>
+                  <GraduationCap className="h-3.5 w-3.5 mr-1.5" /> Invite Alumni
+                </Button>
+                <Button variant="outline" size="sm" onClick={() => setShowCorporateInvite(true)}>
+                  <Building2 className="h-3.5 w-3.5 mr-1.5" /> Invite Corporate
+                </Button>
+              </div>
             </CardContent>
           </Card>
         ) : (
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {exclusivePartners.map((partner) => (
-              <Card key={partner.id} className="hover:border-teal-200 transition-colors">
+              <Card key={partner.id} className="hover:border-purple-200 dark:hover:border-purple-800 transition-colors border-l-4 border-l-purple-400">
                 <CardHeader className="pb-3">
                   <div className="flex items-start justify-between">
                     <div className="flex items-center gap-3">
-                      <div className="h-10 w-10 rounded-lg bg-teal-50 dark:bg-teal-900/30 flex items-center justify-center">
+                      <div className="h-10 w-10 rounded-lg bg-purple-50 dark:bg-purple-900/30 flex items-center justify-center">
                         {partner.isAlumniPartner ? (
-                          <GraduationCap className="h-5 w-5 text-teal-600" />
+                          <GraduationCap className="h-5 w-5 text-purple-600" />
                         ) : (
-                          <Building2 className="h-5 w-5 text-teal-600" />
+                          <Building2 className="h-5 w-5 text-purple-600" />
                         )}
                       </div>
                       <div>
@@ -319,17 +409,18 @@ export default function PartnersNetworkPage() {
                         )}
                       </div>
                     </div>
-                    <Badge className={`border-0 text-xs ${relationshipColors[partner.access?.relationship || 'standard']}`}>
-                      {partner.access?.relationship || 'standard'}
+                    <Badge className="bg-purple-100 text-purple-700 border-0 text-xs">
+                      {partner.access?.relationship === 'preferred' ? 'Preferred' : 'Exclusive'}
                     </Badge>
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-3">
                   {partner.isAlumniPartner && (
-                    <Badge variant="outline" className="text-xs">
+                    <Badge variant="outline" className="text-xs border-purple-200 text-purple-700 dark:border-purple-700 dark:text-purple-300">
                       <GraduationCap className="h-3 w-3 mr-1" />
                       Alumni{partner.alumniGraduationYear ? ` '${String(partner.alumniGraduationYear).slice(2)}` : ''}
                       {partner.alumniSport ? ` - ${partner.alumniSport}` : ''}
+                      {partner.alumniPosition ? ` (${partner.alumniPosition})` : ''}
                     </Badge>
                   )}
 
@@ -373,33 +464,38 @@ export default function PartnersNetworkPage() {
 
       {/* Network Partners Section */}
       <div>
-        <h2 className="text-lg font-semibold text-slate-900 dark:text-white mb-3 flex items-center gap-2">
+        <h2 className="text-lg font-semibold text-slate-900 dark:text-white mb-1 flex items-center gap-2">
           <Globe className="h-5 w-5 text-teal-600" />
           Network Partners
-          <Badge variant="outline" className="ml-2">{networkPartners.length}</Badge>
+          <Badge className="bg-teal-100 text-teal-700 border-0 ml-1">{networkPartners.length}</Badge>
         </h2>
+        <p className="text-xs text-slate-500 dark:text-slate-400 mb-3 ml-7">
+          Shared marketplace partners whose projects are visible to students across multiple institutions.
+        </p>
 
         {networkPartners.length === 0 ? (
-          <Card>
+          <Card className="border-dashed border-teal-200 dark:border-teal-800">
             <CardContent className="text-center py-10">
-              <Globe className="h-10 w-10 text-slate-300 mx-auto mb-3" />
-              <p className="text-sm text-slate-500">No network partners available</p>
-              <p className="text-xs text-slate-400 mt-1">
-                Network partners from the shared platform will appear here when available
+              <div className="h-12 w-12 rounded-full bg-teal-50 dark:bg-teal-900/30 mx-auto mb-3 flex items-center justify-center">
+                <Globe className="h-6 w-6 text-teal-300" />
+              </div>
+              <p className="text-sm font-medium text-slate-600 dark:text-slate-300">No network partners available yet</p>
+              <p className="text-xs text-slate-400 mt-1 max-w-sm mx-auto">
+                When corporate partners join the Campus2Career shared marketplace, their projects will appear here for your students to apply to.
               </p>
             </CardContent>
           </Card>
         ) : (
           <div className="space-y-2">
             {networkPartners.map((partner) => (
-              <Card key={partner.id} className="hover:border-slate-300 transition-colors">
+              <Card key={partner.id} className="hover:border-teal-200 dark:hover:border-teal-800 transition-colors border-l-4 border-l-teal-400">
                 <CardContent className="py-3 flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="h-8 w-8 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
+                    <div className="h-8 w-8 rounded-lg bg-teal-50 dark:bg-teal-900/30 flex items-center justify-center">
                       {partner.isAlumniPartner ? (
-                        <GraduationCap className="h-4 w-4 text-slate-500" />
+                        <GraduationCap className="h-4 w-4 text-teal-600" />
                       ) : (
-                        <Building2 className="h-4 w-4 text-slate-500" />
+                        <Building2 className="h-4 w-4 text-teal-600" />
                       )}
                     </div>
                     <div>
@@ -418,13 +514,13 @@ export default function PartnersNetworkPage() {
                     <span className="text-xs text-slate-400">
                       {partner.stats.activeListings} listing{partner.stats.activeListings !== 1 ? 's' : ''}
                     </span>
-                    <Badge className={`border-0 text-xs ${relationshipColors[partner.access?.relationship || 'network']}`}>
-                      {partner.visibility === 'network' ? 'Network' : (partner.access?.relationship || 'network')}
+                    <Badge className="bg-teal-100 text-teal-700 border-0 text-xs">
+                      Shared Network
                     </Badge>
                     {partner.website && (
                       <Button variant="outline" size="sm" asChild>
                         <a href={partner.website} target="_blank" rel="noopener noreferrer">
-                          View Listings <ExternalLink className="h-3 w-3 ml-1" />
+                          View <ExternalLink className="h-3 w-3 ml-1" />
                         </a>
                       </Button>
                     )}
@@ -434,43 +530,6 @@ export default function PartnersNetworkPage() {
             ))}
           </div>
         )}
-      </div>
-
-      {/* Summary Stats */}
-      <div className="grid gap-4 md:grid-cols-3">
-        <Card>
-          <CardContent className="pt-4 pb-4 flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-purple-50">
-              <Star className="h-5 w-5 text-purple-600" />
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-slate-900 dark:text-white">{exclusivePartners.length}</p>
-              <p className="text-xs text-slate-500">Exclusive Partners</p>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-4 pb-4 flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-teal-50">
-              <Globe className="h-5 w-5 text-teal-600" />
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-slate-900 dark:text-white">{networkPartners.length}</p>
-              <p className="text-xs text-slate-500">Network Partners</p>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-4 pb-4 flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-blue-50">
-              <Users className="h-5 w-5 text-blue-600" />
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-slate-900 dark:text-white">{partners.length}</p>
-              <p className="text-xs text-slate-500">Total Partners</p>
-            </div>
-          </CardContent>
-        </Card>
       </div>
 
       {/* Alumni Invite Dialog */}
