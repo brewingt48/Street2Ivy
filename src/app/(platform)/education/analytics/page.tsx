@@ -4,10 +4,9 @@
  * Education Admin Analytics Page
  *
  * Comprehensive analytics for education administrators:
- * - Student enrollment, placement rates, GPA
+ * - Student enrollment, placement rates
  * - Enrollment timeline, application outcomes
- * - Top skills distribution
- * - Student performance table
+ * - Student activity table
  * - Corporate partner activity
  */
 
@@ -23,7 +22,6 @@ import { formatChartDate, type RangeKey } from '@/lib/analytics/date-ranges';
 import {
   GraduationCap,
   Target,
-  Award,
   Briefcase,
   CheckCircle2,
   ClipboardList,
@@ -85,8 +83,8 @@ export default function EducationAnalyticsPage() {
     return (
       <div className="space-y-6">
         <Skeleton className="h-10 w-64" />
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {[1, 2, 3, 4, 5, 6].map((i) => <Skeleton key={i} className="h-28" />)}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+          {[1, 2, 3, 4, 5].map((i) => <Skeleton key={i} className="h-28" />)}
         </div>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <Skeleton className="h-80" />
@@ -101,16 +99,10 @@ export default function EducationAnalyticsPage() {
     date: formatChartDate(t.date, range),
   }));
 
-  const skillsData = data.topSkills.map((s) => ({
-    skill: s.skill,
-    students: s.studentCount,
-  }));
-
   const studentColumns: TableColumn[] = [
     { key: 'name', label: 'Name', sortable: true },
     { key: 'email', label: 'Email', sortable: true },
     { key: 'university', label: 'University', sortable: true, format: (v) => (v as string) || '-' },
-    { key: 'gpa', label: 'GPA', sortable: true, align: 'right', format: (v) => (v as string) || '-' },
     { key: 'applications', label: 'Apps', sortable: true, align: 'right' },
     { key: 'accepted', label: 'Accepted', sortable: true, align: 'right' },
     { key: 'completed', label: 'Completed', sortable: true, align: 'right' },
@@ -145,7 +137,7 @@ export default function EducationAnalyticsPage() {
       </div>
 
       {/* Summary Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
         <StatCard
           label="Total Students"
           value={data.summary.totalStudents}
@@ -156,11 +148,6 @@ export default function EducationAnalyticsPage() {
           label="Placement Rate"
           value={`${data.summary.placementRate}%`}
           icon={Target}
-        />
-        <StatCard
-          label="Average GPA"
-          value={data.summary.avgGPA !== null ? data.summary.avgGPA.toFixed(2) : 'N/A'}
-          icon={Award}
         />
         <StatCard
           label="Active Projects"
@@ -200,22 +187,9 @@ export default function EducationAnalyticsPage() {
         />
       </div>
 
-      {/* Skills Distribution */}
-      {skillsData.length > 0 && (
-        <ChartCard
-          type="bar"
-          title="Top Skills Among Students"
-          description="Most common skills in your student body"
-          data={skillsData}
-          xKey="skill"
-          series={[{ key: 'students', label: 'Students' }]}
-          height={250}
-        />
-      )}
-
-      {/* Student Performance Table */}
+      {/* Student Activity Table */}
       <DataTable
-        title="Student Performance"
+        title="Student Activity"
         data={data.studentPerformance as unknown as Record<string, unknown>[]}
         columns={studentColumns}
         exportFilename={`student-performance-${range}`}

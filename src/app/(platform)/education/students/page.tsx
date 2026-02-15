@@ -66,15 +66,13 @@ export default function EducationStudentsPage() {
             { key: 'university', label: 'University' },
             { key: 'major', label: 'Major' },
             { key: 'graduationYear', label: 'Grad Year' },
-            { key: 'gpa', label: 'GPA' },
-            { key: 'applicationCount', label: 'Applications' },
             { key: 'avgPrivateRating', label: 'Avg Rating', format: (v) => v != null ? String(v) : 'N/A' },
             { key: 'privateRatingCount', label: 'Rating Count' },
             { key: 'isActive', label: 'Active', format: (v) => v ? 'Yes' : 'No' },
           ]}
         />
         <p className="text-xs text-slate-400 mt-2">
-          Search by name, email, or university. <strong>Active</strong> students can access the platform. The <strong>apps</strong> count shows how many projects each student has applied to.
+          Search by name, email, or university. <strong>Active</strong> students can access the platform.
         </p>
       </div>
 
@@ -112,7 +110,6 @@ export default function EducationStudentsPage() {
                 <div className="flex items-center gap-3">
                   {s.university && <Badge variant="outline" className="text-xs">{s.university}</Badge>}
                   {s.major && <span className="text-xs text-slate-400">{s.major}</span>}
-                  {s.gpa && <span className="text-xs text-slate-400">GPA: {s.gpa}</span>}
                   {s.avgPrivateRating != null && (
                     <div className="flex items-center gap-1">
                       {[1, 2, 3, 4, 5].map((star) => (
@@ -122,7 +119,6 @@ export default function EducationStudentsPage() {
                       <span className="text-xs text-slate-400">({s.privateRatingCount})</span>
                     </div>
                   )}
-                  <Badge variant="secondary" className="text-xs">{s.applicationCount} apps</Badge>
                   <Badge className={s.isActive ? 'bg-green-100 text-green-700 border-0' : 'bg-red-100 text-red-700 border-0'}>
                     {s.isActive ? 'Active' : 'Inactive'}
                   </Badge>

@@ -320,7 +320,9 @@ export default function SettingsPage() {
           Manage your profile, skills, and account security
         </p>
         <p className="text-xs text-slate-400 mt-2">
-          Keep your profile up to date for better visibility. Adding <strong>skills</strong> improves project matching. Use a <strong>strong password</strong> (8+ characters) to keep your account secure.
+          {profile?.role === 'admin' || profile?.role === 'educational_admin'
+            ? 'Keep your profile up to date. Use a strong password (8+ characters) to keep your account secure.'
+            : 'Keep your profile up to date for better visibility. Adding skills improves project matching. Use a strong password (8+ characters) to keep your account secure.'}
         </p>
       </div>
 
@@ -388,13 +390,41 @@ export default function SettingsPage() {
             </p>
           </div>
 
+          {/* Admin / Edu-Admin: Title and Position only */}
+          {(profile?.role === 'admin' || profile?.role === 'educational_admin') && (
+            <>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="jobTitle">Title</Label>
+                  <Input
+                    id="jobTitle"
+                    value={jobTitle}
+                    onChange={(e) => setJobTitle(e.target.value)}
+                    placeholder={profile?.role === 'educational_admin' ? 'e.g. Director of Career Services' : 'e.g. Platform Administrator'}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="department">Department / Position</Label>
+                  <Input
+                    id="department"
+                    value={department}
+                    onChange={(e) => setDepartment(e.target.value)}
+                    placeholder={profile?.role === 'educational_admin' ? 'e.g. Athletics Department' : 'e.g. Operations'}
+                  />
+                </div>
+              </div>
+            </>
+          )}
+
           <div className="space-y-2">
             <Label htmlFor="bio">Bio</Label>
             <Textarea
               id="bio"
               value={bio}
               onChange={(e) => setBio(e.target.value)}
-              placeholder="Tell companies about yourself..."
+              placeholder={profile?.role === 'admin' || profile?.role === 'educational_admin'
+                ? 'Brief description of your role...'
+                : 'Tell companies about yourself...'}
               rows={3}
             />
           </div>
@@ -533,50 +563,55 @@ export default function SettingsPage() {
             />
           </div>
 
-          <Separator />
+          {/* Academic fields — only for students and corporates, not admin/edu-admin */}
+          {profile?.role !== 'admin' && profile?.role !== 'educational_admin' && (
+            <>
+              <Separator />
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="university">University</Label>
-              <Input
-                id="university"
-                value={university}
-                onChange={(e) => setUniversity(e.target.value)}
-                placeholder="e.g. Harvard University"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="major">Major</Label>
-              <Input
-                id="major"
-                value={major}
-                onChange={(e) => setMajor(e.target.value)}
-                placeholder="e.g. Computer Science"
-              />
-            </div>
-          </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="university">University</Label>
+                  <Input
+                    id="university"
+                    value={university}
+                    onChange={(e) => setUniversity(e.target.value)}
+                    placeholder="e.g. Harvard University"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="major">Major</Label>
+                  <Input
+                    id="major"
+                    value={major}
+                    onChange={(e) => setMajor(e.target.value)}
+                    placeholder="e.g. Computer Science"
+                  />
+                </div>
+              </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="gradYear">Graduation Year</Label>
-              <Input
-                id="gradYear"
-                type="number"
-                value={graduationYear}
-                onChange={(e) => setGraduationYear(e.target.value)}
-                placeholder="2026"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="gpa">GPA</Label>
-              <Input
-                id="gpa"
-                value={gpa}
-                onChange={(e) => setGpa(e.target.value)}
-                placeholder="3.8"
-              />
-            </div>
-          </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="gradYear">Graduation Year</Label>
+                  <Input
+                    id="gradYear"
+                    type="number"
+                    value={graduationYear}
+                    onChange={(e) => setGraduationYear(e.target.value)}
+                    placeholder="2026"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="gpa">GPA</Label>
+                  <Input
+                    id="gpa"
+                    value={gpa}
+                    onChange={(e) => setGpa(e.target.value)}
+                    placeholder="3.8"
+                  />
+                </div>
+              </div>
+            </>
+          )}
 
           {/* Student: Sports & Activities */}
           {profile?.role === 'student' && (
@@ -617,74 +652,76 @@ export default function SettingsPage() {
         </CardFooter>
       </Card>
 
-      {/* Skills */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <GraduationCap className="h-5 w-5 text-teal-600" />
-            Skills
-          </CardTitle>
-          <CardDescription>
-            Manage your skills to improve project matching ({selectedSkillIds.size} selected)
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {skillsMsg && (
-            <div
-              className={`p-3 text-sm rounded-md flex items-center gap-2 ${
-                skillsMsg.type === 'success'
-                  ? 'text-green-600 bg-green-50'
-                  : 'text-red-600 bg-red-50'
-              }`}
+      {/* Skills — only show for students and corporate partners */}
+      {profile?.role !== 'admin' && profile?.role !== 'educational_admin' && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <GraduationCap className="h-5 w-5 text-teal-600" />
+              Skills
+            </CardTitle>
+            <CardDescription>
+              Manage your skills to improve project matching ({selectedSkillIds.size} selected)
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {skillsMsg && (
+              <div
+                className={`p-3 text-sm rounded-md flex items-center gap-2 ${
+                  skillsMsg.type === 'success'
+                    ? 'text-green-600 bg-green-50'
+                    : 'text-red-600 bg-red-50'
+                }`}
+              >
+                {skillsMsg.type === 'success' ? (
+                  <CheckCircle2 className="h-4 w-4" />
+                ) : (
+                  <AlertCircle className="h-4 w-4" />
+                )}
+                {skillsMsg.text}
+              </div>
+            )}
+
+            <Input
+              placeholder="Search skills..."
+              value={skillSearch}
+              onChange={(e) => setSkillSearch(e.target.value)}
+            />
+
+            <div className="max-h-64 overflow-y-auto border rounded-md p-3">
+              <div className="flex flex-wrap gap-2">
+                {filteredSkills.map((skill) => (
+                  <Badge
+                    key={skill.id}
+                    variant={selectedSkillIds.has(skill.id) ? 'default' : 'outline'}
+                    className={`cursor-pointer transition-colors ${
+                      selectedSkillIds.has(skill.id)
+                        ? 'bg-teal-600 hover:bg-teal-700'
+                        : 'hover:bg-teal-50'
+                    }`}
+                    onClick={() => toggleSkill(skill.id)}
+                  >
+                    {skill.name}
+                  </Badge>
+                ))}
+                {filteredSkills.length === 0 && (
+                  <p className="text-sm text-slate-400">No skills found</p>
+                )}
+              </div>
+            </div>
+          </CardContent>
+          <CardFooter className="flex justify-end">
+            <Button
+              onClick={handleSkillsSave}
+              disabled={skillsSaving}
+              className="bg-teal-600 hover:bg-teal-700"
             >
-              {skillsMsg.type === 'success' ? (
-                <CheckCircle2 className="h-4 w-4" />
-              ) : (
-                <AlertCircle className="h-4 w-4" />
-              )}
-              {skillsMsg.text}
-            </div>
-          )}
-
-          <Input
-            placeholder="Search skills..."
-            value={skillSearch}
-            onChange={(e) => setSkillSearch(e.target.value)}
-          />
-
-          <div className="max-h-64 overflow-y-auto border rounded-md p-3">
-            <div className="flex flex-wrap gap-2">
-              {filteredSkills.map((skill) => (
-                <Badge
-                  key={skill.id}
-                  variant={selectedSkillIds.has(skill.id) ? 'default' : 'outline'}
-                  className={`cursor-pointer transition-colors ${
-                    selectedSkillIds.has(skill.id)
-                      ? 'bg-teal-600 hover:bg-teal-700'
-                      : 'hover:bg-teal-50'
-                  }`}
-                  onClick={() => toggleSkill(skill.id)}
-                >
-                  {skill.name}
-                </Badge>
-              ))}
-              {filteredSkills.length === 0 && (
-                <p className="text-sm text-slate-400">No skills found</p>
-              )}
-            </div>
-          </div>
-        </CardContent>
-        <CardFooter className="flex justify-end">
-          <Button
-            onClick={handleSkillsSave}
-            disabled={skillsSaving}
-            className="bg-teal-600 hover:bg-teal-700"
-          >
-            <Save className="h-4 w-4 mr-2" />
-            {skillsSaving ? 'Saving...' : 'Save Skills'}
-          </Button>
-        </CardFooter>
-      </Card>
+              <Save className="h-4 w-4 mr-2" />
+              {skillsSaving ? 'Saving...' : 'Save Skills'}
+            </Button>
+          </CardFooter>
+        </Card>
+      )}
 
       {/* Password */}
       <Card>
@@ -1034,13 +1071,25 @@ export default function SettingsPage() {
 
             {profile?.role !== 'student' && profile?.role !== 'corporate_partner' && (
               <div className="space-y-3 text-sm">
+                {jobTitle && (
+                  <div>
+                    <p className="text-slate-400 text-xs uppercase tracking-wide">Title</p>
+                    <p className="font-medium text-slate-700 dark:text-slate-200">{jobTitle}</p>
+                  </div>
+                )}
+                {department && (
+                  <div>
+                    <p className="text-slate-400 text-xs uppercase tracking-wide">Department / Position</p>
+                    <p className="font-medium text-slate-700 dark:text-slate-200">{department}</p>
+                  </div>
+                )}
                 {bio && (
                   <div>
                     <p className="text-slate-400 text-xs uppercase tracking-wide">Bio</p>
                     <p className="text-slate-700 dark:text-slate-200">{bio}</p>
                   </div>
                 )}
-                {!bio && (
+                {!jobTitle && !department && !bio && (
                   <p className="text-slate-400 italic">Complete your profile to see a preview</p>
                 )}
               </div>
