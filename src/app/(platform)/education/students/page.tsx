@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Search, GraduationCap, ChevronLeft, ChevronRight, Download } from 'lucide-react';
+import { Search, GraduationCap, ChevronLeft, ChevronRight, Download, Star } from 'lucide-react';
 import { ExportButton } from '@/components/analytics/export-button';
 
 interface Student {
@@ -24,6 +24,8 @@ interface Student {
   isActive: boolean;
   createdAt: string;
   applicationCount: number;
+  avgPrivateRating: number | null;
+  privateRatingCount: number;
 }
 
 export default function EducationStudentsPage() {
@@ -66,6 +68,8 @@ export default function EducationStudentsPage() {
             { key: 'graduationYear', label: 'Grad Year' },
             { key: 'gpa', label: 'GPA' },
             { key: 'applicationCount', label: 'Applications' },
+            { key: 'avgPrivateRating', label: 'Avg Rating', format: (v) => v != null ? String(v) : 'N/A' },
+            { key: 'privateRatingCount', label: 'Rating Count' },
             { key: 'isActive', label: 'Active', format: (v) => v ? 'Yes' : 'No' },
           ]}
         />
@@ -109,6 +113,15 @@ export default function EducationStudentsPage() {
                   {s.university && <Badge variant="outline" className="text-xs">{s.university}</Badge>}
                   {s.major && <span className="text-xs text-slate-400">{s.major}</span>}
                   {s.gpa && <span className="text-xs text-slate-400">GPA: {s.gpa}</span>}
+                  {s.avgPrivateRating != null && (
+                    <div className="flex items-center gap-1">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <Star key={star} className={`h-3 w-3 ${star <= Math.round(s.avgPrivateRating!) ? 'fill-amber-400 text-amber-400' : 'text-slate-300'}`} />
+                      ))}
+                      <span className="text-xs font-medium text-slate-600 ml-0.5">{s.avgPrivateRating.toFixed(1)}</span>
+                      <span className="text-xs text-slate-400">({s.privateRatingCount})</span>
+                    </div>
+                  )}
                   <Badge variant="secondary" className="text-xs">{s.applicationCount} apps</Badge>
                   <Badge className={s.isActive ? 'bg-green-100 text-green-700 border-0' : 'bg-red-100 text-red-700 border-0'}>
                     {s.isActive ? 'Active' : 'Inactive'}

@@ -10,7 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
-import { GraduationCap, Briefcase, CheckCircle2, Clock, Info, TrendingUp, ArrowRight } from 'lucide-react';
+import { GraduationCap, Briefcase, CheckCircle2, Clock, Info, TrendingUp, ArrowRight, Star } from 'lucide-react';
 import { HelpSupportCard } from '@/components/shared/help-support-card';
 
 interface Stats {
@@ -18,6 +18,9 @@ interface Stats {
   activeProjects: number;
   completedProjects: number;
   waitlistCount: number;
+  avgStudentRating: number | null;
+  totalStudentRatings: number;
+  ratedStudents: number;
 }
 
 interface RecentStudent {
@@ -28,9 +31,19 @@ interface RecentStudent {
   createdAt: string;
 }
 
+interface TopStudent {
+  id: string;
+  name: string;
+  email: string;
+  university: string | null;
+  avgRating: number;
+  ratingCount: number;
+}
+
 export default function EducationDashboardPage() {
   const [stats, setStats] = useState<Stats | null>(null);
   const [recentStudents, setRecentStudents] = useState<RecentStudent[]>([]);
+  const [topStudents, setTopStudents] = useState<TopStudent[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -39,6 +52,7 @@ export default function EducationDashboardPage() {
       .then((data) => {
         setStats(data.stats);
         setRecentStudents(data.recentStudents || []);
+        setTopStudents(data.topStudents || []);
       })
       .catch(console.error)
       .finally(() => setLoading(false));
@@ -78,7 +92,7 @@ export default function EducationDashboardPage() {
         </div>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
         <Link href="/education/students">
           <Card className="hover:border-teal-300 hover:shadow-sm transition-all cursor-pointer">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -102,6 +116,31 @@ export default function EducationDashboardPage() {
           </CardHeader>
           <CardContent><div className="text-2xl font-bold">{stats?.completedProjects || 0}</div></CardContent>
         </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Avg Student Rating</CardTitle>
+            <Star className="h-4 w-4 text-slate-400" />
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center gap-2">
+              <span className="text-2xl font-bold">
+                {stats?.avgStudentRating !== null && stats?.avgStudentRating !== undefined
+                  ? stats.avgStudentRating.toFixed(1)
+                  : '—'}
+              </span>
+              {stats?.avgStudentRating != null && (
+                <div className="flex items-center gap-0.5">
+                  {[1, 2, 3, 4, 5].map((s) => (
+                    <Star key={s} className={`h-3 w-3 ${s <= Math.round(stats.avgStudentRating!) ? 'fill-amber-400 text-amber-400' : 'text-slate-300'}`} />
+                  ))}
+                </div>
+              )}
+            </div>
+            <p className="text-xs text-slate-500 mt-1">
+              {stats?.ratedStudents || 0} student{stats?.ratedStudents !== 1 ? 's' : ''} rated
+            </p>
+          </CardContent>
+        </Card>
         <Link href="/education/waitlist">
           <Card className="hover:border-teal-300 hover:shadow-sm transition-all cursor-pointer">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -123,6 +162,45 @@ export default function EducationDashboardPage() {
           </Button>
         </Link>
       </div>
+
+      {/* Top Performing Students */}
+      {topStudents.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Star className="h-5 w-5 text-amber-500" />
+              Top Performing Students
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {topStudents.map((s, idx) => (
+                <div key={s.id} className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="h-8 w-8 rounded-full bg-amber-50 flex items-center justify-center text-amber-700 font-bold text-sm shrink-0">
+                      {idx + 1}
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium">{s.name}</p>
+                      <p className="text-xs text-slate-400">{s.email}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    {s.university && <Badge variant="outline" className="text-xs">{s.university}</Badge>}
+                    <div className="flex items-center gap-1">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <Star key={star} className={`h-3.5 w-3.5 ${star <= Math.round(s.avgRating) ? 'fill-amber-400 text-amber-400' : 'text-slate-300'}`} />
+                      ))}
+                      <span className="text-sm font-medium text-slate-700 dark:text-slate-300 ml-1">{s.avgRating.toFixed(1)}</span>
+                      <span className="text-xs text-slate-400">({s.ratingCount})</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       <Card>
         <CardHeader><CardTitle>Recent Students</CardTitle></CardHeader>
