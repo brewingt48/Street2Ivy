@@ -121,7 +121,7 @@ export function LandingPageClient({ tenant, stats, partners }: LandingPageClient
     'You didn\u2019t train this hard to sit on the sideline.';
   const subheadline =
     tenant.hero_subheadline ??
-    'The discipline, resilience, and leadership you\u2019ve built through competition are exactly what the world needs now. Turn your competitive edge into career momentum \u2014 and prove what you\u2019re made of.';
+    'Real projects. Verified results. Career momentum \u2014 earned, not assumed.';
 
   const studentCount = Number(stats.student_count) || 0;
   const listingCount = Number(stats.listing_count) || 0;
@@ -436,7 +436,7 @@ export function LandingPageClient({ tenant, stats, partners }: LandingPageClient
               </div>
               <h3 className="text-xl font-semibold mb-3">For Students</h3>
               <p className="text-gray-500 leading-relaxed mb-4">
-                Your work speaks for itself. Access real projects and internships from alumni and industry leaders who believe in what you can do. Build a verified portfolio that opens doors no r&eacute;sum&eacute; alone ever could.
+                Your work speaks for itself. Our Match Engine&trade; pairs you with projects that fit your skills, schedule, and growth trajectory &mdash; so every engagement builds toward the career you want.
               </p>
               <a
                 href={`/register?tenant=${tenant.subdomain}&role=student`}
@@ -460,7 +460,7 @@ export function LandingPageClient({ tenant, stats, partners }: LandingPageClient
               </div>
               <h3 className="text-xl font-semibold mb-3">For Alumni &amp; Partners</h3>
               <p className="text-gray-500 leading-relaxed mb-4">
-                Shape the talent pipeline. Post meaningful project work for the next generation of professionals. Discover top talent through real engagement &mdash; and build lasting relationships that benefit everyone.
+                Shape the talent pipeline. Post meaningful projects and let the Match Engine&trade; surface the right students for the work. Discover top talent through verified engagement &mdash; not guesswork.
               </p>
               <a
                 href={`/register?tenant=${tenant.subdomain}&role=alumni`}
@@ -484,7 +484,7 @@ export function LandingPageClient({ tenant, stats, partners }: LandingPageClient
               </div>
               <h3 className="text-xl font-semibold mb-3">For Programs</h3>
               <p className="text-gray-500 leading-relaxed mb-4">
-                Lead with vision. Launch a fully branded talent marketplace that connects your students to real-world opportunity. Position your program at the forefront of what modern career development looks like.
+                Lead with vision. Launch a branded talent marketplace powered by the Match Engine&trade; &mdash; connecting your students to the right opportunities across the network, schedule-aware and data-driven.
               </p>
               <a
                 href="/for-universities"
