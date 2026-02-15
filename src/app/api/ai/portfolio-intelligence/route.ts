@@ -9,7 +9,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { sql } from '@/lib/db';
 import { getCurrentSession } from '@/lib/auth/middleware';
-import { checkAiAccess, incrementUsage, getUsageStatus } from '@/lib/ai/config';
+import { checkAiAccessV2, incrementUsageV2, getUsageStatusV2 } from '@/lib/ai/config';
 import { buildPortfolioIntelligencePrompt } from '@/lib/ai/prompts';
 import { askClaude } from '@/lib/ai/claude-client';
 
@@ -27,13 +27,14 @@ export async function POST(_request: NextRequest) {
       );
     }
 
+    const userId = session.data.userId;
     const tenantId = session.data.tenantId;
 
     // Step 1: Check AI access for portfolio_intelligence feature
-    const accessCheck = await checkAiAccess(tenantId, 'portfolio_intelligence');
+    const accessCheck = await checkAiAccessV2(tenantId, userId, 'portfolio_intelligence');
     if (!accessCheck.allowed) {
       return NextResponse.json(
-        { error: 'AI access denied', reason: accessCheck.reason },
+        { error: accessCheck.denial?.message || 'Access denied', denial: accessCheck.denial },
         { status: 403 }
       );
     }
@@ -50,8 +51,9 @@ export async function POST(_request: NextRequest) {
     // Skills distribution (top 20 skills by count)
     const skillRows = await sql`
       SELECT s.name, COUNT(*) as count
-      FROM skills s
-      JOIN users u ON s.user_id = u.id
+      FROM user_skills us
+      JOIN skills s ON s.id = us.skill_id
+      JOIN users u ON us.user_id = u.id
       WHERE u.tenant_id = ${tenantId} AND u.role = 'student'
       GROUP BY s.name
       ORDER BY count DESC
@@ -104,9 +106,9 @@ export async function POST(_request: NextRequest) {
     // Completion rate (applications accepted vs total)
     const completionRows = await sql`
       SELECT
-        COUNT(*) FILTER (WHERE status = 'completed') as completed,
+        COUNT(*) FILTER (WHERE a.status = 'completed') as completed,
         COUNT(*) as total
-      FROM applications a
+      FROM project_applications a
       JOIN users u ON a.student_id = u.id
       WHERE u.tenant_id = ${tenantId}
     `;
@@ -117,7 +119,7 @@ export async function POST(_request: NextRequest) {
     // Average student rating
     const ratingRows = await sql`
       SELECT AVG(r.rating) as avg_rating
-      FROM ratings r
+      FROM student_ratings r
       JOIN users u ON r.rated_user_id = u.id
       WHERE u.tenant_id = ${tenantId} AND u.role = 'student'
     `;
@@ -130,8 +132,9 @@ export async function POST(_request: NextRequest) {
       WHERE l.tenant_id = ${tenantId} AND l.status = 'published'
       EXCEPT
       SELECT DISTINCT s.name
-      FROM skills s
-      JOIN users u ON s.user_id = u.id
+      FROM user_skills us
+      JOIN skills s ON s.id = us.skill_id
+      JOIN users u ON us.user_id = u.id
       WHERE u.tenant_id = ${tenantId} AND u.role = 'student'
       LIMIT 10
     `;
@@ -170,7 +173,7 @@ export async function POST(_request: NextRequest) {
 
     // Step 4: Ask Claude
     const aiResponse = await askClaude({
-      model: accessCheck.model,
+      model: accessCheck.config.model,
       systemPrompt: fullPrompt,
       messages: [
         {
@@ -200,8 +203,8 @@ export async function POST(_request: NextRequest) {
     }
 
     // Step 6: Increment usage and return
-    await incrementUsage(tenantId);
-    const usage = await getUsageStatus(tenantId);
+    await incrementUsageV2(tenantId, userId, 'portfolio_intelligence');
+    const usage = await getUsageStatusV2(tenantId, userId, 'portfolio_intelligence');
 
     return NextResponse.json({ insights, usage });
   } catch (error) {

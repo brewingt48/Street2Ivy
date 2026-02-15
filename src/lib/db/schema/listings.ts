@@ -6,6 +6,8 @@ import {
   integer,
   timestamp,
   jsonb,
+  date,
+  numeric,
 } from 'drizzle-orm/pg-core';
 import { users } from './users';
 import { tenants } from './tenants';
@@ -34,6 +36,13 @@ export const listings = pgTable('listings', {
   status: text('status').notNull().default('draft'),
   publicData: jsonb('public_data').notNull().default({}),
   metadata: jsonb('metadata').notNull().default({}),
+  applicationDeadline: date('application_deadline'),
+  budgetMin: numeric('budget_min'),
+  budgetMax: numeric('budget_max'),
+  paymentType: text('payment_type'),
+  maxStudents: integer('max_students').notNull().default(1),
+  studentsAccepted: integer('students_accepted').notNull().default(0),
+  isPaid: boolean('is_paid').notNull().default(true),
   publishedAt: timestamp('published_at', { withTimezone: true }),
   closedAt: timestamp('closed_at', { withTimezone: true }),
   createdAt: timestamp('created_at', { withTimezone: true })

@@ -196,3 +196,53 @@ export async function getTenantPlan(tenantId: string): Promise<string> {
   const features = await getTenantFeatures(tenantId);
   return (features.plan as string) || 'starter';
 }
+
+/**
+ * Get the subscription tier for a tenant.
+ *
+ * Reads `subscription_tier_id` from the tenants table and joins to
+ * `subscription_tiers` to return the tier row. Returns null if the tenant
+ * has no linked subscription tier or the tenant does not exist.
+ */
+export async function getTenantTier(tenantId: string): Promise<{
+  tierId: string | null;
+  tierName: string;
+  tierConfig: Record<string, unknown>;
+} | null> {
+  if (!tenantId) return null;
+
+  try {
+    const rows = await sql`
+      SELECT
+        t.subscription_tier_id,
+        st.name  AS tier_name,
+        st.ai_config
+      FROM tenants t
+      LEFT JOIN subscription_tiers st ON st.id = t.subscription_tier_id
+      WHERE t.id = ${tenantId}
+    `;
+
+    if (rows.length === 0) return null;
+
+    const row = rows[0];
+
+    // If no subscription_tier_id linked, return a minimal result using the plan from features
+    if (!row.subscription_tier_id) {
+      const features = await getTenantFeatures(tenantId);
+      const plan = (features.plan as string) || 'starter';
+      return {
+        tierId: null,
+        tierName: plan,
+        tierConfig: {},
+      };
+    }
+
+    return {
+      tierId: row.subscription_tier_id as string,
+      tierName: (row.tier_name as string) || 'unknown',
+      tierConfig: (row.ai_config || {}) as Record<string, unknown>,
+    };
+  } catch {
+    return null;
+  }
+}

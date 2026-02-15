@@ -35,6 +35,11 @@ import {
   GripVertical,
   AlertCircle,
   CheckCircle2,
+  Image,
+  FileText,
+  Share2,
+  Phone,
+  X,
 } from 'lucide-react';
 
 interface TenantSettings {
@@ -93,6 +98,19 @@ export default function EducationSettingsPage() {
   const [contentSaving, setContentSaving] = useState(false);
   const [contentMsg, setContentMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
+  // Enhanced branding state
+  const [brandingHeroVideoUrl, setBrandingHeroVideoUrl] = useState('');
+  const [brandingHeroHeadline, setBrandingHeroHeadline] = useState('');
+  const [brandingHeroSubheadline, setBrandingHeroSubheadline] = useState('');
+  const [brandingHeroVideoPosterUrl, setBrandingHeroVideoPosterUrl] = useState('');
+  const [galleryImages, setGalleryImages] = useState<string[]>([]);
+  const [newGalleryUrl, setNewGalleryUrl] = useState('');
+  const [aboutContent, setAboutContent] = useState('');
+  const [socialLinks, setSocialLinks] = useState<Record<string, string>>({});
+  const [contactInfo, setContactInfo] = useState<Record<string, string>>({});
+  const [brandingSaving, setBrandingSaving] = useState(false);
+  const [brandingMsg, setBrandingMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+
   const fetchSettings = useCallback(async () => {
     try {
       const res = await fetch('/api/education/settings');
@@ -127,6 +145,22 @@ export default function EducationSettingsPage() {
             order: (item.order as number) ?? i,
           }))
         );
+      })
+      .catch(console.error);
+    // Load enhanced branding
+    fetch('/api/tenant/branding')
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.branding) {
+          setBrandingHeroVideoUrl(data.branding.heroVideoUrl || '');
+          setBrandingHeroHeadline(data.branding.heroHeadline || '');
+          setBrandingHeroSubheadline(data.branding.heroSubheadline || '');
+          setBrandingHeroVideoPosterUrl(data.branding.heroVideoPosterUrl || '');
+          setGalleryImages(data.branding.galleryImages || []);
+          setAboutContent(data.branding.aboutContent || '');
+          setSocialLinks(data.branding.socialLinks || {});
+          setContactInfo(data.branding.contactInfo || {});
+        }
       })
       .catch(console.error);
     // Load tenant content
@@ -673,6 +707,305 @@ export default function EducationSettingsPage() {
           }
         }}
       />
+
+      {/* Enhanced Branding Settings */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="flex items-center gap-2">
+                <Video className="h-5 w-5 text-teal-600" />
+                Enhanced Branding
+              </CardTitle>
+              <CardDescription className="mt-1">
+                Customize your institution&apos;s hero section, gallery, about page, social links, and contact info.
+                {!canCustomize && ' Upgrade to Professional or Enterprise to unlock these settings.'}
+              </CardDescription>
+            </div>
+            <Button
+              onClick={async () => {
+                setBrandingSaving(true);
+                setBrandingMsg(null);
+                try {
+                  const res = await fetch('/api/tenant/branding', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                      heroVideoUrl: brandingHeroVideoUrl || undefined,
+                      heroHeadline: brandingHeroHeadline || undefined,
+                      heroSubheadline: brandingHeroSubheadline || undefined,
+                      heroVideoPosterUrl: brandingHeroVideoPosterUrl || undefined,
+                      galleryImages,
+                      aboutContent: aboutContent || undefined,
+                      socialLinks,
+                      contactInfo,
+                    }),
+                  });
+                  if (!res.ok) {
+                    const d = await res.json();
+                    throw new Error(d.error || 'Failed to save branding');
+                  }
+                  setBrandingMsg({ type: 'success', text: 'Branding saved successfully' });
+                  setTimeout(() => setBrandingMsg(null), 3000);
+                } catch (err) {
+                  setBrandingMsg({ type: 'error', text: err instanceof Error ? err.message : 'Failed to save' });
+                } finally {
+                  setBrandingSaving(false);
+                }
+              }}
+              disabled={brandingSaving || !canCustomize}
+              size="sm"
+              className="bg-teal-600 hover:bg-teal-700"
+            >
+              <Save className="h-3.5 w-3.5 mr-1" />
+              {brandingSaving ? 'Saving...' : 'Save Branding'}
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          {brandingMsg && (
+            <div className={`p-3 rounded-md text-sm flex items-center gap-2 ${
+              brandingMsg.type === 'success' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-600'
+            }`}>
+              {brandingMsg.type === 'success' ? <CheckCircle2 className="h-4 w-4" /> : <AlertCircle className="h-4 w-4" />}
+              {brandingMsg.text}
+            </div>
+          )}
+
+          {/* Hero Section */}
+          <div className={`space-y-3 p-4 border rounded-lg ${!canCustomize ? 'opacity-60' : ''}`}>
+            <p className="text-xs font-semibold text-slate-500 uppercase flex items-center gap-2">
+              <Video className="h-3.5 w-3.5" />
+              Hero Section
+            </p>
+            <div>
+              <Label>Hero Video URL</Label>
+              <Input
+                value={brandingHeroVideoUrl}
+                onChange={(e) => setBrandingHeroVideoUrl(e.target.value)}
+                placeholder="https://youtube.com/watch?v=... or .mp4 URL"
+                disabled={!canCustomize}
+                className="mt-1"
+              />
+              <p className="text-xs text-slate-400 mt-1">Background video for the hero section of your landing page</p>
+            </div>
+            {brandingHeroVideoUrl && canCustomize && (
+              <div className="rounded-lg overflow-hidden border bg-slate-900 aspect-video flex items-center justify-center max-h-48">
+                <div className="flex flex-col items-center gap-2 text-slate-400">
+                  <Play className="h-8 w-8" />
+                  <p className="text-xs">Video preview: {brandingHeroVideoUrl.slice(0, 50)}...</p>
+                </div>
+              </div>
+            )}
+            <div>
+              <Label>Hero Video Poster URL</Label>
+              <Input
+                value={brandingHeroVideoPosterUrl}
+                onChange={(e) => setBrandingHeroVideoPosterUrl(e.target.value)}
+                placeholder="https://... (poster image shown before video loads)"
+                disabled={!canCustomize}
+                className="mt-1"
+              />
+            </div>
+            <div>
+              <Label>Hero Headline</Label>
+              <Input
+                value={brandingHeroHeadline}
+                onChange={(e) => setBrandingHeroHeadline(e.target.value)}
+                placeholder="Where Talent Meets Opportunity"
+                disabled={!canCustomize}
+                className="mt-1"
+              />
+            </div>
+            <div>
+              <Label>Hero Subheadline</Label>
+              <Textarea
+                value={brandingHeroSubheadline}
+                onChange={(e) => setBrandingHeroSubheadline(e.target.value)}
+                placeholder="Connect with top companies through real-world projects..."
+                rows={2}
+                disabled={!canCustomize}
+                className="mt-1"
+              />
+            </div>
+          </div>
+
+          {/* Photo Gallery */}
+          <div className={`space-y-3 p-4 border rounded-lg ${!canCustomize ? 'opacity-60' : ''}`}>
+            <p className="text-xs font-semibold text-slate-500 uppercase flex items-center gap-2">
+              <Image className="h-3.5 w-3.5" />
+              Photo Gallery
+            </p>
+            <p className="text-xs text-slate-400">Add image URLs for your institution&apos;s photo gallery. Drag to reorder.</p>
+
+            {galleryImages.length > 0 && (
+              <div className="space-y-2">
+                {galleryImages.map((url, index) => (
+                  <div key={index} className="flex items-center gap-2 p-2 border rounded-lg bg-slate-50 dark:bg-slate-800/50">
+                    <GripVertical className="h-4 w-4 text-slate-300 shrink-0" />
+                    <span className="text-xs font-mono text-slate-600 dark:text-slate-300 truncate flex-1">{url}</span>
+                    <div className="flex items-center gap-1 shrink-0">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 w-7 p-0"
+                        onClick={() => {
+                          if (index > 0) {
+                            const newImages = [...galleryImages];
+                            [newImages[index], newImages[index - 1]] = [newImages[index - 1], newImages[index]];
+                            setGalleryImages(newImages);
+                          }
+                        }}
+                        disabled={index === 0 || !canCustomize}
+                      >
+                        <ChevronUpIcon className="h-3.5 w-3.5" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 w-7 p-0"
+                        onClick={() => {
+                          if (index < galleryImages.length - 1) {
+                            const newImages = [...galleryImages];
+                            [newImages[index], newImages[index + 1]] = [newImages[index + 1], newImages[index]];
+                            setGalleryImages(newImages);
+                          }
+                        }}
+                        disabled={index === galleryImages.length - 1 || !canCustomize}
+                      >
+                        <ChevronDownIcon className="h-3.5 w-3.5" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 w-7 p-0 text-red-500 hover:text-red-700 hover:bg-red-50"
+                        onClick={() => setGalleryImages(galleryImages.filter((_, i) => i !== index))}
+                        disabled={!canCustomize}
+                      >
+                        <X className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <div className="flex items-center gap-2">
+              <Input
+                value={newGalleryUrl}
+                onChange={(e) => setNewGalleryUrl(e.target.value)}
+                placeholder="https://... (image URL)"
+                disabled={!canCustomize}
+                className="flex-1"
+              />
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  if (newGalleryUrl.trim()) {
+                    setGalleryImages([...galleryImages, newGalleryUrl.trim()]);
+                    setNewGalleryUrl('');
+                  }
+                }}
+                disabled={!canCustomize || !newGalleryUrl.trim()}
+              >
+                <Plus className="h-3.5 w-3.5 mr-1" /> Add
+              </Button>
+            </div>
+          </div>
+
+          {/* About Section */}
+          <div className={`space-y-3 p-4 border rounded-lg ${!canCustomize ? 'opacity-60' : ''}`}>
+            <p className="text-xs font-semibold text-slate-500 uppercase flex items-center gap-2">
+              <FileText className="h-3.5 w-3.5" />
+              About Section
+            </p>
+            <div>
+              <Label>About Content</Label>
+              <Textarea
+                value={aboutContent}
+                onChange={(e) => setAboutContent(e.target.value)}
+                placeholder="Tell visitors about your institution, programs, and what makes your students stand out..."
+                rows={5}
+                disabled={!canCustomize}
+                className="mt-1"
+              />
+              <p className="text-xs text-slate-400 mt-1">
+                This content appears on your institution&apos;s about page. Plain text only.
+              </p>
+            </div>
+          </div>
+
+          {/* Social Links */}
+          <div className={`space-y-3 p-4 border rounded-lg ${!canCustomize ? 'opacity-60' : ''}`}>
+            <p className="text-xs font-semibold text-slate-500 uppercase flex items-center gap-2">
+              <Share2 className="h-3.5 w-3.5" />
+              Social Links
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {[
+                { key: 'twitter', label: 'Twitter / X', placeholder: 'https://x.com/yourschool' },
+                { key: 'instagram', label: 'Instagram', placeholder: 'https://instagram.com/yourschool' },
+                { key: 'tiktok', label: 'TikTok', placeholder: 'https://tiktok.com/@yourschool' },
+                { key: 'youtube', label: 'YouTube', placeholder: 'https://youtube.com/@yourschool' },
+                { key: 'linkedin', label: 'LinkedIn', placeholder: 'https://linkedin.com/school/yourschool' },
+              ].map((social) => (
+                <div key={social.key} className="space-y-1">
+                  <Label className="text-xs">{social.label}</Label>
+                  <Input
+                    value={socialLinks[social.key] || ''}
+                    onChange={(e) => setSocialLinks({ ...socialLinks, [social.key]: e.target.value })}
+                    placeholder={social.placeholder}
+                    disabled={!canCustomize}
+                    className="text-sm"
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Contact Info */}
+          <div className={`space-y-3 p-4 border rounded-lg ${!canCustomize ? 'opacity-60' : ''}`}>
+            <p className="text-xs font-semibold text-slate-500 uppercase flex items-center gap-2">
+              <Phone className="h-3.5 w-3.5" />
+              Contact Information
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <Label className="text-xs">Email</Label>
+                <Input
+                  type="email"
+                  value={contactInfo.email || ''}
+                  onChange={(e) => setContactInfo({ ...contactInfo, email: e.target.value })}
+                  placeholder="admissions@school.edu"
+                  disabled={!canCustomize}
+                  className="text-sm"
+                />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs">Phone</Label>
+                <Input
+                  value={contactInfo.phone || ''}
+                  onChange={(e) => setContactInfo({ ...contactInfo, phone: e.target.value })}
+                  placeholder="(555) 123-4567"
+                  disabled={!canCustomize}
+                  className="text-sm"
+                />
+              </div>
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs">Address</Label>
+              <Input
+                value={contactInfo.address || ''}
+                onChange={(e) => setContactInfo({ ...contactInfo, address: e.target.value })}
+                placeholder="123 University Ave, City, State ZIP"
+                disabled={!canCustomize}
+                className="text-sm"
+              />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Save Button */}
       {error && (

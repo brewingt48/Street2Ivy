@@ -10,7 +10,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { sql } from '@/lib/db';
 import { getCurrentSession } from '@/lib/auth/middleware';
 import { z } from 'zod';
-import { checkAiAccess, incrementUsage, getUsageStatus } from '@/lib/ai/config';
+import { checkAiAccessV2, incrementUsageV2, getUsageStatusV2 } from '@/lib/ai/config';
 import { askClaude } from '@/lib/ai/claude-client';
 
 const matchInsightsSchema = z.object({
@@ -39,10 +39,10 @@ export async function POST(request: NextRequest) {
     const tenantId = session.data.tenantId;
 
     // Step 1: Check AI access
-    const accessCheck = await checkAiAccess(tenantId, 'match_insights');
+    const accessCheck = await checkAiAccessV2(tenantId, userId, 'student_coaching', 'match_insights');
     if (!accessCheck.allowed) {
       return NextResponse.json(
-        { error: 'AI access denied', reason: accessCheck.reason },
+        { error: accessCheck.denial?.message || 'Access denied', denial: accessCheck.denial },
         { status: 403 }
       );
     }
@@ -76,7 +76,9 @@ export async function POST(request: NextRequest) {
 
     // Step 4: Fetch student skills
     const skillRows = await sql`
-      SELECT name FROM skills WHERE user_id = ${userId}
+      SELECT s.name FROM user_skills us
+      JOIN skills s ON s.id = us.skill_id
+      WHERE us.user_id = ${userId}
     `;
 
     const studentSkills: string[] = skillRows.map(
@@ -129,7 +131,7 @@ export async function POST(request: NextRequest) {
     ].join('\n');
 
     const aiResponse = await askClaude({
-      model: accessCheck.model,
+      model: accessCheck.config.model,
       systemPrompt,
       messages: [
         {
@@ -160,8 +162,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Step 8: Increment usage and return
-    await incrementUsage(tenantId);
-    const usage = await getUsageStatus(tenantId);
+    await incrementUsageV2(tenantId, userId, 'student_coaching');
+    const usage = await getUsageStatusV2(tenantId, userId, 'student_coaching');
 
     return NextResponse.json({ insights, usage });
   } catch (error) {

@@ -32,6 +32,7 @@ import {
   Mail,
   AlertTriangle,
   Star,
+  Crown,
 } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
@@ -168,7 +169,26 @@ function getNavItems(role: string): NavSection[] {
         {
           title: 'Institution',
           items: [
+            { href: '/education/partners', label: 'Partners & Network', icon: Globe },
+            { href: '/education/ai-features', label: 'AI Features', icon: Sparkles },
             { href: '/education/settings', label: 'Branding & Settings', icon: Palette },
+          ],
+        },
+        {
+          title: 'Account',
+          items: [
+            { href: '/settings', label: 'Settings', icon: Settings },
+          ],
+        },
+      ];
+
+    case 'network_partner':
+      return [
+        {
+          items: [
+            { href: '/partner', label: 'Dashboard', icon: LayoutDashboard },
+            { href: '/partner/listings/new', label: 'Create Listing', icon: Briefcase },
+            { href: '/inbox', label: 'Messages', icon: Inbox },
           ],
         },
         {
@@ -205,6 +225,8 @@ function getNavItems(role: string): NavSection[] {
             { href: '/admin/waitlist', label: 'Waitlist', icon: ClipboardList },
             { href: '/admin/coaching', label: 'AI Coaching', icon: Sparkles },
             { href: '/admin/ai', label: 'AI Management', icon: Sparkles },
+            { href: '/admin/tiers', label: 'Subscription Tiers', icon: Crown },
+            { href: '/admin/network-partners', label: 'Network Partners', icon: Globe },
             { href: '/admin/audit', label: 'Audit Log', icon: Shield },
             { href: '/admin/edu-applications', label: 'Edu Applications', icon: BarChart3 },
             { href: '/inbox', label: 'Messages', icon: Inbox },

@@ -1,4 +1,15 @@
-import { pgTable, uuid, text, timestamp, integer, jsonb } from 'drizzle-orm/pg-core';
+import {
+  pgTable,
+  uuid,
+  text,
+  timestamp,
+  integer,
+  jsonb,
+  varchar,
+  date,
+  numeric,
+  unique,
+} from 'drizzle-orm/pg-core';
 
 export const coachingConfig = pgTable('coaching_config', {
   key: text('key').primaryKey(),
@@ -56,3 +67,89 @@ export const aiMessages = pgTable('ai_messages', {
     .notNull()
     .defaultNow(),
 });
+
+// AI Usage Counters V2 (per tenant, per user, per feature, per month)
+export const aiUsageCountersV2 = pgTable(
+  'ai_usage_counters_v2',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    tenantId: uuid('tenant_id').notNull(),
+    userId: uuid('user_id').notNull(),
+    feature: varchar('feature', { length: 50 }).notNull(),
+    month: date('month').notNull(),
+    interactionCount: integer('interaction_count').notNull().default(0),
+  },
+  (table) => ({
+    uniqueUsage: unique().on(
+      table.tenantId,
+      table.userId,
+      table.feature,
+      table.month
+    ),
+  })
+);
+
+// Portfolio Intelligence Reports
+export const portfolioIntelligenceReports = pgTable(
+  'portfolio_intelligence_reports',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    tenantId: uuid('tenant_id').notNull(),
+    studentUserId: uuid('student_user_id').notNull(),
+    careerNarrative: text('career_narrative'),
+    skillsProgression: jsonb('skills_progression'),
+    strengthsSummary: jsonb('strengths_summary'),
+    projectsAnalyzed: integer('projects_analyzed'),
+    reviewsAnalyzed: integer('reviews_analyzed'),
+    generatedAt: timestamp('generated_at', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    modelUsed: varchar('model_used', { length: 100 }),
+    inputTokens: integer('input_tokens'),
+    outputTokens: integer('output_tokens'),
+    costUsd: numeric('cost_usd'),
+  }
+);
+
+// Talent Insight Reports
+export const talentInsightReports = pgTable('talent_insight_reports', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  tenantId: uuid('tenant_id').notNull(),
+  listingId: uuid('listing_id').notNull(),
+  corporateUserId: uuid('corporate_user_id').notNull(),
+  teamPerformance: text('team_performance'),
+  standoutContributors: jsonb('standout_contributors'),
+  hiringRecommendations: jsonb('hiring_recommendations'),
+  generatedAt: timestamp('generated_at', { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+  modelUsed: varchar('model_used', { length: 100 }),
+  inputTokens: integer('input_tokens'),
+  outputTokens: integer('output_tokens'),
+  costUsd: numeric('cost_usd'),
+});
+
+// Institutional Analytics Reports
+export const institutionalAnalyticsReports = pgTable(
+  'institutional_analytics_reports',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    tenantId: uuid('tenant_id').notNull(),
+    reportingPeriodStart: date('reporting_period_start').notNull(),
+    reportingPeriodEnd: date('reporting_period_end').notNull(),
+    engagementSummary: text('engagement_summary'),
+    skillGapAnalysis: jsonb('skill_gap_analysis'),
+    curriculumRecommendations: jsonb('curriculum_recommendations'),
+    studentSuccessPatterns: text('student_success_patterns'),
+    platformBenchmark: jsonb('platform_benchmark'),
+    totalStudents: integer('total_students'),
+    totalProjects: integer('total_projects'),
+    generatedAt: timestamp('generated_at', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    modelUsed: varchar('model_used', { length: 100 }),
+    inputTokens: integer('input_tokens'),
+    outputTokens: integer('output_tokens'),
+    costUsd: numeric('cost_usd'),
+  }
+);

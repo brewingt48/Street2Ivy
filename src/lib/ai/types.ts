@@ -83,3 +83,89 @@ export interface MatchDataForAi {
   matchedSkills: string[];
   missingSkills: string[];
 }
+
+// ---------------------------------------------------------------------------
+// Enhanced AI Feature Gate Types (v2)
+// ---------------------------------------------------------------------------
+
+/** Comprehensive AI config resolved from subscription tier + overrides */
+export interface TenantAiConfig {
+  enabled: boolean;
+  model: string;
+  modelDisplayName: string;
+  maxTokens: number;
+  streaming: boolean;
+  studentCoaching: {
+    enabled: boolean;
+    interactionsPerStudentPerMonth: number; // -1 = unlimited
+    quickActionsOnly: boolean;
+    allowedQuickActions: string[];
+    matchScoreCard: boolean;
+    diffView: boolean;
+    conversationMemory: boolean;
+    confidenceMeter: boolean;
+    maxTurnsPerSession: number;
+  };
+  projectScoping: {
+    enabled: boolean;
+    interactionsPerUserPerMonth: number;
+    allowedFeatures: string[];
+    milestoneGeneration: boolean;
+    skillsSuggestions: boolean;
+    fullScopingWizard: boolean;
+    maxTurnsPerSession: number;
+  };
+  portfolioIntelligence: {
+    enabled: boolean;
+    refreshFrequency?: string;
+    includeCareerNarrative?: boolean;
+    includeSkillProgression?: boolean;
+    includeStrengthsSummary?: boolean;
+  };
+  talentInsights: {
+    enabled: boolean;
+    postProjectAssessment?: boolean;
+    standoutContributors?: boolean;
+    teamPerformanceSummary?: boolean;
+    includeHiringRecommendation?: boolean;
+  };
+  institutionalAnalytics: {
+    enabled: boolean;
+    reportFrequency?: string;
+    skillGapAnalysis?: boolean;
+    engagementPatterns?: boolean;
+    curriculumRecommendations?: boolean;
+    benchmarkAgainstPlatform?: boolean;
+  };
+  rateLimits: {
+    perUserPerHour: number;
+    perTenantPerHour: number;
+  };
+}
+
+/** Enhanced access check result with denial details */
+export interface AiAccessResult {
+  allowed: boolean;
+  config: TenantAiConfig;
+  denial?: {
+    reason:
+      | 'feature_disabled'
+      | 'action_not_available'
+      | 'monthly_limit_reached'
+      | 'rate_limited'
+      | 'ai_disabled';
+    message: string;
+    upgradeAvailable: boolean;
+    upgradeTierName?: string;
+    retryAfter?: number;
+    resetDate?: string;
+  };
+}
+
+/** Feature mapping from simple feature name to tier config key */
+export type AiFeatureKey =
+  | 'student_coaching'
+  | 'project_scoping'
+  | 'portfolio_intelligence'
+  | 'talent_insights'
+  | 'institutional_analytics';

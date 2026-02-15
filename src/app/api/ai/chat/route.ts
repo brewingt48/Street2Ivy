@@ -9,7 +9,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { sql } from '@/lib/db';
 import { getCurrentSession } from '@/lib/auth/middleware';
 import { z } from 'zod';
-import { checkAiAccess, incrementUsage, getUsageStatus } from '@/lib/ai/config';
+import { checkAiAccessV2, incrementUsageV2, getUsageStatusV2 } from '@/lib/ai/config';
 import { askClaude } from '@/lib/ai/claude-client';
 import { buildCoachingSystemPrompt } from '@/lib/ai/prompts';
 import type { ConversationMessage, StudentProfileForAi, QuickAction } from '@/lib/ai/types';
@@ -52,10 +52,10 @@ export async function POST(request: NextRequest) {
     const tenantId = session.data.tenantId;
 
     // Step 1: Check AI access
-    const accessCheck = await checkAiAccess(tenantId, 'coaching');
+    const accessCheck = await checkAiAccessV2(tenantId, userId, 'student_coaching');
     if (!accessCheck.allowed) {
       return NextResponse.json(
-        { error: 'AI access denied', reason: accessCheck.reason },
+        { error: accessCheck.denial?.message || 'Access denied', denial: accessCheck.denial },
         { status: 403 }
       );
     }
@@ -87,7 +87,9 @@ export async function POST(request: NextRequest) {
 
     // Step 5: Query student skills
     const skillRows = await sql`
-      SELECT name FROM skills WHERE user_id = ${userId}
+      SELECT s.name FROM user_skills us
+      JOIN skills s ON s.id = us.skill_id
+      WHERE us.user_id = ${userId}
     `;
 
     const studentProfile: StudentProfileForAi = {
@@ -133,7 +135,7 @@ export async function POST(request: NextRequest) {
 
     // Step 9: Call Claude
     const aiResponse = await askClaude({
-      model: accessCheck.model,
+      model: accessCheck.config.model,
       systemPrompt,
       messages: conversationHistory,
       maxTokens: 2048,
@@ -146,7 +148,7 @@ export async function POST(request: NextRequest) {
     `;
 
     // Step 11: Increment usage
-    await incrementUsage(tenantId);
+    await incrementUsageV2(tenantId, userId, 'student_coaching');
 
     // Step 12: Update conversation title if first user message
     const messageCount = await sql`
@@ -169,7 +171,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Step 13: Return response with usage info
-    const usage = await getUsageStatus(tenantId);
+    const usage = await getUsageStatusV2(tenantId, userId, 'student_coaching');
 
     return NextResponse.json({
       message: {

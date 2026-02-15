@@ -3,11 +3,22 @@
  *
  * Manages three-tier AI access: Starter (Haiku), Professional (Sonnet), Enterprise (Sonnet unlimited).
  * Uses tenant features JSONB for config and a separate table for usage counting.
+ *
+ * @deprecated — This module is maintained for backward compatibility. New code should use
+ *   `feature-gate.ts` which provides per-user per-feature gating with detailed denial reasons.
+ *   The exports below (`checkAiAccess`, `incrementUsage`, `getUsageStatus`, `getTenantAiConfig`)
+ *   continue to work as before. Use `checkAiAccessV2`, `incrementUsageV2`, and
+ *   `getUsageStatusV2` for the enhanced behavior.
  */
 
 import { sql } from '@/lib/db';
 import { getTenantFeatures } from '@/lib/tenant/features';
-import type { AiTierConfig, AiFeature, AiAccessCheck, AiUsageStatus } from './types';
+import {
+  checkAiAccess as checkAiAccessV2Impl,
+  incrementUsage as incrementUsageV2Impl,
+  getUsageStatus as getUsageStatusV2Impl,
+} from './feature-gate';
+import type { AiTierConfig, AiFeature, AiAccessCheck, AiUsageStatus, AiFeatureKey, AiAccessResult } from './types';
 
 /** Default AI configurations per plan tier */
 export const AI_TIER_CONFIGS: Record<string, AiTierConfig> = {
@@ -79,6 +90,8 @@ export async function getTenantAiConfig(tenantId: string | null): Promise<AiTier
 /**
  * Check if a tenant has access to a specific AI feature.
  * Verifies: aiCoaching is enabled + feature is in tier + usage limit not exceeded.
+ *
+ * @deprecated Use `checkAiAccessV2` for per-user gating with detailed denial reasons.
  */
 export async function checkAiAccess(
   tenantId: string | null,
@@ -142,6 +155,8 @@ export async function checkAiAccess(
 /**
  * Increment the usage counter for a tenant.
  * Uses upsert to atomically create or increment the counter.
+ *
+ * @deprecated Use `incrementUsageV2` for per-user per-feature tracking.
  */
 export async function incrementUsage(tenantId: string | null): Promise<void> {
   if (!tenantId) return; // System admins don't track usage
@@ -158,6 +173,8 @@ export async function incrementUsage(tenantId: string | null): Promise<void> {
 /**
  * Get current usage status for a tenant.
  * Used by the UI to display the usage meter.
+ *
+ * @deprecated Use `getUsageStatusV2` for per-user per-feature status.
  */
 export async function getUsageStatus(tenantId: string | null): Promise<AiUsageStatus> {
   if (!tenantId) {
@@ -192,4 +209,44 @@ export async function getUsageStatus(tenantId: string | null): Promise<AiUsageSt
     plan,
     model: config.model,
   };
+}
+
+// ---------------------------------------------------------------------------
+// V2 wrappers — delegate to feature-gate.ts
+// ---------------------------------------------------------------------------
+
+/**
+ * Enhanced AI access check with per-user gating and detailed denial reasons.
+ * This is the recommended function for all new AI endpoints.
+ */
+export async function checkAiAccessV2(
+  tenantId: string | null,
+  userId: string,
+  feature: AiFeatureKey,
+  action?: string,
+): Promise<AiAccessResult> {
+  return checkAiAccessV2Impl(tenantId, userId, feature, action);
+}
+
+/**
+ * Increment per-user per-feature usage counter (v2).
+ * Also increments the legacy tenant-level counter for backward compatibility.
+ */
+export async function incrementUsageV2(
+  tenantId: string | null,
+  userId: string,
+  feature: string,
+): Promise<void> {
+  return incrementUsageV2Impl(tenantId, userId, feature);
+}
+
+/**
+ * Get per-user per-feature usage status (v2).
+ */
+export async function getUsageStatusV2(
+  tenantId: string | null,
+  userId: string,
+  feature: string,
+): Promise<{ used: number; limit: number; remaining: number; resetDate: string }> {
+  return getUsageStatusV2Impl(tenantId, userId, feature);
 }

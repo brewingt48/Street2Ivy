@@ -9,7 +9,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getCurrentSession } from '@/lib/auth/middleware';
 import { z } from 'zod';
-import { checkAiAccess, incrementUsage, getUsageStatus } from '@/lib/ai/config';
+import { checkAiAccessV2, incrementUsageV2, getUsageStatusV2 } from '@/lib/ai/config';
 import { askClaude } from '@/lib/ai/claude-client';
 
 const projectScopingSchema = z.object({
@@ -169,13 +169,14 @@ export async function POST(request: NextRequest) {
     }
 
     const { description, action } = parsed.data;
+    const userId = session.data.userId;
     const tenantId = session.data.tenantId;
 
     // Step 1: Check AI access
-    const accessCheck = await checkAiAccess(tenantId, 'project_scoping');
+    const accessCheck = await checkAiAccessV2(tenantId, userId, 'project_scoping');
     if (!accessCheck.allowed) {
       return NextResponse.json(
-        { error: 'AI access denied', reason: accessCheck.reason },
+        { error: accessCheck.denial?.message || 'Access denied', denial: accessCheck.denial },
         { status: 403 }
       );
     }
@@ -191,7 +192,7 @@ export async function POST(request: NextRequest) {
     };
 
     const aiResponse = await askClaude({
-      model: accessCheck.model,
+      model: accessCheck.config.model,
       systemPrompt,
       messages: [
         {
@@ -213,8 +214,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Step 4: Increment usage and return
-    await incrementUsage(tenantId);
-    const usage = await getUsageStatus(tenantId);
+    await incrementUsageV2(tenantId, userId, 'project_scoping');
+    const usage = await getUsageStatusV2(tenantId, userId, 'project_scoping');
 
     return NextResponse.json({ result, usage });
   } catch (error) {

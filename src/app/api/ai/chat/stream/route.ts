@@ -9,7 +9,7 @@ import { NextRequest } from 'next/server';
 import { sql } from '@/lib/db';
 import { getCurrentSession } from '@/lib/auth/middleware';
 import { z } from 'zod';
-import { checkAiAccess, incrementUsage, getUsageStatus } from '@/lib/ai/config';
+import { checkAiAccessV2, incrementUsageV2, getUsageStatusV2 } from '@/lib/ai/config';
 import { streamClaude } from '@/lib/ai/claude-client';
 import { buildCoachingSystemPrompt } from '@/lib/ai/prompts';
 import type { ConversationMessage, StudentProfileForAi, QuickAction } from '@/lib/ai/types';
@@ -63,9 +63,9 @@ export async function POST(request: NextRequest) {
     const tenantId = session.data.tenantId;
 
     // Check AI access
-    const accessCheck = await checkAiAccess(tenantId, 'coaching');
+    const accessCheck = await checkAiAccessV2(tenantId, userId, 'student_coaching');
     if (!accessCheck.allowed) {
-      return new Response(JSON.stringify({ error: 'AI access denied', reason: accessCheck.reason }), {
+      return new Response(JSON.stringify({ error: accessCheck.denial?.message || 'Access denied', denial: accessCheck.denial }), {
         status: 403,
         headers: { 'Content-Type': 'application/json' },
       });
@@ -100,7 +100,9 @@ export async function POST(request: NextRequest) {
     const user = userRows[0] || {};
 
     const skillRows = await sql`
-      SELECT name FROM skills WHERE user_id = ${userId}
+      SELECT s.name FROM user_skills us
+      JOIN skills s ON s.id = us.skill_id
+      WHERE us.user_id = ${userId}
     `;
 
     const studentProfile: StudentProfileForAi = {
@@ -151,7 +153,7 @@ export async function POST(request: NextRequest) {
           let fullResponse = '';
 
           for await (const delta of streamClaude({
-            model: accessCheck.model,
+            model: accessCheck.config.model,
             systemPrompt,
             messages: conversationHistory,
             maxTokens: 2048,
@@ -169,7 +171,7 @@ export async function POST(request: NextRequest) {
           `;
 
           // Increment usage
-          await incrementUsage(tenantId);
+          await incrementUsageV2(tenantId, userId, 'student_coaching');
 
           // Update conversation title if first user message
           const messageCount = await sql`
@@ -192,7 +194,7 @@ export async function POST(request: NextRequest) {
           }
 
           // Send done event with full response and usage
-          const usage = await getUsageStatus(tenantId);
+          const usage = await getUsageStatusV2(tenantId, userId, 'student_coaching');
           controller.enqueue(
             encoder.encode(`event: done\ndata: ${JSON.stringify({ content: fullResponse, usage })}\n\n`)
           );
