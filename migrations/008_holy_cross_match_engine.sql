@@ -335,7 +335,7 @@ ON CONFLICT (email) DO NOTHING;
 -- Create demo listings
 INSERT INTO listings (title, description, category, skills_required, hours_per_week, compensation, remote_allowed, status, author_id, tenant_id, listing_type, published_at)
 SELECT
-  v.title, v.description, v.category, v.skills::text[], v.hours, v.comp, v.remote, 'published',
+  v.title, v.description, v.category, to_jsonb(v.skills), v.hours, v.comp, v.remote, 'published',
   u.id, t.id, 'project', NOW() - (v.days_ago || ' days')::interval
 FROM users u
 CROSS JOIN tenants t

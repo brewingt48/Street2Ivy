@@ -25,7 +25,7 @@ SELECT create_athletic_tenant(
 UPDATE tenants SET
   branding = '{"primaryColor": "#602D8E", "secondaryColor": "#FFFFFF", "logoUrl": null}'::jsonb,
   social_links = '{"twitter": "https://twitter.com/HCrossFB", "instagram": "https://instagram.com/holycrossfb"}'::jsonb,
-  about_content = 'The Holy Cross Crusaders Football program connects current players with our accomplished alumni network. Through Campus2Career, players gain real-world experience through mentored projects while building relationships with alumni who understand the student-athlete journey.',
+  about_content = 'The Holy Cross Crusaders Football program connects current players with our accomplished alumni network. Through Proveground, players gain real-world experience through mentored projects while building relationships with alumni who understand the student-athlete journey.',
   gallery_images = '[]'::jsonb,
   contact_info = '{"email": "athletics@holycross.edu", "phone": "(508) 793-2571"}'::jsonb
 WHERE subdomain = 'holy-cross-football';

@@ -116,9 +116,12 @@ export function LandingPageClient({ tenant, stats, partners }: LandingPageClient
   const contactInfo = tenant.contact_info ?? {};
 
   const displayName = tenant.display_name ?? tenant.name;
-  const headline =
-    tenant.hero_headline ??
-    'You didn\u2019t train this hard to sit on the sideline.';
+  const sportName = tenant.sport ?? 'Athletics';
+  const teamName = tenant.team_name ?? displayName;
+
+  /* Build a compelling default headline using the team name */
+  const defaultHeadline = `${teamName}. Where Champions Are Made — On and Off the Field.`;
+  const headline = tenant.hero_headline ?? defaultHeadline;
   const subheadline =
     tenant.hero_subheadline ??
     'Real projects. Verified results. Career momentum \u2014 earned, not assumed.';
@@ -290,7 +293,7 @@ export function LandingPageClient({ tenant, stats, partners }: LandingPageClient
       </section>
 
       {/* ================================================================
-          SECTION 3 -- HOW IT WORKS (4-step flow)
+          SECTION 3 -- THE COMPETITIVE LOOP (4-step flow)
          ================================================================ */}
       <section className="py-20 px-6">
         <div className="max-w-6xl mx-auto">
@@ -302,10 +305,10 @@ export function LandingPageClient({ tenant, stats, partners }: LandingPageClient
             className="text-center mb-14"
           >
             <motion.h2 variants={fadeUp} className="text-3xl sm:text-4xl font-bold mb-4">
-              Four steps. Real work. Earned reputation.
+              The Competitive Loop&trade;
             </motion.h2>
-            <motion.p variants={fadeUp} className="text-gray-500 max-w-2xl mx-auto">
-              The same competitive loop that built you on the field &mdash; now applied to your career.
+            <motion.p variants={fadeUp} className="text-gray-500 max-w-2xl mx-auto text-lg">
+              Prepare. Compete. Perform. Repeat. The same cycle that made you an athlete &mdash; now applied to your career.
             </motion.p>
           </motion.div>
 
@@ -316,7 +319,7 @@ export function LandingPageClient({ tenant, stats, partners }: LandingPageClient
             variants={stagger}
             className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8"
           >
-            {/* Step 1 */}
+            {/* Step 1 — Prepare */}
             <motion.div
               variants={fadeUp}
               className="bg-gray-50 rounded-2xl p-8 text-center border border-gray-100 hover:shadow-lg transition-shadow"
@@ -325,18 +328,18 @@ export function LandingPageClient({ tenant, stats, partners }: LandingPageClient
                 className="inline-flex items-center justify-center w-14 h-14 rounded-full mb-5"
                 style={{ backgroundColor: `${primary}15` }}
               >
-                <Rocket className="h-7 w-7" style={{ color: primary }} />
+                <Search className="h-7 w-7" style={{ color: primary }} />
               </div>
               <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: primary }}>
-                Step 1
+                Prepare
               </p>
-              <h3 className="text-xl font-semibold mb-3">Launch Your Marketplace</h3>
+              <h3 className="text-xl font-semibold mb-3">Find Your Match</h3>
               <p className="text-gray-500 leading-relaxed">
-                Your program gets a fully branded marketplace — your colors, your identity, your competitive advantage.
+                The Match Engine&trade; pairs you with real projects from alumni and industry partners &mdash; matched to your skills, your schedule, and your goals.
               </p>
             </motion.div>
 
-            {/* Step 2 */}
+            {/* Step 2 — Compete */}
             <motion.div
               variants={fadeUp}
               className="bg-gray-50 rounded-2xl p-8 text-center border border-gray-100 hover:shadow-lg transition-shadow"
@@ -348,15 +351,15 @@ export function LandingPageClient({ tenant, stats, partners }: LandingPageClient
                 <Briefcase className="h-7 w-7" style={{ color: primary }} />
               </div>
               <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: primary }}>
-                Step 2
+                Compete
               </p>
-              <h3 className="text-xl font-semibold mb-3">Partners Post Real Work</h3>
+              <h3 className="text-xl font-semibold mb-3">Do the Work</h3>
               <p className="text-gray-500 leading-relaxed">
-                Alumni and corporate partners bring real internships and scoped projects. No simulations.
+                Take on real engagements with real stakes. The same discipline, preparation, and execution that defines you as an athlete now defines you as a professional.
               </p>
             </motion.div>
 
-            {/* Step 3 */}
+            {/* Step 3 — Perform */}
             <motion.div
               variants={fadeUp}
               className="bg-gray-50 rounded-2xl p-8 text-center border border-gray-100 hover:shadow-lg transition-shadow"
@@ -368,15 +371,15 @@ export function LandingPageClient({ tenant, stats, partners }: LandingPageClient
                 <Target className="h-7 w-7" style={{ color: primary }} />
               </div>
               <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: primary }}>
-                Step 3
+                Perform
               </p>
-              <h3 className="text-xl font-semibold mb-3">Students Deliver &amp; Earn Reviews</h3>
+              <h3 className="text-xl font-semibold mb-3">Earn Your Reputation</h3>
               <p className="text-gray-500 leading-relaxed">
-                Real results. Verified reviews. Reputation built one engagement at a time.
+                Deliver results. Earn verified reviews. Build a professional track record that complements your GPA and strengthens everything you do &mdash; in the classroom and beyond.
               </p>
             </motion.div>
 
-            {/* Step 4 */}
+            {/* Step 4 — Repeat */}
             <motion.div
               variants={fadeUp}
               className="bg-gray-50 rounded-2xl p-8 text-center border border-gray-100 hover:shadow-lg transition-shadow"
@@ -388,11 +391,11 @@ export function LandingPageClient({ tenant, stats, partners }: LandingPageClient
                 <Award className="h-7 w-7" style={{ color: primary }} />
               </div>
               <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: primary }}>
-                Step 4
+                Repeat
               </p>
-              <h3 className="text-xl font-semibold mb-3">Reputation Opens Doors</h3>
+              <h3 className="text-xl font-semibold mb-3">Momentum Compounds</h3>
               <p className="text-gray-500 leading-relaxed">
-                A track record that speaks louder than a GPA. Verified work that proves what you can do.
+                Every project builds on the last. Experience enhances your academics, your athletics, and your career trajectory. Champions never stop competing.
               </p>
             </motion.div>
           </motion.div>
