@@ -105,9 +105,9 @@ function HeroSection({ settings }: { settings: HomepageSettings }) {
   useEffect(() => { setLoaded(true); }, []);
 
   const tagline = settings.heroCopy?.tagline || 'From Campus to Career';
-  const headline = settings.heroCopy?.headline || 'Where Talent Meets Opportunity';
+  const headline = settings.heroCopy?.headline || 'The discipline that built you doesn\u2019t stop at the field.';
   const subheadline = settings.heroCopy?.subheadline ||
-    'Campus2Career connects students with real corporate projects — building careers before graduation.';
+    'Campus2Career connects high-performing students with alumni and corporate partners for real project work \u2014 building reputations that open doors before graduation.';
   const demoUrl = settings.bookDemoUrl || 'https://calendly.com';
 
   return (
@@ -146,11 +146,10 @@ function HeroSection({ settings }: { settings: HomepageSettings }) {
           transition={{ duration: 0.8, delay: 0.4 }}
           className="font-serif text-5xl md:text-7xl lg:text-8xl font-bold text-white leading-[1.05] tracking-tight"
         >
-          {headline.includes('Opportunity') ? (
+          {headline.includes('doesn\u2019t stop at the field') ? (
             <>
-              {headline.split('Opportunity')[0]}
-              <span className="text-gold-300">Opportunity</span>
-              {headline.split('Opportunity')[1]}
+              The discipline that built you{' '}
+              <span className="text-gold-300">doesn&apos;t stop at the field.</span>
             </>
           ) : (
             headline
@@ -180,10 +179,10 @@ function HeroSection({ settings }: { settings: HomepageSettings }) {
             Book a Demo
           </a>
           <a
-            href="#how-it-works"
+            href="/register"
             className="inline-flex items-center justify-center rounded-full border-2 border-white/30 px-8 py-3.5 text-base font-semibold text-white hover:bg-white/10 transition-all"
           >
-            See How It Works
+            Find Talent
           </a>
         </motion.div>
       </div>
@@ -204,7 +203,7 @@ function HeroSection({ settings }: { settings: HomepageSettings }) {
 /* ─── SECTION 2: The Opportunity ─── */
 function ProblemSection({ settings }: { settings: HomepageSettings }) {
   const headline = settings.problemCopy?.headline || 'A Massive Opportunity to Rethink Career Readiness';
-  const description = settings.problemCopy?.description || 'The future of work rewards experience, not just education. Students, companies, and universities all win when real-world projects become part of the learning journey.';
+  const description = settings.problemCopy?.description || 'The future of work rewards experience, not just education. Students, companies, and universities all perform better when real-world projects become part of the learning journey.';
 
   const defaultStats = [
     {
@@ -271,26 +270,26 @@ function ProblemSection({ settings }: { settings: HomepageSettings }) {
 
 /* ─── SECTION 3: How It Works ─── */
 function HowItWorksSection({ settings }: { settings: HomepageSettings }) {
-  const sectionHeadline = settings.howItWorksCopy?.headline || 'One Platform. Three Powerful Connections.';
+  const sectionHeadline = settings.howItWorksCopy?.headline || 'Built for performers. Designed for results.';
 
   const defaultSteps = [
     {
       number: '01',
       icon: Briefcase,
-      title: 'Corporations Post Projects',
-      description: 'Define scoped, paid projects with clear deliverables, timelines, and skill requirements. Set your budget and watch qualified applicants come to you.',
+      title: 'Your Program Launches a Marketplace',
+      description: 'Your team, department, or university gets a fully branded marketplace \u2014 your colors, your identity, your community.',
     },
     {
       number: '02',
       icon: Users,
-      title: 'Students Apply & Match',
-      description: 'Students are matched based on skills, interests, and availability. Our algorithm surfaces the best candidates so you can focus on the work, not the search.',
+      title: 'Alumni & Partners Post Real Projects',
+      description: 'Alumni and company sponsors post scoped, real-world projects \u2014 marketing strategies, financial analyses, product research. These aren\u2019t busywork.',
     },
     {
       number: '03',
       icon: BarChart3,
-      title: 'Institutions Track Impact',
-      description: 'University partners oversee student participation, track outcomes, and measure career readiness — all from a dedicated admin dashboard.',
+      title: 'Reputation Builds With Every Project',
+      description: 'Both sides leave verified reviews. Students build a portable professional reputation backed by real corporate endorsements \u2014 not just a GPA.',
     },
   ];
 
@@ -341,37 +340,37 @@ function ValuePropsSection() {
     {
       tab: 'For Students',
       icon: GraduationCap,
-      headline: 'Build your portfolio before you graduate',
+      headline: 'Your edge doesn\u2019t expire when the season ends',
       points: [
-        { icon: Briefcase, text: 'Paid project work with real companies' },
-        { icon: Brain, text: 'AI-powered career coaching to develop your skills' },
-        { icon: Award, text: 'Skills-verified profile that showcases what you can actually do' },
-        { icon: TrendingUp, text: 'Direct path from project work to job offers' },
-        { icon: Shield, text: 'NDA-protected collaboration on professional projects' },
+        { icon: Briefcase, text: 'Compete for real project work with companies that value performers' },
+        { icon: Brain, text: 'AI-powered coaching that sharpens your professional skills around the clock' },
+        { icon: Award, text: 'Build a verified reputation backed by corporate endorsements, not just a GPA' },
+        { icon: TrendingUp, text: 'Prove your ability to deliver and earn a direct path to career opportunities' },
+        { icon: Shield, text: 'NDA-protected collaboration on professional-grade projects' },
       ],
     },
     {
       tab: 'For Corporate Partners',
       icon: Briefcase,
-      headline: 'Access pre-vetted, project-ready talent',
+      headline: 'Invest in talent you already believe in',
       points: [
-        { icon: Users, text: 'Post projects and receive skills-matched applicants' },
-        { icon: BarChart3, text: 'Milestone-based workflow with built-in deliverable tracking' },
-        { icon: Zap, text: 'Reduce time-to-productivity for entry-level hires' },
-        { icon: Award, text: 'Build your employer brand on campus before students graduate' },
+        { icon: Users, text: 'Post scoped projects and connect with high-performing, skills-matched students' },
+        { icon: BarChart3, text: 'Milestone-based workflow with built-in deliverable tracking and verified reviews' },
+        { icon: Zap, text: 'Reduce time-to-productivity by launching pre-vetted talent into real work' },
+        { icon: Award, text: 'Build your employer brand on campus and earn loyalty before graduation' },
         { icon: Shield, text: 'Enterprise-grade security with integrated NDA management' },
       ],
     },
     {
       tab: 'For Institutions',
       icon: Building2,
-      headline: 'Your own branded career development marketplace',
+      headline: 'A recruiting advantage that goes beyond the field',
       points: [
-        { icon: Palette, text: 'White-label platform customized to your institution\'s brand' },
-        { icon: BarChart3, text: 'Real-time dashboards tracking student engagement and outcomes' },
-        { icon: Brain, text: 'AI coaching that supplements your career services team' },
-        { icon: TrendingUp, text: 'Data-driven proof of career readiness for accreditation' },
-        { icon: Globe, text: 'Custom domain and full brand theming' },
+        { icon: Palette, text: 'Launch a fully branded marketplace that represents your program\u2019s identity' },
+        { icon: BarChart3, text: 'Track student performance with real-time dashboards and outcome metrics' },
+        { icon: Brain, text: 'AI coaching that scales your career services and delivers personalized guidance' },
+        { icon: TrendingUp, text: 'Prove career readiness with data-driven results for accreditation and fundraising' },
+        { icon: Globe, text: 'Custom domain, full brand theming, and a community your students are proud to represent' },
       ],
     },
   ];
@@ -384,7 +383,7 @@ function ValuePropsSection() {
         <FadeInSection className="text-center max-w-3xl mx-auto mb-16">
           <p className="text-gold-400 font-medium tracking-wider text-sm uppercase mb-4">Solutions</p>
           <h2 className="font-serif text-4xl md:text-5xl font-bold text-white leading-tight">
-            Built for Everyone in the Ecosystem
+            Built for Every Side of the Equation
           </h2>
         </FadeInSection>
 
@@ -465,7 +464,7 @@ function WhiteLabelSection() {
               Your Platform. Your Brand. Your Students.
             </h2>
             <p className="mt-6 text-lg text-navy-500 leading-relaxed">
-              Every institution is unique. Campus2Career gives you a fully customizable, white-label marketplace — your logo, your colors, your domain. Students see your brand, not ours.
+              Every program has its own identity. Campus2Career delivers a fully branded, white-label marketplace \u2014 your logo, your colors, your domain. Your students connect through a platform that represents them, not us.
             </p>
             <ul className="mt-8 space-y-4">
               {[
@@ -576,17 +575,17 @@ function AICoachingSection() {
           <FadeInSection className="order-1 lg:order-2" delay={0.2}>
             <p className="text-gold-600 font-medium tracking-wider text-sm uppercase mb-4">AI-Powered</p>
             <h2 className="font-serif text-4xl md:text-5xl font-bold text-navy-900 leading-tight">
-              AI Career Coaching, Built In
+              24/7 career coaching powered by AI. Personal to every student.
             </h2>
             <p className="mt-6 text-lg text-navy-500 leading-relaxed">
-              Every student deserves a career coach. Campus2Career&apos;s AI coaching engine provides personalized guidance — available 24/7, at scale.
+              Competitors prepare. Performers invest in themselves. Campus2Career&apos;s AI coaching engine delivers personalized guidance that sharpens skills, builds confidence, and keeps students performing at their peak \u2014 available around the clock, at scale.
             </p>
             <ul className="mt-8 space-y-4">
               {[
-                'Personalized skills assessments that evolve with each project',
-                'Interview prep tailored to the student\'s target industry',
-                'Career readiness scoring that institutions can track',
-                'Funded by corporate sponsorships — free for students',
+                'Personalized skills assessments that evolve and sharpen with every project delivered',
+                'Interview prep tailored to target roles, industries, and the student\'s track record',
+                'Career readiness scoring that institutions can track and showcase',
+                'Funded by corporate sponsorships \u2014 no cost for students, maximum value for partners',
               ].map((text, i) => (
                 <li key={i} className="flex items-start gap-3">
                   <Sparkles className="h-5 w-5 text-gold-500 mt-0.5 flex-shrink-0" />
@@ -784,9 +783,9 @@ function FAQSection({ items }: { items: FaqItem[] }) {
 
 /* ─── SECTION 10: CTA Footer — Book a Demo ─── */
 function CTASection({ settings }: { settings: HomepageSettings }) {
-  const headline = settings.ctaCopy?.headline || 'Ready to Bridge the Gap Between Campus and Career?';
+  const headline = settings.ctaCopy?.headline || 'The best talent doesn\u2019t wait to be discovered.';
   const subheadline = settings.ctaCopy?.subheadline ||
-    'Book a demo to see how Campus2Career can transform your talent pipeline — for students, corporations, and institutions.';
+    'Whether you\u2019re a student ready to compete beyond the field, an alum who wants to invest in the next class, or a program looking for a competitive edge \u2014 Campus2Career is where it starts.';
   const demoUrl = settings.bookDemoUrl || 'https://calendly.com';
 
   return (
@@ -794,7 +793,13 @@ function CTASection({ settings }: { settings: HomepageSettings }) {
       <div className="max-w-5xl mx-auto px-6 lg:px-8 text-center">
         <FadeInSection>
           <h2 className="font-serif text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-tight">
-            {headline.includes('Campus') && headline.includes('Career') ? (
+            {headline.includes('doesn\u2019t wait') ? (
+              <>
+                The best talent{' '}
+                <span className="text-gold-300">doesn&apos;t wait</span>
+                {' '}to be discovered.
+              </>
+            ) : headline.includes('Campus') && headline.includes('Career') ? (
               <>
                 {headline.split('Campus')[0]}
                 <span className="text-gold-300">Campus</span>

@@ -14,9 +14,13 @@ import {
   Globe,
   Mail,
   Phone,
+  Shield,
+  Target,
+  Trophy,
+  Handshake,
 } from 'lucide-react';
 
-/* ─── Types ─── */
+/* --- Types --- */
 
 interface Branding {
   primaryColor?: string;
@@ -86,7 +90,7 @@ interface LandingPageClientProps {
   partners: Partner[];
 }
 
-/* ─── Animation helpers ─── */
+/* --- Animation helpers --- */
 
 const fadeUp = {
   hidden: { opacity: 0, y: 24 },
@@ -97,7 +101,7 @@ const stagger = {
   visible: { transition: { staggerChildren: 0.12 } },
 };
 
-/* ─── Component ─── */
+/* --- Component --- */
 
 export function LandingPageClient({ tenant, stats, partners }: LandingPageClientProps) {
   const branding = tenant.branding ?? {};
@@ -107,14 +111,18 @@ export function LandingPageClient({ tenant, stats, partners }: LandingPageClient
   const contactInfo = tenant.contact_info ?? {};
 
   const displayName = tenant.display_name ?? tenant.name;
-  const headline = tenant.hero_headline ?? `${displayName} -- Where Players and Alumni Build Futures Together`;
-  const subheadline = tenant.hero_subheadline ?? 'Real projects. Real mentorship. From the alumni who wore your jersey.';
+  const headline =
+    tenant.hero_headline ??
+    'The discipline that built you doesn\u2019t stop at the field.';
+  const subheadline =
+    tenant.hero_subheadline ??
+    'Campus2Career connects student-athletes and program alumni through real projects, real deliverables, and real reputation \u2014 built on the same competitive edge that drives performance on game day.';
 
   const studentCount = Number(stats.student_count) || 0;
   const listingCount = Number(stats.listing_count) || 0;
   const partnerCount = Number(stats.partner_count) || 0;
 
-  /* ─── Social icon map ─── */
+  /* --- Social icon map --- */
   function socialIcon(key: string) {
     switch (key) {
       case 'twitter':
@@ -130,9 +138,9 @@ export function LandingPageClient({ tenant, stats, partners }: LandingPageClient
 
   return (
     <div className="min-h-screen bg-white text-gray-900 overflow-x-hidden">
-      {/* ════════════════════════════════════════════════════════════════════
-          SECTION 1 — HERO
-         ════════════════════════════════════════════════════════════════════ */}
+      {/* ================================================================
+          SECTION 1 -- HERO
+         ================================================================ */}
       <section
         className="relative min-h-[85vh] flex items-center justify-center overflow-hidden"
         style={{
@@ -190,13 +198,13 @@ export function LandingPageClient({ tenant, stats, partners }: LandingPageClient
             {subheadline}
           </motion.p>
 
-          <motion.div variants={fadeUp} className="flex flex-col sm:flex-row gap-4 justify-center">
+          <motion.div variants={fadeUp} className="flex flex-col sm:flex-row gap-4 justify-center items-center">
             <a
               href={`/register?tenant=${tenant.subdomain}&role=student`}
               className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl text-lg font-semibold transition-all duration-200 hover:scale-105 shadow-lg"
               style={{ backgroundColor: secondary, color: primary }}
             >
-              Join as a Player
+              Find Projects
               <ArrowRight className="h-5 w-5" />
             </a>
             <a
@@ -204,16 +212,28 @@ export function LandingPageClient({ tenant, stats, partners }: LandingPageClient
               className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl text-lg font-semibold transition-all duration-200 hover:scale-105 border-2"
               style={{ borderColor: secondary, color: secondary, backgroundColor: 'transparent' }}
             >
-              Join as Alumni Partner
+              Find Talent
               <ArrowRight className="h-5 w-5" />
+            </a>
+          </motion.div>
+
+          {/* Tertiary link for universities */}
+          <motion.div variants={fadeUp} className="mt-6">
+            <a
+              href="/for-universities"
+              className="inline-flex items-center gap-1 text-sm font-medium transition-colors hover:underline"
+              style={{ color: `${secondary}99` }}
+            >
+              For Universities &amp; Programs
+              <ArrowRight className="h-4 w-4" />
             </a>
           </motion.div>
         </motion.div>
       </section>
 
-      {/* ════════════════════════════════════════════════════════════════════
-          SECTION 2 — STATS BAR
-         ════════════════════════════════════════════════════════════════════ */}
+      {/* ================================================================
+          SECTION 2 -- STATS BAR
+         ================================================================ */}
       <section className="border-b border-gray-200 bg-gray-50">
         <div className="max-w-5xl mx-auto px-6 py-8">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
@@ -245,11 +265,11 @@ export function LandingPageClient({ tenant, stats, partners }: LandingPageClient
         </div>
       </section>
 
-      {/* ════════════════════════════════════════════════════════════════════
-          SECTION 3 — HOW IT WORKS
-         ════════════════════════════════════════════════════════════════════ */}
+      {/* ================================================================
+          SECTION 3 -- HOW IT WORKS (4-step flow)
+         ================================================================ */}
       <section className="py-20 px-6">
-        <div className="max-w-5xl mx-auto">
+        <div className="max-w-6xl mx-auto">
           <motion.div
             initial="hidden"
             whileInView="visible"
@@ -258,10 +278,11 @@ export function LandingPageClient({ tenant, stats, partners }: LandingPageClient
             className="text-center mb-14"
           >
             <motion.h2 variants={fadeUp} className="text-3xl sm:text-4xl font-bold mb-4">
-              How It Works
+              Built for performers. Designed for results.
             </motion.h2>
-            <motion.p variants={fadeUp} className="text-gray-500 max-w-xl mx-auto">
-              Three simple steps from the field to your future career.
+            <motion.p variants={fadeUp} className="text-gray-500 max-w-2xl mx-auto">
+              Every marketplace on Campus2Career follows the same competitive loop &mdash; launch, post,
+              perform, earn.
             </motion.p>
           </motion.div>
 
@@ -270,7 +291,7 @@ export function LandingPageClient({ tenant, stats, partners }: LandingPageClient
             whileInView="visible"
             viewport={{ once: true, amount: 0.2 }}
             variants={stagger}
-            className="grid md:grid-cols-3 gap-8"
+            className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8"
           >
             {/* Step 1 */}
             <motion.div
@@ -281,12 +302,15 @@ export function LandingPageClient({ tenant, stats, partners }: LandingPageClient
                 className="inline-flex items-center justify-center w-14 h-14 rounded-full mb-5"
                 style={{ backgroundColor: `${primary}15` }}
               >
-                <Search className="h-7 w-7" style={{ color: primary }} />
+                <Rocket className="h-7 w-7" style={{ color: primary }} />
               </div>
-              <h3 className="text-xl font-semibold mb-3">Browse Projects</h3>
+              <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: primary }}>
+                Step 1
+              </p>
+              <h3 className="text-xl font-semibold mb-3">Your Program Launches a Marketplace</h3>
               <p className="text-gray-500 leading-relaxed">
-                Browse real projects posted by alumni who wore your jersey. Filter by industry,
-                skill, and availability.
+                A coach, administrator, or department head activates the program&rsquo;s branded
+                marketplace &mdash; built to compete from day one.
               </p>
             </motion.div>
 
@@ -299,12 +323,15 @@ export function LandingPageClient({ tenant, stats, partners }: LandingPageClient
                 className="inline-flex items-center justify-center w-14 h-14 rounded-full mb-5"
                 style={{ backgroundColor: `${primary}15` }}
               >
-                <Sparkles className="h-7 w-7" style={{ color: primary }} />
+                <Briefcase className="h-7 w-7" style={{ color: primary }} />
               </div>
-              <h3 className="text-xl font-semibold mb-3">Apply &amp; Get Matched</h3>
+              <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: primary }}>
+                Step 2
+              </p>
+              <h3 className="text-xl font-semibold mb-3">Alumni &amp; Partners Post Real Projects</h3>
               <p className="text-gray-500 leading-relaxed">
-                Our AI matches your skills and availability to the right projects. Apply with one
-                click and let the algorithm do the rest.
+                Alumni-owned businesses and corporate partners post paid projects, consulting
+                engagements, and contract work &mdash; not busy work.
               </p>
             </motion.div>
 
@@ -317,23 +344,152 @@ export function LandingPageClient({ tenant, stats, partners }: LandingPageClient
                 className="inline-flex items-center justify-center w-14 h-14 rounded-full mb-5"
                 style={{ backgroundColor: `${primary}15` }}
               >
-                <Rocket className="h-7 w-7" style={{ color: primary }} />
+                <Target className="h-7 w-7" style={{ color: primary }} />
               </div>
-              <h3 className="text-xl font-semibold mb-3">Build Your Future</h3>
+              <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: primary }}>
+                Step 3
+              </p>
+              <h3 className="text-xl font-semibold mb-3">Students Get Matched &amp; Get to Work</h3>
               <p className="text-gray-500 leading-relaxed">
-                Complete projects, earn reviews, and build your professional portfolio. Graduate with
-                real experience that sets you apart.
+                AI-powered matching pairs student-athletes with the right projects based on skill,
+                availability, and competitive drive. Then they deliver.
+              </p>
+            </motion.div>
+
+            {/* Step 4 */}
+            <motion.div
+              variants={fadeUp}
+              className="bg-gray-50 rounded-2xl p-8 text-center border border-gray-100 hover:shadow-lg transition-shadow"
+            >
+              <div
+                className="inline-flex items-center justify-center w-14 h-14 rounded-full mb-5"
+                style={{ backgroundColor: `${primary}15` }}
+              >
+                <Award className="h-7 w-7" style={{ color: primary }} />
+              </div>
+              <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: primary }}>
+                Step 4
+              </p>
+              <h3 className="text-xl font-semibold mb-3">Reputation Builds With Every Project</h3>
+              <p className="text-gray-500 leading-relaxed">
+                Every completed project earns reviews, builds a verified portfolio, and proves
+                performance &mdash; the same way stats speak on the field.
               </p>
             </motion.div>
           </motion.div>
         </div>
       </section>
 
-      {/* ════════════════════════════════════════════════════════════════════
-          SECTION 4 — ALUMNI PARTNERS SHOWCASE
-         ════════════════════════════════════════════════════════════════════ */}
+      {/* ================================================================
+          SECTION 4 -- VALUE PROPOSITION CARDS
+         ================================================================ */}
+      <section className="py-20 px-6 bg-gray-50">
+        <div className="max-w-6xl mx-auto">
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.3 }}
+            variants={stagger}
+            className="text-center mb-14"
+          >
+            <motion.h2 variants={fadeUp} className="text-3xl sm:text-4xl font-bold mb-4">
+              One platform. Three competitive advantages.
+            </motion.h2>
+          </motion.div>
+
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.2 }}
+            variants={stagger}
+            className="grid md:grid-cols-3 gap-8"
+          >
+            {/* Card 1 -- Student-Athletes & Students */}
+            <motion.div
+              variants={fadeUp}
+              className="bg-white rounded-2xl p-8 border border-gray-100 shadow-sm hover:shadow-lg transition-shadow"
+            >
+              <div
+                className="inline-flex items-center justify-center w-14 h-14 rounded-full mb-5"
+                style={{ backgroundColor: `${primary}15` }}
+              >
+                <Trophy className="h-7 w-7" style={{ color: primary }} />
+              </div>
+              <h3 className="text-xl font-semibold mb-3">For Student-Athletes &amp; Students</h3>
+              <p className="text-gray-500 leading-relaxed mb-4">
+                Your competitive edge doesn&rsquo;t expire when you leave the field. Compete for real
+                projects, deliver professional-grade work, and build a reputation that proves you
+                perform under pressure &mdash; not just on a resume, but on the scoreboard that matters.
+              </p>
+              <a
+                href={`/register?tenant=${tenant.subdomain}&role=student`}
+                className="inline-flex items-center gap-1 text-sm font-semibold transition-colors"
+                style={{ color: primary }}
+              >
+                Find Projects <ArrowRight className="h-4 w-4" />
+              </a>
+            </motion.div>
+
+            {/* Card 2 -- Alumni & Corporate Partners */}
+            <motion.div
+              variants={fadeUp}
+              className="bg-white rounded-2xl p-8 border border-gray-100 shadow-sm hover:shadow-lg transition-shadow"
+            >
+              <div
+                className="inline-flex items-center justify-center w-14 h-14 rounded-full mb-5"
+                style={{ backgroundColor: `${primary}15` }}
+              >
+                <Handshake className="h-7 w-7" style={{ color: primary }} />
+              </div>
+              <h3 className="text-xl font-semibold mb-3">For Alumni &amp; Corporate Partners</h3>
+              <p className="text-gray-500 leading-relaxed mb-4">
+                Invest in talent you already believe in. Post real projects, tap into a pipeline of
+                disciplined performers who know how to compete, and build your bench of future hires
+                &mdash; all while strengthening the program that built you.
+              </p>
+              <a
+                href={`/register?tenant=${tenant.subdomain}&role=alumni`}
+                className="inline-flex items-center gap-1 text-sm font-semibold transition-colors"
+                style={{ color: primary }}
+              >
+                Join as a Partner <ArrowRight className="h-4 w-4" />
+              </a>
+            </motion.div>
+
+            {/* Card 3 -- Universities & Athletic Programs */}
+            <motion.div
+              variants={fadeUp}
+              className="bg-white rounded-2xl p-8 border border-gray-100 shadow-sm hover:shadow-lg transition-shadow"
+            >
+              <div
+                className="inline-flex items-center justify-center w-14 h-14 rounded-full mb-5"
+                style={{ backgroundColor: `${primary}15` }}
+              >
+                <Shield className="h-7 w-7" style={{ color: primary }} />
+              </div>
+              <h3 className="text-xl font-semibold mb-3">For Universities &amp; Athletic Programs</h3>
+              <p className="text-gray-500 leading-relaxed mb-4">
+                A recruiting advantage that extends beyond the field. Launch a branded career
+                marketplace that proves your program develops complete competitors &mdash; athletes who
+                perform in the classroom, in the market, and in life.
+              </p>
+              <a
+                href="/for-universities"
+                className="inline-flex items-center gap-1 text-sm font-semibold transition-colors"
+                style={{ color: primary }}
+              >
+                Learn More <ArrowRight className="h-4 w-4" />
+              </a>
+            </motion.div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* ================================================================
+          SECTION 5 -- ALUMNI PARTNERS SHOWCASE
+         ================================================================ */}
       {partners.length > 0 && (
-        <section className="py-20 px-6 bg-gray-50">
+        <section className="py-20 px-6">
           <div className="max-w-6xl mx-auto">
             <motion.div
               initial="hidden"
@@ -343,7 +499,7 @@ export function LandingPageClient({ tenant, stats, partners }: LandingPageClient
               className="text-center mb-14"
             >
               <motion.h2 variants={fadeUp} className="text-3xl sm:text-4xl font-bold mb-4">
-                Featured Alumni Partners
+                Alumni Partners
               </motion.h2>
               <motion.p variants={fadeUp} className="text-gray-500 max-w-xl mx-auto">
                 Real businesses. Run by alumni who played on this field.
@@ -427,9 +583,9 @@ export function LandingPageClient({ tenant, stats, partners }: LandingPageClient
         </section>
       )}
 
-      {/* ════════════════════════════════════════════════════════════════════
-          SECTION 5 — ABOUT
-         ════════════════════════════════════════════════════════════════════ */}
+      {/* ================================================================
+          SECTION 6 -- ABOUT
+         ================================================================ */}
       {tenant.about_content && (
         <section className="py-20 px-6">
           <div className="max-w-3xl mx-auto text-center">
@@ -453,9 +609,9 @@ export function LandingPageClient({ tenant, stats, partners }: LandingPageClient
         </section>
       )}
 
-      {/* ════════════════════════════════════════════════════════════════════
-          SECTION 6 — SOCIAL LINKS + CONTACT
-         ════════════════════════════════════════════════════════════════════ */}
+      {/* ================================================================
+          SECTION 7 -- SOCIAL LINKS + CONTACT
+         ================================================================ */}
       {(Object.keys(socialLinks).length > 0 || contactInfo.email || contactInfo.phone) && (
         <section className="py-12 px-6 bg-gray-50 border-t border-gray-200">
           <div className="max-w-3xl mx-auto flex flex-col sm:flex-row items-center justify-center gap-6">
@@ -499,9 +655,54 @@ export function LandingPageClient({ tenant, stats, partners }: LandingPageClient
         </section>
       )}
 
-      {/* ════════════════════════════════════════════════════════════════════
-          SECTION 7 — CTA FOOTER
-         ════════════════════════════════════════════════════════════════════ */}
+      {/* ================================================================
+          SECTION 8 -- NETWORK EFFECT CALLOUT
+         ================================================================ */}
+      <section className="py-20 px-6 bg-white">
+        <div className="max-w-4xl mx-auto">
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.3 }}
+            variants={stagger}
+            className="text-center"
+          >
+            <motion.h2 variants={fadeUp} className="text-3xl sm:text-4xl font-bold mb-6">
+              One program starts it. The whole network benefits.
+            </motion.h2>
+            <motion.p
+              variants={fadeUp}
+              className="text-gray-500 text-lg leading-relaxed max-w-3xl mx-auto mb-8"
+            >
+              When {displayName} launches its marketplace, it doesn&rsquo;t stay siloed. Football
+              connects to the athletic department. The athletic department connects to career services.
+              Career services connects to the entire Campus2Career Network &mdash; unlocking a
+              cross-program, cross-school talent pipeline that compounds with every new partner and
+              every completed project.
+            </motion.p>
+            <motion.div variants={fadeUp} className="flex flex-wrap justify-center gap-6">
+              {[
+                { icon: <Trophy className="h-5 w-5" />, label: 'Athletic Programs' },
+                { icon: <Shield className="h-5 w-5" />, label: 'Career Services' },
+                { icon: <Users className="h-5 w-5" />, label: 'Alumni Networks' },
+                { icon: <Globe className="h-5 w-5" />, label: 'Campus2Career Network' },
+              ].map((item) => (
+                <div
+                  key={item.label}
+                  className="flex items-center gap-2 px-4 py-2 rounded-full bg-gray-50 border border-gray-200"
+                >
+                  <span style={{ color: primary }}>{item.icon}</span>
+                  <span className="text-sm font-medium text-gray-700">{item.label}</span>
+                </div>
+              ))}
+            </motion.div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* ================================================================
+          SECTION 9 -- CTA FOOTER
+         ================================================================ */}
       <section
         className="py-20 px-6"
         style={{
@@ -520,15 +721,16 @@ export function LandingPageClient({ tenant, stats, partners }: LandingPageClient
             className="text-3xl sm:text-4xl font-bold mb-4"
             style={{ color: secondary }}
           >
-            Ready to Get Started?
+            The best talent doesn&rsquo;t wait to be discovered.
           </motion.h2>
           <motion.p
             variants={fadeUp}
             className="text-lg mb-10 max-w-xl mx-auto"
             style={{ color: `${secondary}bb` }}
           >
-            Whether you are a current player looking for projects or an alum looking to give back,
-            there is a place for you here.
+            They compete, deliver, and prove it &mdash; project by project. Whether you are a
+            student-athlete ready to perform or an alumni partner ready to build your bench,
+            the marketplace is open.
           </motion.p>
 
           <motion.div variants={fadeUp} className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -537,24 +739,24 @@ export function LandingPageClient({ tenant, stats, partners }: LandingPageClient
               className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl text-lg font-semibold transition-all duration-200 hover:scale-105 shadow-lg"
               style={{ backgroundColor: secondary, color: primary }}
             >
-              <Users className="h-5 w-5" />
-              Join as a Player
+              <Search className="h-5 w-5" />
+              Find Projects
             </a>
             <a
               href={`/register?tenant=${tenant.subdomain}&role=alumni`}
               className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl text-lg font-semibold transition-all duration-200 hover:scale-105 border-2"
               style={{ borderColor: secondary, color: secondary, backgroundColor: 'transparent' }}
             >
-              <Briefcase className="h-5 w-5" />
-              Join as Alumni Partner
+              <Handshake className="h-5 w-5" />
+              Join as a Partner
             </a>
           </motion.div>
         </motion.div>
       </section>
 
-      {/* ════════════════════════════════════════════════════════════════════
+      {/* ================================================================
           FOOTER
-         ════════════════════════════════════════════════════════════════════ */}
+         ================================================================ */}
       <footer className="py-8 px-6 bg-gray-900 text-gray-400 text-center text-sm">
         <p>
           &copy; {new Date().getFullYear()} {displayName}. Powered by{' '}
