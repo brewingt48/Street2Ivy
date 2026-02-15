@@ -36,6 +36,7 @@ import {
   User,
   ExternalLink,
   Star,
+  Mail,
 } from 'lucide-react';
 import { HelpSupportCard } from '@/components/shared/help-support-card';
 
@@ -53,6 +54,12 @@ interface DashboardData {
     emailVerified: boolean;
     availableProjects: number;
     unreadMessages: number;
+    invites: {
+      total: number;
+      pending: number;
+      accepted: number;
+      declined: number;
+    };
     reviews: {
       received: number;
       given: number;
@@ -178,7 +185,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
         <Link href="/applications">
           <Card className="hover:border-teal-300 hover:shadow-sm transition-all cursor-pointer">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -217,6 +224,20 @@ export default function DashboardPage() {
               <div className="text-2xl font-bold">{stats.unreadMessages}</div>
               <p className="text-xs text-slate-500 dark:text-slate-400">
                 Unread messages
+              </p>
+            </CardContent>
+          </Card>
+        </Link>
+        <Link href="/invites">
+          <Card className="hover:border-teal-300 hover:shadow-sm transition-all cursor-pointer">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Invites</CardTitle>
+              <Mail className="h-4 w-4 text-slate-400" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{stats.invites?.total || 0}</div>
+              <p className="text-xs text-slate-500 dark:text-slate-400">
+                {stats.invites?.pending || 0} pending
               </p>
             </CardContent>
           </Card>

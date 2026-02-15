@@ -6,6 +6,7 @@
 import { NextResponse } from 'next/server';
 import { sql } from '@/lib/db';
 import { getCurrentSession } from '@/lib/auth/middleware';
+import { getTenantFeatures, checkFeature } from '@/lib/tenant/features';
 
 export async function GET() {
   try {
@@ -15,6 +16,11 @@ export async function GET() {
     }
 
     const tenantId = session.data.tenantId;
+
+    // Get tenant features for feature gating
+    const features = tenantId ? await getTenantFeatures(tenantId) : {};
+    const hasAdvancedReporting = !tenantId || checkFeature(features, 'advancedReporting');
+    const hasStudentRatings = !tenantId || checkFeature(features, 'studentRatings');
 
     // All queries scoped by tenant_id
     const totalStudents = await sql`
@@ -43,32 +49,39 @@ export async function GET() {
         ${tenantId ? sql`AND tenant_id = ${tenantId}` : sql``}
     `;
 
-    // Average student performance rating (from student_ratings table)
-    const avgPerformance = await sql`
-      SELECT
-        AVG(sr.rating)::numeric(3,2) as avg_rating,
-        COUNT(*) as total_ratings,
-        COUNT(DISTINCT sr.student_id) as rated_students
-      FROM student_ratings sr
-      JOIN users u ON u.id = sr.student_id
-      WHERE 1=1
-        ${tenantId ? sql`AND u.tenant_id = ${tenantId}` : sql``}
-    `;
+    // Average student performance rating (gated by studentRatings feature)
+    let avgPerformance = [{ avg_rating: null, total_ratings: '0', rated_students: '0' }];
+    let topStudents: Record<string, unknown>[] = [];
 
-    // Top performing students (by avg rating, min 1 rating)
-    const topStudents = await sql`
-      SELECT u.id, u.display_name, u.email, u.university,
-             AVG(sr.rating)::numeric(3,2) as avg_rating,
-             COUNT(sr.id) as rating_count
-      FROM student_ratings sr
-      JOIN users u ON u.id = sr.student_id
-      WHERE 1=1
-        ${tenantId ? sql`AND u.tenant_id = ${tenantId}` : sql``}
-      GROUP BY u.id, u.display_name, u.email, u.university
-      HAVING COUNT(sr.id) >= 1
-      ORDER BY AVG(sr.rating) DESC
-      LIMIT 5
-    `;
+    if (hasStudentRatings) {
+      avgPerformance = await sql`
+        SELECT
+          AVG(sr.rating)::numeric(3,2) as avg_rating,
+          COUNT(*) as total_ratings,
+          COUNT(DISTINCT sr.student_id) as rated_students
+        FROM student_ratings sr
+        JOIN users u ON u.id = sr.student_id
+        WHERE 1=1
+          ${tenantId ? sql`AND u.tenant_id = ${tenantId}` : sql``}
+      `;
+    }
+
+    // Top performing students (gated by advancedReporting feature)
+    if (hasAdvancedReporting) {
+      topStudents = await sql`
+        SELECT u.id, u.display_name, u.email, u.university,
+               AVG(sr.rating)::numeric(3,2) as avg_rating,
+               COUNT(sr.id) as rating_count
+        FROM student_ratings sr
+        JOIN users u ON u.id = sr.student_id
+        WHERE 1=1
+          ${tenantId ? sql`AND u.tenant_id = ${tenantId}` : sql``}
+        GROUP BY u.id, u.display_name, u.email, u.university
+        HAVING COUNT(sr.id) >= 1
+        ORDER BY AVG(sr.rating) DESC
+        LIMIT 5
+      `;
+    }
 
     const recentStudents = await sql`
       SELECT id, display_name, email, university, created_at
@@ -83,9 +96,13 @@ export async function GET() {
         activeProjects: parseInt(activeProjects[0].count as string),
         completedProjects: parseInt(completedProjects[0].count as string),
         waitlistCount: parseInt(waitlistCount[0].count as string),
-        avgStudentRating: avgPerformance[0]?.avg_rating ? Number(avgPerformance[0].avg_rating) : null,
-        totalStudentRatings: parseInt(avgPerformance[0]?.total_ratings as string) || 0,
-        ratedStudents: parseInt(avgPerformance[0]?.rated_students as string) || 0,
+        avgStudentRating: hasStudentRatings && avgPerformance[0]?.avg_rating ? Number(avgPerformance[0].avg_rating) : null,
+        totalStudentRatings: hasStudentRatings ? (parseInt(avgPerformance[0]?.total_ratings as string) || 0) : 0,
+        ratedStudents: hasStudentRatings ? (parseInt(avgPerformance[0]?.rated_students as string) || 0) : 0,
+      },
+      features: {
+        advancedReporting: hasAdvancedReporting,
+        studentRatings: hasStudentRatings,
       },
       recentStudents: recentStudents.map((s: Record<string, unknown>) => ({
         id: s.id,
@@ -94,14 +111,14 @@ export async function GET() {
         university: s.university,
         createdAt: s.created_at,
       })),
-      topStudents: topStudents.map((s: Record<string, unknown>) => ({
+      topStudents: hasAdvancedReporting ? topStudents.map((s: Record<string, unknown>) => ({
         id: s.id,
         name: s.display_name,
         email: s.email,
         university: s.university,
         avgRating: Number(s.avg_rating),
         ratingCount: parseInt(s.rating_count as string),
-      })),
+      })) : [],
     });
   } catch (error) {
     console.error('Education dashboard error:', error);

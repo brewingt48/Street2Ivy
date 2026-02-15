@@ -424,20 +424,20 @@ export default function TenantDetailPage() {
                   {
                     plan: 'starter',
                     label: 'Starter',
-                    description: '100 students, 10 listings',
-                    features: { maxStudents: 100, maxListings: 10, aiCoaching: false, customBranding: false, analytics: false, apiAccess: false },
+                    description: '100 students, 10 listings, basic features',
+                    features: { maxStudents: 100, maxListings: 10, aiCoaching: false, customBranding: false, analytics: false, apiAccess: false, advancedReporting: false, studentRatings: false, corporateRatings: false, matchingAlgorithm: false, issueReporting: false, inviteManagement: true },
                   },
                   {
                     plan: 'professional',
                     label: 'Professional',
-                    description: '500 students, 50 listings',
-                    features: { maxStudents: 500, maxListings: 50, aiCoaching: true, customBranding: true, analytics: true, apiAccess: false },
+                    description: '500 students, 50 listings, full features',
+                    features: { maxStudents: 500, maxListings: 50, aiCoaching: true, customBranding: true, analytics: true, apiAccess: false, advancedReporting: true, studentRatings: true, corporateRatings: true, matchingAlgorithm: true, issueReporting: true, inviteManagement: true },
                   },
                   {
                     plan: 'enterprise',
                     label: 'Enterprise',
-                    description: 'Unlimited students & listings',
-                    features: { maxStudents: -1, maxListings: -1, aiCoaching: true, customBranding: true, analytics: true, apiAccess: true },
+                    description: 'Unlimited, all features + API',
+                    features: { maxStudents: -1, maxListings: -1, aiCoaching: true, customBranding: true, analytics: true, apiAccess: true, advancedReporting: true, studentRatings: true, corporateRatings: true, matchingAlgorithm: true, issueReporting: true, inviteManagement: true },
                   },
                 ].map((p) => {
                   const currentPlan = ((tenant.features as Record<string, unknown>)?.plan as string) || 'starter';
@@ -499,53 +499,111 @@ export default function TenantDetailPage() {
               ) : null}
 
               {/* Feature Toggles */}
-              <div className="space-y-2">
-                <p className="text-sm font-medium text-slate-700 dark:text-slate-300">Individual Feature Overrides</p>
-                <p className="text-xs text-slate-400 mb-3">
-                  Toggle individual features regardless of plan level. Changes take effect immediately.
-                </p>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                  {[
-                    { key: 'aiCoaching', label: 'AI Coaching' },
-                    { key: 'customBranding', label: 'Custom Branding' },
-                    { key: 'analytics', label: 'Analytics' },
-                    { key: 'apiAccess', label: 'API Access' },
-                    { key: 'aiCoachingEnabled', label: 'AI Coach Access' },
-                  ].map((feat) => {
-                    const features = (tenant.features || {}) as Record<string, unknown>;
-                    const enabled = !!features[feat.key];
-                    return (
-                      <button
-                        key={feat.key}
-                        onClick={async () => {
-                          setSaving(true);
-                          try {
-                            const res = await fetch(`/api/admin/tenants/${id}`, {
-                              method: 'PUT',
-                              headers: { 'Content-Type': 'application/json' },
-                              body: JSON.stringify({
-                                features: { [feat.key]: !enabled },
-                              }),
-                            });
-                            if (res.ok) fetchTenant();
-                          } catch (err) { console.error(err); }
-                          finally { setSaving(false); }
-                        }}
-                        className={`flex items-center justify-between p-3 rounded-lg border transition-colors ${
-                          enabled ? 'border-green-200 bg-green-50/50' : 'border-slate-200'
-                        }`}
-                        disabled={saving}
-                      >
-                        <span className="text-sm text-slate-700 dark:text-slate-300">{feat.label}</span>
-                        <Badge
-                          variant={enabled ? 'default' : 'outline'}
-                          className={enabled ? 'bg-green-100 text-green-700 border-0' : ''}
+              <div className="space-y-4">
+                <div>
+                  <p className="text-sm font-medium text-slate-700 dark:text-slate-300">Individual Feature Overrides</p>
+                  <p className="text-xs text-slate-400 mb-3">
+                    Toggle individual features regardless of plan level. Changes take effect immediately.
+                  </p>
+                </div>
+
+                {/* Core Platform Features */}
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">Core Platform</p>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                    {[
+                      { key: 'aiCoaching', label: 'AI Coaching' },
+                      { key: 'customBranding', label: 'Custom Branding' },
+                      { key: 'analytics', label: 'Analytics' },
+                      { key: 'apiAccess', label: 'API Access' },
+                      { key: 'inviteManagement', label: 'Invite Management' },
+                    ].map((feat) => {
+                      const features = (tenant.features || {}) as Record<string, unknown>;
+                      const enabled = !!features[feat.key];
+                      return (
+                        <button
+                          key={feat.key}
+                          onClick={async () => {
+                            setSaving(true);
+                            try {
+                              const res = await fetch(`/api/admin/tenants/${id}`, {
+                                method: 'PUT',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                  features: { [feat.key]: !enabled },
+                                }),
+                              });
+                              if (res.ok) fetchTenant();
+                            } catch (err) { console.error(err); }
+                            finally { setSaving(false); }
+                          }}
+                          className={`flex items-center justify-between p-3 rounded-lg border transition-colors ${
+                            enabled ? 'border-green-200 bg-green-50/50' : 'border-slate-200'
+                          }`}
+                          disabled={saving}
                         >
-                          {enabled ? 'On' : 'Off'}
-                        </Badge>
-                      </button>
-                    );
-                  })}
+                          <span className="text-sm text-slate-700 dark:text-slate-300">{feat.label}</span>
+                          <Badge
+                            variant={enabled ? 'default' : 'outline'}
+                            className={enabled ? 'bg-green-100 text-green-700 border-0' : ''}
+                          >
+                            {enabled ? 'On' : 'Off'}
+                          </Badge>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Premium Reporting & Ratings */}
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">Premium Reporting & Ratings</p>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                    {[
+                      { key: 'advancedReporting', label: 'Advanced Reporting', desc: 'Top students, leaderboards' },
+                      { key: 'studentRatings', label: 'Student Ratings', desc: 'Private student performance' },
+                      { key: 'corporateRatings', label: 'Corporate Ratings', desc: 'Public partner reviews' },
+                      { key: 'matchingAlgorithm', label: 'Smart Matching', desc: 'AI skill alignment' },
+                      { key: 'issueReporting', label: 'Issue Reporting', desc: 'Safety & compliance' },
+                    ].map((feat) => {
+                      const features = (tenant.features || {}) as Record<string, unknown>;
+                      const enabled = !!features[feat.key];
+                      return (
+                        <button
+                          key={feat.key}
+                          onClick={async () => {
+                            setSaving(true);
+                            try {
+                              const res = await fetch(`/api/admin/tenants/${id}`, {
+                                method: 'PUT',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                  features: { [feat.key]: !enabled },
+                                }),
+                              });
+                              if (res.ok) fetchTenant();
+                            } catch (err) { console.error(err); }
+                            finally { setSaving(false); }
+                          }}
+                          className={`flex items-center justify-between p-3 rounded-lg border transition-colors ${
+                            enabled ? 'border-green-200 bg-green-50/50' : 'border-slate-200'
+                          }`}
+                          disabled={saving}
+                        >
+                          <div>
+                            <span className="text-sm text-slate-700 dark:text-slate-300">{feat.label}</span>
+                            <p className="text-xs text-slate-400 mt-0.5">{feat.desc}</p>
+                          </div>
+                          <Badge
+                            variant={enabled ? 'default' : 'outline'}
+                            className={enabled ? 'bg-green-100 text-green-700 border-0' : ''}
+                          >
+                            {enabled ? 'On' : 'Off'}
+                          </Badge>
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
               </div>
 

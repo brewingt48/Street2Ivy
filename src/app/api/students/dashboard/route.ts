@@ -67,6 +67,17 @@ export async function GET() {
       WHERE recipient_id = ${userId} AND read_at IS NULL
     `;
 
+    // Get invite stats
+    const inviteStats = await sql`
+      SELECT
+        COUNT(*) as total,
+        COUNT(*) FILTER (WHERE status = 'pending') as pending,
+        COUNT(*) FILTER (WHERE status = 'accepted') as accepted,
+        COUNT(*) FILTER (WHERE status = 'declined') as declined
+      FROM corporate_invites
+      WHERE student_id = ${userId}
+    `;
+
     // Get reviews received count
     const reviewsReceived = await sql`
       SELECT
@@ -94,6 +105,12 @@ export async function GET() {
         emailVerified: u.email_verified,
         availableProjects: parseInt(projectCount[0].count),
         unreadMessages: parseInt(unreadCount[0].count),
+        invites: {
+          total: parseInt(inviteStats[0].total),
+          pending: parseInt(inviteStats[0].pending),
+          accepted: parseInt(inviteStats[0].accepted),
+          declined: parseInt(inviteStats[0].declined),
+        },
         reviews: {
           received: parseInt(reviewsReceived[0].total),
           given: parseInt(reviewsGiven[0].count),

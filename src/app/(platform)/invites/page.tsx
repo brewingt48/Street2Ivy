@@ -60,9 +60,17 @@ const statusConfig: Record<
   declined: { label: 'Declined', color: 'bg-red-100 text-red-700', icon: XCircle },
 };
 
+const TABS = [
+  { key: '', label: 'All' },
+  { key: 'pending', label: 'Pending' },
+  { key: 'accepted', label: 'Accepted' },
+  { key: 'declined', label: 'Declined' },
+];
+
 export default function InvitesPage() {
   const [invites, setInvites] = useState<Invite[]>([]);
   const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState('');
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [confirmDialog, setConfirmDialog] = useState<{
     open: boolean;
@@ -87,6 +95,17 @@ export default function InvitesPage() {
   useEffect(() => {
     fetchInvites();
   }, [fetchInvites]);
+
+  const filteredInvites = filter
+    ? invites.filter((inv) => inv.status === filter)
+    : invites;
+
+  const counts = {
+    all: invites.length,
+    pending: invites.filter((i) => i.status === 'pending').length,
+    accepted: invites.filter((i) => i.status === 'accepted').length,
+    declined: invites.filter((i) => i.status === 'declined').length,
+  };
 
   const openConfirmDialog = (inviteId: string, action: 'accept' | 'decline', projectTitle: string | null) => {
     setConfirmDialog({ open: true, inviteId, action, projectTitle });
@@ -124,6 +143,33 @@ export default function InvitesPage() {
         </p>
       </div>
 
+      {/* Status Filter Tabs */}
+      {!loading && invites.length > 0 && (
+        <div className="flex flex-wrap gap-2">
+          {TABS.map((tab) => {
+            const count = tab.key
+              ? counts[tab.key as keyof typeof counts] || 0
+              : counts.all;
+            return (
+              <Button
+                key={tab.key}
+                variant={filter === tab.key ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setFilter(tab.key)}
+                className={filter === tab.key ? 'bg-teal-600 hover:bg-teal-700' : ''}
+              >
+                {tab.label}
+                {count > 0 && (
+                  <Badge variant="secondary" className="ml-2 text-xs px-1.5 py-0">
+                    {count}
+                  </Badge>
+                )}
+              </Button>
+            );
+          })}
+        </div>
+      )}
+
       {/* Loading Skeletons */}
       {loading && (
         <div className="space-y-4">
@@ -147,9 +193,9 @@ export default function InvitesPage() {
       )}
 
       {/* Invites List */}
-      {!loading && invites.length > 0 && (
+      {!loading && filteredInvites.length > 0 && (
         <div className="space-y-4">
-          {invites.map((invite) => {
+          {filteredInvites.map((invite) => {
             const config = statusConfig[invite.status] || statusConfig.pending;
             const StatusIcon = config.icon;
 
@@ -253,15 +299,17 @@ export default function InvitesPage() {
       )}
 
       {/* Empty State */}
-      {!loading && invites.length === 0 && (
+      {!loading && filteredInvites.length === 0 && (
         <Card>
           <CardContent className="py-16 text-center">
             <Mail className="h-12 w-12 text-slate-300 mx-auto mb-4" />
             <h3 className="font-medium text-slate-600 dark:text-slate-300">
-              No invites yet
+              {filter ? `No ${filter} invites` : 'No invites yet'}
             </h3>
             <p className="text-sm text-slate-400 mt-1">
-              When corporate partners invite you to their projects, they will appear here
+              {filter
+                ? 'Try checking a different tab'
+                : 'When corporate partners invite you to their projects, they will appear here'}
             </p>
           </CardContent>
         </Card>

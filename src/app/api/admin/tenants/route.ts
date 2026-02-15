@@ -8,6 +8,7 @@ import { sql } from '@/lib/db';
 import { getCurrentSession } from '@/lib/auth/middleware';
 import { z } from 'zod';
 import crypto from 'crypto';
+import { PLAN_DEFAULTS } from '@/lib/tenant/features';
 
 const createTenantSchema = z.object({
   subdomain: z
@@ -43,6 +44,12 @@ const createTenantSchema = z.object({
       customBranding: z.boolean().optional(),
       analytics: z.boolean().optional(),
       apiAccess: z.boolean().optional(),
+      advancedReporting: z.boolean().optional(),
+      studentRatings: z.boolean().optional(),
+      corporateRatings: z.boolean().optional(),
+      matchingAlgorithm: z.boolean().optional(),
+      issueReporting: z.boolean().optional(),
+      inviteManagement: z.boolean().optional(),
     })
     .optional(),
 });
@@ -56,33 +63,8 @@ function generatePassword(length = 16): string {
     .join('');
 }
 
-/** Default feature sets per plan */
-const planDefaults: Record<string, Record<string, unknown>> = {
-  starter: {
-    maxStudents: 100,
-    maxListings: 10,
-    aiCoaching: false,
-    customBranding: false,
-    analytics: false,
-    apiAccess: false,
-  },
-  professional: {
-    maxStudents: 500,
-    maxListings: 50,
-    aiCoaching: true,
-    customBranding: true,
-    analytics: true,
-    apiAccess: false,
-  },
-  enterprise: {
-    maxStudents: -1, // unlimited
-    maxListings: -1,
-    aiCoaching: true,
-    customBranding: true,
-    analytics: true,
-    apiAccess: true,
-  },
-};
+/** Default feature sets per plan (imported from shared definition) */
+const planDefaults = PLAN_DEFAULTS;
 
 export async function GET() {
   try {
