@@ -10,6 +10,7 @@ import { z } from 'zod';
 
 const createListingSchema = z.object({
   title: z.string().min(1, 'Title is required').max(500),
+  listingType: z.enum(['project', 'internship']).default('project'),
   description: z.string().optional(),
   scopeOfWork: z.string().optional(),
   deliverables: z.string().optional(),
@@ -85,6 +86,7 @@ export async function GET(request: NextRequest) {
         id: l.id,
         title: l.title,
         description: l.description,
+        listingType: l.listing_type,
         category: l.category,
         status: l.status,
         visibility: l.visibility,
@@ -144,7 +146,7 @@ export async function POST(request: NextRequest) {
     const [listing] = await sql`
       INSERT INTO network_listings (
         network_partner_id, created_by,
-        title, description, scope_of_work, deliverables, category,
+        title, listing_type, description, scope_of_work, deliverables, category,
         budget_min, budget_max, payment_type, is_paid,
         estimated_hours, start_date, end_date, application_deadline,
         max_students, visibility, target_institutions,
@@ -153,7 +155,7 @@ export async function POST(request: NextRequest) {
         status
       ) VALUES (
         ${partnerUser.network_partner_id}, ${partnerUser.id},
-        ${data.title}, ${data.description || null}, ${data.scopeOfWork || null},
+        ${data.title}, ${data.listingType}, ${data.description || null}, ${data.scopeOfWork || null},
         ${data.deliverables || null}, ${data.category || null},
         ${data.budgetMin ?? null}, ${data.budgetMax ?? null},
         ${data.paymentType || null}, ${data.isPaid},
@@ -173,6 +175,7 @@ export async function POST(request: NextRequest) {
         listing: {
           id: listing.id,
           title: listing.title,
+          listingType: listing.listing_type,
           status: listing.status,
           createdAt: listing.created_at,
         },

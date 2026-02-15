@@ -10,6 +10,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const search = searchParams.get('q') || '';
     const category = searchParams.get('category') || '';
+    const listingType = searchParams.get('type') || '';
     const remote = searchParams.get('remote');
     const skill = searchParams.get('skill') || '';
     const alumniOf = searchParams.get('alumniOf') || '';
@@ -27,6 +28,10 @@ export async function GET(request: NextRequest) {
 
     if (category) {
       conditions.push(sql`l.category = ${category}`);
+    }
+
+    if (listingType && (listingType === 'project' || listingType === 'internship')) {
+      conditions.push(sql`l.listing_type = ${listingType}`);
     }
 
     if (remote === 'true') {
@@ -54,7 +59,7 @@ export async function GET(request: NextRequest) {
     // Get listings with author info
     const listings = await sql`
       SELECT
-        l.id, l.title, l.description, l.category, l.location,
+        l.id, l.title, l.description, l.category, l.listing_type, l.location,
         l.remote_allowed, l.compensation, l.hours_per_week,
         l.duration, l.start_date, l.end_date, l.max_applicants,
         l.requires_nda, l.skills_required, l.published_at, l.created_at,
@@ -117,6 +122,7 @@ export async function GET(request: NextRequest) {
           title: l.title,
           description: l.description,
           category: l.category,
+          listingType: l.listing_type || 'project',
           location: l.location,
           remoteAllowed: l.remote_allowed,
           compensation: l.compensation,

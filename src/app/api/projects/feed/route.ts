@@ -24,6 +24,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = request.nextUrl;
     const q = searchParams.get('q') || '';
     const category = searchParams.get('category') || '';
+    const type = searchParams.get('type') || ''; // 'project', 'internship', or '' for all
     const source = searchParams.get('source') || ''; // 'private', 'network', or '' for all
     const page = parseInt(searchParams.get('page') || '1');
     const limit = Math.min(parseInt(searchParams.get('limit') || '12'), 50);
@@ -36,6 +37,7 @@ export async function GET(request: NextRequest) {
       SELECT * FROM get_visible_listings(${tenantId})
       WHERE (${searchPattern} = '%%' OR title ILIKE ${searchPattern} OR description ILIKE ${searchPattern})
         AND (${category} = '' OR category = ${category})
+        AND (${type} = '' OR listing_type = ${type})
         AND (${source} = '' OR source = ${source})
       ORDER BY created_at DESC
       LIMIT ${limit} OFFSET ${offset}
@@ -46,6 +48,7 @@ export async function GET(request: NextRequest) {
       SELECT COUNT(*) AS total FROM get_visible_listings(${tenantId})
       WHERE (${searchPattern} = '%%' OR title ILIKE ${searchPattern} OR description ILIKE ${searchPattern})
         AND (${category} = '' OR category = ${category})
+        AND (${type} = '' OR listing_type = ${type})
         AND (${source} = '' OR source = ${source})
     `;
 
@@ -63,6 +66,7 @@ export async function GET(request: NextRequest) {
         id: l.id,
         title: l.title,
         description: l.description,
+        listingType: l.listing_type,
         category: l.category,
         source: l.source,
         partnerName: l.partner_name,

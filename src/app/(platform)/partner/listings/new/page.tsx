@@ -25,10 +25,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { ArrowLeft, Save, Loader2 } from 'lucide-react';
+import { ArrowLeft, Save, Loader2, FileText, Briefcase } from 'lucide-react';
 
 interface FormData {
   title: string;
+  listingType: string;
   description: string;
   scopeOfWork: string;
   deliverables: string;
@@ -74,6 +75,7 @@ export default function CreateListingPage() {
 
   const [form, setForm] = useState<FormData>({
     title: '',
+    listingType: 'project',
     description: '',
     scopeOfWork: '',
     deliverables: '',
@@ -108,6 +110,7 @@ export default function CreateListingPage() {
     try {
       const payload: Record<string, unknown> = {
         title: form.title,
+        listingType: form.listingType,
         description: form.description || undefined,
         scopeOfWork: form.scopeOfWork || undefined,
         deliverables: form.deliverables || undefined,
@@ -188,6 +191,44 @@ export default function CreateListingPage() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                Listing Type
+              </label>
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  type="button"
+                  onClick={() => updateField('listingType', 'project')}
+                  className={`flex items-center gap-3 rounded-lg border-2 p-4 text-left transition-colors ${
+                    form.listingType === 'project'
+                      ? 'border-teal-600 bg-teal-50 dark:bg-teal-950'
+                      : 'border-slate-200 hover:border-slate-300 dark:border-slate-700'
+                  }`}
+                >
+                  <FileText className={`h-5 w-5 ${form.listingType === 'project' ? 'text-teal-600' : 'text-slate-400'}`} />
+                  <div>
+                    <div className={`font-medium ${form.listingType === 'project' ? 'text-teal-700 dark:text-teal-300' : 'text-slate-700 dark:text-slate-300'}`}>Project</div>
+                    <div className="text-xs text-slate-500">A defined project with deliverables</div>
+                  </div>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => updateField('listingType', 'internship')}
+                  className={`flex items-center gap-3 rounded-lg border-2 p-4 text-left transition-colors ${
+                    form.listingType === 'internship'
+                      ? 'border-teal-600 bg-teal-50 dark:bg-teal-950'
+                      : 'border-slate-200 hover:border-slate-300 dark:border-slate-700'
+                  }`}
+                >
+                  <Briefcase className={`h-5 w-5 ${form.listingType === 'internship' ? 'text-teal-600' : 'text-slate-400'}`} />
+                  <div>
+                    <div className={`font-medium ${form.listingType === 'internship' ? 'text-teal-700 dark:text-teal-300' : 'text-slate-700 dark:text-slate-300'}`}>Internship</div>
+                    <div className="text-xs text-slate-500">An ongoing internship position</div>
+                  </div>
+                </button>
+              </div>
+            </div>
+
             <div>
               <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                 Title *

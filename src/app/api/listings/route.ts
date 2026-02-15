@@ -11,6 +11,7 @@ import { z } from 'zod';
 const createListingSchema = z.object({
   title: z.string().min(3, 'Title must be at least 3 characters').max(200),
   description: z.string().min(10, 'Description must be at least 10 characters').max(10000),
+  listingType: z.enum(['project', 'internship']).default('project'),
   category: z.string().max(100).optional().nullable(),
   location: z.string().max(200).optional().nullable(),
   remoteAllowed: z.boolean().optional(),
@@ -33,7 +34,7 @@ export async function GET() {
 
     const listings = await sql`
       SELECT
-        l.id, l.title, l.description, l.category, l.location,
+        l.id, l.title, l.description, l.listing_type, l.category, l.location,
         l.remote_allowed, l.compensation, l.hours_per_week,
         l.duration, l.start_date, l.end_date, l.max_applicants,
         l.requires_nda, l.skills_required, l.status,
@@ -50,6 +51,7 @@ export async function GET() {
         id: l.id,
         title: l.title,
         description: l.description,
+        listingType: l.listing_type,
         category: l.category,
         location: l.location,
         remoteAllowed: l.remote_allowed,
@@ -100,7 +102,7 @@ export async function POST(request: NextRequest) {
 
     const result = await sql`
       INSERT INTO listings (
-        author_id, title, description, category, location,
+        author_id, title, description, listing_type, category, location,
         remote_allowed, compensation, hours_per_week, duration,
         start_date, end_date, max_applicants, requires_nda,
         skills_required, status
@@ -108,6 +110,7 @@ export async function POST(request: NextRequest) {
         ${session.data.userId},
         ${data.title},
         ${data.description},
+        ${data.listingType},
         ${data.category || null},
         ${data.location || null},
         ${data.remoteAllowed || false},
@@ -121,7 +124,7 @@ export async function POST(request: NextRequest) {
         ${JSON.stringify(data.skillsRequired || [])}::jsonb,
         'draft'
       )
-      RETURNING id, title, status, created_at
+      RETURNING id, title, listing_type, status, created_at
     `;
 
     return NextResponse.json({ listing: result[0] }, { status: 201 });

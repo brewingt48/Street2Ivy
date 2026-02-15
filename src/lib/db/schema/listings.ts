@@ -22,6 +22,7 @@ export const listings = pgTable('listings', {
   }),
   title: text('title').notNull(),
   description: text('description').notNull().default(''),
+  listingType: text('listing_type').notNull().default('project'),
   category: text('category'),
   skillsRequired: jsonb('skills_required').notNull().default([]),
   location: text('location'),

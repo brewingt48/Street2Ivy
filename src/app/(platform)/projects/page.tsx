@@ -45,11 +45,14 @@ import {
   TrendingUp,
 } from 'lucide-react';
 
+import { FileText } from 'lucide-react';
+
 interface ProjectListing {
   id: string;
   title: string;
   description: string;
   category: string | null;
+  listingType: 'project' | 'internship';
   location: string | null;
   remoteAllowed: boolean;
   compensation: string | null;
@@ -97,6 +100,7 @@ export default function ProjectsPage() {
 
   // Filter state
   const [search, setSearch] = useState(searchParams.get('q') || '');
+  const [listingTypeFilter, setListingTypeFilter] = useState(searchParams.get('type') || '');
   const [category, setCategory] = useState(searchParams.get('category') || '');
   const [remoteOnly, setRemoteOnly] = useState(searchParams.get('remote') === 'true');
   const [alumniOfFilter, setAlumniOfFilter] = useState(searchParams.get('alumniOf') || '');
@@ -108,6 +112,7 @@ export default function ProjectsPage() {
     try {
       const params = new URLSearchParams();
       if (search) params.set('q', search);
+      if (listingTypeFilter) params.set('type', listingTypeFilter);
       if (category && category !== 'all') params.set('category', category);
       if (remoteOnly) params.set('remote', 'true');
       if (alumniOfFilter) params.set('alumniOf', alumniOfFilter);
@@ -125,7 +130,7 @@ export default function ProjectsPage() {
     } finally {
       setLoading(false);
     }
-  }, [search, category, remoteOnly, alumniOfFilter, sportsPlayedFilter, page]);
+  }, [search, listingTypeFilter, category, remoteOnly, alumniOfFilter, sportsPlayedFilter, page]);
 
   useEffect(() => {
     fetchProjects();
@@ -139,6 +144,7 @@ export default function ProjectsPage() {
 
   const clearFilters = () => {
     setSearch('');
+    setListingTypeFilter('');
     setCategory('');
     setRemoteOnly(false);
     setAlumniOfFilter('');
@@ -146,21 +152,42 @@ export default function ProjectsPage() {
     setPage(1);
   };
 
-  const hasActiveFilters = search || category || remoteOnly || alumniOfFilter || sportsPlayedFilter;
+  const hasActiveFilters = search || listingTypeFilter || category || remoteOnly || alumniOfFilter || sportsPlayedFilter;
 
   return (
     <div className="space-y-6">
       {/* Header */}
       <div>
         <h1 className="text-3xl font-bold text-slate-900 dark:text-white">
-          Browse Projects
+          Browse Opportunities
         </h1>
         <p className="text-slate-500 dark:text-slate-400 mt-1">
-          Discover opportunities from top companies
+          Discover projects and internships from top companies
         </p>
-        <p className="text-xs text-slate-400 mt-2">
-          Use the search bar and filters to find projects. Filter by <strong>category</strong>, <strong>remote</strong> availability, partner <strong>alumni status</strong>, or <strong>sport</strong>. Click any project card to view details and apply.
-        </p>
+      </div>
+
+      {/* Type Filter Tabs */}
+      <div className="flex items-center gap-2">
+        {[
+          { value: '', label: 'All', icon: null },
+          { value: 'project', label: 'Projects', icon: FileText },
+          { value: 'internship', label: 'Internships', icon: Briefcase },
+        ].map((t) => {
+          const isActive = listingTypeFilter === t.value;
+          const Icon = t.icon;
+          return (
+            <Button
+              key={t.value}
+              variant={isActive ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => { setListingTypeFilter(t.value); setPage(1); }}
+              className={isActive ? 'bg-teal-600 hover:bg-teal-700' : ''}
+            >
+              {Icon && <Icon className="h-4 w-4 mr-1.5" />}
+              {t.label}
+            </Button>
+          );
+        })}
       </div>
 
       {/* Search & Filters */}
@@ -320,11 +347,19 @@ export default function ProjectsPage() {
                       )}
                     </CardDescription>
                   </div>
-                  {project.category && (
-                    <Badge variant="outline" className="ml-2 shrink-0 text-xs">
-                      {project.category}
-                    </Badge>
-                  )}
+                  <div className="flex flex-col items-end gap-1 ml-2 shrink-0">
+                    {project.listingType === 'internship' && (
+                      <Badge className="bg-purple-100 text-purple-700 border-0 text-xs">
+                        <Briefcase className="h-3 w-3 mr-1" />
+                        Internship
+                      </Badge>
+                    )}
+                    {project.category && (
+                      <Badge variant="outline" className="text-xs">
+                        {project.category}
+                      </Badge>
+                    )}
+                  </div>
                 </div>
               </CardHeader>
               <CardContent className="space-y-3">

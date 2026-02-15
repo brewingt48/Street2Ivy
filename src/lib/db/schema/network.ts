@@ -177,6 +177,7 @@ export const networkListings = pgTable('network_listings', {
   }),
   title: varchar('title', { length: 500 }).notNull(),
   description: text('description'),
+  listingType: text('listing_type').notNull().default('project'),
   scopeOfWork: text('scope_of_work'),
   deliverables: text('deliverables'),
   category: varchar('category', { length: 100 }),

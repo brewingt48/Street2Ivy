@@ -13,7 +13,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ArrowLeft, Save, Send, AlertCircle, Sparkles } from 'lucide-react';
+import { ArrowLeft, Save, Send, AlertCircle, Sparkles, FileText, Briefcase } from 'lucide-react';
 import { ScopingWizard } from '@/components/corporate/scoping-wizard';
 
 interface Skill { id: string; name: string; category: string; }
@@ -25,6 +25,7 @@ export default function NewListingPage() {
   const [saving, setSaving] = useState(false);
   const [publishing, setPublishing] = useState(false);
   const [error, setError] = useState('');
+  const [listingType, setListingType] = useState('project');
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [category, setCategory] = useState('');
@@ -59,7 +60,7 @@ export default function NewListingPage() {
   const filteredSkills = allSkills.filter((s) => s.name.toLowerCase().includes(skillSearch.toLowerCase()) && !selectedSkills.includes(s.name));
 
   const buildPayload = () => ({
-    title, description,
+    title, description, listingType,
     category: category || undefined,
     location: location || undefined,
     remoteAllowed,
@@ -118,6 +119,41 @@ export default function NewListingPage() {
       <Card>
         <CardHeader><CardTitle>Project Details</CardTitle><CardDescription>Basic information about your project</CardDescription></CardHeader>
         <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label>Listing Type</Label>
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                type="button"
+                onClick={() => setListingType('project')}
+                className={`flex items-center gap-3 rounded-lg border-2 p-4 text-left transition-colors ${
+                  listingType === 'project'
+                    ? 'border-teal-600 bg-teal-50 dark:bg-teal-950'
+                    : 'border-slate-200 hover:border-slate-300 dark:border-slate-700'
+                }`}
+              >
+                <FileText className={`h-5 w-5 ${listingType === 'project' ? 'text-teal-600' : 'text-slate-400'}`} />
+                <div>
+                  <div className={`font-medium ${listingType === 'project' ? 'text-teal-700 dark:text-teal-300' : 'text-slate-700 dark:text-slate-300'}`}>Project</div>
+                  <div className="text-xs text-slate-500">A defined project with deliverables</div>
+                </div>
+              </button>
+              <button
+                type="button"
+                onClick={() => setListingType('internship')}
+                className={`flex items-center gap-3 rounded-lg border-2 p-4 text-left transition-colors ${
+                  listingType === 'internship'
+                    ? 'border-teal-600 bg-teal-50 dark:bg-teal-950'
+                    : 'border-slate-200 hover:border-slate-300 dark:border-slate-700'
+                }`}
+              >
+                <Briefcase className={`h-5 w-5 ${listingType === 'internship' ? 'text-teal-600' : 'text-slate-400'}`} />
+                <div>
+                  <div className={`font-medium ${listingType === 'internship' ? 'text-teal-700 dark:text-teal-300' : 'text-slate-700 dark:text-slate-300'}`}>Internship</div>
+                  <div className="text-xs text-slate-500">An ongoing internship position</div>
+                </div>
+              </button>
+            </div>
+          </div>
           <div className="space-y-2"><Label htmlFor="title">Project Title *</Label><Input id="title" placeholder="e.g. Social Media Marketing Campaign" value={title} onChange={(e) => setTitle(e.target.value)} /></div>
           <div className="space-y-2">
             <div className="flex items-center justify-between">
