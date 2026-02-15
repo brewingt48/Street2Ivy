@@ -125,37 +125,40 @@ export function Hero({ mode = 'carousel' }: HeroProps) {
 
       {/* Content */}
       <div className="relative z-10 text-center px-6 max-w-4xl mx-auto">
-        <motion.p
-          initial={{ opacity: 0, y: 16 }}
-          animate={loaded ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.5, delay: 0.3 }}
-          className="text-[#d4a843] font-medium tracking-[0.25em] text-xs sm:text-sm uppercase mb-5"
-        >
-          Where Talent Is Proven, Not Presumed
-        </motion.p>
-
         <motion.h1
           initial={{ opacity: 0, y: 24 }}
           animate={loaded ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.7, delay: 0.5 }}
-          className="font-display text-5xl sm:text-7xl md:text-8xl lg:text-9xl text-white leading-[0.95] tracking-wide"
+          transition={{ duration: 0.7, delay: 0.3 }}
+          className="font-display text-5xl sm:text-7xl md:text-8xl lg:text-9xl text-white leading-[0.95] tracking-wide uppercase"
         >
-          You didn&apos;t come
+          Where Talent Is
           <br />
-          this far to{' '}
-          <span className="text-[#d4a843]">stop here.</span>
+          <span className="text-[#d4a843]">Proven,</span> Not Presumed
         </motion.h1>
+
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={loaded ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.6, delay: 0.6 }}
+          className="mt-6 flex flex-col items-center gap-1"
+        >
+          <span className="text-base sm:text-lg text-white/85 font-medium">Schools build it.</span>
+          <span className="text-base sm:text-lg text-white/85 font-medium">Alumni fuel it.</span>
+          <span className="text-base sm:text-lg text-white/85 font-medium">Companies power it.</span>
+          <span className="text-base sm:text-lg text-[#d4a843] font-medium">Students prove it.</span>
+        </motion.div>
 
         <motion.p
           initial={{ opacity: 0, y: 16 }}
           animate={loaded ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.6, delay: 0.8 }}
+          transition={{ duration: 0.6, delay: 0.85 }}
           className="mt-5 text-base sm:text-lg text-white/75 max-w-xl mx-auto leading-relaxed"
         >
-          Real projects. Verified results. Career momentum &mdash; earned, not assumed.
+          ProveGround gives every network its own branded marketplace and matching
+          engine &mdash; turning real project work into verified results that launch careers.
         </motion.p>
 
-        {/* CTAs — clean, two buttons */}
+        {/* CTA */}
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={loaded ? { opacity: 1, y: 0 } : {}}
@@ -163,10 +166,10 @@ export function Hero({ mode = 'carousel' }: HeroProps) {
           className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3"
         >
           <a
-            href="/register"
+            href="#the-moment"
             className="inline-flex items-center justify-center rounded-full bg-[#d4a843] px-7 py-3 text-sm font-semibold text-[#1a1a2e] hover:bg-[#f0c75e] transition-all duration-200 shadow-lg shadow-[#d4a843]/25"
           >
-            Get Started
+            See How It Works
           </a>
           <a
             href="/login"
