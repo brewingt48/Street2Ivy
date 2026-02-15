@@ -231,7 +231,7 @@ export default function AdminCoachingPage() {
                   onChange={(e) =>
                     setSettings((prev) => ({ ...prev, aiCoachingUrl: e.target.value }))
                   }
-                  placeholder="https://coaching.campus2career.com"
+                  placeholder="https://coaching.proveground.com"
                 />
               </div>
               <p className="text-xs text-slate-400 mt-1">
@@ -309,7 +309,7 @@ export default function AdminCoachingPage() {
                           {tenant.name}
                         </p>
                         <p className="text-xs text-slate-400">
-                          {tenant.subdomain}.campus2career.com
+                          {tenant.subdomain}.proveground.com
                         </p>
                       </div>
                     </div>

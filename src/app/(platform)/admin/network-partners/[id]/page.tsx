@@ -796,7 +796,7 @@ export default function NetworkPartnerDetailPage() {
                         {rel.tenantName}
                       </p>
                       <p className="text-xs text-slate-400">
-                        {rel.tenantSubdomain}.campus2career.com
+                        {rel.tenantSubdomain}.proveground.com
                       </p>
                     </div>
                     <div className="flex items-center gap-1.5">

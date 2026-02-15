@@ -98,7 +98,7 @@ export async function POST(request: NextRequest) {
 
     // Step 6: Build prompt and call Claude
     const systemPrompt = [
-      `You are a career match analyst for Campus2Career. Analyze how well a student matches a project listing and provide structured insights.`,
+      `You are a career match analyst for Proveground. Analyze how well a student matches a project listing and provide structured insights.`,
       ``,
       `## Listing Details`,
       `- Title: ${listing.title as string}`,

@@ -52,7 +52,7 @@ export default function PublicLayout({
               <span className={`text-xl font-bold tracking-tight transition-colors leading-tight ${
                 scrolled ? 'text-navy-900' : 'text-white'
               }`}>
-                Campus<span className={scrolled ? 'text-gold-500' : 'text-gold-300'}>2</span>Career
+                Proveground
               </span>
               <span className={`text-[9px] font-medium tracking-wider uppercase transition-colors ${
                 scrolled ? 'text-navy-400' : 'text-white/50'
@@ -144,7 +144,7 @@ export default function PublicLayout({
             <div className="lg:col-span-1">
               <div className="flex flex-col">
                 <span className="text-xl font-bold tracking-tight leading-tight">
-                  Campus<span className="text-gold-400">2</span>Career
+                  Proveground
                 </span>
                 <span className="text-[9px] font-medium tracking-wider uppercase text-navy-500">
                   by Street2Ivy
@@ -193,7 +193,7 @@ export default function PublicLayout({
           {/* Bottom bar */}
           <div className="py-6 border-t border-navy-800 flex flex-col md:flex-row items-center justify-between gap-4">
             <p className="text-xs text-navy-500">
-              &copy; {new Date().getFullYear()} Campus2Career. All rights reserved. A Street2Ivy company.
+              &copy; {new Date().getFullYear()} Proveground. All rights reserved. A Street2Ivy company.
             </p>
             <p className="text-xs text-navy-500">
               Built for the future of work.

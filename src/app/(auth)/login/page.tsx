@@ -1,7 +1,7 @@
 import { LoginForm } from '@/components/auth/login-form';
 
 export const metadata = {
-  title: 'Sign In — Campus2Career',
+  title: 'Sign In — Proveground',
 };
 
 export default function LoginPage() {

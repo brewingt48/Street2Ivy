@@ -19,7 +19,7 @@ const TEST_PASSWORD = 'TestUser1!';
 
 const TEST_USERS = [
   {
-    email: 'student.test@campus2career.com',
+    email: 'student.test@proveground.com',
     firstName: 'Jordan',
     lastName: 'Rivera',
     role: 'student',
@@ -38,7 +38,7 @@ const TEST_USERS = [
     },
   },
   {
-    email: 'corporate.test@campus2career.com',
+    email: 'corporate.test@proveground.com',
     firstName: 'Morgan',
     lastName: 'Chen',
     role: 'corporate_partner',
@@ -54,7 +54,7 @@ const TEST_USERS = [
     },
   },
   {
-    email: 'eduadmin.test@campus2career.com',
+    email: 'eduadmin.test@proveground.com',
     firstName: 'Taylor',
     lastName: 'Washington',
     role: 'educational_admin',
@@ -66,11 +66,11 @@ const TEST_USERS = [
     },
   },
   {
-    email: 'admin.test@campus2career.com',
+    email: 'admin.test@proveground.com',
     firstName: 'Alex',
     lastName: 'Thompson',
     role: 'admin',
-    bio: 'Platform administrator for Campus2Career. Managing tenants, users, and system-wide configurations.',
+    bio: 'Platform administrator for Proveground. Managing tenants, users, and system-wide configurations.',
     metadata: {
       department: 'Platform Operations',
       title: 'Platform Administrator',
@@ -144,7 +144,7 @@ export async function POST() {
 
     // Also seed some skills for the test student
     if (created.some((u) => u.role === 'student')) {
-      const [student] = await sql`SELECT id FROM users WHERE email = 'student.test@campus2career.com'`;
+      const [student] = await sql`SELECT id FROM users WHERE email = 'student.test@proveground.com'`;
       if (student) {
         // Get some skills to assign
         const skills = await sql`

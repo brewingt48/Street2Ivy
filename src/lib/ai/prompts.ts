@@ -16,7 +16,7 @@ export function buildCoachingSystemPrompt(
   matchData?: MatchDataForAi
 ): string {
   const parts: string[] = [
-    `You are an AI career coach for Campus2Career, a platform connecting students with real-world corporate projects and internship opportunities.`,
+    `You are an AI career coach for Proveground, a platform connecting students with real-world corporate projects and internship opportunities.`,
     ``,
     `Your role is to help students prepare for and succeed in professional opportunities. You should be encouraging, practical, and specific in your advice.`,
     ``,
@@ -61,7 +61,7 @@ export function buildCoachingSystemPrompt(
  */
 export function buildResumeReviewPrompt(resumeText: string): string {
   return [
-    `You are a professional resume reviewer for Campus2Career. A student has submitted their resume for review.`,
+    `You are a professional resume reviewer for Proveground. A student has submitted their resume for review.`,
     ``,
     `## Resume Text`,
     `${resumeText}`,
@@ -82,7 +82,7 @@ export function buildResumeReviewPrompt(resumeText: string): string {
  */
 export function buildInterviewPrepPrompt(role: string, company: string): string {
   return [
-    `You are an interview preparation coach for Campus2Career.`,
+    `You are an interview preparation coach for Proveground.`,
     ``,
     `The student is preparing for an interview for the role of "${role}" at "${company}".`,
     ``,
@@ -105,7 +105,7 @@ export function buildCoverLetterPrompt(
   student: StudentProfileForAi
 ): string {
   return [
-    `You are a cover letter writing coach for Campus2Career.`,
+    `You are a cover letter writing coach for Proveground.`,
     ``,
     `## Project/Position`,
     `- Title: ${listing.title}`,
@@ -138,7 +138,7 @@ export function buildCoverLetterPrompt(
  */
 export function buildProjectScopingPrompt(projectDescription: string): string {
   return [
-    `You are a project scoping assistant for Campus2Career, helping corporate partners create effective project listings that attract qualified students.`,
+    `You are a project scoping assistant for Proveground, helping corporate partners create effective project listings that attract qualified students.`,
     ``,
     `## Project Description`,
     `${projectDescription}`,
@@ -167,7 +167,7 @@ export function buildPortfolioIntelligencePrompt(aggregateData: {
   topMissingSkills: string[];
 }): string {
   return [
-    `You are an institutional analytics advisor for Campus2Career.`,
+    `You are an institutional analytics advisor for Proveground.`,
     ``,
     `## Student Portfolio Data`,
     `- Total Students: ${aggregateData.totalStudents}`,
@@ -203,7 +203,7 @@ export function buildTalentInsightsPrompt(data: {
   avgHoursPerWeek: number;
 }): string {
   return [
-    `You are a talent market analyst for Campus2Career.`,
+    `You are a talent market analyst for Proveground.`,
     ``,
     `## Market Data`,
     `- Active Project Listings: ${data.activeListings}`,

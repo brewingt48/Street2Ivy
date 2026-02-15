@@ -47,7 +47,7 @@ export function Topbar({ user }: TopbarProps) {
         {/* Logo */}
         <Link href="/dashboard" className="flex items-center space-x-2 mr-6">
           <span className="text-xl font-bold text-teal-700 dark:text-teal-400">
-            Campus2Career
+            Proveground
           </span>
         </Link>
 

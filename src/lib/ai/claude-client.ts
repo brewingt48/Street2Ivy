@@ -1,7 +1,7 @@
 /**
  * Claude API Client
  *
- * Wrapper around the Anthropic SDK for the Campus2Career platform.
+ * Wrapper around the Anthropic SDK for the Proveground platform.
  * Provides both synchronous and streaming interfaces.
  */
 

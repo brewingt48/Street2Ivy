@@ -9,7 +9,7 @@ import Mailgun from 'mailgun.js';
 import formData from 'form-data';
 
 export const DOMAIN = process.env.MAILGUN_DOMAIN || 'mg.street2ivy.com';
-export const FROM_EMAIL = process.env.FROM_EMAIL || 'Campus2Career <noreply@street2ivy.com>';
+export const FROM_EMAIL = process.env.FROM_EMAIL || 'Proveground <noreply@street2ivy.com>';
 
 let _client: ReturnType<InstanceType<typeof Mailgun>['client']> | null = null;
 

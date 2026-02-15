@@ -97,7 +97,7 @@ export async function POST(request: NextRequest) {
 
     // Step 4: Build prompt and call Claude
     const systemPrompt = [
-      `You are a professional writing coach for Campus2Career. You help students improve their ${contentLabel.toLowerCase()} to be more compelling and professional.`,
+      `You are a professional writing coach for Proveground. You help students improve their ${contentLabel.toLowerCase()} to be more compelling and professional.`,
       ``,
       `## Student Profile`,
       `- Name: ${(user.first_name as string) || ''} ${(user.last_name as string) || ''}`.trim(),

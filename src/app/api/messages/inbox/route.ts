@@ -149,7 +149,7 @@ export async function GET(request: NextRequest) {
           id: m.id,
           type: 'admin',
           subject: m.subject || 'System Message',
-          otherPartyName: m.sender_name || 'Campus2Career',
+          otherPartyName: m.sender_name || 'Proveground',
           otherPartyId: m.sender_id,
           lastMessage: m.content,
           lastMessageAt: m.created_at,

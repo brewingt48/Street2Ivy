@@ -61,7 +61,7 @@ export function UpgradePrompt({
     const body = encodeURIComponent(
       `Hello,\n\nI would like to request an upgrade from the ${formatTierName(currentTier)} plan to the ${formatTierName(requiredTier)} plan to access ${featureName}.\n\nPlease let me know the next steps.\n\nThank you.`
     );
-    window.location.href = `mailto:support@campus2career.com?subject=${subject}&body=${body}`;
+    window.location.href = `mailto:support@proveground.com?subject=${subject}&body=${body}`;
   }
 
   return (

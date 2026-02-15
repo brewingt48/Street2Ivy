@@ -68,7 +68,7 @@ export async function POST() {
       if (supportCheck.length === 0) {
         await sql`
           INSERT INTO landing_content (section, content)
-          VALUES ('support_settings', '{"contactEmail": "support@campus2career.com", "supportHours": "Mon-Fri 9am-5pm ET"}'::jsonb)
+          VALUES ('support_settings', '{"contactEmail": "support@proveground.com", "supportHours": "Mon-Fri 9am-5pm ET"}'::jsonb)
           ON CONFLICT (section) DO NOTHING
         `;
         results.push({ name: 'seed_support_settings', status: 'applied' });

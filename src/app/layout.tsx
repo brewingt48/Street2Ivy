@@ -20,23 +20,23 @@ const bebasNeue = Bebas_Neue({
 });
 
 export const metadata: Metadata = {
-  title: 'Campus2Career — Where Talent Meets Opportunity',
+  title: 'Proveground — Where Talent Is Proven',
   description:
-    'From Campus to Career — a multi-tenant marketplace connecting students with corporations for paid, real-world project work. Real Projects, Real Impact.',
+    'Proveground connects high-performing students with alumni and corporate partners through real internships and project work.',
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://street2ivy-dev-c54ffcb26038.herokuapp.com'),
   openGraph: {
-    title: 'Campus2Career — Where Talent Meets Opportunity',
-    description: 'From Campus to Career — Real Projects, Real Impact. Connect students with corporations for paid project work.',
-    siteName: 'Campus2Career',
+    title: 'Proveground — Where Talent Is Proven',
+    description: 'Where talent is proven, not presumed. Real internships, real projects, real reputation.',
+    siteName: 'Proveground',
     type: 'website',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Campus2Career — Where Talent Meets Opportunity',
-    description: 'From Campus to Career — Real Projects, Real Impact.',
+    title: 'Proveground — Where Talent Is Proven',
+    description: 'Where talent is proven, not presumed.',
   },
   other: {
-    'theme-color': '#0A1628',
+    'theme-color': '#1a1a2e',
   },
 };
 

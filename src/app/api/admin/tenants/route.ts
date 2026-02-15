@@ -253,7 +253,7 @@ export async function POST(request: NextRequest) {
         credentials: {
           email: adminEmail.toLowerCase(),
           password: adminPassword,
-          loginUrl: `https://${subdomain}.campus2career.com/login`,
+          loginUrl: `https://${subdomain}.proveground.com/login`,
         },
       },
       { status: 201 }

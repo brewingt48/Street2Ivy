@@ -20,7 +20,7 @@ const projectScopingSchema = z.object({
 /** Build the system prompt for a specific scoping action */
 function buildScopingPrompt(description: string, action: string): string {
   const base = [
-    `You are a project scoping assistant for Campus2Career, helping corporate partners create effective project listings that attract qualified students.`,
+    `You are a project scoping assistant for Proveground, helping corporate partners create effective project listings that attract qualified students.`,
     ``,
     `## Project Description`,
     `${description}`,

@@ -251,7 +251,7 @@ export default function AdminTenantsPage() {
                         ) : null}
                       </div>
                       <div className="flex items-center gap-1 mt-1">
-                        <p className="text-sm text-slate-500 font-mono">{t.subdomain}.campus2career.com</p>
+                        <p className="text-sm text-slate-500 font-mono">{t.subdomain}.proveground.com</p>
                         <ExternalLink className="h-3 w-3 text-slate-400" />
                       </div>
                       {t.institutionDomain && (

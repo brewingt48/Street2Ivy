@@ -8,10 +8,10 @@ export function passwordResetEmail(data: { firstName: string; resetToken: string
   const resetUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'https://street2ivy-dev-c54ffcb26038.herokuapp.com'}/reset-password?token=${data.resetToken}`;
 
   return {
-    subject: 'Reset Your Password — Campus2Career',
+    subject: 'Reset Your Password — Proveground',
     html: emailShell({
       title: 'Reset Your Password',
-      preheader: 'You requested a password reset for your Campus2Career account.',
+      preheader: 'You requested a password reset for your Proveground account.',
       body: `
         <h2>Password Reset Request</h2>
         <p>Hi ${data.firstName},</p>

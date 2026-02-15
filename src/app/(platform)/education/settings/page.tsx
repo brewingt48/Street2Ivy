@@ -250,7 +250,7 @@ export default function EducationSettingsPage() {
         <div>
           <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Institution Settings</h1>
           <p className="text-slate-500 dark:text-slate-400 mt-1">
-            Customize your institution&apos;s branding and content on Campus2Career
+            Customize your institution&apos;s branding and content on Proveground
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -317,7 +317,7 @@ export default function EducationSettingsPage() {
                 <textarea
                   value={welcomeMessage}
                   onChange={(e) => setWelcomeMessage(e.target.value)}
-                  placeholder="Welcome to our Campus2Career portal! Explore paid project opportunities with top companies..."
+                  placeholder="Welcome to our Proveground portal! Explore paid project opportunities with top companies..."
                   rows={3}
                   disabled={!canCustomize}
                   className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
@@ -326,7 +326,7 @@ export default function EducationSettingsPage() {
 
               <div className="rounded-lg bg-slate-50 dark:bg-slate-800 p-3 space-y-1">
                 <p className="text-xs text-slate-500">Institution Name: <strong className="text-slate-700 dark:text-slate-300">{tenant.name}</strong></p>
-                <p className="text-xs text-slate-500">Subdomain: <strong className="text-slate-700 dark:text-slate-300 font-mono">{tenant.subdomain}.campus2career.com</strong></p>
+                <p className="text-xs text-slate-500">Subdomain: <strong className="text-slate-700 dark:text-slate-300 font-mono">{tenant.subdomain}.proveground.com</strong></p>
                 {tenant.institutionDomain && (
                   <p className="text-xs text-slate-500">Domain: <strong className="text-slate-700 dark:text-slate-300">{tenant.institutionDomain}</strong></p>
                 )}
@@ -648,7 +648,7 @@ export default function EducationSettingsPage() {
               <Textarea
                 value={tenantHeroSubheadline}
                 onChange={(e) => setTenantHeroSubheadline(e.target.value)}
-                placeholder="Campus2Career connects students with real corporate projects..."
+                placeholder="Proveground connects students with real corporate projects..."
                 rows={2}
                 className="mt-1"
               />
@@ -671,7 +671,7 @@ export default function EducationSettingsPage() {
               <Input
                 value={tenantCtaSubheadline}
                 onChange={(e) => setTenantCtaSubheadline(e.target.value)}
-                placeholder="Book a demo to see how Campus2Career can transform your talent pipeline."
+                placeholder="Book a demo to see how Proveground can transform your talent pipeline."
                 className="mt-1"
               />
             </div>

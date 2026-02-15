@@ -172,7 +172,7 @@ export default function NewTenantPage() {
 
   // ── Success Screen ──
   if (created) {
-    const allCreds = `Campus2Career Tenant Credentials\n${'─'.repeat(40)}\n\nInstitution: ${created.tenant.name}\nSubdomain: ${created.tenant.subdomain}.campus2career.com\n\nAdmin Login:\n  Email: ${created.credentials.email}\n  Password: ${created.credentials.password}\n  Login URL: ${created.credentials.loginUrl}\n\nPlease change the password after first login.`;
+    const allCreds = `Proveground Tenant Credentials\n${'─'.repeat(40)}\n\nInstitution: ${created.tenant.name}\nSubdomain: ${created.tenant.subdomain}.proveground.com\n\nAdmin Login:\n  Email: ${created.credentials.email}\n  Password: ${created.credentials.password}\n  Login URL: ${created.credentials.loginUrl}\n\nPlease change the password after first login.`;
 
     return (
       <div className="max-w-2xl mx-auto space-y-6">
@@ -184,7 +184,7 @@ export default function NewTenantPage() {
           <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Tenant Created!</h1>
           <p className="text-slate-500 mt-2">
             <strong>{created.tenant.name}</strong> is now live at{' '}
-            <span className="text-teal-600 font-mono">{created.tenant.subdomain}.campus2career.com</span>
+            <span className="text-teal-600 font-mono">{created.tenant.subdomain}.proveground.com</span>
           </p>
         </div>
 
@@ -299,7 +299,7 @@ export default function NewTenantPage() {
         </Button>
         <div>
           <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Create New Tenant</h1>
-          <p className="text-slate-500 mt-1">Set up a new institution on Campus2Career</p>
+          <p className="text-slate-500 mt-1">Set up a new institution on Proveground</p>
         </div>
       </div>
 
@@ -359,7 +359,7 @@ export default function NewTenantPage() {
                       className="rounded-r-none"
                     />
                     <span className="inline-flex items-center px-3 h-10 border border-l-0 rounded-r-md bg-slate-50 text-xs text-slate-500 whitespace-nowrap">
-                      .campus2career.com
+                      .proveground.com
                     </span>
                   </div>
                 </div>
@@ -678,7 +678,7 @@ export default function NewTenantPage() {
                   </div>
                   <div>
                     <Label className="text-xs text-slate-500 uppercase tracking-wider">Subdomain</Label>
-                    <p className="font-mono text-teal-600">{subdomain}.campus2career.com</p>
+                    <p className="font-mono text-teal-600">{subdomain}.proveground.com</p>
                   </div>
                   <div>
                     <Label className="text-xs text-slate-500 uppercase tracking-wider">Type</Label>

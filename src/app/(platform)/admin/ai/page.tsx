@@ -603,7 +603,7 @@ export default function AdminAiPage() {
                             {tenant.tenantName}
                           </p>
                           <p className="text-xs text-slate-400">
-                            {tenant.subdomain}.campus2career.com
+                            {tenant.subdomain}.proveground.com
                             <span className="mx-1.5">&middot;</span>
                             <span className={PLAN_COLORS[tenant.plan]?.replace('bg-', 'text-').split(' ')[1] || 'text-slate-500'}>
                               {PLAN_LABELS[tenant.plan] || tenant.plan}

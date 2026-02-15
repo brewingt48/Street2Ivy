@@ -39,15 +39,15 @@ export function emailShell(options: {
   <div class="container">
     <div class="card">
       <div class="header">
-        <a href="${process.env.NEXT_PUBLIC_APP_URL || 'https://street2ivy-dev-c54ffcb26038.herokuapp.com'}" class="logo">Campus2Career</a>
+        <a href="${process.env.NEXT_PUBLIC_APP_URL || 'https://street2ivy-dev-c54ffcb26038.herokuapp.com'}" class="logo">Proveground</a>
       </div>
       <div class="body">
         ${body}
       </div>
     </div>
     <div class="footer">
-      <p>${footerText || 'You received this email because you have an account on Campus2Career.'}</p>
-      <p>&copy; ${new Date().getFullYear()} Campus2Career. All rights reserved.</p>
+      <p>${footerText || 'You received this email because you have an account on Proveground.'}</p>
+      <p>&copy; ${new Date().getFullYear()} Proveground. All rights reserved.</p>
     </div>
   </div>
 </body>

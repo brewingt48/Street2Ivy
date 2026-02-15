@@ -116,7 +116,7 @@ export function LandingPageClient({ tenant, stats, partners }: LandingPageClient
     'AI is changing every industry. The athletes who adapt first, win.';
   const subheadline =
     tenant.hero_subheadline ??
-    'The discipline you built on the field \u2014 resilience, execution, performing under pressure \u2014 those are the skills AI can\u2019t replace. Campus2Career turns your competitive edge into career momentum.';
+    'The discipline you built on the field \u2014 resilience, execution, performing under pressure \u2014 those are the skills AI can\u2019t replace. Proveground turns your competitive edge into career momentum.';
 
   const studentCount = Number(stats.student_count) || 0;
   const listingCount = Number(stats.listing_count) || 0;
@@ -277,7 +277,7 @@ export function LandingPageClient({ tenant, stats, partners }: LandingPageClient
             <div className="flex items-center justify-center gap-2">
               <Sparkles className="h-5 w-5 text-amber-500" />
               <p className="text-sm text-gray-500">
-                Powered by <span className="font-semibold text-gray-700">Campus2Career</span>
+                Powered by <span className="font-semibold text-gray-700">Proveground</span>
               </p>
             </div>
           </div>
@@ -300,7 +300,7 @@ export function LandingPageClient({ tenant, stats, partners }: LandingPageClient
               Built for performers. Designed for results.
             </motion.h2>
             <motion.p variants={fadeUp} className="text-gray-500 max-w-2xl mx-auto">
-              Every marketplace on Campus2Career follows the same competitive loop &mdash; launch, post,
+              Every marketplace on Proveground follows the same competitive loop &mdash; launch, post,
               perform, earn.
             </motion.p>
           </motion.div>
@@ -734,7 +734,7 @@ export function LandingPageClient({ tenant, stats, partners }: LandingPageClient
             >
               When {displayName} launches its marketplace, it doesn&rsquo;t stay siloed. Football
               connects to the athletic department. The athletic department connects to career services.
-              Career services connects to the entire Campus2Career Network &mdash; unlocking a
+              Career services connects to the entire Proveground Network &mdash; unlocking a
               cross-program, cross-school talent pipeline that compounds with every new partner and
               every completed project.
             </motion.p>
@@ -743,7 +743,7 @@ export function LandingPageClient({ tenant, stats, partners }: LandingPageClient
                 { icon: <Trophy className="h-5 w-5" />, label: 'Athletic Programs' },
                 { icon: <Shield className="h-5 w-5" />, label: 'Career Services' },
                 { icon: <Users className="h-5 w-5" />, label: 'Alumni Networks' },
-                { icon: <Globe className="h-5 w-5" />, label: 'Campus2Career Network' },
+                { icon: <Globe className="h-5 w-5" />, label: 'Proveground Network' },
               ].map((item) => (
                 <div
                   key={item.label}
@@ -819,12 +819,12 @@ export function LandingPageClient({ tenant, stats, partners }: LandingPageClient
         <p>
           &copy; {new Date().getFullYear()} {displayName}. Powered by{' '}
           <a
-            href="https://campus2career.com"
+            href="https://proveground.com"
             target="_blank"
             rel="noopener noreferrer"
             className="text-white hover:underline"
           >
-            Campus2Career
+            Proveground
           </a>
         </p>
       </footer>

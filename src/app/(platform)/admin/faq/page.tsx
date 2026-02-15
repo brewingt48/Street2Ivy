@@ -211,7 +211,7 @@ export default function AdminFaqPage() {
                 <div className="space-y-1.5">
                   <Label>Question</Label>
                   <Input
-                    placeholder="e.g., How does Campus2Career work?"
+                    placeholder="e.g., How does Proveground work?"
                     value={item.question}
                     onChange={(e) => updateItem(index, 'question', e.target.value)}
                   />

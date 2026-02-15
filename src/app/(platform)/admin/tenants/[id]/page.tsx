@@ -415,7 +415,7 @@ export default function TenantDetailPage() {
                       {editDisplayName || editName}
                     </p>
                     <p className="text-xs" style={{ color: editSecondaryColor }}>
-                      Powered by Campus2Career
+                      Powered by Proveground
                     </p>
                   </div>
                 </div>

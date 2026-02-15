@@ -3,7 +3,6 @@
 import { useRef, useEffect, useState } from 'react';
 import { motion, useInView } from 'framer-motion';
 
-/* ── Constellation nodes ── */
 const nodes = [
   { id: 'proveground', label: 'Proveground', x: 50, y: 50, size: 28, isCenter: true },
   { id: 'team-a', label: 'Team A', x: 18, y: 25, size: 16, isCenter: false },
@@ -43,8 +42,7 @@ export function NetworkEcosystem() {
 
   return (
     <section className="py-24 md:py-32 px-6 bg-[#FAFAF7]">
-      <div ref={ref} className="max-w-6xl mx-auto text-center">
-        {/* Header */}
+      <div ref={ref} className="max-w-5xl mx-auto text-center">
         <motion.p
           initial={{ opacity: 0, y: 20 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
@@ -58,7 +56,7 @@ export function NetworkEcosystem() {
           initial={{ opacity: 0, y: 20 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.6, delay: 0.1 }}
-          className="font-display text-4xl sm:text-5xl md:text-6xl text-[#1a1a2e] tracking-wide mb-6"
+          className="font-display text-4xl sm:text-5xl md:text-6xl text-[#1a1a2e] tracking-wide mb-5"
         >
           One profile. Every opportunity.
         </motion.h2>
@@ -67,23 +65,19 @@ export function NetworkEcosystem() {
           initial={{ opacity: 0, y: 20 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.6, delay: 0.2 }}
-          className="text-[#3a3a3a] text-base md:text-lg leading-relaxed max-w-2xl mx-auto mb-16"
+          className="text-[#3a3a3a] text-base leading-relaxed max-w-lg mx-auto mb-14"
         >
-          When your program joins Proveground, your students don&apos;t just access your alumni
-          &mdash; they tap into the entire ecosystem. Corporate partners posting internships and
-          projects across institutions. Opportunities you&apos;d never reach alone. A rising tide
-          that lifts every program in the network.
+          Your students tap into the entire ecosystem &mdash; corporate partners, alumni networks,
+          and opportunities across institutions.
         </motion.p>
 
-        {/* Constellation visualization */}
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={isInView ? { opacity: 1, scale: 1 } : {}}
           transition={{ duration: 0.8, delay: 0.3 }}
-          className="relative mx-auto max-w-xl aspect-square"
+          className="relative mx-auto max-w-md aspect-square"
         >
           <svg viewBox="0 0 100 100" className="w-full h-full" aria-label="Network ecosystem visualization">
-            {/* Connection lines */}
             {connections.map(([fromId, toId], i) => {
               const from = getNode(fromId);
               const to = getNode(toId);
@@ -102,14 +96,12 @@ export function NetworkEcosystem() {
               );
             })}
 
-            {/* Nodes */}
             {nodes.map((node) => {
               const pulseScale = node.isCenter
                 ? 1 + 0.08 * Math.sin(pulsePhase * 0.04)
                 : 1;
               return (
                 <g key={node.id}>
-                  {/* Glow for center */}
                   {node.isCenter && (
                     <circle
                       cx={node.x}
@@ -119,7 +111,6 @@ export function NetworkEcosystem() {
                       opacity={0.08 + 0.04 * Math.sin(pulsePhase * 0.04)}
                     />
                   )}
-                  {/* Circle */}
                   <circle
                     cx={node.x}
                     cy={node.y}
@@ -127,7 +118,6 @@ export function NetworkEcosystem() {
                     fill={node.isCenter ? '#d4a843' : '#1a1a2e'}
                     opacity={node.isCenter ? 1 : 0.7}
                   />
-                  {/* Label */}
                   <text
                     x={node.x}
                     y={node.y + node.size * 0.3}

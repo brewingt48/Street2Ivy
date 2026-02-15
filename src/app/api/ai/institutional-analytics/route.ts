@@ -203,7 +203,7 @@ export async function POST(_request: NextRequest) {
 
     // Step 3: Build prompt for Claude
     const systemPrompt = [
-      `You are an institutional analytics advisor for Campus2Career. Analyze the following data about a university's engagement with the platform and produce a comprehensive analytics report.`,
+      `You are an institutional analytics advisor for Proveground. Analyze the following data about a university's engagement with the platform and produce a comprehensive analytics report.`,
       ``,
       `## Institutional Data`,
       `- Total Students on Platform: ${totalStudents}`,

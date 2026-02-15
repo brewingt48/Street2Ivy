@@ -385,7 +385,7 @@ export default function AdminHomepageCMS() {
                   heroCopy: { ...settings.heroCopy, subheadline: e.target.value },
                 })
               }
-              placeholder="Campus2Career connects students with real corporate projects — building careers before graduation."
+              placeholder="Proveground connects students with real corporate projects — building careers before graduation."
               rows={2}
               className="mt-1"
             />
@@ -584,7 +584,7 @@ export default function AdminHomepageCMS() {
                     socialProofCopy: { ...settings.socialProofCopy, testimonialQuote: e.target.value },
                   })
                 }
-                placeholder="Campus2Career didn't just give our students internships..."
+                placeholder="Proveground didn't just give our students internships..."
                 rows={3}
                 className="mt-1"
               />
@@ -664,7 +664,7 @@ export default function AdminHomepageCMS() {
                   ctaCopy: { ...settings.ctaCopy, subheadline: e.target.value },
                 })
               }
-              placeholder="Book a demo to see how Campus2Career can transform your talent pipeline."
+              placeholder="Book a demo to see how Proveground can transform your talent pipeline."
               className="mt-1"
             />
           </div>

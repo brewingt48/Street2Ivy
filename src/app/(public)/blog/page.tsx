@@ -52,7 +52,7 @@ export default function PublicBlogPage() {
       <div className="text-center mb-12">
         <h1 className="text-4xl font-bold text-slate-900 dark:text-white">Blog</h1>
         <p className="text-lg text-slate-500 dark:text-slate-400 mt-2">
-          Insights, tips, and stories from the Campus2Career community
+          Insights, tips, and stories from the Proveground community
         </p>
       </div>
 

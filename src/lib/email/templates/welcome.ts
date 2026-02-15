@@ -14,13 +14,13 @@ export function welcomeEmail(data: { firstName: string; role: string }): { subje
   const roleMsg = roleMessages[data.role] || 'Welcome aboard!';
 
   return {
-    subject: 'Welcome to Campus2Career!',
+    subject: 'Welcome to Proveground!',
     html: emailShell({
-      title: 'Welcome to Campus2Career',
+      title: 'Welcome to Proveground',
       preheader: 'Your account is ready — start exploring today.',
       body: `
         <h2>Welcome, ${data.firstName}!</h2>
-        <p>Your Campus2Career account has been created successfully. ${roleMsg}</p>
+        <p>Your Proveground account has been created successfully. ${roleMsg}</p>
         <p>Here are a few things you can do to get started:</p>
         <ul style="color: #334155; padding-left: 20px;">
           <li>Complete your profile</li>

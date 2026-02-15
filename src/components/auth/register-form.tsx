@@ -97,7 +97,7 @@ export function RegisterForm() {
       <CardHeader className="space-y-1">
         <CardTitle className="text-2xl text-center">Create Account</CardTitle>
         <CardDescription className="text-center">
-          Join Campus2Career to connect with opportunities
+          Join Proveground to connect with opportunities
         </CardDescription>
       </CardHeader>
       <form onSubmit={handleSubmit}>
