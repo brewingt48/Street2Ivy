@@ -10,6 +10,7 @@
     "heroku-postbuild": "npm run build && cp -r .next/static .next/standalone/.next/static && (cp -r public .next/standalone/public 2>/dev/null || true)"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.74.0",
     "@hookform/resolvers": "^5.2.2",
     "@radix-ui/react-avatar": "^1.1.11",
     "@radix-ui/react-dialog": "^1.1.15",

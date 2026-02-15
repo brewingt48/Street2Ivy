@@ -68,6 +68,31 @@ export const FEATURE_DEFINITIONS: Record<string, {
     description: 'Corporate partners can send direct invitations to students',
     plans: ['starter', 'professional', 'enterprise'],
   },
+  aiMatchInsights: {
+    label: 'AI Match Insights',
+    description: 'AI-generated insights for student-project match analysis',
+    plans: ['professional', 'enterprise'],
+  },
+  aiDiffView: {
+    label: 'AI Diff View',
+    description: 'AI-powered resume improvement with side-by-side comparison',
+    plans: ['professional', 'enterprise'],
+  },
+  aiProjectScoping: {
+    label: 'AI Project Scoping',
+    description: 'AI-assisted project description review and milestone generation',
+    plans: ['professional', 'enterprise'],
+  },
+  aiPortfolioIntelligence: {
+    label: 'AI Portfolio Intelligence',
+    description: 'Cross-student skills analysis and program effectiveness insights',
+    plans: ['enterprise'],
+  },
+  aiTalentInsights: {
+    label: 'AI Talent Insights',
+    description: 'Industry trend matching and talent demand analysis',
+    plans: ['enterprise'],
+  },
 };
 
 /** Plan defaults — includes new premium features */
@@ -75,7 +100,7 @@ export const PLAN_DEFAULTS: Record<string, Record<string, unknown>> = {
   starter: {
     maxStudents: 100,
     maxListings: 10,
-    aiCoaching: false,
+    aiCoaching: true,
     customBranding: false,
     analytics: false,
     apiAccess: false,
@@ -85,6 +110,11 @@ export const PLAN_DEFAULTS: Record<string, Record<string, unknown>> = {
     matchingAlgorithm: false,
     issueReporting: false,
     inviteManagement: true,
+    aiMatchInsights: false,
+    aiDiffView: false,
+    aiProjectScoping: false,
+    aiPortfolioIntelligence: false,
+    aiTalentInsights: false,
   },
   professional: {
     maxStudents: 500,
@@ -99,6 +129,11 @@ export const PLAN_DEFAULTS: Record<string, Record<string, unknown>> = {
     matchingAlgorithm: true,
     issueReporting: true,
     inviteManagement: true,
+    aiMatchInsights: true,
+    aiDiffView: true,
+    aiProjectScoping: true,
+    aiPortfolioIntelligence: false,
+    aiTalentInsights: false,
   },
   enterprise: {
     maxStudents: -1, // unlimited
@@ -113,6 +148,11 @@ export const PLAN_DEFAULTS: Record<string, Record<string, unknown>> = {
     matchingAlgorithm: true,
     issueReporting: true,
     inviteManagement: true,
+    aiMatchInsights: true,
+    aiDiffView: true,
+    aiProjectScoping: true,
+    aiPortfolioIntelligence: true,
+    aiTalentInsights: true,
   },
 };
 

@@ -40,6 +40,7 @@ import {
   ExternalLink,
   Star,
 } from 'lucide-react';
+import { MatchInsightsCard } from '@/components/coaching/match-insights-card';
 
 interface ProjectDetail {
   id: string;
@@ -104,6 +105,8 @@ export default function ProjectDetailPage() {
   const [userApplication, setUserApplication] = useState<UserApplication | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [hasMatchInsights, setHasMatchInsights] = useState(false);
+  const [isStudent, setIsStudent] = useState(false);
 
   useEffect(() => {
     if (!projectId) return;
@@ -119,6 +122,26 @@ export default function ProjectDetailPage() {
       })
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
+
+    // Check if student has AI match insights access
+    fetch('/api/auth/session')
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.user?.role === 'student') {
+          setIsStudent(true);
+          // Check AI access
+          fetch('/api/ai/usage')
+            .then((r) => r.json())
+            .then((usage) => {
+              // If the usage endpoint returns successfully, AI is enabled
+              if (usage.plan === 'professional' || usage.plan === 'enterprise') {
+                setHasMatchInsights(true);
+              }
+            })
+            .catch(() => {});
+        }
+      })
+      .catch(() => {});
   }, [projectId]);
 
   if (loading) {
@@ -394,6 +417,14 @@ export default function ProjectDetailPage() {
               </div>
             </CardContent>
           </Card>
+
+          {/* AI Match Insights (students only) */}
+          {isStudent && (
+            <MatchInsightsCard
+              listingId={project.id}
+              hasAccess={hasMatchInsights}
+            />
+          )}
 
           {/* Project Details */}
           <Card>

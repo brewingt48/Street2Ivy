@@ -425,19 +425,19 @@ export default function TenantDetailPage() {
                     plan: 'starter',
                     label: 'Starter',
                     description: '100 students, 10 listings, basic features',
-                    features: { maxStudents: 100, maxListings: 10, aiCoaching: false, customBranding: false, analytics: false, apiAccess: false, advancedReporting: false, studentRatings: false, corporateRatings: false, matchingAlgorithm: false, issueReporting: false, inviteManagement: true },
+                    features: { maxStudents: 100, maxListings: 10, aiCoaching: true, customBranding: false, analytics: false, apiAccess: false, advancedReporting: false, studentRatings: false, corporateRatings: false, matchingAlgorithm: false, issueReporting: false, inviteManagement: true, aiMatchInsights: false, aiDiffView: false, aiProjectScoping: false, aiPortfolioIntelligence: false, aiTalentInsights: false },
                   },
                   {
                     plan: 'professional',
                     label: 'Professional',
                     description: '500 students, 50 listings, full features',
-                    features: { maxStudents: 500, maxListings: 50, aiCoaching: true, customBranding: true, analytics: true, apiAccess: false, advancedReporting: true, studentRatings: true, corporateRatings: true, matchingAlgorithm: true, issueReporting: true, inviteManagement: true },
+                    features: { maxStudents: 500, maxListings: 50, aiCoaching: true, customBranding: true, analytics: true, apiAccess: false, advancedReporting: true, studentRatings: true, corporateRatings: true, matchingAlgorithm: true, issueReporting: true, inviteManagement: true, aiMatchInsights: true, aiDiffView: true, aiProjectScoping: true, aiPortfolioIntelligence: false, aiTalentInsights: false },
                   },
                   {
                     plan: 'enterprise',
                     label: 'Enterprise',
                     description: 'Unlimited, all features + API',
-                    features: { maxStudents: -1, maxListings: -1, aiCoaching: true, customBranding: true, analytics: true, apiAccess: true, advancedReporting: true, studentRatings: true, corporateRatings: true, matchingAlgorithm: true, issueReporting: true, inviteManagement: true },
+                    features: { maxStudents: -1, maxListings: -1, aiCoaching: true, customBranding: true, analytics: true, apiAccess: true, advancedReporting: true, studentRatings: true, corporateRatings: true, matchingAlgorithm: true, issueReporting: true, inviteManagement: true, aiMatchInsights: true, aiDiffView: true, aiProjectScoping: true, aiPortfolioIntelligence: true, aiTalentInsights: true },
                   },
                 ].map((p) => {
                   const currentPlan = ((tenant.features as Record<string, unknown>)?.plan as string) || 'starter';
@@ -565,6 +565,57 @@ export default function TenantDetailPage() {
                       { key: 'corporateRatings', label: 'Corporate Ratings', desc: 'Public partner reviews' },
                       { key: 'matchingAlgorithm', label: 'Smart Matching', desc: 'AI skill alignment' },
                       { key: 'issueReporting', label: 'Issue Reporting', desc: 'Safety & compliance' },
+                    ].map((feat) => {
+                      const features = (tenant.features || {}) as Record<string, unknown>;
+                      const enabled = !!features[feat.key];
+                      return (
+                        <button
+                          key={feat.key}
+                          onClick={async () => {
+                            setSaving(true);
+                            try {
+                              const res = await fetch(`/api/admin/tenants/${id}`, {
+                                method: 'PUT',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                  features: { [feat.key]: !enabled },
+                                }),
+                              });
+                              if (res.ok) fetchTenant();
+                            } catch (err) { console.error(err); }
+                            finally { setSaving(false); }
+                          }}
+                          className={`flex items-center justify-between p-3 rounded-lg border transition-colors ${
+                            enabled ? 'border-green-200 bg-green-50/50' : 'border-slate-200'
+                          }`}
+                          disabled={saving}
+                        >
+                          <div>
+                            <span className="text-sm text-slate-700 dark:text-slate-300">{feat.label}</span>
+                            <p className="text-xs text-slate-400 mt-0.5">{feat.desc}</p>
+                          </div>
+                          <Badge
+                            variant={enabled ? 'default' : 'outline'}
+                            className={enabled ? 'bg-green-100 text-green-700 border-0' : ''}
+                          >
+                            {enabled ? 'On' : 'Off'}
+                          </Badge>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* AI Features */}
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">AI Features</p>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                    {[
+                      { key: 'aiMatchInsights', label: 'Match Insights', desc: 'AI match analysis' },
+                      { key: 'aiDiffView', label: 'AI Diff View', desc: 'Resume improvements' },
+                      { key: 'aiProjectScoping', label: 'Project Scoping', desc: 'AI project review' },
+                      { key: 'aiPortfolioIntelligence', label: 'Portfolio Intelligence', desc: 'Enterprise analytics' },
+                      { key: 'aiTalentInsights', label: 'Talent Insights', desc: 'Industry analysis' },
                     ].map((feat) => {
                       const features = (tenant.features || {}) as Record<string, unknown>;
                       const enabled = !!features[feat.key];

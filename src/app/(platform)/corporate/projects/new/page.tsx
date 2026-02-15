@@ -13,7 +13,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ArrowLeft, Save, Send, AlertCircle } from 'lucide-react';
+import { ArrowLeft, Save, Send, AlertCircle, Sparkles } from 'lucide-react';
+import { ScopingWizard } from '@/components/corporate/scoping-wizard';
 
 interface Skill { id: string; name: string; category: string; }
 
@@ -39,9 +40,20 @@ export default function NewListingPage() {
   const [allSkills, setAllSkills] = useState<Skill[]>([]);
   const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
   const [skillSearch, setSkillSearch] = useState('');
+  const [showScopingWizard, setShowScopingWizard] = useState(false);
+  const [hasAiScoping, setHasAiScoping] = useState(false);
 
   useEffect(() => {
     fetch('/api/skills').then((r) => r.json()).then((d) => setAllSkills(d.skills || [])).catch(console.error);
+    // Check AI scoping access
+    fetch('/api/ai/usage')
+      .then((r) => r.json())
+      .then((usage) => {
+        if (usage.plan === 'professional' || usage.plan === 'enterprise') {
+          setHasAiScoping(true);
+        }
+      })
+      .catch(() => {});
   }, []);
 
   const filteredSkills = allSkills.filter((s) => s.name.toLowerCase().includes(skillSearch.toLowerCase()) && !selectedSkills.includes(s.name));
@@ -107,7 +119,23 @@ export default function NewListingPage() {
         <CardHeader><CardTitle>Project Details</CardTitle><CardDescription>Basic information about your project</CardDescription></CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2"><Label htmlFor="title">Project Title *</Label><Input id="title" placeholder="e.g. Social Media Marketing Campaign" value={title} onChange={(e) => setTitle(e.target.value)} /></div>
-          <div className="space-y-2"><Label htmlFor="desc">Description *</Label><Textarea id="desc" placeholder="Describe the project scope, deliverables, and what you're looking for..." value={description} onChange={(e) => setDescription(e.target.value)} rows={6} /></div>
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <Label htmlFor="desc">Description *</Label>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setShowScopingWizard(true)}
+                disabled={!description}
+                className="text-xs"
+              >
+                <Sparkles className="h-3 w-3 mr-1" />
+                AI Scoping Assistant
+              </Button>
+            </div>
+            <Textarea id="desc" placeholder="Describe the project scope, deliverables, and what you're looking for..." value={description} onChange={(e) => setDescription(e.target.value)} rows={6} />
+          </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label>Category</Label>
@@ -165,6 +193,17 @@ export default function NewListingPage() {
           <Button onClick={handlePublish} disabled={saving || publishing} className="bg-teal-600 hover:bg-teal-700"><Send className="h-4 w-4 mr-2" /> {publishing ? 'Publishing...' : 'Save & Publish'}</Button>
         </div>
       </div>
+
+      {/* AI Scoping Wizard */}
+      {showScopingWizard && (
+        <ScopingWizard
+          hasAccess={hasAiScoping}
+          description={description}
+          onApplyDescription={(d: string) => setDescription(d)}
+          onApplySkills={(skills: string[]) => setSelectedSkills((prev) => Array.from(new Set([...prev, ...skills])))}
+          onClose={() => setShowScopingWizard(false)}
+        />
+      )}
     </div>
   );
 }

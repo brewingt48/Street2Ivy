@@ -10,7 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
-import { GraduationCap, Briefcase, CheckCircle2, Clock, Info, TrendingUp, ArrowRight, Star, Crown, Lock } from 'lucide-react';
+import { GraduationCap, Briefcase, CheckCircle2, Clock, Info, TrendingUp, ArrowRight, Star, Crown, Lock, Sparkles } from 'lucide-react';
 import { HelpSupportCard } from '@/components/shared/help-support-card';
 
 interface Stats {
@@ -50,6 +50,7 @@ export default function EducationDashboardPage() {
   const [recentStudents, setRecentStudents] = useState<RecentStudent[]>([]);
   const [topStudents, setTopStudents] = useState<TopStudent[]>([]);
   const [featureFlags, setFeatureFlags] = useState<FeatureFlags>({ advancedReporting: true, studentRatings: true });
+  const [hasAiInsights, setHasAiInsights] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -65,6 +66,15 @@ export default function EducationDashboardPage() {
       })
       .catch(console.error)
       .finally(() => setLoading(false));
+    // Check if tenant has enterprise AI insights access
+    fetch('/api/ai/usage')
+      .then((r) => r.json())
+      .then((usage) => {
+        if (usage.plan === 'enterprise') {
+          setHasAiInsights(true);
+        }
+      })
+      .catch(() => {});
   }, []);
 
   if (loading) {
@@ -186,6 +196,52 @@ export default function EducationDashboardPage() {
           </Button>
         </Link>
       </div>
+
+      {/* AI Insights Card (Enterprise) */}
+      {hasAiInsights ? (
+        <Link href="/education/ai-insights">
+          <Card className="border-purple-200 dark:border-purple-800 bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20 hover:shadow-md transition-all cursor-pointer">
+            <CardContent className="flex items-center justify-between py-5">
+              <div className="flex items-center gap-4">
+                <div className="h-12 w-12 rounded-xl bg-purple-100 dark:bg-purple-800/40 flex items-center justify-center">
+                  <Sparkles className="h-6 w-6 text-purple-600 dark:text-purple-400" />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-purple-900 dark:text-purple-200">AI-Powered Insights</p>
+                  <p className="text-xs text-purple-600 dark:text-purple-400 mt-0.5">
+                    Portfolio intelligence &amp; talent market analysis for your institution
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <Badge className="bg-purple-100 text-purple-700 border-0">Enterprise</Badge>
+                <ArrowRight className="h-4 w-4 text-purple-400" />
+              </div>
+            </CardContent>
+          </Card>
+        </Link>
+      ) : (
+        <Card className="border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/30">
+          <CardContent className="flex items-center justify-between py-5">
+            <div className="flex items-center gap-4">
+              <div className="h-12 w-12 rounded-xl bg-slate-100 dark:bg-slate-700/40 flex items-center justify-center">
+                <Sparkles className="h-6 w-6 text-slate-400" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-slate-500 dark:text-slate-400">AI-Powered Insights</p>
+                <p className="text-xs text-slate-400 mt-0.5">
+                  Portfolio intelligence &amp; talent market analysis — available on the Enterprise plan
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <Badge variant="outline" className="text-slate-400">
+                <Lock className="h-3 w-3 mr-1" /> Enterprise
+              </Badge>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Top Performing Students */}
       {featureFlags.advancedReporting ? (

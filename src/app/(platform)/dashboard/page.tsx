@@ -34,7 +34,6 @@ import {
   TrendingUp,
   Info,
   User,
-  ExternalLink,
   Star,
   Mail,
 } from 'lucide-react';
@@ -289,10 +288,10 @@ export default function DashboardPage() {
           <CardContent>
             <Button
               className="bg-purple-600 hover:bg-purple-700"
-              onClick={() => window.open(institution.ai_coaching_url, '_blank')}
+              onClick={() => router.push('/coaching')}
             >
               Launch AI Coach
-              <ExternalLink className="ml-2 h-4 w-4" />
+              <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
           </CardContent>
         </Card>

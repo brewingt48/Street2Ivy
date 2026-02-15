@@ -116,6 +116,7 @@ function getNavItems(role: string): NavSection[] {
             { href: '/applications', label: 'My Applications', icon: FileText },
             { href: '/reviews', label: 'My Reviews', icon: Star },
             { href: '/invites', label: 'Invites', icon: Mail },
+            { href: '/coaching', label: 'AI Coach', icon: Sparkles },
             { href: '/inbox', label: 'Messages', icon: Inbox },
           ],
         },
@@ -160,6 +161,7 @@ function getNavItems(role: string): NavSection[] {
             { href: '/education/corporates', label: 'Corporate Partners', icon: Briefcase },
             { href: '/education/reports', label: 'Issue Reports', icon: AlertTriangle },
             { href: '/education/waitlist', label: 'Waitlist', icon: ClipboardList },
+            { href: '/education/ai-insights', label: 'AI Insights', icon: Sparkles },
             { href: '/inbox', label: 'Messages', icon: Inbox },
           ],
         },
@@ -202,6 +204,7 @@ function getNavItems(role: string): NavSection[] {
           items: [
             { href: '/admin/waitlist', label: 'Waitlist', icon: ClipboardList },
             { href: '/admin/coaching', label: 'AI Coaching', icon: Sparkles },
+            { href: '/admin/ai', label: 'AI Management', icon: Sparkles },
             { href: '/admin/audit', label: 'Audit Log', icon: Shield },
             { href: '/admin/edu-applications', label: 'Edu Applications', icon: BarChart3 },
             { href: '/inbox', label: 'Messages', icon: Inbox },

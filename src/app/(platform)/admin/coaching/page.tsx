@@ -211,30 +211,34 @@ export default function AdminCoachingPage() {
             </Button>
           </div>
 
-          {/* Coaching URL */}
-          <div>
-            <Label htmlFor="coachingUrl">AI Coaching Platform URL</Label>
-            <div className="flex gap-2 mt-1">
-              <Input
-                id="coachingUrl"
-                value={settings.aiCoachingUrl}
-                onChange={(e) =>
-                  setSettings((prev) => ({ ...prev, aiCoachingUrl: e.target.value }))
-                }
-                placeholder="https://coaching.campus2career.com"
-              />
-              {settings.aiCoachingUrl && (
-                <a href={settings.aiCoachingUrl} target="_blank" rel="noopener noreferrer">
-                  <Button variant="outline" size="icon">
-                    <ExternalLink className="h-4 w-4" />
-                  </Button>
-                </a>
-              )}
-            </div>
-            <p className="text-xs text-slate-400 mt-1">
-              The URL where students are redirected for AI coaching. This can be your custom coaching app or a third-party platform.
+          {/* Integrated AI Info */}
+          <div className="p-4 rounded-lg border border-teal-200 bg-teal-50/50 dark:bg-teal-900/10">
+            <p className="text-sm font-medium text-teal-800 dark:text-teal-300">Integrated AI Coaching</p>
+            <p className="text-xs text-teal-600 dark:text-teal-400 mt-1">
+              AI coaching is now built into the platform. Students access it directly from their sidebar navigation.
+              The coaching quality and usage limits are determined by each tenant&apos;s plan tier (Starter / Professional / Enterprise).
             </p>
           </div>
+
+          {/* Legacy URL (hidden if empty) */}
+          {settings.aiCoachingUrl && (
+            <div>
+              <Label htmlFor="coachingUrl">Legacy Coaching URL (optional fallback)</Label>
+              <div className="flex gap-2 mt-1">
+                <Input
+                  id="coachingUrl"
+                  value={settings.aiCoachingUrl}
+                  onChange={(e) =>
+                    setSettings((prev) => ({ ...prev, aiCoachingUrl: e.target.value }))
+                  }
+                  placeholder="https://coaching.campus2career.com"
+                />
+              </div>
+              <p className="text-xs text-slate-400 mt-1">
+                Optional: legacy external coaching URL. Clear this field to fully switch to integrated coaching.
+              </p>
+            </div>
+          )}
 
           {/* Save Button */}
           <div className="flex items-center gap-3">
@@ -353,23 +357,23 @@ export default function AdminCoachingPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-lg">
               <p className="text-2xl font-bold text-teal-600 mb-1">1</p>
-              <p className="text-sm font-medium text-slate-900 dark:text-white">Set the URL</p>
+              <p className="text-sm font-medium text-slate-900 dark:text-white">Enable Coaching</p>
               <p className="text-xs text-slate-500 mt-1">
-                Point to your AI coaching platform (e.g., a custom ChatGPT, coaching SaaS, etc.)
+                Turn on the global toggle to make AI coaching available platform-wide
               </p>
             </div>
             <div className="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-lg">
               <p className="text-2xl font-bold text-teal-600 mb-1">2</p>
-              <p className="text-sm font-medium text-slate-900 dark:text-white">Enable Globally</p>
+              <p className="text-sm font-medium text-slate-900 dark:text-white">Tier-Based Access</p>
               <p className="text-xs text-slate-500 mt-1">
-                Turn on the system-wide toggle to make coaching available
+                Starter gets basic coaching (10/mo), Professional gets full features (50/mo), Enterprise is unlimited
               </p>
             </div>
             <div className="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-lg">
               <p className="text-2xl font-bold text-teal-600 mb-1">3</p>
-              <p className="text-sm font-medium text-slate-900 dark:text-white">Control Per-Tenant</p>
+              <p className="text-sm font-medium text-slate-900 dark:text-white">Per-Tenant Control</p>
               <p className="text-xs text-slate-500 mt-1">
-                Fine-tune which institutions have access to the AI coaching feature
+                Enable or disable coaching per tenant below. Use AI Management for usage monitoring
               </p>
             </div>
           </div>
