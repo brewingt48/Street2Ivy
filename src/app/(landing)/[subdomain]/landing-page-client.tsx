@@ -161,6 +161,14 @@ export function LandingPageClient({ tenant, stats, partners }: LandingPageClient
           </video>
         )}
 
+        {/* Image background (if no video but poster/image provided) */}
+        {!tenant.hero_video_url && tenant.hero_video_poster_url && (
+          <div
+            className="absolute inset-0 w-full h-full bg-cover bg-center bg-no-repeat opacity-40"
+            style={{ backgroundImage: `url(${tenant.hero_video_poster_url})` }}
+          />
+        )}
+
         {/* Overlay gradient */}
         <div className="absolute inset-0 bg-black/20" />
 
