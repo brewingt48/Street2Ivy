@@ -1,3 +1,7 @@
+// NOTE: moment.js is in maintenance mode and no longer actively developed.
+// The Sharetribe template relies on it extensively for calendar/availability features.
+// Migration to date-fns or Temporal API is recommended for new date logic but should
+// be coordinated with Sharetribe template updates to avoid breaking changes.
 import moment from 'moment-timezone/builds/moment-timezone-with-data-10-year-range.min';
 
 /**

@@ -713,24 +713,6 @@ export const listingFields = [
     },
   },
   {
-    key: 'ndaRequired',
-    scope: 'public',
-    schemaType: 'boolean',
-    listingTypeConfig: {
-      limitToListingTypeIds: true,
-      listingTypeIds: ['project'],
-    },
-    showConfig: {
-      label: 'NDA Required',
-      isDetail: false,
-    },
-    saveConfig: {
-      label: 'Require NDA Acceptance',
-      placeholderMessage: 'Students must accept NDA before viewing confidential details',
-      isRequired: false,
-    },
-  },
-  {
     key: 'contactName',
     scope: 'public',
     schemaType: 'text',

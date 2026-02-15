@@ -7743,7 +7743,10 @@ const AdminDashboardPageComponent = props => {
   const params = useParams();
   const activeTab = params.tab || 'users';
 
-  // Access check: only system-admin can access this page
+  // Access check: only system-admin can access this page.
+  // This is a defense-in-depth UI guard. Server-side API endpoints independently
+  // verify admin role via Integration SDK, so bypassing this check does not
+  // grant actual data access.
   const publicData = currentUser?.attributes?.profile?.publicData || {};
   const isSystemAdmin = publicData?.userType === 'system-admin';
 

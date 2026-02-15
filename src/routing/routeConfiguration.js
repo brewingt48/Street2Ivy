@@ -1,3 +1,8 @@
+// NOTE: This app uses React Router v5. The Sharetribe template's routing model
+// (NamedRedirect, loadData, route-level auth) is tightly coupled to v5's API.
+// React Router v6 migration requires rewriting route declarations, removing
+// NamedRedirect, and updating the SSR data-loading pattern. Coordinate with
+// upstream Sharetribe template updates before migrating.
 import React from 'react';
 import loadable from '@loadable/component';
 
@@ -487,6 +492,8 @@ const routeConfiguration = (layoutConfig, accessControlConfig) => {
       name: 'BlogPostPage',
       component: BlogPage,
     },
+    // Styleguide routes are only available in development
+    ...(process.env.REACT_APP_ENV === 'development' ? [
     {
       path: '/styleguide',
       name: 'Styleguide',
@@ -518,6 +525,7 @@ const routeConfiguration = (layoutConfig, accessControlConfig) => {
       component: StyleguidePage,
       extraProps: { raw: true },
     },
+    ] : []),
     {
       path: '/no-:missingAccessRight',
       name: 'NoAccessPage',

@@ -720,15 +720,6 @@ export const sendProjectMessage = async (transactionId, { content, attachments =
   });
 };
 
-// Accept NDA for a project
-export const acceptProjectNda = transactionId => {
-  return request(`/api/project-workspace/${transactionId}/accept-nda`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({}),
-  });
-};
-
 // Mark messages as read
 export const markProjectMessagesRead = (transactionId, messageIds) => {
   return request(`/api/project-workspace/${transactionId}/mark-read`, {
@@ -803,59 +794,6 @@ export const updateInstitutionCoaching = (domain, { aiCoachingEnabled, aiCoachin
 export const deleteInstitution = domain => {
   return request(`/api/admin/institutions/${encodeURIComponent(domain)}`, {
     method: 'DELETE',
-    headers: { 'Content-Type': 'application/json' },
-  });
-};
-
-// ========== NDA E-Signature Management ==========
-
-// Upload NDA document for a listing (corporate partners)
-export const uploadNdaDocument = ({ listingId, documentUrl, documentName, ndaText }) => {
-  return request('/api/nda/upload', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ listingId, documentUrl, documentName, ndaText }),
-  });
-};
-
-// Get NDA document info for a listing
-export const getNdaDocument = listingId => {
-  return request(`/api/nda/${listingId}`, {
-    method: 'GET',
-    headers: { 'Content-Type': 'application/json' },
-  });
-};
-
-// Request signatures for NDA (creates signature request)
-export const requestNdaSignature = transactionId => {
-  return request(`/api/nda/request-signature/${transactionId}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({}),
-  });
-};
-
-// Get NDA signature status for a transaction
-export const getNdaSignatureStatus = transactionId => {
-  return request(`/api/nda/signature-status/${transactionId}`, {
-    method: 'GET',
-    headers: { 'Content-Type': 'application/json' },
-  });
-};
-
-// Sign the NDA (for in-app signature)
-export const signNda = (transactionId, { signatureData, agreedToTerms }) => {
-  return request(`/api/nda/sign/${transactionId}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ signatureData, agreedToTerms }),
-  });
-};
-
-// Download signed NDA document
-export const downloadSignedNda = transactionId => {
-  return request(`/api/nda/download/${transactionId}`, {
-    method: 'GET',
     headers: { 'Content-Type': 'application/json' },
   });
 };

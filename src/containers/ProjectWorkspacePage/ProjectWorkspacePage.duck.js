@@ -3,11 +3,7 @@ import { storableError } from '../../util/errors';
 import {
   fetchProjectWorkspace as fetchProjectWorkspaceApi,
   sendProjectMessage as sendProjectMessageApi,
-  acceptProjectNda as acceptProjectNdaApi,
   markProjectMessagesRead as markProjectMessagesReadApi,
-  getNdaSignatureStatus as getNdaSignatureStatusApi,
-  signNda as signNdaApi,
-  requestNdaSignature as requestNdaSignatureApi,
 } from '../../util/api';
 
 // ================ Thunks ================ //
@@ -40,20 +36,6 @@ export const sendMessageThunk = createAsyncThunk(
 export const sendMessage = (transactionId, content, attachments) => dispatch =>
   dispatch(sendMessageThunk({ transactionId, content, attachments })).unwrap();
 
-export const acceptNdaThunk = createAsyncThunk(
-  'app/ProjectWorkspacePage/acceptNda',
-  async (transactionId, { rejectWithValue }) => {
-    try {
-      return await acceptProjectNdaApi(transactionId);
-    } catch (e) {
-      return rejectWithValue(storableError(e));
-    }
-  }
-);
-
-export const acceptNda = transactionId => dispatch =>
-  dispatch(acceptNdaThunk(transactionId)).unwrap();
-
 export const markMessagesReadThunk = createAsyncThunk(
   'app/ProjectWorkspacePage/markMessagesRead',
   async ({ transactionId, messageIds }, { rejectWithValue }) => {
@@ -67,49 +49,6 @@ export const markMessagesReadThunk = createAsyncThunk(
 
 export const markMessagesRead = (transactionId, messageIds) => dispatch =>
   dispatch(markMessagesReadThunk({ transactionId, messageIds })).unwrap();
-
-// NDA E-Signature Thunks
-export const fetchNdaStatusThunk = createAsyncThunk(
-  'app/ProjectWorkspacePage/fetchNdaStatus',
-  async (transactionId, { rejectWithValue }) => {
-    try {
-      return await getNdaSignatureStatusApi(transactionId);
-    } catch (e) {
-      return rejectWithValue(storableError(e));
-    }
-  }
-);
-
-export const fetchNdaStatus = transactionId => dispatch =>
-  dispatch(fetchNdaStatusThunk(transactionId)).unwrap();
-
-export const signNdaThunk = createAsyncThunk(
-  'app/ProjectWorkspacePage/signNda',
-  async ({ transactionId, signatureData }, { rejectWithValue }) => {
-    try {
-      return await signNdaApi(transactionId, { signatureData, agreedToTerms: true });
-    } catch (e) {
-      return rejectWithValue(storableError(e));
-    }
-  }
-);
-
-export const signNdaDocument = (transactionId, signatureData) => dispatch =>
-  dispatch(signNdaThunk({ transactionId, signatureData })).unwrap();
-
-export const requestNdaSignaturesThunk = createAsyncThunk(
-  'app/ProjectWorkspacePage/requestNdaSignatures',
-  async (transactionId, { rejectWithValue }) => {
-    try {
-      return await requestNdaSignatureApi(transactionId);
-    } catch (e) {
-      return rejectWithValue(storableError(e));
-    }
-  }
-);
-
-export const requestNdaSignatures = transactionId => dispatch =>
-  dispatch(requestNdaSignaturesThunk(transactionId)).unwrap();
 
 // ================ Slice ================ //
 
@@ -128,18 +67,6 @@ const projectWorkspacePageSlice = createSlice({
     // Message sending
     sendMessageInProgress: false,
     sendMessageError: null,
-
-    // NDA acceptance
-    acceptNdaInProgress: false,
-    acceptNdaError: null,
-
-    // NDA E-Signature
-    ndaSignatureStatus: null,
-    fetchNdaStatusInProgress: false,
-    signNdaInProgress: false,
-    signNdaError: null,
-    requestNdaInProgress: false,
-    requestNdaError: null,
   },
   reducers: {
     clearWorkspace: state => {
@@ -192,21 +119,6 @@ const projectWorkspacePageSlice = createSlice({
         state.sendMessageInProgress = false;
         state.sendMessageError = action.payload;
       })
-      // Accept NDA
-      .addCase(acceptNdaThunk.pending, state => {
-        state.acceptNdaInProgress = true;
-        state.acceptNdaError = null;
-      })
-      .addCase(acceptNdaThunk.fulfilled, (state, action) => {
-        state.acceptNdaInProgress = false;
-        if (state.workspace) {
-          state.workspace.ndaAccepted = true;
-        }
-      })
-      .addCase(acceptNdaThunk.rejected, (state, action) => {
-        state.acceptNdaInProgress = false;
-        state.acceptNdaError = action.payload;
-      })
       // Mark messages read
       .addCase(markMessagesReadThunk.fulfilled, (state, action) => {
         // Update read status locally
@@ -219,55 +131,6 @@ const projectWorkspacePageSlice = createSlice({
             return msg;
           });
         }
-      })
-      // Fetch NDA status
-      .addCase(fetchNdaStatusThunk.pending, state => {
-        state.fetchNdaStatusInProgress = true;
-      })
-      .addCase(fetchNdaStatusThunk.fulfilled, (state, action) => {
-        state.fetchNdaStatusInProgress = false;
-        state.ndaSignatureStatus = action.payload;
-      })
-      .addCase(fetchNdaStatusThunk.rejected, (state, action) => {
-        state.fetchNdaStatusInProgress = false;
-      })
-      // Sign NDA
-      .addCase(signNdaThunk.pending, state => {
-        state.signNdaInProgress = true;
-        state.signNdaError = null;
-      })
-      .addCase(signNdaThunk.fulfilled, (state, action) => {
-        state.signNdaInProgress = false;
-        // Update signature status with response
-        if (action.payload.signatureRequest) {
-          state.ndaSignatureStatus = {
-            ...state.ndaSignatureStatus,
-            hasSignatureRequest: true,
-            signatureRequest: action.payload.signatureRequest,
-          };
-        }
-      })
-      .addCase(signNdaThunk.rejected, (state, action) => {
-        state.signNdaInProgress = false;
-        state.signNdaError = action.payload;
-      })
-      // Request NDA signatures
-      .addCase(requestNdaSignaturesThunk.pending, state => {
-        state.requestNdaInProgress = true;
-        state.requestNdaError = null;
-      })
-      .addCase(requestNdaSignaturesThunk.fulfilled, (state, action) => {
-        state.requestNdaInProgress = false;
-        if (action.payload.signatureRequest) {
-          state.ndaSignatureStatus = {
-            hasSignatureRequest: true,
-            signatureRequest: action.payload.signatureRequest,
-          };
-        }
-      })
-      .addCase(requestNdaSignaturesThunk.rejected, (state, action) => {
-        state.requestNdaInProgress = false;
-        state.requestNdaError = action.payload;
       });
   },
 });

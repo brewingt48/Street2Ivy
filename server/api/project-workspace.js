@@ -140,8 +140,6 @@ async function getProjectWorkspace(req, res) {
         metadata: {
           depositConfirmed: metadata.depositConfirmed,
           depositConfirmedAt: metadata.depositConfirmedAt,
-          ndaAccepted: metadata.ndaAccepted,
-          ndaAcceptedAt: metadata.ndaAcceptedAt,
         },
       },
       listing: {
@@ -184,8 +182,6 @@ async function getProjectWorkspace(req, res) {
         createdAt: msg.createdAt,
         readAt: msg.readAt,
       })),
-      ndaRequired: listingPrivateData.ndaRequired || listingPublicData.ndaRequired || false,
-      ndaAccepted: metadata.ndaAccepted || false,
     };
 
     res.status(200).json(workspaceData);
@@ -304,66 +300,6 @@ async function sendProjectMessage(req, res) {
 }
 
 /**
- * POST /api/project-workspace/:transactionId/accept-nda
- *
- * Accept the NDA for a project (required before accessing confidential details).
- */
-async function acceptNda(req, res) {
-  const { transactionId } = req.params;
-
-  if (!transactionId) {
-    return res.status(400).json({ error: 'Transaction ID is required.' });
-  }
-
-  try {
-    const sdk = getSdk(req, res);
-    const currentUserResponse = await sdk.currentUser.show();
-    const currentUser = currentUserResponse.data.data;
-
-    if (!currentUser) {
-      return res.status(401).json({ error: 'Authentication required.' });
-    }
-
-    const integrationSdk = getIntegrationSdk();
-
-    // Get the transaction
-    const txResponse = await integrationSdk.transactions.show({
-      id: transactionId,
-    });
-
-    const transaction = txResponse.data.data;
-    const customerId = transaction.relationships?.customer?.data?.id?.uuid;
-
-    // Only the customer (student) needs to accept NDA
-    if (customerId !== currentUser.id.uuid) {
-      return res.status(403).json({ error: 'Only the student can accept the NDA.' });
-    }
-
-    const currentMetadata = transaction.attributes.metadata || {};
-
-    // Update transaction metadata
-    await integrationSdk.transactions.updateMetadata({
-      id: transactionId,
-      metadata: {
-        ...currentMetadata,
-        ndaAccepted: true,
-        ndaAcceptedAt: new Date().toISOString(),
-        ndaAcceptedBy: currentUser.id.uuid,
-      },
-    });
-
-    res.status(200).json({
-      success: true,
-      message: 'NDA accepted successfully.',
-      ndaAcceptedAt: new Date().toISOString(),
-    });
-  } catch (error) {
-    console.error('Accept NDA error:', error);
-    handleError(res, error);
-  }
-}
-
-/**
  * POST /api/project-workspace/:transactionId/mark-read
  *
  * Mark messages as read.
@@ -434,6 +370,5 @@ function getAccessDeniedMessage(reason) {
 module.exports = {
   get: getProjectWorkspace,
   sendMessage: sendProjectMessage,
-  acceptNda,
   markRead: markMessagesRead,
 };

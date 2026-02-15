@@ -1,8 +1,9 @@
-import logoImageDesktop from '../assets/biketribe-logo-desktop.png';
-import logoImageMobile from '../assets/biketribe-logo-mobile.png';
-import brandImage from '../assets/biketribe-brandImage-1500.jpg';
-import facebookImage from '../assets/biketribe-facebook-sharing-1200x630.jpg';
-import twitterImage from '../assets/biketribe-twitter-sharing-600x314.jpg';
+// Placeholder branding assets — replace with final Street2Ivy designs
+import logoImageDesktop from '../assets/street2ivy-logo-desktop.png';
+import logoImageMobile from '../assets/street2ivy-logo-mobile.png';
+import brandImage from '../assets/street2ivy-brandImage-1500.png';
+import facebookImage from '../assets/street2ivy-facebook-sharing-1200x630.png';
+import twitterImage from '../assets/street2ivy-twitter-sharing-600x314.png';
 
 /////////////////////////////////////////////////////////
 // This file contains configs that affect branding     //

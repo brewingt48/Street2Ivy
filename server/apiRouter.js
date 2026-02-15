@@ -14,6 +14,7 @@ const {
   strictRateLimit,
   securityHeaders,
   responseSanitizer,
+  csrfProtection,
   getCSRFToken,
   getAuditLogs,
   validatePassword,
@@ -67,8 +68,11 @@ const fileUpload = require('express-fileupload');
 // Project Workspace (secure portal for accepted students)
 const projectWorkspace = require('./api/project-workspace');
 
-// NDA E-Signature
-const ndaSignature = require('./api/nda-signature');
+// MFA (Multi-Factor Authentication) stubs
+const mfa = require('./api/mfa');
+
+// SSO/SAML stubs
+const sso = require('./api/sso');
 
 // Student Performance Assessments
 const assessments = require('./api/assessments');
@@ -139,6 +143,26 @@ router.use((req, res, next) => {
     }
   }
   next();
+});
+
+// SECURITY: CSRF protection for state-mutating JSON requests.
+// Exempt: Transit (SDK) requests (authenticated via SDK tokens, not cookies),
+// OAuth callbacks from external providers, and external webhooks.
+router.use((req, res, next) => {
+  // Skip GET, HEAD, OPTIONS — csrfProtection already does this, but short-circuit here
+  if (['GET', 'HEAD', 'OPTIONS'].includes(req.method)) {
+    return next();
+  }
+  // Skip Transit (Sharetribe SDK) requests — they use SDK session tokens, not browser cookies
+  if (req.get('Content-Type') === 'application/transit+json') {
+    return next();
+  }
+  // Skip OAuth callbacks and external webhooks
+  const csrfExemptPaths = ['/auth/facebook/callback', '/auth/google/callback', '/auth/create-user-with-idp'];
+  if (csrfExemptPaths.some(p => req.path === p)) {
+    return next();
+  }
+  return csrfProtection(req, res, next);
 });
 
 // ================ API router endpoints: ================ //
@@ -340,17 +364,19 @@ router.delete('/admin/upload/:filename', adminUpload.deleteFile);
 // Street2Ivy: Secure Project Workspace (for accepted students with confirmed deposits)
 router.get('/project-workspace/:transactionId', projectWorkspace.get);
 router.post('/project-workspace/:transactionId/messages', projectWorkspace.sendMessage);
-router.post('/project-workspace/:transactionId/accept-nda', projectWorkspace.acceptNda);
 router.post('/project-workspace/:transactionId/mark-read', projectWorkspace.markRead);
 
-// Street2Ivy: NDA E-Signature endpoints
-router.post('/nda/upload', ndaSignature.uploadDocument);
-router.get('/nda/:listingId', ndaSignature.getDocument);
-router.post('/nda/request-signature/:transactionId', ndaSignature.requestSignature);
-router.get('/nda/signature-status/:transactionId', ndaSignature.getSignatureStatus);
-router.post('/nda/sign/:transactionId', ndaSignature.sign);
-router.get('/nda/download/:transactionId', ndaSignature.download);
-router.post('/nda/webhook', ndaSignature.webhook);
+// Street2Ivy: Multi-Factor Authentication (MFA) — stub endpoints
+router.get('/mfa/status', mfa.getStatus);
+router.post('/mfa/enroll', mfa.enroll);
+router.post('/mfa/verify', mfa.verify);
+router.post('/mfa/disable', mfa.disable);
+
+// Street2Ivy: SSO/SAML Enterprise Identity Provider — stub endpoints
+router.get('/sso/config', sso.getConfig);
+router.get('/sso/initiate/:provider', sso.initiate);
+router.post('/sso/callback', sso.callback);
+router.get('/sso/metadata', sso.metadata);
 
 // Street2Ivy: Student Performance Assessments
 router.get('/assessments/criteria', assessments.getAssessmentCriteria);

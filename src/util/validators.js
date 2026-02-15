@@ -4,7 +4,7 @@ import { extractYouTubeID } from './string';
 
 const { LatLng, Money } = sdkTypes;
 
-export const PASSWORD_MIN_LENGTH = 8;
+export const PASSWORD_MIN_LENGTH = 12;
 export const PASSWORD_MAX_LENGTH = 256;
 
 const isNonEmptyString = val => {

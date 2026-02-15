@@ -4,7 +4,6 @@ const crypto = require('crypto');
 const dev = process.env.REACT_APP_ENV === 'development';
 const self = "'self'";
 const unsafeInline = "'unsafe-inline'";
-const unsafeEval = "'unsafe-eval'";
 const data = 'data:';
 const blob = 'blob:';
 const devImagesMaybe = dev ? ['*.localhost:8000'] : [];
@@ -83,10 +82,6 @@ const defaultDirectives = {
     '*.imgix.net',
     'sharetribe.imgix.net', // Safari 9.1 didn't recognize asterisk rule.
 
-    // Styleguide placeholder images
-    'picsum.photos',
-    '*.picsum.photos',
-
     'api.mapbox.com',
     'maps.googleapis.com',
     '*.gstatic.com',
@@ -113,7 +108,9 @@ const defaultDirectives = {
   scriptSrc: [
     self,
     (req, res) => `'nonce-${res.locals.cspNonce}'`,
-    unsafeEval,
+    // Note: 'unsafe-eval' was removed to strengthen CSP. If Google Maps or Mapbox
+    // functionality breaks, re-add it in the customDirectives section below with
+    // a comment explaining the dependency. Nonce-based CSP should cover legitimate scripts.
     'maps.googleapis.com',
     'api.mapbox.com',
     '*.googletagmanager.com',

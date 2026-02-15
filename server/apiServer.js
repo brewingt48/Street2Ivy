@@ -1,5 +1,10 @@
 // NOTE: this server is purely a dev-mode server. In production, the
 // server/index.js server also serves the API routes.
+// Guard: Prevent accidental use of this dev server in production.
+if (process.env.NODE_ENV === 'production') {
+  console.error('ERROR: server/apiServer.js is a development-only server. Use server/index.js in production.');
+  process.exit(1);
+}
 
 // Configure process.env with .env.* files
 require('./env').configureEnv();
@@ -23,9 +28,13 @@ const app = express();
 
 // NOTE: CORS is only needed in this dev API server because it's
 // running in a different port than the main app.
+const allowedOrigin = process.env.REACT_APP_MARKETPLACE_ROOT_URL;
+if (!allowedOrigin) {
+  console.warn('WARNING: REACT_APP_MARKETPLACE_ROOT_URL is not set. CORS origin will be undefined.');
+}
 app.use(
   cors({
-    origin: process.env.REACT_APP_MARKETPLACE_ROOT_URL,
+    origin: allowedOrigin,
     credentials: true,
   })
 );

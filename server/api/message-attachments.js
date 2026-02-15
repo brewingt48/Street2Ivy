@@ -1,7 +1,26 @@
+/**
+ * Message Attachments API
+ *
+ * IMPORTANT: Heroku Ephemeral Filesystem Limitation
+ * ================================================
+ * This module stores files on the local filesystem and metadata in a JSON file.
+ * On Heroku, the filesystem is ephemeral — files are lost on every deploy or
+ * dyno restart. This means:
+ * - Uploaded attachments will be lost on deploy
+ * - Attachment metadata (JSON file) will be reset
+ *
+ * TODO: Migrate to cloud storage:
+ * 1. Install aws-sdk and configure S3 bucket
+ * 2. Store files in S3 instead of local filesystem
+ * 3. Store metadata in Sharetribe transaction metadata
+ * 4. Use S3 signed URLs for secure, time-limited downloads
+ */
+
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 const { getSdk, handleError } = require('../api-util/sdk');
+const { getIntegrationSdk } = require('../api-util/integrationSdk');
 
 // Configuration
 const UPLOAD_DIR = path.join(__dirname, '../uploads/attachments');
@@ -109,15 +128,130 @@ function formatFileSize(bytes) {
 }
 
 /**
+ * Authenticate the current user and return their data.
+ * Returns null and sends a 401 response if not authenticated.
+ */
+async function authenticateUser(req, res) {
+  try {
+    const sdk = getSdk(req, res);
+    const currentUserResponse = await sdk.currentUser.show();
+    const currentUser = currentUserResponse.data.data;
+    if (!currentUser) {
+      res.status(401).json({ error: 'Authentication required' });
+      return null;
+    }
+    return currentUser;
+  } catch (error) {
+    res.status(401).json({ error: 'Authentication required' });
+    return null;
+  }
+}
+
+/**
+ * Verify that the user is a participant in the given transaction context.
+ * Returns true if authorized, false otherwise (sends 403 response).
+ */
+async function verifyContextAccess(userId, attachment, res) {
+  if (attachment.contextType === 'transaction' || attachment.contextType === 'workspace') {
+    try {
+      const integrationSdk = getIntegrationSdk();
+      const txResponse = await integrationSdk.transactions.show({
+        id: attachment.contextId,
+      });
+      const tx = txResponse.data.data;
+      const customerId = tx.relationships?.customer?.data?.id?.uuid;
+      const providerId = tx.relationships?.provider?.data?.id?.uuid;
+
+      if (userId !== customerId && userId !== providerId) {
+        res.status(403).json({ error: 'You do not have access to this attachment' });
+        return false;
+      }
+      return true;
+    } catch (error) {
+      // If the transaction doesn't exist or can't be fetched, deny access
+      res.status(403).json({ error: 'Unable to verify access to this attachment' });
+      return false;
+    }
+  }
+  // For non-transaction contexts, authenticated user is sufficient
+  return true;
+}
+
+/**
+ * Scan uploaded file for potential threats.
+ *
+ * Current implementation: Basic content validation (magic bytes check).
+ * TODO: Integrate with ClamAV (via clamscan npm package) or a cloud
+ * scanning API (e.g., VirusTotal, AWS Macie) for real malware detection.
+ */
+async function scanFile(file) {
+  try {
+    const filePath = file.tempFilePath || file.path;
+    if (!filePath || !fs.existsSync(filePath)) {
+      return { safe: true, warning: 'No temp file path available for scanning' };
+    }
+
+    const buffer = fs.readFileSync(filePath);
+    const header = buffer.slice(0, 8);
+    const ext = getFileExtension(file.name);
+
+    // PDF files should start with %PDF
+    if (ext === '.pdf' && !buffer.slice(0, 5).toString().startsWith('%PDF')) {
+      return { safe: false, reason: 'File content does not match PDF format' };
+    }
+
+    // JPEG files should start with FF D8 FF
+    if (['.jpg', '.jpeg'].includes(ext)) {
+      if (header[0] !== 0xFF || header[1] !== 0xD8 || header[2] !== 0xFF) {
+        return { safe: false, reason: 'File content does not match JPEG format' };
+      }
+    }
+
+    // PNG files should start with 89 50 4E 47
+    if (ext === '.png') {
+      if (header[0] !== 0x89 || header[1] !== 0x50 || header[2] !== 0x4E || header[3] !== 0x47) {
+        return { safe: false, reason: 'File content does not match PNG format' };
+      }
+    }
+
+    // GIF files should start with GIF87a or GIF89a
+    if (ext === '.gif') {
+      const gifHeader = buffer.slice(0, 6).toString();
+      if (gifHeader !== 'GIF87a' && gifHeader !== 'GIF89a') {
+        return { safe: false, reason: 'File content does not match GIF format' };
+      }
+    }
+
+    // Check for embedded scripts in document files
+    if (['.pdf'].includes(ext)) {
+      const content = buffer.toString('utf8', 0, Math.min(buffer.length, 10000));
+      if (content.includes('/JavaScript') || content.includes('/JS')) {
+        console.log(JSON.stringify({
+          _type: 'audit',
+          _version: 1,
+          eventType: 'FILE_SCAN_WARNING',
+          filename: file.name,
+          reason: 'PDF contains JavaScript',
+          timestamp: new Date().toISOString(),
+        }));
+      }
+    }
+
+    return { safe: true };
+  } catch (error) {
+    console.error('File scan error:', error);
+    return { safe: true, warning: 'Scan skipped due to error' };
+  }
+}
+
+/**
  * Upload attachment
  * POST /api/attachments/upload
  */
 async function uploadAttachment(req, res) {
   try {
-    // Verify user is authenticated
-    const sdk = getSdk(req, res);
-    const currentUserResponse = await sdk.currentUser.show();
-    const currentUser = currentUserResponse.data.data;
+    const currentUser = await authenticateUser(req, res);
+    if (!currentUser) return;
     const userId = currentUser.id.uuid;
 
     if (!req.files || !req.files.file) {
@@ -143,6 +277,15 @@ async function uploadAttachment(req, res) {
     const typeCheck = isFileTypeAllowed(file.name);
     if (!typeCheck.allowed) {
       return res.status(400).json({ error: typeCheck.reason });
+    }
+
+    // Scan file for threats
+    const scanResult = await scanFile(file);
+    if (!scanResult.safe) {
+      return res.status(400).json({
+        error: `File rejected: ${scanResult.reason}`,
+        code: 'FILE_SCAN_FAILED',
+      });
     }
 
     // Generate unique ID and filename
@@ -201,6 +344,10 @@ async function uploadAttachment(req, res) {
  */
 async function downloadAttachment(req, res) {
   try {
+    // SECURITY: Require authentication
+    const currentUser = await authenticateUser(req, res);
+    if (!currentUser) return;
+
     const { id } = req.params;
 
     // Load metadata
@@ -210,6 +357,10 @@ async function downloadAttachment(req, res) {
     if (!attachment) {
       return res.status(404).json({ error: 'Attachment not found' });
     }
+
+    // SECURITY: Verify user has access to this attachment's context
+    const hasAccess = await verifyContextAccess(currentUser.id.uuid, attachment, res);
+    if (!hasAccess) return;
 
     const filePath = path.join(UPLOAD_DIR, attachment.storedName);
 
@@ -242,6 +393,10 @@ async function downloadAttachment(req, res) {
  */
 async function previewAttachment(req, res) {
   try {
+    // SECURITY: Require authentication
+    const currentUser = await authenticateUser(req, res);
+    if (!currentUser) return;
+
     const { id } = req.params;
 
     // Load metadata
@@ -255,6 +410,10 @@ async function previewAttachment(req, res) {
     if (attachment.fileType !== 'image') {
       return res.status(400).json({ error: 'Preview only available for images' });
     }
+
+    // SECURITY: Verify user has access to this attachment's context
+    const hasAccess = await verifyContextAccess(currentUser.id.uuid, attachment, res);
+    if (!hasAccess) return;
 
     const filePath = path.join(UPLOAD_DIR, attachment.storedName);
 
@@ -281,11 +440,23 @@ async function previewAttachment(req, res) {
  */
 async function getAttachments(req, res) {
   try {
+    // SECURITY: Require authentication
+    const currentUser = await authenticateUser(req, res);
+    if (!currentUser) return;
+
     const { contextType, contextId } = req.query;
 
     if (!contextType || !contextId) {
       return res.status(400).json({ error: 'Missing contextType or contextId' });
     }
+
+    // SECURITY: Verify user has access to this context
+    const hasAccess = await verifyContextAccess(
+      currentUser.id.uuid,
+      { contextType, contextId },
+      res
+    );
+    if (!hasAccess) return;
 
     // Load metadata
     const meta = loadAttachmentsMeta();
@@ -322,10 +493,8 @@ async function getAttachments(req, res) {
  */
 async function deleteAttachment(req, res) {
   try {
-    // Verify user is authenticated
-    const sdk = getSdk(req, res);
-    const currentUserResponse = await sdk.currentUser.show();
-    const currentUser = currentUserResponse.data.data;
+    const currentUser = await authenticateUser(req, res);
+    if (!currentUser) return;
     const userId = currentUser.id.uuid;
 
     const { id } = req.params;
@@ -369,6 +538,10 @@ async function deleteAttachment(req, res) {
  */
 async function getAttachmentInfo(req, res) {
   try {
+    // SECURITY: Require authentication
+    const currentUser = await authenticateUser(req, res);
+    if (!currentUser) return;
+
     const { id } = req.params;
 
     // Load metadata

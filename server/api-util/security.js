@@ -405,8 +405,16 @@ const validatePassword = password => {
     errors.push('Password must contain at least one special character');
   }
 
-  // Check for common weak passwords
-  const weakPasswords = ['password', '123456', 'qwerty', 'letmein', 'welcome', 'admin'];
+  // Check for common weak passwords (NIST SP 800-63B recommends screening against breached lists)
+  // This is a minimal blocklist. For production at scale, consider using the HaveIBeenPwned
+  // Passwords API (k-anonymity model) or a local copy of the top 100k breached passwords.
+  const weakPasswords = [
+    'password', '123456', '12345678', '123456789', 'qwerty', 'letmein', 'welcome',
+    'admin', 'monkey', 'dragon', 'master', 'login', 'abc123', 'starwars',
+    'trustno1', 'iloveyou', 'sunshine', 'princess', 'football', 'shadow',
+    'superman', 'michael', 'qwerty123', 'password1', 'password123',
+    'street2ivy', 'proveground', 'changeme', 'default',
+  ];
   if (weakPasswords.some(weak => password.toLowerCase().includes(weak))) {
     errors.push('Password is too common. Please choose a stronger password.');
   }
@@ -419,7 +427,9 @@ const validatePassword = password => {
 
 // ================ CSRF PROTECTION ================ //
 
-// CSRF token store (in production, use Redis)
+// CSRF token store. In-memory is acceptable for single-dyno Heroku deployments.
+// For multi-dyno scaling, migrate to Redis (e.g., Heroku Redis addon with ioredis).
+// Tokens are short-lived (1 hour) so loss on restart is low-impact.
 const csrfTokenStore = new Map();
 
 /**
@@ -523,6 +533,8 @@ setInterval(() => {
 
 // ================ RATE LIMITING ================ //
 
+// Rate limit store. In-memory is acceptable for single-dyno deployments.
+// For multi-dyno, use Redis-backed rate limiting (e.g., rate-limiter-flexible with ioredis store).
 const rateLimitStore = new Map();
 
 /**
@@ -541,6 +553,13 @@ setInterval(cleanupRateLimitStore, 5 * 60 * 1000);
 
 /**
  * Rate limiting middleware factory
+ *
+ * SCALING NOTE: This uses an in-memory Map, which works correctly for single-instance
+ * deployments (e.g., Heroku Basic/Standard-1X). If you scale to multiple dynos/instances,
+ * each instance maintains its own counter, effectively multiplying the allowed request rate.
+ * For multi-instance deployments, migrate to a shared store such as:
+ * - Heroku Redis addon with ioredis client
+ * - express-rate-limit with rate-limit-redis store
  */
 const rateLimit = (options = {}) => {
   const {
@@ -614,8 +633,9 @@ const securityHeaders = (req, res, next) => {
   // Prevent MIME type sniffing
   res.setHeader('X-Content-Type-Options', 'nosniff');
 
-  // Enable XSS filter
-  res.setHeader('X-XSS-Protection', '1; mode=block');
+  // X-XSS-Protection is intentionally omitted. Modern browsers have deprecated
+  // this header and CSP provides superior XSS protection. Setting it can actually
+  // introduce vulnerabilities in older browsers (see MDN documentation).
 
   // Referrer policy
   res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
@@ -776,12 +796,17 @@ const responseSanitizer = (req, res, next) => {
 
 // ================ AUDIT LOGGING ================ //
 
-// Audit log store (in production, use persistent storage)
+// Audit log in-memory cache for the admin dashboard API.
+// This is a convenience cache only — it is NOT persistent across restarts.
+// Primary persistence is via structured JSON to stdout, which Heroku log drains
+// (Papertrail, Datadog, etc.) capture and provide searchable, persistent storage.
 const auditLogStore = [];
 const MAX_AUDIT_LOG_SIZE = 10000;
 
 /**
- * Log security-relevant events
+ * Log security-relevant events.
+ * Outputs structured JSON to stdout for log drain capture (primary persistence)
+ * and caches in memory for the admin dashboard API (convenience only).
  */
 const auditLog = (eventType, data) => {
   const logEntry = {
@@ -791,19 +816,20 @@ const auditLog = (eventType, data) => {
     ...data,
   };
 
-  // Add to in-memory store
-  auditLogStore.push(logEntry);
+  // Primary persistence: Structured JSON to stdout.
+  // Heroku log drains (Papertrail, Datadog, etc.) capture stdout and provide
+  // searchable, persistent storage. This is the source of truth.
+  console.log(JSON.stringify({
+    _type: 'audit',
+    _version: 1,
+    ...logEntry,
+  }));
 
-  // Trim old entries
+  // Secondary: In-memory cache for the admin dashboard API.
+  auditLogStore.push(logEntry);
   while (auditLogStore.length > MAX_AUDIT_LOG_SIZE) {
     auditLogStore.shift();
   }
-
-  // Log to console (in production, send to proper logging service)
-  console.log('[AUDIT]', JSON.stringify(logEntry));
-
-  // In production, send to external logging service
-  // sendToLoggingService(logEntry);
 };
 
 /**
@@ -844,12 +870,14 @@ const getAuditLogs = (options = {}) => {
     total,
     limit,
     offset,
+    _notice: 'In-memory cache only. Logs older than the last server restart are not available here. Configure a log aggregation service (Papertrail, Datadog) for full audit history.',
   };
 };
 
 // ================ DATA EXPORT SECURITY ================ //
 
-// Export tokens store
+// Export token store. Short-lived tokens (24h) with one-time use.
+// Loss on restart is acceptable — users can re-request exports.
 const exportTokenStore = new Map();
 
 /**
