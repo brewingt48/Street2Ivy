@@ -46,7 +46,6 @@ export async function GET() {
     const waitlistCount = await sql`
       SELECT COUNT(*) as count FROM student_waitlist
       WHERE contacted = false
-        ${tenantId ? sql`AND tenant_id = ${tenantId}` : sql``}
     `;
 
     // Average student performance rating (gated by studentRatings feature)
