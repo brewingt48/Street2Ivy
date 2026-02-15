@@ -235,7 +235,7 @@ export default function CorporateDashboardPage() {
               </CardTitle>
               <CardDescription>
                 {hasMatchEngine
-                  ? <>Students matched to your listing using Proveground&apos;s proprietary <strong>Match Engine&trade;</strong>. Scores reflect skills alignment, schedule fit, reliability, and growth trajectory.</>
+                  ? <>Students matched to your listing using Proveground&apos;s proprietary <strong>Match Engine&trade;</strong>. Composite scores reflect a multi-dimensional assessment of each candidate&apos;s fit.</>
                   : 'Students matched to your listing\u0027s required skills using our algorithm. The percentage shows how many of your required skills each student has.'}
               </CardDescription>
             </div>
@@ -319,7 +319,7 @@ export default function CorporateDashboardPage() {
               </div>
               <div>
                 <p className="font-semibold text-slate-900 dark:text-white mb-1">2. Review Matches</p>
-                <p>Students appear in &quot;Recommended&quot; with a composite score (0&ndash;100%). Higher scores mean stronger fit across skills, availability, trust, and growth trajectory.</p>
+                <p>Students appear in &quot;Recommended&quot; with a composite score (0&ndash;100%). Higher scores mean a stronger overall fit based on multiple proprietary dimensions of our algorithm.</p>
               </div>
               <div>
                 <p className="font-semibold text-slate-900 dark:text-white mb-1">3. Engage &amp; Hire</p>
@@ -398,7 +398,7 @@ export default function CorporateDashboardPage() {
               <p className="font-medium text-slate-900 dark:text-white mb-1">Recommended Students</p>
               <p>
                 {hasMatchEngine
-                  ? <>Students matched to your active listings using Proveground&apos;s proprietary <strong>Match Engine&trade;</strong>. Scores factor in skills, schedule fit, trust, and growth trajectory across six proprietary signals.</>
+                  ? <>Students matched to your active listings using Proveground&apos;s proprietary <strong>Match Engine&trade;</strong>. Composite scores reflect a multi-dimensional assessment of each student&apos;s fit for your project.</>
                   : 'Students matched to your active listings using our skills-based algorithm. The percentage shows skill alignment.'}
               </p>
             </div>

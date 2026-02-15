@@ -392,22 +392,23 @@ export default function DashboardPage() {
                 </div>
                 <div>
                   <p className="font-semibold text-slate-900 dark:text-white mb-1">3. Review Your Matches</p>
-                  <p>Projects appear in &quot;Recommended For You&quot; with a match score (0&ndash;100%). Higher scores mean a stronger fit across all six signals.</p>
+                  <p>Projects appear in &quot;Recommended For You&quot; with a match score (0&ndash;100%). Higher scores mean a stronger overall fit for you.</p>
                 </div>
               </div>
               <div className="space-y-3">
                 <div>
-                  <p className="font-semibold text-slate-900 dark:text-white mb-1">The 6 Matching Signals</p>
-                  <p>Every match is scored across six proprietary dimensions:</p>
+                  <p className="font-semibold text-slate-900 dark:text-white mb-1">What the Score Means</p>
+                  <p>Your composite match score is computed using Proveground&apos;s proprietary algorithm that evaluates multiple dimensions of fit &mdash; far beyond a simple keyword match.</p>
                 </div>
-                <ul className="space-y-1.5 text-sm">
-                  <li className="flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-teal-500" /> <strong>Skills Alignment</strong> &mdash; How well your skills match the project requirements</li>
-                  <li className="flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-blue-500" /> <strong>Temporal Fit</strong> &mdash; Whether the project timeline works with your schedule</li>
-                  <li className="flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-green-500" /> <strong>Sustainability</strong> &mdash; Can you manage this workload alongside your other commitments</li>
-                  <li className="flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-purple-500" /> <strong>Growth Trajectory</strong> &mdash; How much this project will advance your career development</li>
-                  <li className="flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-amber-500" /> <strong>Trust &amp; Reliability</strong> &mdash; Your track record of completing projects successfully</li>
-                  <li className="flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-indigo-500" /> <strong>Network Affinity</strong> &mdash; Connections between your program and the partner organization</li>
-                </ul>
+                <div>
+                  <p className="text-sm">The <strong>Match Engine&trade;</strong> considers factors including how well the opportunity aligns with your background, whether the timing works with your commitments, and how the engagement fits into your broader career trajectory. The more complete your profile and schedule, the smarter your matches become.</p>
+                </div>
+                <div className="flex items-center gap-4 pt-2 text-xs text-slate-400">
+                  <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-emerald-500" /> 80&ndash;100%: Excellent fit</span>
+                  <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-teal-500" /> 60&ndash;79%: Strong fit</span>
+                  <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-amber-500" /> 40&ndash;59%: Moderate fit</span>
+                  <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-slate-400" /> Below 40%: Explore further</span>
+                </div>
               </div>
             </div>
           </CardContent>
@@ -623,7 +624,7 @@ export default function DashboardPage() {
               <p className="font-medium text-slate-900 dark:text-white mb-1">Recommended For You</p>
               <p>
                 {tenantFeatures.matchEngine
-                  ? <>Projects matched using Proveground&apos;s proprietary <strong>Match Engine&trade;</strong>. Click &quot;View match breakdown&quot; to see how each of the six signals &mdash; Skills, Temporal Fit, Sustainability, Growth, Trust, and Network &mdash; contributes to your composite score.</>
+                  ? <>Projects matched using Proveground&apos;s proprietary <strong>Match Engine&trade;</strong>. Click &quot;View match breakdown&quot; to see how each dimension of our algorithm contributes to your composite score.</>
                   : 'Projects matched to your skills using our smart matching algorithm. The percentage shows how well your skills align.'}
               </p>
             </div>
