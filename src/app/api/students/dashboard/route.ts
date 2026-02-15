@@ -64,7 +64,7 @@ export async function GET() {
     const unreadCount = await sql`
       SELECT COUNT(*) as count
       FROM direct_messages
-      WHERE receiver_id = ${userId} AND read_at IS NULL
+      WHERE recipient_id = ${userId} AND read_at IS NULL
     `;
 
     return NextResponse.json({
