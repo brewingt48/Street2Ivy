@@ -104,10 +104,10 @@ function HeroSection({ settings }: { settings: HomepageSettings }) {
   const [loaded, setLoaded] = useState(false);
   useEffect(() => { setLoaded(true); }, []);
 
-  const tagline = settings.heroCopy?.tagline || 'From Campus to Career';
-  const headline = settings.heroCopy?.headline || 'The discipline that built you doesn\u2019t stop at the field.';
+  const tagline = settings.heroCopy?.tagline || 'AI is rewriting the rules. Adapt first.';
+  const headline = settings.heroCopy?.headline || 'The skills AI can\u2019t replace are the ones that set you apart.';
   const subheadline = settings.heroCopy?.subheadline ||
-    'Campus2Career connects high-performing students with alumni and corporate partners for real project work \u2014 building reputations that open doors before graduation.';
+    'Every industry is being reshaped by AI. Campus2Career connects high-performing students with real project work that builds what algorithms never will \u2014 leadership, judgment, and a track record that opens doors.';
   const demoUrl = settings.bookDemoUrl || 'https://calendly.com';
 
   return (
@@ -146,10 +146,10 @@ function HeroSection({ settings }: { settings: HomepageSettings }) {
           transition={{ duration: 0.8, delay: 0.4 }}
           className="font-serif text-5xl md:text-7xl lg:text-8xl font-bold text-white leading-[1.05] tracking-tight"
         >
-          {headline.includes('doesn\u2019t stop at the field') ? (
+          {headline.includes('can\u2019t replace') ? (
             <>
-              The discipline that built you{' '}
-              <span className="text-gold-300">doesn&apos;t stop at the field.</span>
+              The skills AI can&apos;t replace{' '}
+              <span className="text-gold-300">are the ones that set you apart.</span>
             </>
           ) : (
             headline
@@ -163,11 +163,34 @@ function HeroSection({ settings }: { settings: HomepageSettings }) {
         >
           {subheadline}
         </motion.p>
+
+        {/* AI edge highlights */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={loaded ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.6, delay: 1 }}
-          className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4"
+          transition={{ duration: 0.7, delay: 0.9 }}
+          className="mt-8 flex flex-wrap justify-center gap-3"
+        >
+          {[
+            { icon: Brain, text: 'Build what AI can\u2019t' },
+            { icon: Briefcase, text: 'Prove it with real work' },
+            { icon: TrendingUp, text: 'Move before the market' },
+          ].map((item) => (
+            <span
+              key={item.text}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 border border-white/20 text-sm text-white/90 backdrop-blur-sm"
+            >
+              <item.icon className="h-4 w-4 text-gold-300" />
+              {item.text}
+            </span>
+          ))}
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={loaded ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.6, delay: 1.1 }}
+          className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4"
         >
           <a
             href={demoUrl}
@@ -781,43 +804,6 @@ function FAQSection({ items }: { items: FaqItem[] }) {
   );
 }
 
-/* ─── SECTION 9.5: AI Competitive Landscape ─── */
-function AICompetitiveEdgeSection() {
-  return (
-    <section className="py-24 px-6 bg-slate-900 text-white relative overflow-hidden">
-      {/* Subtle background pattern */}
-      <div className="absolute inset-0 opacity-5">
-        <div className="absolute inset-0" style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, white 1px, transparent 0)', backgroundSize: '40px 40px' }} />
-      </div>
-      <div className="max-w-4xl mx-auto text-center relative z-10">
-        <p className="text-sm font-semibold uppercase tracking-widest text-amber-400 mb-4">The New Playing Field</p>
-        <h2 className="text-3xl sm:text-5xl font-bold mb-6 leading-tight">
-          AI is rewriting the rules.<br />
-          <span className="text-amber-400">The ones who adapt first, win.</span>
-        </h2>
-        <p className="text-lg text-slate-300 max-w-2xl mx-auto mb-8 leading-relaxed">
-          Every industry is being reshaped by artificial intelligence. The roles you trained for are evolving
-          faster than any curriculum can keep up. Waiting isn&apos;t a strategy — it&apos;s a forfeit.
-        </p>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mt-12 text-left">
-          <div className="p-6 rounded-xl bg-white/5 border border-white/10">
-            <p className="text-amber-400 font-bold text-lg mb-2">Build What AI Can&apos;t</p>
-            <p className="text-slate-400 text-sm">Leadership, judgment, client management, execution under pressure — the skills that compound, not compute.</p>
-          </div>
-          <div className="p-6 rounded-xl bg-white/5 border border-white/10">
-            <p className="text-amber-400 font-bold text-lg mb-2">Prove It With Work</p>
-            <p className="text-slate-400 text-sm">Real projects with real stakeholders. A portfolio that shows what you&apos;ve delivered, not just what you&apos;ve studied.</p>
-          </div>
-          <div className="p-6 rounded-xl bg-white/5 border border-white/10">
-            <p className="text-amber-400 font-bold text-lg mb-2">Move Before the Market</p>
-            <p className="text-slate-400 text-sm">While others wait for the landscape to settle, you&apos;re already building a track record that speaks for itself.</p>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}
-
 /* ─── SECTION 10: CTA Footer — Book a Demo ─── */
 function CTASection({ settings }: { settings: HomepageSettings }) {
   const headline = settings.ctaCopy?.headline || 'The best talent doesn\u2019t wait to be discovered.';
@@ -927,7 +913,6 @@ export default function LandingPage() {
       {!hidden.includes('social-proof') && <SocialProofSection settings={settings} />}
       {!hidden.includes('video') && <VideoSection />}
       {!hidden.includes('faq') && <FAQSection items={faqItems} />}
-      {!hidden.includes('ai-competitive-edge') && <AICompetitiveEdgeSection />}
       {!hidden.includes('cta') && <CTASection settings={settings} />}
     </>
   );

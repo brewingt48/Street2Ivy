@@ -113,10 +113,10 @@ export function LandingPageClient({ tenant, stats, partners }: LandingPageClient
   const displayName = tenant.display_name ?? tenant.name;
   const headline =
     tenant.hero_headline ??
-    'The discipline that built you doesn\u2019t stop at the field.';
+    'AI is changing every industry. The athletes who adapt first, win.';
   const subheadline =
     tenant.hero_subheadline ??
-    'Campus2Career connects student-athletes and program alumni through real projects, real deliverables, and real reputation \u2014 built on the same competitive edge that drives performance on game day.';
+    'The discipline you built on the field \u2014 resilience, execution, performing under pressure \u2014 those are the skills AI can\u2019t replace. Campus2Career turns your competitive edge into career momentum.';
 
   const studentCount = Number(stats.student_count) || 0;
   const listingCount = Number(stats.listing_count) || 0;
@@ -223,6 +223,28 @@ export function LandingPageClient({ tenant, stats, partners }: LandingPageClient
               Find Talent
               <ArrowRight className="h-5 w-5" />
             </a>
+          </motion.div>
+
+          {/* AI competitive edge highlights */}
+          <motion.div variants={fadeUp} className="mt-8 flex flex-wrap justify-center gap-3">
+            {[
+              { icon: Trophy, text: 'Train for what\u2019s next' },
+              { icon: Target, text: 'Outperform the algorithm' },
+              { icon: Rocket, text: 'Compete early, win often' },
+            ].map((item) => (
+              <span
+                key={item.text}
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm backdrop-blur-sm"
+                style={{
+                  backgroundColor: `${secondary}15`,
+                  border: `1px solid ${secondary}33`,
+                  color: `${secondary}dd`,
+                }}
+              >
+                <item.icon className="h-4 w-4" style={{ color: secondary }} />
+                {item.text}
+              </span>
+            ))}
           </motion.div>
 
         </motion.div>
@@ -731,49 +753,6 @@ export function LandingPageClient({ tenant, stats, partners }: LandingPageClient
                   <span className="text-sm font-medium text-gray-700">{item.label}</span>
                 </div>
               ))}
-            </motion.div>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* ================================================================
-          SECTION 8.5 -- AI COMPETITIVE EDGE
-         ================================================================ */}
-      <section className="py-20 px-6 text-white relative overflow-hidden" style={{ backgroundColor: '#1a1a2e' }}>
-        <div className="absolute inset-0 opacity-5">
-          <div className="absolute inset-0" style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, white 1px, transparent 0)', backgroundSize: '40px 40px' }} />
-        </div>
-        <div className="max-w-4xl mx-auto text-center relative z-10">
-          <motion.div
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, amount: 0.3 }}
-            variants={stagger}
-          >
-            <motion.p variants={fadeUp} className="text-sm font-semibold uppercase tracking-widest mb-4" style={{ color: secondary }}>
-              The New Competitive Edge
-            </motion.p>
-            <motion.h2 variants={fadeUp} className="text-3xl sm:text-5xl font-bold mb-6 leading-tight">
-              AI is changing every industry.<br />
-              <span style={{ color: secondary }}>Athletes who adapt first, win.</span>
-            </motion.h2>
-            <motion.p variants={fadeUp} className="text-lg text-gray-300 max-w-2xl mx-auto mb-10 leading-relaxed">
-              The discipline you built on the field — resilience, execution, performing under pressure —
-              those are the skills AI can&apos;t replace. Campus2Career turns that competitive edge into career momentum.
-            </motion.p>
-            <motion.div variants={fadeUp} className="grid grid-cols-1 sm:grid-cols-3 gap-6 text-left">
-              <div className="p-6 rounded-xl bg-white/5 border border-white/10">
-                <p className="font-bold text-lg mb-2" style={{ color: secondary }}>Train for What&apos;s Next</p>
-                <p className="text-gray-400 text-sm">Real projects from real companies. Build the portfolio that proves you can deliver beyond the game.</p>
-              </div>
-              <div className="p-6 rounded-xl bg-white/5 border border-white/10">
-                <p className="font-bold text-lg mb-2" style={{ color: secondary }}>Outperform the Algorithm</p>
-                <p className="text-gray-400 text-sm">AI handles the routine. You handle what matters — strategy, relationships, decisions that move the needle.</p>
-              </div>
-              <div className="p-6 rounded-xl bg-white/5 border border-white/10">
-                <p className="font-bold text-lg mb-2" style={{ color: secondary }}>Compete Early, Win Often</p>
-                <p className="text-gray-400 text-sm">While others wait for graduation to start, you&apos;re already building a professional track record.</p>
-              </div>
             </motion.div>
           </motion.div>
         </div>
