@@ -35,6 +35,7 @@ import {
   Crown,
   Calendar,
   Target,
+  BookOpen,
 } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
@@ -128,6 +129,7 @@ function getNavItems(role: string): NavSection[] {
             { href: '/invites', label: 'Invites', icon: Mail },
             { href: '/student/schedule', label: 'My Schedule', icon: Calendar, featureGate: 'matchEngineSchedule' },
             { href: '/coaching', label: 'AI Coach', icon: Sparkles },
+            { href: '/huddle', label: 'Team Huddle', icon: BookOpen, featureGate: 'teamHuddle' },
             { href: '/inbox', label: 'Messages', icon: Inbox },
           ],
         },
@@ -151,6 +153,7 @@ function getNavItems(role: string): NavSection[] {
             { href: '/corporate/reviews', label: 'My Reviews', icon: Star },
             { href: '/corporate/invites', label: 'Sent Invites', icon: Mail },
             { href: '/corporate/search-students', label: 'Find Students', icon: Search },
+            { href: '/huddle', label: 'Team Huddle', icon: BookOpen, featureGate: 'teamHuddle' },
             { href: '/inbox', label: 'Messages', icon: Inbox },
           ],
         },
@@ -180,6 +183,7 @@ function getNavItems(role: string): NavSection[] {
           title: 'Institution',
           items: [
             { href: '/education/partners', label: 'Partners & Network', icon: Globe },
+            { href: '/education/huddle', label: 'Team Huddle', icon: BookOpen, featureGate: 'teamHuddle' },
             { href: '/education/ai-features', label: 'AI Features', icon: Sparkles },
             { href: '/education/legal-policies', label: 'Legal Policies', icon: FileText },
             { href: '/education/settings', label: 'Branding & Settings', icon: Palette },

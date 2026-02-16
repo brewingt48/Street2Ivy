@@ -114,6 +114,11 @@ export const FEATURE_DEFINITIONS: Record<string, {
     description: 'Admin API for Match Engine\u2122 configuration and monitoring',
     plans: ['enterprise'],
   },
+  teamHuddle: {
+    label: 'Team Huddle',
+    description: 'Premium content hub for e-learning, career resources, and alumni insights',
+    plans: ['professional', 'enterprise'],
+  },
 };
 
 /** Plan defaults — includes new premium features */
@@ -140,6 +145,7 @@ export const PLAN_DEFAULTS: Record<string, Record<string, unknown>> = {
     matchEngineSchedule: false,
     matchEngineAttractive: false,
     matchEngineAdmin: false,
+    teamHuddle: false,
   },
   professional: {
     maxStudents: 500,
@@ -163,6 +169,7 @@ export const PLAN_DEFAULTS: Record<string, Record<string, unknown>> = {
     matchEngineSchedule: true,
     matchEngineAttractive: false,
     matchEngineAdmin: false,
+    teamHuddle: true,
   },
   enterprise: {
     maxStudents: -1, // unlimited
@@ -186,6 +193,7 @@ export const PLAN_DEFAULTS: Record<string, Record<string, unknown>> = {
     matchEngineSchedule: true,
     matchEngineAttractive: true,
     matchEngineAdmin: true,
+    teamHuddle: true,
   },
 };
 
