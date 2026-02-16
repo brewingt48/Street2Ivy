@@ -182,6 +182,7 @@ function getNavItems(role: string): NavSection[] {
           items: [
             { href: '/education/partners', label: 'Partners & Network', icon: Globe },
             { href: '/education/ai-features', label: 'AI Features', icon: Sparkles },
+            { href: '/education/legal-policies', label: 'Legal Policies', icon: FileText },
             { href: '/education/settings', label: 'Branding & Settings', icon: Palette },
           ],
         },
@@ -227,6 +228,7 @@ function getNavItems(role: string): NavSection[] {
             { href: '/admin/homepage', label: 'Homepage Editor', icon: Home },
             { href: '/admin/faq', label: 'FAQ Manager', icon: HelpCircle },
             { href: '/admin/blog', label: 'Blog', icon: Newspaper },
+            { href: '/admin/legal-policies', label: 'Legal Policies', icon: FileText },
             { href: '/admin/content', label: 'Landing Page (Raw)', icon: Globe },
           ],
         },

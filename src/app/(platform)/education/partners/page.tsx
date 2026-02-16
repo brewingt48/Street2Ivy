@@ -311,7 +311,7 @@ export default function PartnersNetworkPage() {
                   <Badge className="bg-teal-100 text-teal-700 border-0 text-xs">Network</Badge>
                 </p>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                  Partners from the <strong>shared Proveground marketplace</strong>. They post projects visible to students
+                  Partners from the <strong>shared Proveground talent engine</strong>. They post projects visible to students
                   across multiple institutions. Your students can apply, but so can students from other schools.
                 </p>
               </div>
@@ -470,7 +470,7 @@ export default function PartnersNetworkPage() {
           <Badge className="bg-teal-100 text-teal-700 border-0 ml-1">{networkPartners.length}</Badge>
         </h2>
         <p className="text-xs text-slate-500 dark:text-slate-400 mb-3 ml-7">
-          Shared marketplace partners whose projects are visible to students across multiple institutions.
+          Shared talent engine partners whose projects are visible to students across multiple institutions.
         </p>
 
         {networkPartners.length === 0 ? (
@@ -481,7 +481,7 @@ export default function PartnersNetworkPage() {
               </div>
               <p className="text-sm font-medium text-slate-600 dark:text-slate-300">No network partners available yet</p>
               <p className="text-xs text-slate-400 mt-1 max-w-sm mx-auto">
-                When corporate partners join the Proveground shared marketplace, their projects will appear here for your students to apply to.
+                When corporate partners join the Proveground shared talent engine, their projects will appear here for your students to apply to.
               </p>
             </CardContent>
           </Card>

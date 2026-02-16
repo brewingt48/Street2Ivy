@@ -89,10 +89,17 @@ interface Partner {
   alumni_bio: string | null;
 }
 
+interface LegalPolicy {
+  title: string;
+  slug: string;
+  scope: string;
+}
+
 interface LandingPageClientProps {
   tenant: Tenant;
   stats: Stats;
   partners: Partner[];
+  legalPolicies?: LegalPolicy[];
 }
 
 /* --- Animation helpers --- */
@@ -108,7 +115,7 @@ const stagger = {
 
 /* --- Component --- */
 
-export function LandingPageClient({ tenant, stats, partners }: LandingPageClientProps) {
+export function LandingPageClient({ tenant, stats, partners, legalPolicies = [] }: LandingPageClientProps) {
   const branding = tenant.branding ?? {};
   const primary = branding.primaryColor ?? '#0f766e';
   const secondary = branding.secondaryColor ?? '#f8fafc';
@@ -497,7 +504,7 @@ export function LandingPageClient({ tenant, stats, partners }: LandingPageClient
               </div>
               <h3 className="text-xl font-semibold mb-3">For Programs</h3>
               <p className="text-gray-500 leading-relaxed mb-4">
-                Lead with vision. Launch a branded talent marketplace powered by Proveground&apos;s proprietary <strong>Match Engine&trade;</strong> &mdash; connecting your students to the right opportunities across the network, schedule-aware and data-driven.
+                Lead with vision. Launch a branded talent engine powered by Proveground&apos;s proprietary <strong>Match Engine&trade;</strong> &mdash; connecting your students to the right opportunities across the network, schedule-aware and data-driven.
               </p>
               <a
                 href="/for-universities"
@@ -748,7 +755,7 @@ export function LandingPageClient({ tenant, stats, partners }: LandingPageClient
             >
               {displayName} is part of the Proveground ecosystem &mdash; a unified talent network
               where institutions, alumni, and industry partners share opportunities and grow
-              together. Your marketplace is live. The network is working for you.
+              together. Your talent engine is live. The network is working for you.
             </motion.p>
           </motion.div>
 
@@ -772,7 +779,7 @@ export function LandingPageClient({ tenant, stats, partners }: LandingPageClient
               </div>
               <h3 className="text-xl font-semibold mb-3">Exclusive Opportunities</h3>
               <p className="text-gray-500 leading-relaxed">
-                Your marketplace is private to your program. Listings are visible only to your students, vetted by your team. Quality and trust, by design.
+                Your talent engine is private to your program. Listings are visible only to your students, vetted by your team. Quality and trust, by design.
               </p>
             </motion.div>
 
@@ -893,16 +900,31 @@ export function LandingPageClient({ tenant, stats, partners }: LandingPageClient
       {/* ================================================================
           FOOTER
          ================================================================ */}
-      <footer className="py-8 px-6 bg-gray-900 text-gray-400 text-center text-sm">
-        <p>
-          &copy; {new Date().getFullYear()} {displayName}. Powered by{' '}
-          <a
-            href="/"
-            className="text-white hover:underline"
-          >
-            Proveground
-          </a>
-        </p>
+      <footer className="py-8 px-6 bg-gray-900 text-gray-400 text-sm">
+        <div className="max-w-7xl mx-auto flex flex-col items-center gap-3">
+          {legalPolicies.length > 0 && (
+            <div className="flex flex-wrap items-center justify-center gap-4">
+              {legalPolicies.map((p) => (
+                <a
+                  key={`${p.scope}-${p.slug}`}
+                  href={p.scope === 'platform' ? `/legal/${p.slug}` : `/${tenant.subdomain}/legal/${p.slug}`}
+                  className="hover:text-white transition-colors"
+                >
+                  {p.title}
+                </a>
+              ))}
+            </div>
+          )}
+          <p>
+            &copy; {new Date().getFullYear()} {displayName}. Powered by{' '}
+            <a
+              href="/"
+              className="text-white hover:underline"
+            >
+              Proveground
+            </a>
+          </p>
+        </div>
       </footer>
     </div>
   );

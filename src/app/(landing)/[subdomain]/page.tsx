@@ -49,6 +49,18 @@ export default async function SubdomainLandingPage({
     LIMIT 6
   `;
 
+  // Fetch published legal policies (platform + tenant)
+  const legalPolicies = await sql`
+    SELECT title, slug, 'platform' AS scope, sort_order
+    FROM legal_policies
+    WHERE tenant_id IS NULL AND is_published = true
+    UNION ALL
+    SELECT title, slug, 'tenant' AS scope, sort_order
+    FROM legal_policies
+    WHERE tenant_id = ${tenant.id} AND is_published = true
+    ORDER BY scope, sort_order, title
+  `;
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return <LandingPageClient tenant={tenant} stats={statsRows[0] as any} partners={partners as any} />;
+  return <LandingPageClient tenant={tenant} stats={statsRows[0] as any} partners={partners as any} legalPolicies={legalPolicies as any} />;
 }

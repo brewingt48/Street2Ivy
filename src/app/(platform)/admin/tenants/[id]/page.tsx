@@ -446,9 +446,9 @@ export default function TenantDetailPage() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              {/* Marketplace Type Toggle */}
+              {/* Tenant Type Toggle */}
               <div>
-                <Label className="text-sm font-medium text-slate-700 dark:text-slate-300">Marketplace Type</Label>
+                <Label className="text-sm font-medium text-slate-700 dark:text-slate-300">Tenant Type</Label>
                 <div className="grid grid-cols-2 gap-3 mt-2">
                   {[
                     { value: 'institution' as const, label: 'Standard Institution', desc: 'University, college, or training program', icon: Building2 },

@@ -4,13 +4,13 @@
  * Proveground Homepage
  *
  * Bright, clean, modern design inspired by Anthropic.com meets Nike.
- * Sections: Navbar, Hero (video/carousel), The Moment, How It Works,
- * Value Props, AI Coaching, Network Ecosystem, Closing CTA, Footer
+ * Flow: Navbar → Hero → Student Banner → How It Works → Value Props →
+ * AI Coaching → Network Ecosystem → Closing CTA → Footer
  */
 
 import { Navbar } from '@/components/home/Navbar';
 import { Hero } from '@/components/home/Hero';
-import { TheMoment } from '@/components/home/TheMoment';
+import { StudentBanner } from '@/components/home/StudentBanner';
 import { HowItWorks } from '@/components/home/HowItWorks';
 import { ValueProps } from '@/components/home/ValueProps';
 import { AICoaching } from '@/components/home/AICoaching';
@@ -23,7 +23,7 @@ export default function ProvegroundHomepage() {
     <main className="min-h-screen bg-white text-[#3a3a3a] font-sans">
       <Navbar />
       <Hero mode="carousel" />
-      <TheMoment />
+      <StudentBanner />
       <HowItWorks />
       <ValueProps />
       <AICoaching />
