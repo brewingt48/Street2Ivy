@@ -29,7 +29,7 @@ export function Navbar() {
   const [hasSearched, setHasSearched] = useState(false);
   const [selectedTenant, setSelectedTenant] = useState<TenantResult | null>(null);
   const [highlightIndex, setHighlightIndex] = useState(-1);
-  const debounceRef = useRef<ReturnType<typeof setTimeout>>(null);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
