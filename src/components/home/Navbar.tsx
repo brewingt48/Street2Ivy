@@ -390,11 +390,17 @@ export function Navbar() {
                 </button>
 
                 <p className="text-xs text-gray-400 text-center mt-4">
-                  Not sure?{' '}
-                  <a href="/contact" className="text-[#d4a843] hover:underline">
-                    Contact your program administrator.
-                  </a>
+                  Not sure? Contact your program administrator.
                 </p>
+
+                <div className="border-t border-gray-100 mt-4 pt-4">
+                  <a
+                    href="/login"
+                    className="block w-full text-center py-2.5 rounded-xl border border-gray-200 text-gray-500 text-xs font-medium hover:bg-gray-50 hover:text-gray-700 transition-all"
+                  >
+                    System Administrator Login
+                  </a>
+                </div>
               </div>
             </motion.div>
           </>

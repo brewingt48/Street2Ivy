@@ -21,6 +21,7 @@ export async function GET() {
     const features = tenantId ? await getTenantFeatures(tenantId) : {};
     const hasAdvancedReporting = !tenantId || checkFeature(features, 'advancedReporting');
     const hasStudentRatings = !tenantId || checkFeature(features, 'studentRatings');
+    const hasTeamHuddle = !tenantId || checkFeature(features, 'teamHuddle');
 
     // All queries scoped by tenant_id
     const totalStudents = await sql`
@@ -96,6 +97,7 @@ export async function GET() {
       features: {
         advancedReporting: hasAdvancedReporting,
         studentRatings: hasStudentRatings,
+        teamHuddle: hasTeamHuddle,
       },
       recentStudents: recentStudents.map((s: Record<string, unknown>) => ({
         id: s.id,

@@ -38,6 +38,8 @@ import {
   Mail,
   Calendar,
   Target,
+  BookOpen,
+  Bookmark,
 } from 'lucide-react';
 import { HelpSupportCard } from '@/components/shared/help-support-card';
 import { MatchScoreBadge } from '@/components/matching/MatchScoreBadge';
@@ -330,6 +332,38 @@ export default function DashboardPage() {
         <p className="text-xs text-slate-400 dark:text-slate-500">
           AI Coaching is available through participating institutions.
         </p>
+      )}
+
+      {/* Team Huddle — Content Hub */}
+      {tenantFeatures.teamHuddle && (
+        <Link href="/huddle">
+          <Card className="border-teal-200 dark:border-teal-800 bg-gradient-to-r from-teal-50 to-emerald-50 dark:from-teal-900/20 dark:to-emerald-900/20 hover:shadow-md transition-shadow cursor-pointer">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <BookOpen className="h-5 w-5 text-teal-600" />
+                Team Huddle
+              </CardTitle>
+              <CardDescription>
+                Access e-learning content, inspirational videos, articles, and career resources curated by alumni and partners.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center gap-3">
+                <div className="inline-flex items-center gap-2 px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white text-sm font-medium rounded-md transition-colors">
+                  <BookOpen className="h-4 w-4" />
+                  Browse Content
+                  <ArrowRight className="h-4 w-4" />
+                </div>
+                <Link href="/huddle/library" onClick={(e) => e.stopPropagation()}>
+                  <div className="inline-flex items-center gap-2 px-4 py-2 border border-teal-200 text-teal-700 dark:text-teal-400 text-sm font-medium rounded-md hover:bg-teal-50 transition-colors">
+                    <Bookmark className="h-4 w-4" />
+                    My Library
+                  </div>
+                </Link>
+              </div>
+            </CardContent>
+          </Card>
+        </Link>
       )}
 
       {/* Analytics Link */}

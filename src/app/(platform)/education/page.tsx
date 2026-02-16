@@ -10,7 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
-import { GraduationCap, Briefcase, CheckCircle2, Clock, Info, TrendingUp, ArrowRight, Star, Crown, Lock, Sparkles, Building2, Plus, Globe } from 'lucide-react';
+import { GraduationCap, Briefcase, CheckCircle2, Clock, Info, TrendingUp, ArrowRight, Star, Crown, Lock, Sparkles, Building2, Plus, Globe, BookOpen, Video, FileText as FileTextIcon, Users, BarChart3 } from 'lucide-react';
 import { HelpSupportCard } from '@/components/shared/help-support-card';
 
 interface Stats {
@@ -42,13 +42,14 @@ interface TopStudent {
 interface FeatureFlags {
   advancedReporting: boolean;
   studentRatings: boolean;
+  teamHuddle: boolean;
 }
 
 export default function EducationDashboardPage() {
   const [stats, setStats] = useState<Stats | null>(null);
   const [recentStudents, setRecentStudents] = useState<RecentStudent[]>([]);
   const [topStudents, setTopStudents] = useState<TopStudent[]>([]);
-  const [featureFlags, setFeatureFlags] = useState<FeatureFlags>({ advancedReporting: true, studentRatings: true });
+  const [featureFlags, setFeatureFlags] = useState<FeatureFlags>({ advancedReporting: true, studentRatings: true, teamHuddle: false });
   const [hasAiInsights, setHasAiInsights] = useState(false);
   const [loading, setLoading] = useState(true);
 
@@ -241,6 +242,84 @@ export default function EducationDashboardPage() {
             <div className="flex items-center gap-2">
               <Badge variant="outline" className="text-slate-400">
                 <Lock className="h-3 w-3 mr-1" /> Enterprise
+              </Badge>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Team Huddle — Content Hub */}
+      {featureFlags.teamHuddle ? (
+        <Card className="border-teal-200 dark:border-teal-800 bg-gradient-to-r from-teal-50 to-emerald-50 dark:from-teal-900/20 dark:to-emerald-900/20">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <BookOpen className="h-5 w-5 text-teal-600" />
+              Team Huddle
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-slate-600 dark:text-slate-300 mb-4">
+              Curate and manage e-learning content, inspirational videos, articles, and career resources for your students.
+            </p>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+              <Link href="/education/huddle">
+                <div className="flex items-center gap-2 p-3 rounded-lg border border-teal-200 dark:border-teal-700 bg-white dark:bg-slate-800 hover:shadow-sm transition-all cursor-pointer">
+                  <FileTextIcon className="h-4 w-4 text-teal-600" />
+                  <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Posts</span>
+                </div>
+              </Link>
+              <Link href="/education/huddle/topics">
+                <div className="flex items-center gap-2 p-3 rounded-lg border border-teal-200 dark:border-teal-700 bg-white dark:bg-slate-800 hover:shadow-sm transition-all cursor-pointer">
+                  <BookOpen className="h-4 w-4 text-teal-600" />
+                  <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Topics</span>
+                </div>
+              </Link>
+              <Link href="/education/huddle/contributors">
+                <div className="flex items-center gap-2 p-3 rounded-lg border border-teal-200 dark:border-teal-700 bg-white dark:bg-slate-800 hover:shadow-sm transition-all cursor-pointer">
+                  <Users className="h-4 w-4 text-teal-600" />
+                  <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Contributors</span>
+                </div>
+              </Link>
+              <Link href="/education/huddle/analytics">
+                <div className="flex items-center gap-2 p-3 rounded-lg border border-teal-200 dark:border-teal-700 bg-white dark:bg-slate-800 hover:shadow-sm transition-all cursor-pointer">
+                  <BarChart3 className="h-4 w-4 text-teal-600" />
+                  <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Analytics</span>
+                </div>
+              </Link>
+            </div>
+            <div className="flex items-center gap-2">
+              <Link href="/education/huddle/new">
+                <Button className="bg-teal-600 hover:bg-teal-700 gap-1.5" size="sm">
+                  <Plus className="h-4 w-4" />
+                  New Post
+                </Button>
+              </Link>
+              <Link href="/education/huddle">
+                <Button variant="outline" size="sm" className="gap-1.5">
+                  Manage Content
+                  <ArrowRight className="h-3 w-3" />
+                </Button>
+              </Link>
+            </div>
+          </CardContent>
+        </Card>
+      ) : (
+        <Card className="border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/30">
+          <CardContent className="flex items-center justify-between py-5">
+            <div className="flex items-center gap-4">
+              <div className="h-12 w-12 rounded-xl bg-slate-100 dark:bg-slate-700/40 flex items-center justify-center">
+                <BookOpen className="h-6 w-6 text-slate-400" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-slate-500 dark:text-slate-400">Team Huddle</p>
+                <p className="text-xs text-slate-400 mt-0.5">
+                  Premium content hub for e-learning &amp; career resources — available on Professional and Enterprise plans
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <Badge variant="outline" className="text-slate-400">
+                <Lock className="h-3 w-3 mr-1" /> Professional
               </Badge>
             </div>
           </CardContent>
