@@ -41,8 +41,9 @@ export function UserNav({ user }: UserNavProps) {
   const handleLogout = async () => {
     const res = await csrfFetch('/api/auth/logout', { method: 'POST' });
     const data = await res.json().catch(() => ({}));
-    // Full page redirect to clear all client state
-    if (data.subdomain) {
+    // Admins always go to main homepage; students/corporate go to tenant landing
+    const isAdmin = user.role === 'admin' || user.role === 'educational_admin';
+    if (!isAdmin && data.subdomain) {
       window.location.href = `/${data.subdomain}`;
     } else {
       window.location.href = '/';
