@@ -8,6 +8,7 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
+import { csrfFetch } from '@/lib/security/csrf-fetch';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -153,13 +154,13 @@ export default function InboxPage() {
     try {
       let res;
       if (selectedConvo.type === 'application') {
-        res = await fetch(`/api/messages/application/${selectedConvo.id}`, {
+        res = await csrfFetch(`/api/messages/application/${selectedConvo.id}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ content: replyText }),
         });
       } else if (selectedConvo.type === 'direct') {
-        res = await fetch(`/api/direct-messages/${selectedConvo.id}`, {
+        res = await csrfFetch(`/api/direct-messages/${selectedConvo.id}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ content: replyText }),
@@ -197,7 +198,7 @@ export default function InboxPage() {
     if (!selectedRecipient || !composeMessage.trim()) return;
     setComposeSending(true);
     try {
-      const res = await fetch('/api/direct-messages', {
+      const res = await csrfFetch('/api/direct-messages', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

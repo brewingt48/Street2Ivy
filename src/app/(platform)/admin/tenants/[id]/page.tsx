@@ -9,6 +9,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+import { csrfFetch } from '@/lib/security/csrf-fetch';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -149,7 +150,7 @@ export default function TenantDetailPage() {
       const domainsArray = editAllowedDomains
         ? editAllowedDomains.split(',').map((d: string) => d.trim()).filter(Boolean)
         : [];
-      const res = await fetch(`/api/admin/tenants/${id}`, {
+      const res = await csrfFetch(`/api/admin/tenants/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -186,7 +187,7 @@ export default function TenantDetailPage() {
   const handleSuspend = async () => {
     setSuspending(true);
     try {
-      const res = await fetch(`/api/admin/tenants/${id}`, { method: 'DELETE' });
+      const res = await csrfFetch(`/api/admin/tenants/${id}`, { method: 'DELETE' });
       if (res.ok) {
         setShowSuspend(false);
         fetchTenant();
@@ -201,7 +202,7 @@ export default function TenantDetailPage() {
   const handleReactivate = async () => {
     setSaving(true);
     try {
-      const res = await fetch(`/api/admin/tenants/${id}`, {
+      const res = await csrfFetch(`/api/admin/tenants/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: 'active' }),
@@ -609,7 +610,7 @@ export default function TenantDetailPage() {
                         if (isActive) return;
                         setSaving(true);
                         try {
-                          const res = await fetch(`/api/admin/tenants/${id}`, {
+                          const res = await csrfFetch(`/api/admin/tenants/${id}`, {
                             method: 'PUT',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({
@@ -686,7 +687,7 @@ export default function TenantDetailPage() {
                           onClick={async () => {
                             setSaving(true);
                             try {
-                              const res = await fetch(`/api/admin/tenants/${id}`, {
+                              const res = await csrfFetch(`/api/admin/tenants/${id}`, {
                                 method: 'PUT',
                                 headers: { 'Content-Type': 'application/json' },
                                 body: JSON.stringify({
@@ -734,7 +735,7 @@ export default function TenantDetailPage() {
                           onClick={async () => {
                             setSaving(true);
                             try {
-                              const res = await fetch(`/api/admin/tenants/${id}`, {
+                              const res = await csrfFetch(`/api/admin/tenants/${id}`, {
                                 method: 'PUT',
                                 headers: { 'Content-Type': 'application/json' },
                                 body: JSON.stringify({
@@ -785,7 +786,7 @@ export default function TenantDetailPage() {
                           onClick={async () => {
                             setSaving(true);
                             try {
-                              const res = await fetch(`/api/admin/tenants/${id}`, {
+                              const res = await csrfFetch(`/api/admin/tenants/${id}`, {
                                 method: 'PUT',
                                 headers: { 'Content-Type': 'application/json' },
                                 body: JSON.stringify({

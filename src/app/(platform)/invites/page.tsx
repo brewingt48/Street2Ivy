@@ -7,6 +7,7 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
+import { csrfFetch } from '@/lib/security/csrf-fetch';
 import Link from 'next/link';
 import {
   Card,
@@ -116,7 +117,7 @@ export default function InvitesPage() {
     setConfirmDialog((prev) => ({ ...prev, open: false }));
     setActionLoading(`${inviteId}-${action}`);
     try {
-      const res = await fetch(`/api/student/invites/${inviteId}/${action}`, {
+      const res = await csrfFetch(`/api/student/invites/${inviteId}/${action}`, {
         method: 'POST',
       });
       if (res.ok) {

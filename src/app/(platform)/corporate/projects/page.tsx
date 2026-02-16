@@ -8,6 +8,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { csrfFetch } from '@/lib/security/csrf-fetch';
 import {
   Card,
   CardContent,
@@ -96,7 +97,7 @@ export default function CorporateProjectsPage() {
     if (!closeTarget) return;
     setClosing(true);
     try {
-      const res = await fetch(`/api/listings/${closeTarget.id}/close`, { method: 'POST' });
+      const res = await csrfFetch(`/api/listings/${closeTarget.id}/close`, { method: 'POST' });
       if (res.ok) {
         setListings((prev) => prev.map((l) => l.id === closeTarget.id ? { ...l, status: 'closed' } : l));
         setCloseTarget(null);
@@ -112,7 +113,7 @@ export default function CorporateProjectsPage() {
     if (!deleteTarget) return;
     setDeleting(true);
     try {
-      const res = await fetch(`/api/listings/${deleteTarget.id}/delete`, { method: 'DELETE' });
+      const res = await csrfFetch(`/api/listings/${deleteTarget.id}/delete`, { method: 'DELETE' });
       if (res.ok) {
         setListings((prev) => prev.filter((l) => l.id !== deleteTarget.id));
         setDeleteTarget(null);

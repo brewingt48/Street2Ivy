@@ -9,6 +9,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+import { csrfFetch } from '@/lib/security/csrf-fetch';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -272,7 +273,7 @@ export default function NetworkPartnerDetailPage() {
     setSaved(false);
     setError('');
     try {
-      const res = await fetch(`/api/admin/network-partners/${id}`, {
+      const res = await csrfFetch(`/api/admin/network-partners/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -322,7 +323,7 @@ export default function NetworkPartnerDetailPage() {
   const handleActivate = async () => {
     setSaving(true);
     try {
-      const res = await fetch(`/api/admin/network-partners/${id}`, {
+      const res = await csrfFetch(`/api/admin/network-partners/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: 'active' }),
@@ -338,7 +339,7 @@ export default function NetworkPartnerDetailPage() {
   const handleSuspend = async () => {
     setSuspending(true);
     try {
-      const res = await fetch(`/api/admin/network-partners/${id}`, {
+      const res = await csrfFetch(`/api/admin/network-partners/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: 'suspended' }),

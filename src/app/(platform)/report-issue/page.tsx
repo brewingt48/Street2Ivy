@@ -8,6 +8,7 @@
 
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
+import { csrfFetch } from '@/lib/security/csrf-fetch';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -132,7 +133,7 @@ export default function ReportIssuePage() {
   const submitReport = async (corporateId: string) => {
     setSubmitting(true);
     try {
-      const res = await fetch('/api/student/report-issue', {
+      const res = await csrfFetch('/api/student/report-issue', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

@@ -8,6 +8,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { csrfFetch } from '@/lib/security/csrf-fetch';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -119,7 +120,7 @@ export default function CorporateApplicationsPage() {
     if (!respondingApp) return;
     setResponding(true);
     try {
-      const res = await fetch(`/api/corporate/applications/${respondingApp.id}/respond`, {
+      const res = await csrfFetch(`/api/corporate/applications/${respondingApp.id}/respond`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -160,7 +161,7 @@ export default function CorporateApplicationsPage() {
     if (!ratingApp || studentRating === 0) return;
     setRatingSubmitting(true);
     try {
-      const res = await fetch('/api/corporate/rate-student', {
+      const res = await csrfFetch('/api/corporate/rate-student', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

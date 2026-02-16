@@ -8,6 +8,7 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
+import { csrfFetch } from '@/lib/security/csrf-fetch';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -94,7 +95,7 @@ export default function EducationCorporatesPage() {
     if (!actionTarget || !actionType) return;
     setActionLoading(true);
     try {
-      const res = await fetch(`/api/admin/users/${actionTarget.id}/status`, {
+      const res = await csrfFetch(`/api/admin/users/${actionTarget.id}/status`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: actionType, reason: actionReason }),

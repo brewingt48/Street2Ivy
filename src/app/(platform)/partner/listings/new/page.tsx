@@ -8,6 +8,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { csrfFetch } from '@/lib/security/csrf-fetch';
 import {
   Card,
   CardContent,
@@ -139,7 +140,7 @@ export default function CreateListingPage() {
           .filter(Boolean);
       }
 
-      const res = await fetch('/api/partner/listings', {
+      const res = await csrfFetch('/api/partner/listings', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { csrfFetch } from '@/lib/security/csrf-fetch';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -88,7 +89,7 @@ export default function MatchEngineDashboard() {
     setRecomputing(true);
     setRecomputeMessage(null);
     try {
-      const res = await fetch('/api/match-engine/admin/recompute', {
+      const res = await csrfFetch('/api/match-engine/admin/recompute', {
         method: 'POST',
       });
       const data = await res.json();

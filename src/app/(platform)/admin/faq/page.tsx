@@ -7,6 +7,7 @@
  */
 
 import { useState, useEffect } from 'react';
+import { csrfFetch } from '@/lib/security/csrf-fetch';
 import {
   Card,
   CardContent,
@@ -65,7 +66,7 @@ export default function AdminFaqPage() {
     setMsg(null);
     try {
       const orderedItems = items.map((item, i) => ({ ...item, order: i }));
-      const res = await fetch('/api/admin/faq', {
+      const res = await csrfFetch('/api/admin/faq', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ items: orderedItems }),

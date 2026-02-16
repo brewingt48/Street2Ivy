@@ -5,6 +5,7 @@
  */
 
 import { useState, useEffect } from 'react';
+import { csrfFetch } from '@/lib/security/csrf-fetch';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -61,7 +62,7 @@ export default function AdminDashboardPage() {
     setSavingSupport(true);
     setSupportMsg(null);
     try {
-      const res = await fetch('/api/admin/support-settings', {
+      const res = await csrfFetch('/api/admin/support-settings', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -110,7 +111,7 @@ export default function AdminDashboardPage() {
     setSeeding(true);
     setSeedResult(null);
     try {
-      const res = await fetch('/api/admin/seed-test-users', { method: 'POST' });
+      const res = await csrfFetch('/api/admin/seed-test-users', { method: 'POST' });
       const data = await res.json();
       if (res.ok) {
         setSeedResult({ message: data.message, type: 'success' });

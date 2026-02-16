@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useCallback } from 'react';
+import { csrfFetch } from '@/lib/security/csrf-fetch';
 import {
   Dialog,
   DialogContent,
@@ -176,7 +177,7 @@ export function ScopingWizard({
     setDescReview(null);
 
     try {
-      const response = await fetch('/api/ai/project-scoping', {
+      const response = await csrfFetch('/api/ai/project-scoping', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -210,7 +211,7 @@ export function ScopingWizard({
     setSkills([]);
 
     try {
-      const response = await fetch('/api/ai/project-scoping', {
+      const response = await csrfFetch('/api/ai/project-scoping', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -244,7 +245,7 @@ export function ScopingWizard({
     setMilestones([]);
 
     try {
-      const response = await fetch('/api/ai/project-scoping', {
+      const response = await csrfFetch('/api/ai/project-scoping', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

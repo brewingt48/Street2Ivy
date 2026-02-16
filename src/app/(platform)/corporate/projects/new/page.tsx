@@ -6,6 +6,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { csrfFetch } from '@/lib/security/csrf-fetch';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -78,7 +79,7 @@ export default function NewListingPage() {
     if (!title || !description) { setError('Title and description are required'); return; }
     setSaving(true); setError('');
     try {
-      const res = await fetch('/api/listings', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(buildPayload()) });
+      const res = await csrfFetch('/api/listings', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(buildPayload()) });
       if (!res.ok) { const d = await res.json(); const details = d.details ? Object.entries(d.details).map(([k, v]) => `${k}: ${(v as string[]).join(', ')}`).join('; ') : ''; throw new Error(details || d.error || 'Failed to save'); }
       router.push('/corporate/projects');
     } catch (err) { setError(err instanceof Error ? err.message : 'Failed to save'); } finally { setSaving(false); }
@@ -88,10 +89,10 @@ export default function NewListingPage() {
     if (!title || !description) { setError('Title and description are required'); return; }
     setPublishing(true); setError('');
     try {
-      const createRes = await fetch('/api/listings', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(buildPayload()) });
+      const createRes = await csrfFetch('/api/listings', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(buildPayload()) });
       if (!createRes.ok) { const d = await createRes.json(); const details = d.details ? Object.entries(d.details).map(([k, v]) => `${k}: ${(v as string[]).join(', ')}`).join('; ') : ''; throw new Error(details || d.error || 'Failed to create'); }
       const { listing } = await createRes.json();
-      await fetch(`/api/listings/${listing.id}/publish`, { method: 'POST' });
+      await csrfFetch(`/api/listings/${listing.id}/publish`, { method: 'POST' });
       router.push('/corporate/projects');
     } catch (err) { setError(err instanceof Error ? err.message : 'Failed to publish'); } finally { setPublishing(false); }
   };

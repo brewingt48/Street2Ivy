@@ -8,6 +8,7 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
+import { csrfFetch } from '@/lib/security/csrf-fetch';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -142,7 +143,7 @@ export default function PartnersNetworkPage() {
     setInviteMsg(null);
     try {
       const slug = alumniForm.slug || alumniForm.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-      const res = await fetch('/api/tenant/partners/invite', {
+      const res = await csrfFetch('/api/tenant/partners/invite', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -187,7 +188,7 @@ export default function PartnersNetworkPage() {
     setInviteMsg(null);
     try {
       const slug = corporateForm.slug || corporateForm.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-      const res = await fetch('/api/tenant/partners/invite', {
+      const res = await csrfFetch('/api/tenant/partners/invite', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

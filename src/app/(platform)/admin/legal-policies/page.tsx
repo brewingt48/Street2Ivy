@@ -9,6 +9,7 @@
  */
 
 import { useState, useEffect } from 'react';
+import { csrfFetch } from '@/lib/security/csrf-fetch';
 import {
   Card,
   CardContent,
@@ -108,7 +109,7 @@ export default function AdminLegalPoliciesPage() {
     setCreateSaving(true);
     setError('');
     try {
-      const res = await fetch('/api/admin/legal-policies', {
+      const res = await csrfFetch('/api/admin/legal-policies', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(createForm),
@@ -146,7 +147,7 @@ export default function AdminLegalPoliciesPage() {
     setEditSaving(true);
     setError('');
     try {
-      const res = await fetch(`/api/admin/legal-policies/${editingId}`, {
+      const res = await csrfFetch(`/api/admin/legal-policies/${editingId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(editForm),
@@ -170,7 +171,7 @@ export default function AdminLegalPoliciesPage() {
   const handleDelete = async (id: string) => {
     setError('');
     try {
-      const res = await fetch(`/api/admin/legal-policies/${id}`, {
+      const res = await csrfFetch(`/api/admin/legal-policies/${id}`, {
         method: 'DELETE',
       });
       if (!res.ok) {

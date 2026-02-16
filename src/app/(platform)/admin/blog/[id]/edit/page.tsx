@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
+import { csrfFetch } from '@/lib/security/csrf-fetch';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -40,7 +41,7 @@ export default function EditBlogPostPage() {
     if (!title) { setError('Title is required'); return; }
     setSaving(true); setError('');
     try {
-      const res = await fetch(`/api/admin/blog/posts/${params.id}`, {
+      const res = await csrfFetch(`/api/admin/blog/posts/${params.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ title, slug, content, excerpt, category, status: newStatus || status }),

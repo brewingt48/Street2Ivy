@@ -8,6 +8,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
+import { csrfFetch } from '@/lib/security/csrf-fetch';
 import {
   Card,
   CardContent,
@@ -87,7 +88,7 @@ export default function ApplyPage() {
     setError('');
 
     try {
-      const res = await fetch('/api/applications', {
+      const res = await csrfFetch('/api/applications', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

@@ -8,6 +8,7 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
+import { csrfFetch } from '@/lib/security/csrf-fetch';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -186,7 +187,7 @@ export default function EducationSettingsPage() {
     setSaved(false);
     setError('');
     try {
-      const res = await fetch('/api/education/settings', {
+      const res = await csrfFetch('/api/education/settings', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -577,7 +578,7 @@ export default function EducationSettingsPage() {
                 setContentSaving(true);
                 setContentMsg(null);
                 try {
-                  const res = await fetch('/api/education/content', {
+                  const res = await csrfFetch('/api/education/content', {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -690,7 +691,7 @@ export default function EducationSettingsPage() {
           setFaqMsg(null);
           try {
             const orderedItems = faqItems.map((item, i) => ({ ...item, order: i }));
-            const res = await fetch('/api/education/faq', {
+            const res = await csrfFetch('/api/education/faq', {
               method: 'PUT',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ items: orderedItems }),
@@ -727,7 +728,7 @@ export default function EducationSettingsPage() {
                 setBrandingSaving(true);
                 setBrandingMsg(null);
                 try {
-                  const res = await fetch('/api/tenant/branding', {
+                  const res = await csrfFetch('/api/tenant/branding', {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -1056,7 +1057,7 @@ function UpgradeRequestCard({ currentPlan }: { currentPlan: string }) {
     if (!selectedPlan) return;
     setRequesting(true);
     try {
-      const res = await fetch('/api/education/upgrade-request', {
+      const res = await csrfFetch('/api/education/upgrade-request', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ requestedPlan: selectedPlan, message }),

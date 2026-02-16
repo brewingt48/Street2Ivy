@@ -11,6 +11,7 @@
  */
 
 import { useState, useEffect } from 'react';
+import { csrfFetch } from '@/lib/security/csrf-fetch';
 import {
   Card,
   CardContent,
@@ -119,7 +120,7 @@ export default function AdminHomepageCMS() {
     setError('');
     setSaved(false);
     try {
-      const res = await fetch('/api/admin/settings', {
+      const res = await csrfFetch('/api/admin/settings', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(settings),

@@ -6,6 +6,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
+import { csrfFetch } from '@/lib/security/csrf-fetch';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -70,7 +71,7 @@ export default function EditListingPage() {
   const handleSave = async () => {
     setSaving(true); setError(''); setSuccess('');
     try {
-      const res = await fetch(`/api/listings/${listingId}`, {
+      const res = await csrfFetch(`/api/listings/${listingId}`, {
         method: 'PUT', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           title, description, category: category || null, location: location || null,
@@ -89,7 +90,7 @@ export default function EditListingPage() {
   const handlePublish = async () => {
     await handleSave();
     try {
-      const res = await fetch(`/api/listings/${listingId}/publish`, { method: 'POST' });
+      const res = await csrfFetch(`/api/listings/${listingId}/publish`, { method: 'POST' });
       if (res.ok) { setListingStatus('published'); setSuccess('Listing published!'); }
     } catch (err) { setError(err instanceof Error ? err.message : 'Failed to publish'); }
   };
@@ -97,7 +98,7 @@ export default function EditListingPage() {
   const handleClose = async () => {
     if (!confirm('Close this listing? It will no longer accept applications.')) return;
     try {
-      const res = await fetch(`/api/listings/${listingId}/close`, { method: 'POST' });
+      const res = await csrfFetch(`/api/listings/${listingId}/close`, { method: 'POST' });
       if (res.ok) { setListingStatus('closed'); setSuccess('Listing closed'); }
     } catch (err) { setError(err instanceof Error ? err.message : 'Failed to close'); }
   };

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { csrfFetch } from '@/lib/security/csrf-fetch';
 import {
   Card,
   CardContent,
@@ -118,7 +119,7 @@ export function DiffView({
     setAllApplied(false);
 
     try {
-      const response = await fetch('/api/ai/diff-view', {
+      const response = await csrfFetch('/api/ai/diff-view', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

@@ -8,6 +8,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { csrfFetch } from '@/lib/security/csrf-fetch';
 import {
   Card,
   CardContent,
@@ -97,7 +98,7 @@ export default function ApplicationsPage() {
     if (!confirm('Are you sure you want to withdraw this application?')) return;
     setWithdrawing(id);
     try {
-      const res = await fetch(`/api/applications/${id}`, {
+      const res = await csrfFetch(`/api/applications/${id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'withdraw' }),

@@ -7,6 +7,7 @@
  */
 
 import { useRouter } from 'next/navigation';
+import { csrfFetch } from '@/lib/security/csrf-fetch';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import {
@@ -38,7 +39,7 @@ export function UserNav({ user }: UserNavProps) {
   const displayName = user.displayName || `${user.firstName} ${user.lastName}`;
 
   const handleLogout = async () => {
-    const res = await fetch('/api/auth/logout', { method: 'POST' });
+    const res = await csrfFetch('/api/auth/logout', { method: 'POST' });
     const data = await res.json().catch(() => ({}));
     // Redirect to tenant homepage if available, otherwise main site
     if (data.subdomain) {

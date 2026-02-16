@@ -8,6 +8,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { csrfFetch } from '@/lib/security/csrf-fetch';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -76,7 +77,7 @@ export default function OnboardingPage() {
     setLoading(true);
     setError('');
     try {
-      const res = await fetch('/api/profile', {
+      const res = await csrfFetch('/api/profile', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -104,7 +105,7 @@ export default function OnboardingPage() {
     setLoading(true);
     setError('');
     try {
-      const res = await fetch('/api/skills', {
+      const res = await csrfFetch('/api/skills', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ skillIds: Array.from(selectedSkillIds) }),

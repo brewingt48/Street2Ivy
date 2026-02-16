@@ -27,6 +27,7 @@ import {
   Lightbulb,
 } from 'lucide-react';
 import { UpgradePrompt } from '@/components/coaching/upgrade-prompt';
+import { csrfFetch } from '@/lib/security/csrf-fetch';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -188,7 +189,7 @@ export default function AiInsightsPage() {
     setPortfolioInsights(null);
 
     try {
-      const response = await fetch('/api/ai/portfolio-intelligence', {
+      const response = await csrfFetch('/api/ai/portfolio-intelligence', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({}),
@@ -217,7 +218,7 @@ export default function AiInsightsPage() {
     setTalentInsights(null);
 
     try {
-      const response = await fetch('/api/ai/talent-insights', {
+      const response = await csrfFetch('/api/ai/talent-insights', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({}),

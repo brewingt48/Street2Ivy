@@ -7,6 +7,7 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
+import { csrfFetch } from '@/lib/security/csrf-fetch';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -102,7 +103,7 @@ export default function SearchStudentsPage() {
     if (!invitingStudent || !inviteMessage.trim()) return;
     setSending(true);
     try {
-      const res = await fetch('/api/corporate/invites', {
+      const res = await csrfFetch('/api/corporate/invites', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

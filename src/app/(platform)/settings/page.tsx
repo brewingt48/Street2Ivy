@@ -7,6 +7,7 @@
  */
 
 import { useState, useEffect } from 'react';
+import { csrfFetch } from '@/lib/security/csrf-fetch';
 import {
   Card,
   CardContent,
@@ -166,7 +167,7 @@ export default function SettingsPage() {
     setProfileSaving(true);
     setProfileMsg(null);
     try {
-      const res = await fetch('/api/profile', {
+      const res = await csrfFetch('/api/profile', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -207,7 +208,7 @@ export default function SettingsPage() {
     setSkillsSaving(true);
     setSkillsMsg(null);
     try {
-      const res = await fetch('/api/skills', {
+      const res = await csrfFetch('/api/skills', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ skillIds: Array.from(selectedSkillIds) }),
@@ -242,7 +243,7 @@ export default function SettingsPage() {
     }
 
     try {
-      const res = await fetch('/api/auth/reset-password', {
+      const res = await csrfFetch('/api/auth/reset-password', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -269,7 +270,7 @@ export default function SettingsPage() {
     setPrivacySaving(true);
     setPrivacyMsg(null);
     try {
-      const res = await fetch('/api/profile/privacy', {
+      const res = await csrfFetch('/api/profile/privacy', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ aiTrainingOptOut, aiCoachingEnabled }),

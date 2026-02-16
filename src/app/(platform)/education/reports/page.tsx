@@ -7,6 +7,7 @@
  */
 
 import { useState, useEffect } from 'react';
+import { csrfFetch } from '@/lib/security/csrf-fetch';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -90,7 +91,7 @@ export default function EducationReportsPage() {
   const handleUpdateStatus = async (reportId: string, newStatus: string) => {
     setProcessing(true);
     try {
-      const res = await fetch(`/api/education/reports/${reportId}`, {
+      const res = await csrfFetch(`/api/education/reports/${reportId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
