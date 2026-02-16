@@ -10,14 +10,13 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
-import { GraduationCap, Briefcase, CheckCircle2, Clock, Info, TrendingUp, ArrowRight, Star, Crown, Lock, Sparkles } from 'lucide-react';
+import { GraduationCap, Briefcase, CheckCircle2, Clock, Info, TrendingUp, ArrowRight, Star, Crown, Lock, Sparkles, Building2, Plus, Globe } from 'lucide-react';
 import { HelpSupportCard } from '@/components/shared/help-support-card';
 
 interface Stats {
   totalStudents: number;
   activeProjects: number;
   completedProjects: number;
-  waitlistCount: number;
   avgStudentRating: number | null;
   totalStudentRatings: number;
   ratedStudents: number;
@@ -104,7 +103,7 @@ export default function EducationDashboardPage() {
             <ul className="space-y-1 text-teal-700 dark:text-teal-400">
               <li>&bull; <strong>Students</strong> &mdash; View and manage enrolled students from your institution</li>
               <li>&bull; <strong>Corporate Partners</strong> &mdash; Approve or manage corporate partners within your tenant</li>
-              <li>&bull; <strong>Waitlist</strong> &mdash; Review and manage students waiting for approval</li>
+              <li>&bull; <strong>Partners &amp; Network</strong> &mdash; Invite corporate partners to your talent engine and manage relationships</li>
               <li>&bull; <strong>Branding &amp; Settings</strong> &mdash; Customize your institution&apos;s branding and configuration</li>
             </ul>
           </div>
@@ -175,19 +174,24 @@ export default function EducationDashboardPage() {
             </CardContent>
           </Card>
         )}
-        <Link href="/education/waitlist">
-          <Card className="hover:border-teal-300 hover:shadow-sm transition-all cursor-pointer">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Waitlist</CardTitle>
-              <Clock className="h-4 w-4 text-slate-400" />
-            </CardHeader>
-            <CardContent><div className="text-2xl font-bold">{stats?.waitlistCount || 0}</div></CardContent>
-          </Card>
-        </Link>
       </div>
 
-      {/* Analytics Link */}
-      <div className="flex justify-end">
+      {/* Quick Actions */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Link href="/education/partners">
+            <Button className="bg-teal-600 hover:bg-teal-700 gap-1.5" size="sm">
+              <Plus className="h-4 w-4" />
+              Invite Corporate Partner
+            </Button>
+          </Link>
+          <Link href="/education/partners">
+            <Button variant="outline" size="sm" className="gap-1.5">
+              <Globe className="h-4 w-4" />
+              Manage Partners
+            </Button>
+          </Link>
+        </div>
         <Link href="/education/analytics">
           <Button variant="outline" size="sm" className="gap-1.5">
             <TrendingUp className="h-4 w-4" />
@@ -345,10 +349,6 @@ export default function EducationDashboardPage() {
             <div>
               <p className="font-medium text-slate-900 dark:text-white mb-1">Completed</p>
               <p>Projects that have been successfully completed by students from your institution.</p>
-            </div>
-            <div>
-              <p className="font-medium text-slate-900 dark:text-white mb-1">Waitlist</p>
-              <p>Students waiting for approval to join the platform. Review and approve them from the Waitlist page.</p>
             </div>
           </div>
         </CardContent>

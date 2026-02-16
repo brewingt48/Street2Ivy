@@ -193,15 +193,6 @@ export default function AdminDashboardPage() {
             <p className="text-xs text-slate-400">{apps.pending || 0} pending</p>
           </CardContent>
         </Card>
-        <Link href="/admin/waitlist">
-          <Card className="hover:border-teal-300 hover:shadow-sm transition-all cursor-pointer">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Waitlist</CardTitle>
-              <Clock className="h-4 w-4 text-slate-400" />
-            </CardHeader>
-            <CardContent><div className="text-2xl font-bold">{data?.waitlist as number || 0}</div></CardContent>
-          </Card>
-        </Link>
         <Link href="/admin/edu-applications">
           <Card className="hover:border-teal-300 hover:shadow-sm transition-all cursor-pointer">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -255,7 +246,6 @@ export default function AdminDashboardPage() {
                 { href: '/admin/tenants', label: 'Manage Tenants', icon: Building2 },
                 { href: '/admin/institutions', label: 'Institutions', icon: GraduationCap },
                 { href: '/admin/blog', label: 'Blog CMS', icon: FileText },
-                { href: '/admin/waitlist', label: 'Waitlist', icon: Clock },
               ].map((link) => (
                 <Link key={link.href} href={link.href}
                   className="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 text-sm">

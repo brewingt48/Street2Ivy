@@ -53,11 +53,6 @@ export async function GET(request: NextRequest) {
     `;
     const studentsPlaced = parseInt(appStats[0].students_placed as string);
 
-    // Waitlist
-    const waitlistCount = await sql`
-      SELECT COUNT(*) as count FROM student_waitlist WHERE contacted = false
-    `;
-
     // Enrollment timeline
     const enrollmentTimeline = interval === 'day'
       ? await sql`
@@ -149,7 +144,6 @@ export async function GET(request: NextRequest) {
         avgGPA: avgGpaResult[0].avg_gpa ? parseFloat(avgGpaResult[0].avg_gpa as string) : null,
         activeProjects: parseInt(appStats[0].accepted as string),
         completedProjects: parseInt(appStats[0].completed as string),
-        waitlistPending: parseInt(waitlistCount[0].count as string),
       },
       enrollmentTimeline: enrollmentTimeline.map((r: Record<string, unknown>) => ({
         date: r.date instanceof Date ? r.date.toISOString().split('T')[0] : String(r.date),

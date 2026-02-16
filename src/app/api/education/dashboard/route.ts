@@ -43,11 +43,6 @@ export async function GET() {
         ${tenantId ? sql`AND u.tenant_id = ${tenantId}` : sql``}
     `;
 
-    const waitlistCount = await sql`
-      SELECT COUNT(*) as count FROM student_waitlist
-      WHERE contacted = false
-    `;
-
     // Average student performance rating (gated by studentRatings feature)
     let avgPerformance = [{ avg_rating: null, total_ratings: '0', rated_students: '0' }];
     let topStudents: Record<string, unknown>[] = [];
@@ -94,7 +89,6 @@ export async function GET() {
         totalStudents: parseInt(totalStudents[0].count as string),
         activeProjects: parseInt(activeProjects[0].count as string),
         completedProjects: parseInt(completedProjects[0].count as string),
-        waitlistCount: parseInt(waitlistCount[0].count as string),
         avgStudentRating: hasStudentRatings && avgPerformance[0]?.avg_rating ? Number(avgPerformance[0].avg_rating) : null,
         totalStudentRatings: hasStudentRatings ? (parseInt(avgPerformance[0]?.total_ratings as string) || 0) : 0,
         ratedStudents: hasStudentRatings ? (parseInt(avgPerformance[0]?.rated_students as string) || 0) : 0,

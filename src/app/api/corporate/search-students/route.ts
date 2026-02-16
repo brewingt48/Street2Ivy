@@ -15,10 +15,7 @@ export async function GET(request: NextRequest) {
 
     const { searchParams } = new URL(request.url);
     const q = searchParams.get('q') || '';
-    const skill = searchParams.get('skill') || '';
-    const alumniOf = searchParams.get('alumniOf') || '';
-    const sportsPlayed = searchParams.get('sportsPlayed') || '';
-    const activities = searchParams.get('activities') || '';
+    const graduationYear = searchParams.get('graduationYear') || '';
     const page = Math.max(1, parseInt(searchParams.get('page') || '1'));
     const limit = Math.min(50, Math.max(1, parseInt(searchParams.get('limit') || '20')));
     const offset = (page - 1) * limit;
@@ -32,39 +29,15 @@ export async function GET(request: NextRequest) {
     if (q) {
       const searchPattern = `%${q}%`;
       conditions.push(
-        sql`(u.display_name ILIKE ${searchPattern} OR u.university ILIKE ${searchPattern} OR u.major ILIKE ${searchPattern})`
+        sql`(u.display_name ILIKE ${searchPattern} OR u.major ILIKE ${searchPattern})`
       );
     }
 
-    if (skill) {
-      const skillPattern = `%${skill}%`;
-      conditions.push(
-        sql`EXISTS (
-          SELECT 1 FROM user_skills us JOIN skills s ON s.id = us.skill_id
-          WHERE us.user_id = u.id AND s.name ILIKE ${skillPattern}
-        )`
-      );
-    }
-
-    if (alumniOf) {
-      const alumniPattern = `%${alumniOf}%`;
-      conditions.push(
-        sql`u.metadata->>'alumniOf' ILIKE ${alumniPattern}`
-      );
-    }
-
-    if (sportsPlayed) {
-      const sportsPattern = `%${sportsPlayed}%`;
-      conditions.push(
-        sql`u.metadata->>'sportsPlayed' ILIKE ${sportsPattern}`
-      );
-    }
-
-    if (activities) {
-      const activitiesPattern = `%${activities}%`;
-      conditions.push(
-        sql`u.metadata->>'activities' ILIKE ${activitiesPattern}`
-      );
+    if (graduationYear) {
+      const year = parseInt(graduationYear);
+      if (!isNaN(year)) {
+        conditions.push(sql`u.graduation_year = ${year}`);
+      }
     }
 
     const whereClause = conditions.reduce((acc, cond, i) =>

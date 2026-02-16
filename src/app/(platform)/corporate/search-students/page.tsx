@@ -17,7 +17,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Search, Send, GraduationCap, MapPin, Clock, Star, ChevronLeft, ChevronRight, School, Trophy, Activity } from 'lucide-react';
+import { Search, Send, GraduationCap, MapPin, Clock, Star, ChevronLeft, ChevronRight, School, Trophy, Activity, Info } from 'lucide-react';
+import { TalentPoolInsights } from '@/components/corporate/talent-pool-insights';
 
 interface Student {
   id: string;
@@ -47,10 +48,7 @@ export default function SearchStudentsPage() {
   const [listings, setListings] = useState<Listing[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
-  const [skillFilter, setSkillFilter] = useState('');
-  const [alumniOfFilter, setAlumniOfFilter] = useState('');
-  const [sportsPlayedFilter, setSportsPlayedFilter] = useState('');
-  const [activitiesFilter, setActivitiesFilter] = useState('');
+  const [graduationYear, setGraduationYear] = useState('');
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
@@ -66,10 +64,7 @@ export default function SearchStudentsPage() {
     try {
       const params = new URLSearchParams({ page: String(page), limit: '20' });
       if (searchQuery) params.set('q', searchQuery);
-      if (skillFilter) params.set('skill', skillFilter);
-      if (alumniOfFilter) params.set('alumniOf', alumniOfFilter);
-      if (sportsPlayedFilter) params.set('sportsPlayed', sportsPlayedFilter);
-      if (activitiesFilter) params.set('activities', activitiesFilter);
+      if (graduationYear) params.set('graduationYear', graduationYear);
       const res = await fetch(`/api/corporate/search-students?${params}`);
       const data = await res.json();
       setStudents(data.students || []);
@@ -79,7 +74,7 @@ export default function SearchStudentsPage() {
     } finally {
       setLoading(false);
     }
-  }, [page, searchQuery, skillFilter, alumniOfFilter, sportsPlayedFilter, activitiesFilter]);
+  }, [page, searchQuery, graduationYear]);
 
   useEffect(() => {
     fetchStudents();
@@ -138,44 +133,46 @@ export default function SearchStudentsPage() {
         <p className="text-slate-500 dark:text-slate-400 mt-1">Search for talented students and invite them to your projects</p>
       </div>
 
+      {/* Matching Explainer */}
+      <div className="bg-teal-50 dark:bg-teal-900/20 border border-teal-200 dark:border-teal-800 rounded-lg p-4">
+        <div className="flex items-start gap-3">
+          <Info className="h-5 w-5 text-teal-600 mt-0.5 shrink-0" />
+          <div className="text-sm text-teal-800 dark:text-teal-300">
+            <p className="font-medium mb-1">How Student Matching Works</p>
+            <p className="text-teal-700 dark:text-teal-400">
+              Our matching considers more than just qualifications. Students are matched based on skills, availability,
+              athletic background, schedule compatibility, and growth potential. Use the Talent Pool Insights below to
+              understand what students are available and craft postings that attract the best talent.
+            </p>
+          </div>
+        </div>
+      </div>
+
       {/* Search & Filters */}
       <Card>
         <CardContent className="py-4">
-          <form onSubmit={handleSearch} className="flex gap-3 flex-wrap">
+          <form onSubmit={handleSearch} className="flex gap-3 flex-wrap items-end">
             <div className="flex-1 min-w-[200px]">
               <Input
-                placeholder="Search by name, university, or major..."
+                placeholder="Search by name or major..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
-            <div className="w-40">
-              <Input
-                placeholder="Filter by skill..."
-                value={skillFilter}
-                onChange={(e) => setSkillFilter(e.target.value)}
-              />
-            </div>
-            <div className="w-40">
-              <Input
-                placeholder="Alumni of (school)..."
-                value={alumniOfFilter}
-                onChange={(e) => setAlumniOfFilter(e.target.value)}
-              />
-            </div>
-            <div className="w-40">
-              <Input
-                placeholder="Sports played..."
-                value={sportsPlayedFilter}
-                onChange={(e) => setSportsPlayedFilter(e.target.value)}
-              />
-            </div>
-            <div className="w-40">
-              <Input
-                placeholder="Activities..."
-                value={activitiesFilter}
-                onChange={(e) => setActivitiesFilter(e.target.value)}
-              />
+            <div className="w-44">
+              <Select value={graduationYear} onValueChange={(v) => { setGraduationYear(v === 'all' ? '' : v); setPage(1); }}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Graduation Year" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Years</SelectItem>
+                  <SelectItem value="2024">2024</SelectItem>
+                  <SelectItem value="2025">2025</SelectItem>
+                  <SelectItem value="2026">2026</SelectItem>
+                  <SelectItem value="2027">2027</SelectItem>
+                  <SelectItem value="2028">2028</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
             <Button type="submit" className="bg-teal-600 hover:bg-teal-700">
               <Search className="h-4 w-4 mr-2" /> Search
@@ -183,6 +180,9 @@ export default function SearchStudentsPage() {
           </form>
         </CardContent>
       </Card>
+
+      {/* Talent Pool Insights */}
+      <TalentPoolInsights variant="full" defaultExpanded={false} />
 
       {/* Results */}
       {loading && (

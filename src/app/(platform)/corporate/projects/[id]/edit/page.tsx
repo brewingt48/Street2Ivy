@@ -16,6 +16,7 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ArrowLeft, Save, Send, XCircle, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { TalentPoolInsights } from '@/components/corporate/talent-pool-insights';
 
 interface Skill { id: string; name: string; category: string; }
 
@@ -155,6 +156,12 @@ export default function EditListingPage() {
           <div className="space-y-2"><Label>Max Applicants</Label><Input type="number" value={maxApplicants} onChange={(e) => setMaxApplicants(e.target.value)} className="max-w-xs" /></div>
         </CardContent>
       </Card>
+
+      {/* Posting Insights */}
+      <TalentPoolInsights
+        variant="compact"
+        listingContext={{ hoursPerWeek: hoursPerWeek ? parseInt(hoursPerWeek) : undefined, selectedSkills }}
+      />
 
       <Card>
         <CardHeader><CardTitle>Required Skills ({selectedSkills.length})</CardTitle></CardHeader>

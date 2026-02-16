@@ -223,8 +223,6 @@ export default function PartnersNetworkPage() {
 
   const relationshipColors: Record<string, string> = {
     exclusive: 'bg-purple-100 text-purple-700',
-    preferred: 'bg-blue-100 text-blue-700',
-    standard: 'bg-slate-100 text-slate-600',
     network: 'bg-teal-100 text-teal-700',
   };
 
@@ -411,7 +409,7 @@ export default function PartnersNetworkPage() {
                       </div>
                     </div>
                     <Badge className="bg-purple-100 text-purple-700 border-0 text-xs">
-                      {partner.access?.relationship === 'preferred' ? 'Preferred' : 'Exclusive'}
+                      Exclusive
                     </Badge>
                   </div>
                 </CardHeader>
