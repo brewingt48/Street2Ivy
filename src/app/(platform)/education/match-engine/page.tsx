@@ -116,7 +116,7 @@ export default function MatchEngineDashboard() {
             Proveground&apos;s Proprietary <strong>Match Engine&trade;</strong>
           </h1>
           <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-            Proprietary bi-directional matching system &mdash; multi-dimensional scoring
+            Real-time scoring stats for your network &mdash; hover the <Info className="inline h-3 w-3 text-slate-400" /> icons for details
           </p>
         </div>
         <div className="flex items-center gap-2">
