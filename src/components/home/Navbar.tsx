@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, Search } from 'lucide-react';
+import { Menu, X, Search, Loader2 } from 'lucide-react';
 
 const navLinks = [
   { label: 'How It Works', href: '#how-it-works' },
@@ -12,11 +12,25 @@ const navLinks = [
 
 const DEMO_URL = 'https://calendly.com/proveground/demo';
 
+interface TenantResult {
+  subdomain: string;
+  name: string;
+  displayName: string;
+  logoUrl: string | null;
+}
+
 export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [loginOpen, setLoginOpen] = useState(false);
   const [tenantSearch, setTenantSearch] = useState('');
+  const [searchResults, setSearchResults] = useState<TenantResult[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const [hasSearched, setHasSearched] = useState(false);
+  const [selectedTenant, setSelectedTenant] = useState<TenantResult | null>(null);
+  const [highlightIndex, setHighlightIndex] = useState(-1);
+  const debounceRef = useRef<ReturnType<typeof setTimeout>>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 40);
@@ -40,12 +54,88 @@ export function Navbar() {
     return () => { document.body.style.overflow = ''; };
   }, [loginOpen]);
 
-  const handleGoToMarketplace = () => {
-    if (!tenantSearch.trim()) return;
-    // Convert input to a subdomain-style slug and navigate
-    const slug = tenantSearch.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
-    window.location.href = `/${slug}`;
+  // Reset state when modal closes
+  useEffect(() => {
+    if (!loginOpen) {
+      setTenantSearch('');
+      setSearchResults([]);
+      setHasSearched(false);
+      setSelectedTenant(null);
+      setHighlightIndex(-1);
+    }
+  }, [loginOpen]);
+
+  // Debounced tenant search
+  const searchTenants = useCallback(async (query: string) => {
+    if (query.length < 2) {
+      setSearchResults([]);
+      setHasSearched(false);
+      setIsSearching(false);
+      return;
+    }
+
+    setIsSearching(true);
+    try {
+      const res = await fetch(`/api/public/tenants/search?q=${encodeURIComponent(query)}`);
+      if (res.ok) {
+        const data = await res.json();
+        setSearchResults(data.tenants || []);
+        setHasSearched(true);
+      }
+    } catch {
+      setSearchResults([]);
+      setHasSearched(true);
+    } finally {
+      setIsSearching(false);
+    }
+  }, []);
+
+  const handleInputChange = (value: string) => {
+    setTenantSearch(value);
+    setSelectedTenant(null);
+    setHighlightIndex(-1);
+
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => searchTenants(value.trim()), 300);
   };
+
+  const handleSelectTenant = (tenant: TenantResult) => {
+    setSelectedTenant(tenant);
+    setTenantSearch(tenant.displayName);
+    setSearchResults([]);
+    setHasSearched(false);
+    setHighlightIndex(-1);
+  };
+
+  const handleGoToTenant = () => {
+    if (selectedTenant) {
+      window.location.href = `/${selectedTenant.subdomain}`;
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (searchResults.length === 0) {
+      if (e.key === 'Enter' && selectedTenant) {
+        handleGoToTenant();
+      }
+      return;
+    }
+
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      setHighlightIndex((prev) => Math.min(prev + 1, searchResults.length - 1));
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      setHighlightIndex((prev) => Math.max(prev - 1, 0));
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      if (highlightIndex >= 0 && highlightIndex < searchResults.length) {
+        handleSelectTenant(searchResults[highlightIndex]);
+      }
+    }
+  };
+
+  const showDropdown = searchResults.length > 0 || (hasSearched && tenantSearch.trim().length >= 2 && !selectedTenant);
 
   return (
     <>
@@ -206,20 +296,94 @@ export function Navbar() {
 
                 <div className="relative mb-4">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  {isSearching && (
+                    <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 animate-spin" />
+                  )}
                   <input
+                    ref={inputRef}
                     type="text"
                     value={tenantSearch}
-                    onChange={(e) => setTenantSearch(e.target.value)}
-                    onKeyDown={(e) => e.key === 'Enter' && handleGoToMarketplace()}
-                    placeholder="Enter your school or organization name"
-                    className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 text-sm text-[#1a1a2e] placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#d4a843]/40 focus:border-[#d4a843] transition-all"
+                    onChange={(e) => handleInputChange(e.target.value)}
+                    onKeyDown={handleKeyDown}
+                    placeholder="Search for your school or organization"
+                    className="w-full pl-10 pr-10 py-3 rounded-xl border border-gray-200 text-sm text-[#1a1a2e] placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#d4a843]/40 focus:border-[#d4a843] transition-all"
                     autoFocus
                   />
+
+                  {/* Autocomplete dropdown */}
+                  {showDropdown && (
+                    <div className="absolute left-0 right-0 top-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden z-10 max-h-64 overflow-y-auto">
+                      {searchResults.length > 0 ? (
+                        searchResults.map((tenant, i) => (
+                          <button
+                            key={tenant.subdomain}
+                            onClick={() => handleSelectTenant(tenant)}
+                            className={`w-full flex items-center gap-3 px-4 py-3 text-left transition-colors ${
+                              i === highlightIndex
+                                ? 'bg-[#d4a843]/10'
+                                : 'hover:bg-gray-50'
+                            }`}
+                          >
+                            {tenant.logoUrl ? (
+                              <img
+                                src={tenant.logoUrl}
+                                alt=""
+                                className="w-8 h-8 rounded-lg object-contain bg-gray-50 shrink-0"
+                              />
+                            ) : (
+                              <div className="w-8 h-8 rounded-lg bg-[#1a1a2e]/5 flex items-center justify-center shrink-0">
+                                <span className="text-xs font-bold text-[#1a1a2e]/40">
+                                  {tenant.displayName.charAt(0).toUpperCase()}
+                                </span>
+                              </div>
+                            )}
+                            <div className="min-w-0">
+                              <p className="text-sm font-medium text-[#1a1a2e] truncate">
+                                {tenant.displayName}
+                              </p>
+                              <p className="text-xs text-gray-400 truncate">
+                                {tenant.subdomain}.proveground.com
+                              </p>
+                            </div>
+                          </button>
+                        ))
+                      ) : (
+                        <div className="px-4 py-6 text-center">
+                          <p className="text-sm text-gray-500">No schools found</p>
+                          <p className="text-xs text-gray-400 mt-1">
+                            Try a different name or contact your program administrator.
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
 
+                {/* Selected tenant indicator */}
+                {selectedTenant && (
+                  <div className="mb-4 flex items-center gap-2 px-3 py-2 rounded-lg bg-green-50 border border-green-100">
+                    {selectedTenant.logoUrl ? (
+                      <img
+                        src={selectedTenant.logoUrl}
+                        alt=""
+                        className="w-5 h-5 rounded object-contain"
+                      />
+                    ) : (
+                      <div className="w-5 h-5 rounded bg-[#1a1a2e]/10 flex items-center justify-center">
+                        <span className="text-[8px] font-bold text-[#1a1a2e]/50">
+                          {selectedTenant.displayName.charAt(0).toUpperCase()}
+                        </span>
+                      </div>
+                    )}
+                    <span className="text-xs text-green-700 font-medium truncate">
+                      {selectedTenant.displayName}
+                    </span>
+                  </div>
+                )}
+
                 <button
-                  onClick={handleGoToMarketplace}
-                  disabled={!tenantSearch.trim()}
+                  onClick={handleGoToTenant}
+                  disabled={!selectedTenant}
                   className="w-full py-3 rounded-xl bg-[#d4a843] text-[#1a1a2e] text-sm font-semibold hover:bg-[#f0c75e] transition-all duration-200 shadow-md shadow-[#d4a843]/20 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Go to My Talent Engine
