@@ -65,25 +65,30 @@ const DEMO_URL = 'https://calendly.com/proveground/demo';
 
 interface HeroProps {
   mode?: 'video' | 'carousel';
+  images?: Array<{ src: string; alt: string }>;
+  intervalMs?: number;
 }
 
-export function Hero({ mode = 'carousel' }: HeroProps) {
+export function Hero({ mode = 'carousel', images, intervalMs = 3500 }: HeroProps) {
   const [loaded, setLoaded] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
+
+  // Use admin-configured images if provided, otherwise fall back to hardcoded defaults
+  const activeImages = images && images.length > 0 ? images : carouselImages;
 
   useEffect(() => {
     setLoaded(true);
   }, []);
 
   const nextSlide = useCallback(() => {
-    setCurrentSlide((prev) => (prev + 1) % carouselImages.length);
-  }, []);
+    setCurrentSlide((prev) => (prev + 1) % activeImages.length);
+  }, [activeImages.length]);
 
   useEffect(() => {
     if (mode !== 'carousel') return;
-    const timer = setInterval(nextSlide, 3500);
+    const timer = setInterval(nextSlide, intervalMs);
     return () => clearInterval(timer);
-  }, [mode, nextSlide]);
+  }, [mode, nextSlide, intervalMs]);
 
   const scrollToHowItWorks = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -105,7 +110,7 @@ export function Hero({ mode = 'carousel' }: HeroProps) {
           loop
           playsInline
           preload="metadata"
-          poster={carouselImages[0].src}
+          poster={activeImages[0].src}
           className="absolute inset-0 w-full h-full object-cover"
         >
           {/* Replace with Proveground hero video */}
@@ -124,9 +129,9 @@ export function Hero({ mode = 'carousel' }: HeroProps) {
               exit={{ opacity: 0 }}
               transition={{ opacity: { duration: 0.6 }, scale: { duration: 4, ease: 'linear' } }}
               className="absolute inset-0 bg-cover bg-center"
-              style={{ backgroundImage: `url(${carouselImages[currentSlide].src})` }}
+              style={{ backgroundImage: `url(${activeImages[currentSlide].src})` }}
               role="img"
-              aria-label={carouselImages[currentSlide].alt}
+              aria-label={activeImages[currentSlide].alt}
             />
           </AnimatePresence>
         </div>
@@ -219,7 +224,7 @@ export function Hero({ mode = 'carousel' }: HeroProps) {
           transition={{ delay: 1.4 }}
           className="absolute bottom-8 right-8 flex gap-1.5"
         >
-          {carouselImages.map((_, i) => (
+          {activeImages.map((_, i) => (
             <button
               key={i}
               onClick={() => setCurrentSlide(i)}

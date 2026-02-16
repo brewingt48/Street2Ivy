@@ -28,6 +28,7 @@ export async function GET() {
       howItWorksCopy: settings.howItWorksCopy || {},
       socialProofCopy: settings.socialProofCopy || {},
       ctaCopy: settings.ctaCopy || {},
+      heroCarousel: settings.heroCarousel || null,
     });
 
     // Prevent caching so admin changes appear immediately
@@ -45,6 +46,7 @@ export async function GET() {
       howItWorksCopy: {},
       socialProofCopy: {},
       ctaCopy: {},
+      heroCarousel: null,
     });
   }
 }
