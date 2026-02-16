@@ -16,6 +16,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Skeleton } from '@/components/ui/skeleton';
 import { csrfFetch } from '@/lib/security/csrf-fetch';
 import { ArrowLeft, Save, Send, AlertCircle, Pin, Star, CheckCircle2, XCircle } from 'lucide-react';
+import { MediaUploadField } from '@/components/huddle/media-upload-field';
 
 interface Topic { id: string; name: string; }
 
@@ -184,18 +185,43 @@ export default function EditHuddlePostPage({ params }: { params: Promise<{ id: s
             </Select>
           </div>
 
-          {(contentType === 'video' || contentType === 'audio') && (
-            <div className="space-y-2">
-              <Label>{contentType === 'video' ? 'Video URL' : 'Audio URL'}</Label>
-              <Input value={mediaUrl} onChange={(e) => setMediaUrl(e.target.value)} />
-            </div>
+          {contentType === 'video' && (
+            <MediaUploadField
+              label="Video"
+              value={mediaUrl}
+              onChange={setMediaUrl}
+              accept="video/mp4,video/webm,video/quicktime"
+              folder="proveground/huddle/videos"
+              placeholder="https://www.youtube.com/watch?v=..."
+              helpText="Upload a video file or paste a YouTube/Vimeo/Cloudinary URL"
+              uploadDescription="Drop a video file here (MP4, WebM, MOV — max 10MB)"
+            />
+          )}
+
+          {contentType === 'audio' && (
+            <MediaUploadField
+              label="Audio"
+              value={mediaUrl}
+              onChange={setMediaUrl}
+              accept="audio/mpeg,audio/wav,audio/ogg,audio/mp4"
+              folder="proveground/huddle/audio"
+              placeholder="https://example.com/audio.mp3"
+              helpText="Upload an audio file or paste a URL"
+              uploadDescription="Drop an audio file here (MP3, WAV, OGG — max 10MB)"
+            />
           )}
 
           {contentType === 'pdf' && (
-            <div className="space-y-2">
-              <Label>PDF / Resource URL</Label>
-              <Input value={mediaUrl} onChange={(e) => setMediaUrl(e.target.value)} />
-            </div>
+            <MediaUploadField
+              label="PDF / Resource"
+              value={mediaUrl}
+              onChange={setMediaUrl}
+              accept="application/pdf"
+              folder="proveground/huddle/docs"
+              placeholder="https://example.com/resource.pdf"
+              helpText="Upload a PDF or paste a URL"
+              uploadDescription="Drop a PDF file here (max 10MB)"
+            />
           )}
 
           <div className="space-y-2">
@@ -210,10 +236,16 @@ export default function EditHuddlePostPage({ params }: { params: Promise<{ id: s
             </div>
           )}
 
-          <div className="space-y-2">
-            <Label>Thumbnail URL</Label>
-            <Input value={thumbnailUrl} onChange={(e) => setThumbnailUrl(e.target.value)} />
-          </div>
+          <MediaUploadField
+            label="Thumbnail Image (optional)"
+            value={thumbnailUrl}
+            onChange={setThumbnailUrl}
+            accept="image/png,image/jpeg,image/gif,image/webp"
+            folder="proveground/huddle/thumbnails"
+            placeholder="https://example.com/image.jpg"
+            helpText="Upload a thumbnail image or paste a URL"
+            uploadDescription="Drop an image here (PNG, JPEG, GIF, WebP — max 10MB)"
+          />
         </CardContent>
       </Card>
 

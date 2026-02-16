@@ -137,7 +137,7 @@ export async function PUT(
 
     // Validate video URL if updating
     if (data.contentType === 'video' && data.mediaUrl && !isAllowedVideoUrl(data.mediaUrl)) {
-      return NextResponse.json({ error: 'Video URL must be from YouTube or Vimeo' }, { status: 400 });
+      return NextResponse.json({ error: 'Video URL must be from YouTube, Vimeo, or Cloudinary' }, { status: 400 });
     }
 
     // Build typed update values

@@ -54,6 +54,11 @@ export async function GET(request: NextRequest) {
       ? sql`AND p.content_type = ${contentType}`
       : sql``;
 
+    const featured = searchParams.get('featured') === 'true';
+    const featuredFilter = featured
+      ? sql`AND (p.is_featured = true OR p.is_pinned = true)`
+      : sql``;
+
     const orderBy = sort === 'popular'
       ? sql`p.is_pinned DESC, view_count DESC, p.published_at DESC`
       : sql`p.is_pinned DESC, p.published_at DESC`;
@@ -67,6 +72,7 @@ export async function GET(request: NextRequest) {
         ${searchFilter}
         ${topicFilter}
         ${typeFilter}
+        ${featuredFilter}
     `;
     const total = countResult[0]?.total || 0;
 
@@ -98,6 +104,7 @@ export async function GET(request: NextRequest) {
         ${searchFilter}
         ${topicFilter}
         ${typeFilter}
+        ${featuredFilter}
       ORDER BY ${orderBy}
       LIMIT ${limit} OFFSET ${offset}
     `;

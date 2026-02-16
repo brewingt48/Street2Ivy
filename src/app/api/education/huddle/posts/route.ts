@@ -164,7 +164,7 @@ export async function POST(request: NextRequest) {
 
     // Validate video URL allowlist
     if (data.contentType === 'video' && data.mediaUrl && !isAllowedVideoUrl(data.mediaUrl)) {
-      return NextResponse.json({ error: 'Video URL must be from YouTube or Vimeo' }, { status: 400 });
+      return NextResponse.json({ error: 'Video URL must be from YouTube, Vimeo, or Cloudinary' }, { status: 400 });
     }
 
     // Sanitize text fields

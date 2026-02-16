@@ -21,10 +21,14 @@ interface FileUploadProps {
   maxSizeMB?: number;
   /** Cloudinary folder (default: 'proveground') */
   folder?: string;
+  /** Upload API endpoint (default: '/api/admin/upload') */
+  uploadUrl?: string;
   /** Additional CSS classes */
   className?: string;
   /** Disabled state */
   disabled?: boolean;
+  /** Custom description text for the drop zone */
+  description?: string;
 }
 
 type UploadState = 'idle' | 'uploading' | 'success' | 'error';
@@ -34,8 +38,10 @@ export function FileUpload({
   accept = 'image/png,image/jpeg,image/gif,image/webp,video/mp4,video/webm,video/quicktime',
   maxSizeMB = 10,
   folder = 'proveground',
+  uploadUrl = '/api/admin/upload',
   className = '',
   disabled = false,
+  description,
 }: FileUploadProps) {
   const [state, setState] = useState<UploadState>('idle');
   const [error, setError] = useState<string | null>(null);
@@ -82,7 +88,7 @@ export function FileUpload({
       formData.append('file', file);
       formData.append('folder', folder);
 
-      const response = await csrfFetch('/api/admin/upload', {
+      const response = await csrfFetch(uploadUrl, {
         method: 'POST',
         body: formData,
         // Do NOT set Content-Type — browser sets multipart boundary automatically
@@ -119,7 +125,7 @@ export function FileUpload({
       setError(message);
       setState('error');
     }
-  }, [maxSizeBytes, maxSizeMB, folder, onUpload, resetState]);
+  }, [maxSizeBytes, maxSizeMB, folder, uploadUrl, onUpload, resetState]);
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -271,7 +277,7 @@ export function FileUpload({
                 Drop a file here or <span className="text-teal-600 underline">browse</span>
               </p>
               <p className="text-xs text-gray-500 mt-1">
-                Images (PNG, JPEG, GIF, WebP) or Videos (MP4, WebM, MOV) • Max {maxSizeMB}MB
+                {description || `Images (PNG, JPEG, GIF, WebP) or Videos (MP4, WebM, MOV) • Max ${maxSizeMB}MB`}
               </p>
             </div>
           </>

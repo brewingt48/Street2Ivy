@@ -43,6 +43,7 @@ import {
   Tags,
   Users,
   AlertCircle,
+  Palette,
 } from 'lucide-react';
 
 interface HuddlePost {
@@ -203,6 +204,9 @@ export default function EduHuddleManagementPage() {
           </p>
         </div>
         <div className="flex gap-2">
+          <Button variant="outline" onClick={() => router.push('/education/huddle/branding')}>
+            <Palette className="h-4 w-4 mr-2" /> Branding
+          </Button>
           <Button variant="outline" onClick={() => router.push('/education/huddle/topics')}>
             <Tags className="h-4 w-4 mr-2" /> Topics
           </Button>

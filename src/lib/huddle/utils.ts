@@ -14,6 +14,7 @@ const ALLOWED_VIDEO_HOSTS = [
   'youtu.be',
   'vimeo.com',
   'player.vimeo.com',
+  'res.cloudinary.com', // Cloudinary-hosted uploaded videos
 ];
 
 export function isAllowedVideoUrl(url: string): boolean {
