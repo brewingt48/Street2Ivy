@@ -168,8 +168,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Sanitize text fields
-    const title = sanitizeString(data.title);
-    const description = sanitizeString(data.description || '');
+    const title = sanitizeString(data.title) || data.title;
+    const description = sanitizeString(data.description || '') || '';
     const slug = generateSlug(title);
 
     // If contributorId not provided, auto-create/find admin contributor

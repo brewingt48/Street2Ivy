@@ -81,7 +81,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
     }
 
-    const name = sanitizeString(parsed.data.name);
+    const name = sanitizeString(parsed.data.name) || parsed.data.name;
     const slug = parsed.data.slug || generateSlug(name);
 
     // Check unique slug within tenant
