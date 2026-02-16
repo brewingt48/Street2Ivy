@@ -89,14 +89,14 @@ const STEPS = [
 
 function ScoreBadge({ score }: { score: number }) {
   const color = cn(
-    score >= 80 && 'bg-green-100 text-green-700',
-    score >= 50 && score < 80 && 'bg-yellow-100 text-yellow-700',
-    score < 50 && 'bg-red-100 text-red-700',
+    score >= 8 && 'bg-green-100 text-green-700',
+    score >= 5 && score < 8 && 'bg-yellow-100 text-yellow-700',
+    score < 5 && 'bg-red-100 text-red-700',
   );
   return (
     <Badge className={cn(color, 'border-0 text-sm')}>
       <Star className="h-3 w-3 mr-1" />
-      {score}/100
+      {score}/10
     </Badge>
   );
 }
@@ -192,10 +192,11 @@ export function ScopingWizard({
       }
 
       const data = await response.json();
+      const result = data.result || data;
       setDescReview({
-        feedback: data.feedback,
-        improvedDescription: data.improvedDescription,
-        score: data.score,
+        feedback: result.feedback,
+        improvedDescription: result.improvedDescription,
+        score: result.score,
       });
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Something went wrong';
@@ -226,7 +227,8 @@ export function ScopingWizard({
       }
 
       const data = await response.json();
-      const parsed: SkillSuggestion[] = (data.skills ?? []).map((name: string) => ({
+      const result = data.result || data;
+      const parsed: SkillSuggestion[] = (result.suggestedSkills ?? []).map((name: string) => ({
         name,
         selected: true,
       }));
@@ -260,7 +262,8 @@ export function ScopingWizard({
       }
 
       const data = await response.json();
-      setMilestones(data.milestones ?? []);
+      const result = data.result || data;
+      setMilestones(result.milestones ?? []);
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Something went wrong';
       setMilestonesError(message);
