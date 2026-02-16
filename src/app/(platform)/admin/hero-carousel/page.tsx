@@ -25,6 +25,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
+import { FileUpload } from '@/components/ui/file-upload';
 import {
   Save,
   CheckCircle2,
@@ -38,6 +39,7 @@ import {
   Clock,
   Eye,
   GripVertical,
+  Upload,
 } from 'lucide-react';
 
 // ---------------------------------------------------------------------------
@@ -459,8 +461,34 @@ export default function AdminHeroCarouselPage() {
           ))}
 
           {/* Add New Image */}
-          <div className="pt-4 border-t border-slate-200 dark:border-slate-700 space-y-3">
-            <p className="text-xs font-semibold text-slate-500 uppercase">Add New Image</p>
+          <div className="pt-4 border-t border-slate-200 dark:border-slate-700 space-y-4">
+            <p className="text-xs font-semibold text-slate-500 uppercase flex items-center gap-2">
+              <Upload className="h-3.5 w-3.5" />
+              Add New Image or Video
+            </p>
+
+            {/* Upload Zone */}
+            <FileUpload
+              onUpload={(url) => {
+                setImages((prev) => [
+                  ...prev,
+                  { src: url, alt: newAlt.trim() || 'Hero image' },
+                ]);
+                setNewAlt('');
+              }}
+              accept="image/png,image/jpeg,image/gif,image/webp,video/mp4,video/webm,video/quicktime"
+              maxSizeMB={10}
+              folder="proveground/hero"
+            />
+
+            {/* Divider */}
+            <div className="relative flex items-center">
+              <div className="flex-1 border-t border-slate-200 dark:border-slate-700" />
+              <span className="px-3 text-xs text-slate-400 bg-white dark:bg-slate-900">or paste a URL</span>
+              <div className="flex-1 border-t border-slate-200 dark:border-slate-700" />
+            </div>
+
+            {/* URL Input */}
             <div className="flex gap-3">
               <div className="flex-1 space-y-2">
                 <div>
@@ -515,7 +543,7 @@ export default function AdminHeroCarouselPage() {
               className="w-full"
             >
               <Plus className="h-4 w-4 mr-2" />
-              Add Image
+              Add Image via URL
             </Button>
 
             {urlPreviewError && newUrl && (

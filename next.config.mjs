@@ -29,12 +29,17 @@ const nextConfig = {
         protocol: 'https',
         hostname: '*.gravatar.com',
       },
+      // Cloudinary CDN (image/video uploads)
+      {
+        protocol: 'https',
+        hostname: 'res.cloudinary.com',
+      },
     ],
   },
   experimental: {
     // Prevent Next.js from bundling postgres.js — it needs its native type
     // serializers (Date, Buffer, etc.) which get broken by webpack bundling
-    serverComponentsExternalPackages: ['postgres'],
+    serverComponentsExternalPackages: ['postgres', 'cloudinary'],
   },
   async headers() {
     // Content Security Policy — remove 'unsafe-eval', add upgrade-insecure-requests
