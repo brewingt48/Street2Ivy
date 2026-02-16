@@ -3,12 +3,14 @@
 /**
  * Search Students & Send Invitations
  *
- * Corporate partners can browse students and invite them to projects.
+ * Corporate partners can browse students from their institution or the network,
+ * click through to profiles, and invite them to projects.
  */
 
 import { useState, useEffect, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import { csrfFetch } from '@/lib/security/csrf-fetch';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -17,7 +19,24 @@ import { Textarea } from '@/components/ui/textarea';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Search, Send, GraduationCap, MapPin, Clock, Star, ChevronLeft, ChevronRight, School, Trophy, Activity, Info } from 'lucide-react';
+import {
+  Search,
+  Send,
+  GraduationCap,
+  MapPin,
+  Clock,
+  Star,
+  ChevronLeft,
+  ChevronRight,
+  School,
+  Trophy,
+  Activity,
+  Info,
+  Globe,
+  Building2,
+  AlertCircle,
+  Mail,
+} from 'lucide-react';
 import { TalentPoolInsights } from '@/components/corporate/talent-pool-insights';
 
 interface Student {
@@ -36,6 +55,8 @@ interface Student {
   alumniOf: string | null;
   sportsPlayed: string | null;
   activities: string | null;
+  tenantName: string | null;
+  isInNetwork: boolean;
 }
 
 interface Listing {
@@ -44,13 +65,18 @@ interface Listing {
 }
 
 export default function SearchStudentsPage() {
+  const router = useRouter();
   const [students, setStudents] = useState<Student[]>([]);
   const [listings, setListings] = useState<Listing[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [graduationYear, setGraduationYear] = useState('');
+  const [scope, setScope] = useState<'tenant' | 'network'>('tenant');
+  const [institution, setInstitution] = useState('');
+  const [universities, setUniversities] = useState<string[]>([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [total, setTotal] = useState(0);
 
   // Invite dialog
   const [invitingStudent, setInvitingStudent] = useState<Student | null>(null);
@@ -62,19 +88,22 @@ export default function SearchStudentsPage() {
   const fetchStudents = useCallback(async () => {
     setLoading(true);
     try {
-      const params = new URLSearchParams({ page: String(page), limit: '20' });
+      const params = new URLSearchParams({ page: String(page), limit: '20', scope });
       if (searchQuery) params.set('q', searchQuery);
       if (graduationYear) params.set('graduationYear', graduationYear);
+      if (scope === 'network' && institution) params.set('institution', institution);
       const res = await fetch(`/api/corporate/search-students?${params}`);
       const data = await res.json();
       setStudents(data.students || []);
       setTotalPages(data.totalPages || 1);
+      setTotal(data.total || 0);
+      if (data.universities) setUniversities(data.universities);
     } catch (err) {
       console.error(err);
     } finally {
       setLoading(false);
     }
-  }, [page, searchQuery, graduationYear]);
+  }, [page, searchQuery, graduationYear, scope, institution]);
 
   useEffect(() => {
     fetchStudents();
@@ -92,6 +121,12 @@ export default function SearchStudentsPage() {
     e.preventDefault();
     setPage(1);
     fetchStudents();
+  };
+
+  const handleScopeChange = (newScope: 'tenant' | 'network') => {
+    setScope(newScope);
+    setPage(1);
+    setInstitution('');
   };
 
   const handleInvite = async () => {
@@ -133,17 +168,46 @@ export default function SearchStudentsPage() {
         <p className="text-slate-500 dark:text-slate-400 mt-1">Search for talented students and invite them to your projects</p>
       </div>
 
+      {/* Scope Toggle */}
+      <div className="flex gap-2">
+        <Button
+          variant={scope === 'tenant' ? 'default' : 'outline'}
+          size="sm"
+          onClick={() => handleScopeChange('tenant')}
+          className={scope === 'tenant' ? 'bg-teal-600 hover:bg-teal-700' : ''}
+        >
+          <Building2 className="h-4 w-4 mr-1.5" /> My Institution
+        </Button>
+        <Button
+          variant={scope === 'network' ? 'default' : 'outline'}
+          size="sm"
+          onClick={() => handleScopeChange('network')}
+          className={scope === 'network' ? 'bg-blue-600 hover:bg-blue-700' : ''}
+        >
+          <Globe className="h-4 w-4 mr-1.5" /> Network
+        </Button>
+      </div>
+
       {/* Matching Explainer */}
-      <div className="bg-teal-50 dark:bg-teal-900/20 border border-teal-200 dark:border-teal-800 rounded-lg p-4">
+      <div className={`border rounded-lg p-4 ${scope === 'network' ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800' : 'bg-teal-50 dark:bg-teal-900/20 border-teal-200 dark:border-teal-800'}`}>
         <div className="flex items-start gap-3">
-          <Info className="h-5 w-5 text-teal-600 mt-0.5 shrink-0" />
-          <div className="text-sm text-teal-800 dark:text-teal-300">
-            <p className="font-medium mb-1">How Student Matching Works</p>
-            <p className="text-teal-700 dark:text-teal-400">
-              Our matching considers more than just qualifications. Students are matched based on skills, availability,
-              athletic background, schedule compatibility, and growth potential. Use the Talent Pool Insights below to
-              understand what students are available and craft postings that attract the best talent.
-            </p>
+          <Info className={`h-5 w-5 mt-0.5 shrink-0 ${scope === 'network' ? 'text-blue-600' : 'text-teal-600'}`} />
+          <div className={`text-sm ${scope === 'network' ? 'text-blue-800 dark:text-blue-300' : 'text-teal-800 dark:text-teal-300'}`}>
+            {scope === 'tenant' ? (
+              <>
+                <p className="font-medium mb-1">Searching Your Institution</p>
+                <p className="text-teal-700 dark:text-teal-400">
+                  Showing students enrolled at your institution. Click a student&apos;s name to view their full profile, or invite them directly to a project.
+                </p>
+              </>
+            ) : (
+              <>
+                <p className="font-medium mb-1">Searching the Network</p>
+                <p className="text-blue-700 dark:text-blue-400">
+                  Browse students from across the Proveground network. Filter by institution name to narrow results. Institutions not yet on the network are flagged &mdash; you can invite them to join.
+                </p>
+              </>
+            )}
           </div>
         </div>
       </div>
@@ -159,8 +223,23 @@ export default function SearchStudentsPage() {
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
+            {scope === 'network' && (
+              <div className="w-52">
+                <Select value={institution || 'all'} onValueChange={(v) => { setInstitution(v === 'all' ? '' : v); setPage(1); }}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="All Institutions" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Institutions</SelectItem>
+                    {universities.map((uni) => (
+                      <SelectItem key={uni} value={uni}>{uni}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
             <div className="w-44">
-              <Select value={graduationYear} onValueChange={(v) => { setGraduationYear(v === 'all' ? '' : v); setPage(1); }}>
+              <Select value={graduationYear || 'all'} onValueChange={(v) => { setGraduationYear(v === 'all' ? '' : v); setPage(1); }}>
                 <SelectTrigger>
                   <SelectValue placeholder="Graduation Year" />
                 </SelectTrigger>
@@ -174,7 +253,7 @@ export default function SearchStudentsPage() {
                 </SelectContent>
               </Select>
             </div>
-            <Button type="submit" className="bg-teal-600 hover:bg-teal-700">
+            <Button type="submit" className={scope === 'network' ? 'bg-blue-600 hover:bg-blue-700' : 'bg-teal-600 hover:bg-teal-700'}>
               <Search className="h-4 w-4 mr-2" /> Search
             </Button>
           </form>
@@ -182,7 +261,12 @@ export default function SearchStudentsPage() {
       </Card>
 
       {/* Talent Pool Insights */}
-      <TalentPoolInsights variant="full" defaultExpanded={false} />
+      <TalentPoolInsights variant="full" defaultExpanded={false} scope={scope} />
+
+      {/* Results count */}
+      {!loading && total > 0 && (
+        <p className="text-sm text-slate-500">{total} student{total !== 1 ? 's' : ''} found</p>
+      )}
 
       {/* Results */}
       {loading && (
@@ -198,7 +282,11 @@ export default function SearchStudentsPage() {
           <CardContent className="py-16 text-center">
             <GraduationCap className="h-12 w-12 text-slate-300 mx-auto mb-4" />
             <h3 className="font-medium text-slate-600">No students found</h3>
-            <p className="text-sm text-slate-400 mt-1">Try adjusting your search criteria</p>
+            <p className="text-sm text-slate-400 mt-1">
+              {scope === 'network'
+                ? 'Try a different institution or broader search criteria'
+                : 'Try adjusting your search criteria or switch to Network search'}
+            </p>
           </CardContent>
         </Card>
       )}
@@ -207,15 +295,20 @@ export default function SearchStudentsPage() {
         <>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {students.map((student) => (
-              <Card key={student.id}>
+              <Card key={student.id} className="hover:shadow-md transition-shadow">
                 <CardContent className="py-4">
                   <div className="flex items-start justify-between gap-3">
-                    <div className="flex items-start gap-3 min-w-0">
+                    <div
+                      className="flex items-start gap-3 min-w-0 cursor-pointer group"
+                      onClick={() => router.push(`/corporate/students/${student.id}`)}
+                    >
                       <div className="h-10 w-10 rounded-full bg-teal-100 flex items-center justify-center text-teal-700 font-bold shrink-0">
                         {(student.name?.[0] || '?').toUpperCase()}
                       </div>
                       <div className="min-w-0">
-                        <h3 className="font-medium text-sm truncate">{student.name}</h3>
+                        <h3 className="font-medium text-sm truncate group-hover:text-teal-600 transition-colors cursor-pointer">
+                          {student.name}
+                        </h3>
                         {student.university && (
                           <p className="text-xs text-slate-500 flex items-center gap-1">
                             <GraduationCap className="h-3 w-3" />
@@ -228,18 +321,45 @@ export default function SearchStudentsPage() {
                         )}
                       </div>
                     </div>
-                    <Button
-                      size="sm"
-                      className="bg-teal-600 hover:bg-teal-700 shrink-0"
-                      onClick={() => {
-                        setInvitingStudent(student);
-                        setInviteMessage('');
-                        setInviteListingId('');
-                      }}
-                    >
-                      <Send className="h-3 w-3 mr-1" /> Invite
-                    </Button>
+                    <div className="flex flex-col items-end gap-1.5 shrink-0">
+                      <Button
+                        size="sm"
+                        className="bg-teal-600 hover:bg-teal-700 shrink-0"
+                        onClick={() => {
+                          setInvitingStudent(student);
+                          setInviteMessage('');
+                          setInviteListingId('');
+                        }}
+                      >
+                        <Send className="h-3 w-3 mr-1" /> Invite
+                      </Button>
+                    </div>
                   </div>
+
+                  {/* Network badges */}
+                  {scope === 'network' && student.tenantName && (
+                    <div className="mt-2">
+                      {student.isInNetwork ? (
+                        <Badge className="bg-green-100 text-green-700 border-0 text-xs">
+                          <Globe className="h-3 w-3 mr-1" /> {student.tenantName} &middot; In Network
+                        </Badge>
+                      ) : (
+                        <div className="flex items-center gap-2">
+                          <Badge className="bg-amber-100 text-amber-700 border-0 text-xs">
+                            <AlertCircle className="h-3 w-3 mr-1" /> {student.tenantName} &middot; Not in Network
+                          </Badge>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-6 text-xs text-blue-600 hover:text-blue-700 hover:bg-blue-50 px-2"
+                            onClick={() => router.push('/inbox?action=invite-institution&name=' + encodeURIComponent(student.tenantName || student.university || ''))}
+                          >
+                            <Mail className="h-3 w-3 mr-1" /> Invite to Network
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                  )}
 
                   {student.bio && (
                     <p className="text-xs text-slate-500 mt-2 line-clamp-2">{student.bio}</p>
