@@ -41,13 +41,12 @@ export function UserNav({ user }: UserNavProps) {
   const handleLogout = async () => {
     const res = await csrfFetch('/api/auth/logout', { method: 'POST' });
     const data = await res.json().catch(() => ({}));
-    // Redirect to tenant homepage if available, otherwise main site
+    // Full page redirect to clear all client state
     if (data.subdomain) {
-      router.push(`/${data.subdomain}`);
+      window.location.href = `/${data.subdomain}`;
     } else {
-      router.push('/');
+      window.location.href = '/';
     }
-    router.refresh();
   };
 
   const roleLabels: Record<string, string> = {
