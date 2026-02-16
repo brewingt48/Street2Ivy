@@ -223,7 +223,7 @@ export default function StudentProfilePage() {
                 <p className="text-sm text-slate-600 dark:text-slate-300 flex items-center gap-1.5 mt-1">
                   <GraduationCap className="h-4 w-4 text-teal-600" />
                   {student.university}
-                  {student.graduationYear && ` &middot; Class of ${student.graduationYear}`}
+                  {student.graduationYear && ` · Class of ${student.graduationYear}`}
                 </p>
               )}
               {student.major && (
