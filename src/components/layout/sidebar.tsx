@@ -174,7 +174,6 @@ function getNavItems(role: string): NavSection[] {
             { href: '/education/students', label: 'Students', icon: GraduationCap },
             { href: '/education/corporates', label: 'Corporate Partners', icon: Briefcase },
             { href: '/education/reports', label: 'Issue Reports', icon: AlertTriangle },
-            { href: '/education/ai-insights', label: 'AI Insights', icon: Sparkles },
             { href: '/education/match-engine', label: 'Match Engine\u2122', icon: Target, featureGate: 'matchEngine' },
             { href: '/inbox', label: 'Messages', icon: Inbox },
           ],
