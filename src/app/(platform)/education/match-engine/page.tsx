@@ -7,6 +7,12 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
+import {
   Target,
   BarChart3,
   Users,
@@ -17,6 +23,7 @@ import {
   CheckCircle2,
   Loader2,
   Clock,
+  Info,
 } from 'lucide-react';
 
 interface EngineStats {
@@ -35,15 +42,26 @@ interface EngineStats {
     processed: string;
     total: string;
   };
-  feedback: {
-    total_feedback: string;
-    avg_rating: string;
-  };
 }
 
 interface EngineConfig {
   minScoreThreshold: number;
   isDefault?: boolean;
+}
+
+function InfoTooltip({ text }: { text: string }) {
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <button type="button" className="inline-flex text-slate-400 hover:text-slate-600 transition-colors">
+          <Info className="h-3.5 w-3.5" />
+        </button>
+      </TooltipTrigger>
+      <TooltipContent side="top" className="max-w-xs text-xs leading-relaxed">
+        {text}
+      </TooltipContent>
+    </Tooltip>
+  );
 }
 
 export default function MatchEngineDashboard() {
@@ -106,6 +124,7 @@ export default function MatchEngineDashboard() {
   };
 
   return (
+    <TooltipProvider delayDuration={200}>
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
@@ -178,6 +197,7 @@ export default function MatchEngineDashboard() {
                   <div className="flex items-center gap-2 text-sm text-slate-500 mb-1">
                     <BarChart3 className="h-4 w-4" />
                     Total Match Scores
+                    <InfoTooltip text="The total number of student-to-listing match scores computed by the engine. Each score represents a unique pairing evaluated across 6 weighted dimensions (skills, schedule, sustainability, growth, trust, and network affinity)." />
                   </div>
                   <p className="text-2xl font-bold text-slate-900 dark:text-white">
                     {Number(stats.scores.total_scores).toLocaleString()}
@@ -189,6 +209,7 @@ export default function MatchEngineDashboard() {
                   <div className="flex items-center gap-2 text-sm text-slate-500 mb-1">
                     <AlertCircle className="h-4 w-4 text-amber-500" />
                     Stale Scores
+                    <InfoTooltip text="Scores that need recomputation because underlying data has changed. A score becomes stale when a student updates their profile, skills, or schedule, or when a listing's requirements change. Stale scores are still shown to users while queued for background recomputation. Scores also go stale after 24 hours." />
                   </div>
                   <p className="text-2xl font-bold text-slate-900 dark:text-white">
                     {Number(stats.scores.stale_scores).toLocaleString()}
@@ -200,6 +221,7 @@ export default function MatchEngineDashboard() {
                   <div className="flex items-center gap-2 text-sm text-slate-500 mb-1">
                     <Users className="h-4 w-4" />
                     Students Scored
+                    <InfoTooltip text="The number of unique students who have at least one match score computed. Each student is scored against every available listing to find the best-fit opportunities." />
                   </div>
                   <p className="text-2xl font-bold text-slate-900 dark:text-white">
                     {Number(stats.scores.unique_students).toLocaleString()}
@@ -210,7 +232,8 @@ export default function MatchEngineDashboard() {
                 <CardContent className="p-4">
                   <div className="flex items-center gap-2 text-sm text-slate-500 mb-1">
                     <Target className="h-4 w-4" />
-                    Avg Match Score
+                    Avg Score to Students
+                    <InfoTooltip text="The average match score (0–100) presented to your tenant's students. This composite score blends 6 signals: Skills Alignment (30%), Temporal Fit (25%), Sustainability (15%), Growth Trajectory (10%), Trust/Reliability (10%), and Network Affinity (10%). Higher averages indicate better alignment between your students and available opportunities." />
                   </div>
                   <p className="text-2xl font-bold text-slate-900 dark:text-white">
                     {Number(stats.scores.avg_score || 0).toFixed(1)}
@@ -222,6 +245,7 @@ export default function MatchEngineDashboard() {
                   <div className="flex items-center gap-2 text-sm text-slate-500 mb-1">
                     <ListOrdered className="h-4 w-4" />
                     Queue Pending
+                    <InfoTooltip text="Match score computations waiting to be processed. Items enter the queue when student profiles or listing requirements change. Higher-priority updates (e.g. student profile changes) are processed first. A high pending count is normal after bulk updates." />
                   </div>
                   <p className="text-2xl font-bold text-slate-900 dark:text-white">
                     {Number(stats.queue.pending).toLocaleString()}
@@ -233,6 +257,7 @@ export default function MatchEngineDashboard() {
                   <div className="flex items-center gap-2 text-sm text-slate-500 mb-1">
                     <CheckCircle2 className="h-4 w-4 text-emerald-500" />
                     Queue Processed
+                    <InfoTooltip text="The total number of recomputation jobs that have been completed. This includes both successful recalculations and any that encountered errors. Compare with Queue Pending to gauge engine throughput." />
                   </div>
                   <p className="text-2xl font-bold text-slate-900 dark:text-white">
                     {Number(stats.queue.processed).toLocaleString()}
@@ -244,6 +269,7 @@ export default function MatchEngineDashboard() {
                   <div className="flex items-center gap-2 text-sm text-slate-500 mb-1">
                     <Clock className="h-4 w-4" />
                     Avg Compute Time
+                    <InfoTooltip text="The average wall-clock time (in milliseconds) to compute a single match score. This includes loading student and listing data, evaluating all 6 scoring signals, and saving the result. Typical range is 50–200ms. Higher times may indicate complex data profiles." />
                   </div>
                   <p className="text-2xl font-bold text-slate-900 dark:text-white">
                     {Number(stats.scores.avg_computation_ms || 0).toFixed(0)}ms
@@ -255,6 +281,7 @@ export default function MatchEngineDashboard() {
                   <div className="flex items-center gap-2 text-sm text-slate-500 mb-1">
                     <BarChart3 className="h-4 w-4" />
                     Listings Scored
+                    <InfoTooltip text="The number of unique project listings that have been evaluated by the Match Engine. Each listing is scored against all eligible students to identify the best talent matches." />
                   </div>
                   <p className="text-2xl font-bold text-slate-900 dark:text-white">
                     {Number(stats.scores.unique_listings).toLocaleString()}
@@ -284,12 +311,18 @@ export default function MatchEngineDashboard() {
               <CardContent>
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div className="p-4 rounded-lg bg-slate-50 dark:bg-slate-800/50">
-                    <p className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Minimum Score Threshold</p>
+                    <p className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-1 flex items-center gap-1.5">
+                      Minimum Score Threshold
+                      <InfoTooltip text="The minimum composite score (0–100) required for a match to be shown to students and corporate partners. Any student-listing pairing that scores below this threshold is filtered out of results. Default is 20. Increasing this value shows only higher-quality matches; lowering it shows more matches including weaker ones." />
+                    </p>
                     <p className="text-2xl font-bold text-slate-900 dark:text-white">{config.minScoreThreshold}</p>
                     <p className="text-xs text-slate-500 mt-1">Scores below this threshold are filtered from results</p>
                   </div>
                   <div className="p-4 rounded-lg bg-slate-50 dark:bg-slate-800/50">
-                    <p className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Scoring Dimensions</p>
+                    <p className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-1 flex items-center gap-1.5">
+                      Scoring Dimensions
+                      <InfoTooltip text="The Match Engine evaluates 6 weighted signals per match: Skills Alignment (30%) — direct skill matches and proficiency levels; Temporal Fit (25%) — schedule and availability overlap; Sustainability (15%) — workload balance and burnout risk; Growth Trajectory (10%) — alignment with learning goals; Trust/Reliability (10%) — past completion rates and ratings; Network Affinity (10%) — institutional and alumni connections." />
+                    </p>
                     <p className="text-2xl font-bold text-slate-900 dark:text-white">Multi-Factor</p>
                     <p className="text-xs text-slate-500 mt-1">Proprietary algorithm evaluates multiple dimensions per match</p>
                   </div>
@@ -298,37 +331,9 @@ export default function MatchEngineDashboard() {
             </Card>
           )}
 
-          {/* Feedback Stats */}
-          {stats && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base flex items-center gap-2">
-                  <BarChart3 className="h-4 w-4 text-teal-600" />
-                  Match Feedback
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center gap-6">
-                  <div>
-                    <p className="text-sm text-slate-500">Total Feedback</p>
-                    <p className="text-xl font-bold text-slate-900 dark:text-white">
-                      {Number(stats.feedback.total_feedback).toLocaleString()}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-slate-500">Avg Rating</p>
-                    <p className="text-xl font-bold text-slate-900 dark:text-white">
-                      {stats.feedback.avg_rating
-                        ? `${Number(stats.feedback.avg_rating).toFixed(1)} / 5`
-                        : 'N/A'}
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          )}
         </>
       )}
     </div>
+    </TooltipProvider>
   );
 }
