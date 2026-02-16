@@ -103,7 +103,7 @@ interface Recommendation {
 interface TenantFeatures {
   matchEngine?: boolean;
   matchEngineSchedule?: boolean;
-  [key: string]: unknown;
+  teamHuddle?: boolean;
 }
 
 const statusConfig: Record<string, { label: string; color: string; icon: typeof Clock }> = {
