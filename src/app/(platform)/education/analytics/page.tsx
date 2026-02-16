@@ -24,7 +24,6 @@ import {
   Target,
   Briefcase,
   CheckCircle2,
-  ClipboardList,
   ArrowLeft,
 } from 'lucide-react';
 
@@ -35,7 +34,6 @@ interface AnalyticsData {
     avgGPA: number | null;
     activeProjects: number;
     completedProjects: number;
-    waitlistPending: number;
   };
   enrollmentTimeline: { date: string; newStudents: number }[];
   applicationsByStatus: { status: string; count: number }[];
@@ -158,12 +156,6 @@ export default function EducationAnalyticsPage() {
           label="Completed Projects"
           value={data.summary.completedProjects}
           icon={CheckCircle2}
-        />
-        <StatCard
-          label="Waitlist Pending"
-          value={data.summary.waitlistPending}
-          icon={ClipboardList}
-          href="/education/waitlist"
         />
       </div>
 
