@@ -140,42 +140,36 @@ export async function PUT(
       return NextResponse.json({ error: 'Video URL must be from YouTube or Vimeo' }, { status: 400 });
     }
 
-    // Build update fields
-    const updates: Record<string, unknown> = {};
-    if (data.title !== undefined) updates.title = sanitizeString(data.title);
-    if (data.description !== undefined) updates.description = sanitizeString(data.description || '');
-    if (data.body !== undefined) updates.body = data.body;
-    if (data.contentType !== undefined) updates.content_type = data.contentType;
-    if (data.mediaUrl !== undefined) updates.media_url = data.mediaUrl;
-    if (data.thumbnailUrl !== undefined) updates.thumbnail_url = data.thumbnailUrl;
-    if (data.isFeatured !== undefined) updates.is_featured = data.isFeatured;
-    if (data.isPinned !== undefined) updates.is_pinned = data.isPinned;
-    if (data.rejectionNote !== undefined) updates.rejection_note = data.rejectionNote;
-    if (data.contributorId !== undefined) updates.contributor_id = data.contributorId;
+    // Build typed update values
+    const uTitle: string | null = data.title !== undefined ? sanitizeString(data.title) : null;
+    const uDescription: string | null = data.description !== undefined ? sanitizeString(data.description || '') : null;
+    const uBody: string | null = data.body !== undefined ? data.body : null;
+    const uContentType: string | null = data.contentType !== undefined ? data.contentType : null;
+    const uMediaUrl: string | null = data.mediaUrl !== undefined ? (data.mediaUrl || null) : null;
+    const uThumbnailUrl: string | null = data.thumbnailUrl !== undefined ? (data.thumbnailUrl || null) : null;
+    const uStatus: string | null = data.status !== undefined ? data.status : null;
+    const uIsFeatured: boolean | null = data.isFeatured !== undefined ? data.isFeatured : null;
+    const uIsPinned: boolean | null = data.isPinned !== undefined ? data.isPinned : null;
+    const uRejectionNote: string | null = data.rejectionNote !== undefined ? (data.rejectionNote || null) : null;
+    const uContributorId: string | null = data.contributorId !== undefined ? (data.contributorId || null) : null;
+    const shouldSetPublishedAt = data.status === 'published' && existing[0].status !== 'published';
 
-    // Handle status transitions
-    if (data.status !== undefined) {
-      updates.status = data.status;
-      if (data.status === 'published' && existing[0].status !== 'published') {
-        updates.published_at = sql`NOW()`;
-      }
-    }
+    const updatedFields = Object.keys(data);
 
-    // Dynamic UPDATE
     await sql`
       UPDATE huddle_posts SET
-        title = COALESCE(${updates.title ?? null}, title),
-        description = COALESCE(${updates.description ?? null}, description),
-        body = COALESCE(${updates.body ?? null}, body),
-        content_type = COALESCE(${updates.content_type ?? null}, content_type),
-        media_url = ${data.mediaUrl !== undefined ? (data.mediaUrl || null) : sql`media_url`},
-        thumbnail_url = ${data.thumbnailUrl !== undefined ? (data.thumbnailUrl || null) : sql`thumbnail_url`},
-        status = COALESCE(${updates.status ?? null}, status),
-        is_featured = COALESCE(${updates.is_featured ?? null}, is_featured),
-        is_pinned = COALESCE(${updates.is_pinned ?? null}, is_pinned),
-        rejection_note = ${data.rejectionNote !== undefined ? (data.rejectionNote || null) : sql`rejection_note`},
-        contributor_id = ${data.contributorId !== undefined ? (data.contributorId || null) : sql`contributor_id`},
-        published_at = ${updates.published_at || sql`published_at`},
+        title = COALESCE(${uTitle}, title),
+        description = COALESCE(${uDescription}, description),
+        body = COALESCE(${uBody}, body),
+        content_type = COALESCE(${uContentType}, content_type),
+        media_url = CASE WHEN ${data.mediaUrl !== undefined} THEN ${uMediaUrl} ELSE media_url END,
+        thumbnail_url = CASE WHEN ${data.thumbnailUrl !== undefined} THEN ${uThumbnailUrl} ELSE thumbnail_url END,
+        status = COALESCE(${uStatus}, status),
+        is_featured = COALESCE(${uIsFeatured}, is_featured),
+        is_pinned = COALESCE(${uIsPinned}, is_pinned),
+        rejection_note = CASE WHEN ${data.rejectionNote !== undefined} THEN ${uRejectionNote} ELSE rejection_note END,
+        contributor_id = CASE WHEN ${data.contributorId !== undefined} THEN ${uContributorId} ELSE contributor_id END,
+        published_at = CASE WHEN ${shouldSetPublishedAt} THEN NOW() ELSE published_at END,
         updated_at = NOW()
       WHERE id = ${id} AND tenant_id = ${tenantId}
     `;
@@ -191,7 +185,7 @@ export async function PUT(
     // Audit log
     await sql`
       INSERT INTO huddle_audit_log (tenant_id, actor_id, action, target_type, target_id, metadata)
-      VALUES (${tenantId}, ${session.data.userId}, 'post_updated', 'post', ${id}, ${JSON.stringify({ updates: Object.keys(updates) })}::jsonb)
+      VALUES (${tenantId}, ${session.data.userId}, 'post_updated', 'post', ${id}, ${JSON.stringify({ updates: updatedFields })}::jsonb)
     `;
 
     return NextResponse.json({ success: true });
