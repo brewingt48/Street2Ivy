@@ -2,9 +2,8 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { csrfFetch } from '@/lib/security/csrf-fetch';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
   Tooltip,
@@ -17,7 +16,6 @@ import {
   BarChart3,
   Users,
   RefreshCw,
-  Settings2,
   ListOrdered,
   AlertCircle,
   CheckCircle2,
@@ -44,11 +42,6 @@ interface EngineStats {
   };
 }
 
-interface EngineConfig {
-  minScoreThreshold: number;
-  isDefault?: boolean;
-}
-
 function InfoTooltip({ text }: { text: string }) {
   return (
     <Tooltip>
@@ -66,7 +59,6 @@ function InfoTooltip({ text }: { text: string }) {
 
 export default function MatchEngineDashboard() {
   const [stats, setStats] = useState<EngineStats | null>(null);
-  const [config, setConfig] = useState<EngineConfig | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [recomputing, setRecomputing] = useState(false);
@@ -76,21 +68,11 @@ export default function MatchEngineDashboard() {
     setLoading(true);
     setError(null);
     try {
-      const [statsRes, configRes] = await Promise.all([
-        fetch('/api/match-engine/admin/stats'),
-        fetch('/api/match-engine/admin/config'),
-      ]);
+      const statsRes = await fetch('/api/match-engine/admin/stats');
 
       if (statsRes.ok) {
         const statsData = await statsRes.json();
         setStats(statsData);
-      }
-
-      if (configRes.ok) {
-        const configData = await configRes.json();
-        setConfig(configData.config);
-      } else if (configRes.status === 403) {
-        setError('Match Engine\u2122 Admin requires Enterprise plan.');
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load data');
@@ -291,45 +273,6 @@ export default function MatchEngineDashboard() {
             </div>
           )}
 
-          {/* Engine Configuration Overview */}
-          {config && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base flex items-center gap-2">
-                  <Settings2 className="h-4 w-4 text-teal-600" />
-                  Engine Configuration
-                  {config.isDefault !== false && (
-                    <Badge variant="secondary" className="text-xs">
-                      Default
-                    </Badge>
-                  )}
-                </CardTitle>
-                <CardDescription>
-                  Proveground&apos;s proprietary <strong>Match Engine&trade;</strong> uses a multi-dimensional assessment to produce a single composite score
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <div className="p-4 rounded-lg bg-slate-50 dark:bg-slate-800/50">
-                    <p className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-1 flex items-center gap-1.5">
-                      Minimum Score Threshold
-                      <InfoTooltip text="The minimum composite score (0–100) required for a match to be shown to students and corporate partners. Any student-listing pairing that scores below this threshold is filtered out of results. Default is 20. Increasing this value shows only higher-quality matches; lowering it shows more matches including weaker ones." />
-                    </p>
-                    <p className="text-2xl font-bold text-slate-900 dark:text-white">{config.minScoreThreshold}</p>
-                    <p className="text-xs text-slate-500 mt-1">Scores below this threshold are filtered from results</p>
-                  </div>
-                  <div className="p-4 rounded-lg bg-slate-50 dark:bg-slate-800/50">
-                    <p className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-1 flex items-center gap-1.5">
-                      Scoring Dimensions
-                      <InfoTooltip text="The Match Engine evaluates 6 weighted signals per match: Skills Alignment (30%) — direct skill matches and proficiency levels; Temporal Fit (25%) — schedule and availability overlap; Sustainability (15%) — workload balance and burnout risk; Growth Trajectory (10%) — alignment with learning goals; Trust/Reliability (10%) — past completion rates and ratings; Network Affinity (10%) — institutional and alumni connections." />
-                    </p>
-                    <p className="text-2xl font-bold text-slate-900 dark:text-white">Multi-Factor</p>
-                    <p className="text-xs text-slate-500 mt-1">Proprietary algorithm evaluates multiple dimensions per match</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          )}
 
         </>
       )}
