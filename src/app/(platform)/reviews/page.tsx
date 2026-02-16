@@ -120,7 +120,7 @@ export default function StudentReviewsPage() {
             My Reviews
           </h1>
           <p className="text-slate-500 dark:text-slate-400 mt-1">
-            View reviews you&apos;ve received from companies and reviews you&apos;ve given
+            View reviews you&apos;ve received from corporate partners and reviews you&apos;ve given.
           </p>
         </div>
         <Button
@@ -188,7 +188,7 @@ export default function StudentReviewsPage() {
                         )}
                       </div>
                       <p className="text-xs text-slate-500 ml-7">
-                        {review.corporateName || 'Company'} &middot;{' '}
+                        {review.corporateName || 'Corporate Partner'} &middot;{' '}
                         {new Date(review.createdAt).toLocaleDateString()}
                       </p>
                     </div>
@@ -255,7 +255,7 @@ export default function StudentReviewsPage() {
                         </h3>
                       </div>
                       <p className="text-xs text-slate-500 ml-7">
-                        {review.corporateName || 'Company'} &middot;{' '}
+                        {review.corporateName || 'Corporate Partner'} &middot;{' '}
                         {new Date(review.createdAt).toLocaleDateString()}
                       </p>
                     </div>
@@ -302,7 +302,7 @@ export default function StudentReviewsPage() {
               No reviews given yet
             </h3>
             <p className="text-sm text-slate-400 mt-1">
-              After completing a project you can rate and review the company
+              After completing a project, you can rate and review the corporate partner.
             </p>
           </CardContent>
         </Card>

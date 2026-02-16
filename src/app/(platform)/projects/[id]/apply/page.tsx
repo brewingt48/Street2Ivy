@@ -180,7 +180,7 @@ export default function ApplyPage() {
             </h3>
             <p className="text-sm text-slate-500 mt-2 max-w-md mx-auto">
               Your application for <span className="font-medium">{project.title}</span> has been
-              submitted. You&apos;ll receive a notification when the company responds.
+              submitted. You&apos;ll receive a notification when the corporate partner responds.
             </p>
             <p className="text-xs text-slate-400 mt-3 max-w-sm mx-auto">
               If accepted, all work details, contracts, and payment will be arranged directly between you and the partner.
@@ -242,7 +242,7 @@ export default function ApplyPage() {
           <CardHeader>
             <CardTitle>Your Application</CardTitle>
             <CardDescription>
-              Tell the company why you&apos;re a great fit for this project
+              Explain why you&apos;re a great fit for this project
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-5">

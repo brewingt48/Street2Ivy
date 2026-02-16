@@ -23,7 +23,7 @@ const pillars = [
     icon: Users,
     label: 'The Advantage',
     stat: '92%',
-    statLabel: 'of employers value verified project work',
+    statLabel: 'of hiring managers value verified project work',
     body: 'When students connect with alumni and industry partners on real projects, everyone wins \u2014 and doors open that stay open.',
   },
   {

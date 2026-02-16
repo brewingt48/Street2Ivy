@@ -5,7 +5,7 @@
  *
  * Bright, clean, modern design inspired by Anthropic.com meets Nike.
  * Flow: Navbar → Hero → Student Banner → How It Works → Value Props →
- * AI Coaching → Network Ecosystem → Closing CTA → Footer
+ * Ecosystem → AI Coaching → Network Ecosystem → Closing CTA → Footer
  */
 
 import { useState, useEffect } from 'react';
@@ -14,6 +14,7 @@ import { Hero } from '@/components/home/Hero';
 import { StudentBanner } from '@/components/home/StudentBanner';
 import { HowItWorks } from '@/components/home/HowItWorks';
 import { ValueProps } from '@/components/home/ValueProps';
+import { Ecosystem } from '@/components/home/Ecosystem';
 import { AICoaching } from '@/components/home/AICoaching';
 import { NetworkEcosystem } from '@/components/home/NetworkEcosystem';
 import { ClosingCTA } from '@/components/home/ClosingCTA';
@@ -49,6 +50,7 @@ export default function ProvegroundHomepage() {
       <StudentBanner />
       <HowItWorks />
       <ValueProps />
+      <Ecosystem />
       <AICoaching />
       <NetworkEcosystem />
       <ClosingCTA />

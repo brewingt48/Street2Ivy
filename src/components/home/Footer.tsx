@@ -38,7 +38,7 @@ export function Footer() {
                 {p.title}
               </a>
             ))}
-            <a href="/contact" className="hover:text-[#3a3a3a] transition-colors">
+            <a href="mailto:support@proveground.com" className="hover:text-[#3a3a3a] transition-colors">
               Contact
             </a>
             <span>&copy; {new Date().getFullYear()} Proveground, Inc. All rights reserved.</span>

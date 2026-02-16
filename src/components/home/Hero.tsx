@@ -113,7 +113,6 @@ export function Hero({ mode = 'carousel', images, intervalMs = 3500 }: HeroProps
           poster={activeImages[0].src}
           className="absolute inset-0 w-full h-full object-cover"
         >
-          {/* Replace with Proveground hero video */}
           <source
             src="https://videos.pexels.com/video-files/5190065/5190065-uhd_2560_1440_25fps.mp4"
             type="video/mp4"

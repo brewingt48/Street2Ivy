@@ -425,7 +425,7 @@ export default function SettingsPage() {
               onChange={(e) => setBio(e.target.value)}
               placeholder={profile?.role === 'admin' || profile?.role === 'educational_admin'
                 ? 'Brief description of your role...'
-                : 'Tell companies about yourself...'}
+                : 'Tell us about yourself...'}
               rows={3}
             />
           </div>

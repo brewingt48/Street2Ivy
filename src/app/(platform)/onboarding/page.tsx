@@ -3,7 +3,7 @@
 /**
  * Student Onboarding Wizard
  *
- * Multi-step form: Profile → Skills → Institution → Done
+ * Multi-step form: Profile -> Skills -> Complete
  */
 
 import { useState, useEffect } from 'react';
@@ -22,7 +22,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { CheckCircle2, User, GraduationCap, Sparkles } from 'lucide-react';
+import { CheckCircle2, User, GraduationCap, Sparkles, AlertCircle } from 'lucide-react';
 
 interface Skill {
   id: string;
@@ -50,6 +50,7 @@ export default function OnboardingPage() {
 
   // Skills state
   const [allSkills, setAllSkills] = useState<Skill[]>([]);
+  const [skillsFetchError, setSkillsFetchError] = useState(false);
   const [selectedSkillIds, setSelectedSkillIds] = useState<Set<string>>(new Set());
   const [skillSearch, setSkillSearch] = useState('');
 
@@ -57,7 +58,7 @@ export default function OnboardingPage() {
     fetch('/api/skills')
       .then((res) => res.json())
       .then((data) => setAllSkills(data.skills || []))
-      .catch(console.error);
+      .catch(() => setSkillsFetchError(true));
   }, []);
 
   const filteredSkills = allSkills.filter((s) =>
@@ -210,7 +211,7 @@ export default function OnboardingPage() {
               <Label htmlFor="bio">Bio</Label>
               <Textarea
                 id="bio"
-                placeholder="Tell companies a bit about yourself..."
+                placeholder="Tell us a bit about yourself..."
                 value={profile.bio}
                 onChange={(e) => setProfile((p) => ({ ...p, bio: e.target.value }))}
                 rows={3}
@@ -274,7 +275,12 @@ export default function OnboardingPage() {
                     {skill.name}
                   </Badge>
                 ))}
-                {filteredSkills.length === 0 && (
+                {skillsFetchError && (
+                  <div className="p-3 text-sm text-red-600 bg-red-50 rounded-md flex items-center gap-2">
+                    <AlertCircle className="h-4 w-4 shrink-0" /> Failed to load skills. Please refresh the page and try again.
+                  </div>
+                )}
+                {filteredSkills.length === 0 && !skillsFetchError && (
                   <p className="text-sm text-slate-400">No skills found</p>
                 )}
               </div>

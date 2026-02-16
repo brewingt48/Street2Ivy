@@ -10,7 +10,7 @@ export function newApplicationEmail(data: {
   projectTitle: string;
   applicationId: string;
 }): { subject: string; html: string } {
-  const appUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'https://street2ivy-dev-c54ffcb26038.herokuapp.com'}/corporate/applications`;
+  const appUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'https://proveground.com'}/corporate/applications`;
 
   return {
     subject: `New Application: ${data.studentName} applied to "${data.projectTitle}"`,

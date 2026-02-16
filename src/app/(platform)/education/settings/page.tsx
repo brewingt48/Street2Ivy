@@ -318,7 +318,7 @@ export default function EducationSettingsPage() {
                 <textarea
                   value={welcomeMessage}
                   onChange={(e) => setWelcomeMessage(e.target.value)}
-                  placeholder="Welcome to our Proveground portal! Explore paid project opportunities with top companies..."
+                  placeholder="Welcome to our Proveground portal! Explore real-world project opportunities with corporate partners..."
                   rows={3}
                   disabled={!canCustomize}
                   className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"

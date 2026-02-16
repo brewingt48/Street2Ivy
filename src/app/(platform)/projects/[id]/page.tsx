@@ -383,7 +383,7 @@ export default function ProjectDetailPage() {
                   )}
                 </>
               ) : (
-                <p className="text-sm text-slate-400 italic">Company information not provided</p>
+                <p className="text-sm text-slate-400 italic">Organization information not provided</p>
               )}
             </CardContent>
           </Card>

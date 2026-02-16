@@ -507,11 +507,13 @@ export function LandingPageClient({ tenant, stats, partners, legalPolicies = [] 
                 Lead with vision. Launch a branded talent engine powered by Proveground&apos;s proprietary <strong>Match Engine&trade;</strong> &mdash; connecting your students to the right opportunities across the network, schedule-aware and data-driven.
               </p>
               <a
-                href="/for-universities"
+                href="https://calendly.com/proveground/demo"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="inline-flex items-center gap-1 text-sm font-semibold transition-colors"
                 style={{ color: primary }}
               >
-                Learn More <ArrowRight className="h-4 w-4" />
+                Schedule a Demo <ArrowRight className="h-4 w-4" />
               </a>
             </motion.div>
           </motion.div>

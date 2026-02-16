@@ -269,7 +269,7 @@ export default function CorporateDashboardPage() {
               <CardDescription>
                 {hasMatchEngine
                   ? <>Students matched to your listing using Proveground&apos;s proprietary <strong>Match Engine&trade;</strong>. Composite scores reflect a multi-dimensional assessment of each candidate&apos;s fit.</>
-                  : 'Students matched to your listing\u0027s required skills using our algorithm. The percentage shows how many of your required skills each student has.'}
+                  : 'Students matched to your listing\u0027s required skills using our matching engine. The percentage shows how many of your required skills each student has.'}
               </CardDescription>
             </div>
             <Link href="/corporate/search-students">
@@ -358,7 +358,7 @@ export default function CorporateDashboardPage() {
               </div>
               <div>
                 <p className="font-semibold text-slate-900 dark:text-white mb-1">2. Review Matches</p>
-                <p>Students appear in &quot;Recommended&quot; with a composite score (0&ndash;100%). Higher scores mean a stronger overall fit based on multiple proprietary dimensions of our algorithm.</p>
+                <p>Students appear in &quot;Recommended&quot; with a composite score (0&ndash;100%). Higher scores mean a stronger overall fit based on multiple proprietary dimensions of our matching engine.</p>
               </div>
               <div>
                 <p className="font-semibold text-slate-900 dark:text-white mb-1">3. Engage &amp; Hire</p>
@@ -620,7 +620,7 @@ export default function CorporateDashboardPage() {
               <p>
                 {hasMatchEngine
                   ? <>Students matched to your active listings using Proveground&apos;s proprietary <strong>Match Engine&trade;</strong>. Composite scores reflect a multi-dimensional assessment of each student&apos;s fit for your project.</>
-                  : 'Students matched to your active listings using our skills-based algorithm. The percentage shows skill alignment.'}
+                  : 'Students matched to your active listings using our skills-based matching engine. The percentage shows skill alignment.'}
               </p>
             </div>
           </div>

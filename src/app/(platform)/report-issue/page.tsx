@@ -179,6 +179,7 @@ export default function ReportIssuePage() {
           <div className="text-sm text-green-800 dark:text-green-300">
             <p className="font-medium">Report Submitted</p>
             <p>Your report has been submitted. Your institution admin will be notified.</p>
+            <a href="/dashboard" className="inline-flex items-center text-green-700 font-medium hover:text-green-800 mt-2 text-xs">Back to Dashboard &rarr;</a>
           </div>
         </div>
       )}

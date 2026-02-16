@@ -20,7 +20,7 @@ export function applicationAcceptedEmail(data: {
         <p>Great news! <strong>${data.companyName}</strong> has accepted your application for <strong>"${data.projectTitle}"</strong>.</p>
         <p>You can now communicate with the team through the messaging system to discuss next steps.</p>
         <p style="text-align: center; margin: 24px 0;">
-          <a href="${process.env.NEXT_PUBLIC_APP_URL || 'https://street2ivy-dev-c54ffcb26038.herokuapp.com'}/applications" class="btn">View Applications</a>
+          <a href="${process.env.NEXT_PUBLIC_APP_URL || 'https://proveground.com'}/applications" class="btn">View Applications</a>
         </p>
       `,
     }),

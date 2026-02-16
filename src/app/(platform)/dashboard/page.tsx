@@ -40,6 +40,7 @@ import {
   Target,
   BookOpen,
   Bookmark,
+  AlertCircle,
 } from 'lucide-react';
 import { HelpSupportCard } from '@/components/shared/help-support-card';
 import { MatchScoreBadge } from '@/components/matching/MatchScoreBadge';
@@ -119,6 +120,7 @@ export default function DashboardPage() {
   const [data, setData] = useState<DashboardData | null>(null);
   const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
   const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState(false);
   const [userName, setUserName] = useState('');
   const [institution, setInstitution] = useState<{domain: string; name: string; ai_coaching_enabled: boolean; ai_coaching_url: string} | null>(null);
   const [tenantFeatures, setTenantFeatures] = useState<TenantFeatures>({});
@@ -141,7 +143,7 @@ export default function DashboardPage() {
         }
         setTenantFeatures(featuresData.features || {});
       })
-      .catch(console.error)
+      .catch(() => setFetchError(true))
       .finally(() => setLoading(false));
   }, []);
 
@@ -159,7 +161,22 @@ export default function DashboardPage() {
     );
   }
 
-  if (!data) return null;
+  if (!data) {
+    return (
+      <div className="flex items-center justify-center min-h-[40vh]">
+        <div className="text-center">
+          <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-4">
+            <AlertCircle className="h-6 w-6 text-red-600" />
+          </div>
+          <h2 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">Unable to load dashboard</h2>
+          <p className="text-sm text-slate-500 mb-4">Something went wrong loading your data. Please try again.</p>
+          <Button onClick={() => window.location.reload()} variant="outline">
+            Retry
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   const { stats, recentApplications } = data;
 
@@ -432,7 +449,7 @@ export default function DashboardPage() {
               <div className="space-y-3">
                 <div>
                   <p className="font-semibold text-slate-900 dark:text-white mb-1">What the Score Means</p>
-                  <p>Your composite match score is computed using Proveground&apos;s proprietary algorithm that evaluates multiple dimensions of fit &mdash; far beyond a simple keyword match.</p>
+                  <p>Your composite match score is computed using Proveground&apos;s proprietary matching engine that evaluates multiple dimensions of fit &mdash; far beyond a simple keyword match.</p>
                 </div>
                 <div>
                   <p className="text-sm">The <strong>Match Engine&trade;</strong> considers factors including how well the opportunity aligns with your background, whether the timing works with your commitments, and how the engagement fits into your broader career trajectory. The more complete your profile and schedule, the smarter your matches become.</p>
@@ -465,7 +482,7 @@ export default function DashboardPage() {
               <CardDescription>
                 {tenantFeatures.matchEngine
                   ? <>Projects matched using Proveground&apos;s proprietary <strong>Match Engine&trade;</strong> based on your skills, schedule, and career trajectory.</>
-                  : 'Projects suggested by our matching algorithm based on your skills, past application history, and availability.'}
+                  : 'Projects suggested by our matching engine based on your skills and availability.'}
               </CardDescription>
             </div>
             <Link href="/projects">
@@ -579,7 +596,7 @@ export default function DashboardPage() {
               <FileText className="h-10 w-10 mx-auto mb-3" />
               <p className="font-medium">No applications yet</p>
               <p className="text-sm mt-1">
-                Browse projects and submit your first application
+                Browse projects and submit your first application.
               </p>
               <Button
                 variant="outline"
@@ -601,7 +618,7 @@ export default function DashboardPage() {
                     <div className="flex-1 min-w-0">
                       <p className="font-medium text-sm truncate">{app.listingTitle}</p>
                       <p className="text-xs text-slate-500 mt-0.5">
-                        {app.corporateName || 'Company'} &middot;{' '}
+                        {app.corporateName || 'Corporate Partner'} &middot;{' '}
                         {new Date(app.submittedAt).toLocaleDateString()}
                       </p>
                     </div>
@@ -622,7 +639,7 @@ export default function DashboardPage() {
           <CardHeader>
             <CardTitle>Getting Started</CardTitle>
             <CardDescription>
-              Complete these steps to stand out to employers
+              Complete these steps to stand out to corporate partners
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -648,7 +665,7 @@ export default function DashboardPage() {
           <div className="grid gap-4 md:grid-cols-2 text-sm text-slate-600 dark:text-slate-300">
             <div>
               <p className="font-medium text-slate-900 dark:text-white mb-1">Applications</p>
-              <p>Tracks how many projects you&apos;ve applied to. &quot;Pending&quot; means the company hasn&apos;t responded yet.</p>
+              <p>Tracks how many projects you&apos;ve applied to. &quot;Pending&quot; means the corporate partner hasn&apos;t responded yet.</p>
             </div>
             <div>
               <p className="font-medium text-slate-900 dark:text-white mb-1">Available Projects</p>
@@ -658,8 +675,8 @@ export default function DashboardPage() {
               <p className="font-medium text-slate-900 dark:text-white mb-1">Recommended For You</p>
               <p>
                 {tenantFeatures.matchEngine
-                  ? <>Projects matched using Proveground&apos;s proprietary <strong>Match Engine&trade;</strong>. Click &quot;View match breakdown&quot; to see how each dimension of our algorithm contributes to your composite score.</>
-                  : 'Projects matched to your skills using our smart matching algorithm. The percentage shows how well your skills align.'}
+                  ? <>Projects matched using Proveground&apos;s proprietary <strong>Match Engine&trade;</strong>. Click &quot;View match breakdown&quot; to see how each dimension of our matching engine contributes to your composite score.</>
+                  : 'Projects matched to your skills using our smart matching engine. The percentage shows how well your skills align.'}
               </p>
             </div>
             <div>

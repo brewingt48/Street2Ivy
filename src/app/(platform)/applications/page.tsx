@@ -71,12 +71,14 @@ export default function ApplicationsPage() {
   const [applications, setApplications] = useState<Application[]>([]);
   const [counts, setCounts] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState(false);
   const [statusFilter, setStatusFilter] = useState('');
   const [withdrawing, setWithdrawing] = useState<string | null>(null);
 
   const fetchApplications = async (status: string) => {
     setLoading(true);
     try {
+      setFetchError(false);
       const params = new URLSearchParams();
       if (status) params.set('status', status);
       const res = await fetch(`/api/applications?${params}`);
@@ -85,6 +87,7 @@ export default function ApplicationsPage() {
       setCounts(data.counts || {});
     } catch (err) {
       console.error('Failed to fetch applications:', err);
+      setFetchError(true);
     } finally {
       setLoading(false);
     }
@@ -108,6 +111,7 @@ export default function ApplicationsPage() {
       }
     } catch (err) {
       console.error('Failed to withdraw:', err);
+      alert('Failed to withdraw application. Please try again.');
     } finally {
       setWithdrawing(null);
     }
@@ -136,7 +140,7 @@ export default function ApplicationsPage() {
             filename="my-applications"
             columns={[
               { key: 'listingTitle', label: 'Project' },
-              { key: 'corporateName', label: 'Company' },
+              { key: 'corporateName', label: 'Corporate Partner' },
               { key: 'status', label: 'Status' },
               { key: 'submittedAt', label: 'Applied', format: (v) => v ? new Date(v as string).toLocaleDateString() : '' },
               { key: 'respondedAt', label: 'Response', format: (v) => v ? new Date(v as string).toLocaleDateString() : '' },
@@ -209,7 +213,7 @@ export default function ApplicationsPage() {
                         </Badge>
                       </div>
                       <div className="flex items-center gap-3 mt-1 text-xs text-slate-500">
-                        <span>{app.corporateName || 'Company'}</span>
+                        <span>{app.corporateName || 'Corporate Partner'}</span>
                         <span>&middot;</span>
                         <span>
                           Applied {new Date(app.submittedAt).toLocaleDateString()}
@@ -268,6 +272,20 @@ export default function ApplicationsPage() {
         </div>
       )}
 
+      {/* Fetch error state */}
+      {fetchError && !loading && (
+        <Card>
+          <CardContent className="py-12 text-center">
+            <AlertCircle className="h-12 w-12 text-red-300 mx-auto mb-4" />
+            <p className="text-slate-500 font-medium">Failed to load applications</p>
+            <p className="text-sm text-slate-400 mt-1">Please check your connection and try again.</p>
+            <Button variant="outline" className="mt-4" onClick={() => fetchApplications(statusFilter)}>
+              Retry
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Empty state */}
       {!loading && applications.length === 0 && (
         <Card>
@@ -279,7 +297,7 @@ export default function ApplicationsPage() {
             <p className="text-sm text-slate-400 mt-1">
               {statusFilter
                 ? 'Try selecting a different status filter'
-                : 'Browse projects and submit your first application'}
+                : 'Browse projects and submit your first application.'}
             </p>
             {!statusFilter && (
               <Button

@@ -35,6 +35,7 @@ import {
   Building2,
   ExternalLink,
   Briefcase,
+  AlertCircle,
 } from 'lucide-react';
 
 interface Invite {
@@ -73,6 +74,7 @@ export default function InvitesPage() {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('');
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [error, setError] = useState('');
   const [confirmDialog, setConfirmDialog] = useState<{
     open: boolean;
     inviteId: string;
@@ -124,9 +126,11 @@ export default function InvitesPage() {
         await fetchInvites();
       } else {
         console.error(`Failed to ${action} invite`);
+        setError(`Failed to ${action} invitation. Please try again.`);
       }
     } catch (err) {
       console.error(`Failed to ${action} invite:`, err);
+      setError(`Failed to ${action} invitation. Please try again.`);
     } finally {
       setActionLoading(null);
     }
@@ -143,6 +147,12 @@ export default function InvitesPage() {
           Review invitations from corporate partners to join their projects
         </p>
       </div>
+
+      {error && (
+        <div className="p-3 text-sm text-red-600 bg-red-50 rounded-md flex items-center gap-2">
+          <AlertCircle className="h-4 w-4 shrink-0" /> {error}
+        </div>
+      )}
 
       {/* Status Filter Tabs */}
       {!loading && invites.length > 0 && (
@@ -310,7 +320,7 @@ export default function InvitesPage() {
             <p className="text-sm text-slate-400 mt-1">
               {filter
                 ? 'Try checking a different tab'
-                : 'When corporate partners invite you to their projects, they will appear here'}
+                : 'When corporate partners invite you to their projects, they will appear here.'}
             </p>
           </CardContent>
         </Card>

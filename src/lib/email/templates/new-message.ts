@@ -23,7 +23,7 @@ export function newMessageEmail(data: {
           <p style="margin: 0; color: #475569; font-style: italic;">"${data.preview.substring(0, 200)}${data.preview.length > 200 ? '...' : ''}"</p>
         </div>
         <p style="text-align: center; margin: 24px 0;">
-          <a href="${process.env.NEXT_PUBLIC_APP_URL || 'https://street2ivy-dev-c54ffcb26038.herokuapp.com'}/inbox" class="btn">View Message</a>
+          <a href="${process.env.NEXT_PUBLIC_APP_URL || 'https://proveground.com'}/inbox" class="btn">View Message</a>
         </p>
       `,
     }),

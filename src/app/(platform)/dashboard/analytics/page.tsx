@@ -122,7 +122,7 @@ export default function StudentAnalyticsPage() {
     },
     {
       key: 'corporateName',
-      label: 'Company',
+      label: 'Corporate Partner',
       sortable: true,
     },
     {
