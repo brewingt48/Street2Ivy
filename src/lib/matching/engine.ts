@@ -283,7 +283,8 @@ export async function getRecommendedProjects(
  */
 export async function getRecommendedStudents(
   listingId: string,
-  limit = 20
+  limit = 20,
+  scope?: 'tenant' | 'network'
 ): Promise<StudentMatchScore[]> {
   // Check if new Match Engine is enabled
   try {
@@ -293,7 +294,7 @@ export async function getRecommendedStudents(
       if (enabled) {
         const results = await newGetListingMatches(listingId, {
           limit,
-          tenantId: listing.tenant_id as string,
+          tenantId: scope === 'network' ? undefined : (listing.tenant_id as string),
         });
         return results.map((r) => ({
           studentId: r.studentId,
@@ -315,7 +316,7 @@ export async function getRecommendedStudents(
   // --- Legacy algorithm ---
   // 1. Get listing details
   const [listing] = await sql`
-    SELECT skills_required, category, hours_per_week
+    SELECT skills_required, category, hours_per_week, tenant_id
     FROM listings WHERE id = ${listingId}
   `;
   if (!listing) return [];
@@ -323,6 +324,12 @@ export async function getRecommendedStudents(
   const requiredSkills = ((listing.skills_required as string[]) || []).map((s) =>
     typeof s === 'string' ? s.toLowerCase() : ''
   );
+
+  // Tenant filter for student query: scope=tenant filters to listing's tenant, scope=network queries all
+  const listingTenantId = listing.tenant_id as string | null;
+  const studentTenantFilter = scope !== 'network' && listingTenantId
+    ? sql`AND u.tenant_id = ${listingTenantId}`
+    : sql``;
 
   // 2. Get students who haven't applied yet
   const students = await sql`
@@ -336,6 +343,7 @@ export async function getRecommendedStudents(
       AND u.id NOT IN (
         SELECT student_id FROM project_applications WHERE listing_id = ${listingId}
       )
+      ${studentTenantFilter}
     GROUP BY u.id
     LIMIT 200
   `;

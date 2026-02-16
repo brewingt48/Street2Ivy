@@ -39,7 +39,10 @@ import {
   ChevronDown,
   ChevronUp,
   Mail,
+  Globe,
+  Lightbulb,
 } from 'lucide-react';
+import { TalentPoolInsights } from '@/components/corporate/talent-pool-insights';
 
 interface Listing {
   id: string;
@@ -52,6 +55,9 @@ interface Listing {
   pendingCount: number;
   compensation: string | null;
   remoteAllowed: boolean;
+  visibility: 'tenant' | 'network';
+  skillsRequired: string[] | null;
+  hoursPerWeek: number | null;
 }
 
 interface StudentRecommendation {
@@ -84,6 +90,8 @@ export default function CorporateProjectsPage() {
   const [expandedSuggestions, setExpandedSuggestions] = useState<string | null>(null);
   const [recommendations, setRecommendations] = useState<Record<string, StudentRecommendation[]>>({});
   const [loadingRecs, setLoadingRecs] = useState<Record<string, boolean>>({});
+  const [insightsTarget, setInsightsTarget] = useState<string | null>(null);
+  const [togglingVisibility, setTogglingVisibility] = useState<string | null>(null);
 
   useEffect(() => {
     fetch('/api/listings')
@@ -125,24 +133,46 @@ export default function CorporateProjectsPage() {
     }
   };
 
-  const toggleSuggestions = async (listingId: string) => {
-    if (expandedSuggestions === listingId) {
+  const toggleSuggestions = async (listing: Listing) => {
+    if (expandedSuggestions === listing.id) {
       setExpandedSuggestions(null);
       return;
     }
-    setExpandedSuggestions(listingId);
+    setExpandedSuggestions(listing.id);
     // Fetch recommendations if not already cached
-    if (!recommendations[listingId]) {
-      setLoadingRecs(prev => ({ ...prev, [listingId]: true }));
+    if (!recommendations[listing.id]) {
+      setLoadingRecs(prev => ({ ...prev, [listing.id]: true }));
       try {
-        const res = await fetch(`/api/matching?type=students&listingId=${listingId}&limit=8`);
+        const scopeParam = listing.visibility === 'network' ? '&scope=network' : '';
+        const res = await fetch(`/api/matching?type=students&listingId=${listing.id}&limit=8${scopeParam}`);
         const data = await res.json();
-        setRecommendations(prev => ({ ...prev, [listingId]: data.recommendations || [] }));
+        setRecommendations(prev => ({ ...prev, [listing.id]: data.recommendations || [] }));
       } catch (err) {
         console.error('Failed to fetch recommendations:', err);
       } finally {
-        setLoadingRecs(prev => ({ ...prev, [listingId]: false }));
+        setLoadingRecs(prev => ({ ...prev, [listing.id]: false }));
       }
+    }
+  };
+
+  const toggleVisibility = async (listing: Listing) => {
+    const newVisibility = listing.visibility === 'network' ? 'tenant' : 'network';
+    setTogglingVisibility(listing.id);
+    try {
+      const res = await csrfFetch(`/api/listings/${listing.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ visibility: newVisibility }),
+      });
+      if (res.ok) {
+        setListings((prev) => prev.map((l) => l.id === listing.id ? { ...l, visibility: newVisibility } : l));
+        // Clear cached recommendations since scope changed
+        setRecommendations((prev) => { const next = { ...prev }; delete next[listing.id]; return next; });
+      }
+    } catch (err) {
+      console.error('Failed to toggle visibility:', err);
+    } finally {
+      setTogglingVisibility(null);
     }
   };
 
@@ -215,6 +245,11 @@ export default function CorporateProjectsPage() {
                       <div className="flex items-center gap-3">
                         <h3 className="font-semibold text-base truncate">{listing.title}</h3>
                         <Badge className={`${style.color} border-0 shrink-0`}>{style.label}</Badge>
+                        {listing.status === 'published' && (
+                          <Badge className={`border-0 shrink-0 text-xs ${listing.visibility === 'network' ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-600'}`}>
+                            {listing.visibility === 'network' ? 'Network' : 'Institution Only'}
+                          </Badge>
+                        )}
                       </div>
                       <p className="text-sm text-slate-500 mt-1 line-clamp-1">{listing.description}</p>
                       <div className="flex items-center gap-4 mt-2 text-xs text-slate-400">
@@ -232,6 +267,24 @@ export default function CorporateProjectsPage() {
                       </Button>
                       {listing.status === 'published' && (
                         <>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className={listing.visibility === 'network' ? 'text-blue-600 hover:text-blue-700 hover:bg-blue-50' : 'text-slate-500 hover:text-slate-700'}
+                            onClick={() => toggleVisibility(listing)}
+                            disabled={togglingVisibility === listing.id}
+                            title={listing.visibility === 'network' ? 'Switch to institution only' : 'Make visible to entire network'}
+                          >
+                            <Globe className="h-3 w-3 mr-1" /> {listing.visibility === 'network' ? 'Network' : 'Institution'}
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className={insightsTarget === listing.id ? 'text-amber-600 bg-amber-50' : 'text-amber-500 hover:text-amber-600 hover:bg-amber-50'}
+                            onClick={() => setInsightsTarget(insightsTarget === listing.id ? null : listing.id)}
+                          >
+                            <Lightbulb className="h-3 w-3 mr-1" /> Insights
+                          </Button>
                           <Button variant="ghost" size="sm" onClick={() => router.push(`/projects/${listing.id}`)}>
                             <Eye className="h-3 w-3 mr-1" /> View
                           </Button>
@@ -246,11 +299,26 @@ export default function CorporateProjectsPage() {
                     </div>
                   </div>
 
+                  {/* Per-listing Insights Panel */}
+                  {listing.status === 'published' && insightsTarget === listing.id && (
+                    <div className="mt-3 pt-3 border-t">
+                      <TalentPoolInsights
+                        variant="compact"
+                        defaultExpanded
+                        scope={listing.visibility}
+                        listingContext={{
+                          hoursPerWeek: listing.hoursPerWeek || undefined,
+                          selectedSkills: listing.skillsRequired || undefined,
+                        }}
+                      />
+                    </div>
+                  )}
+
                   {/* Suggested Students toggle for published listings */}
                   {listing.status === 'published' && (
                     <div className="mt-3 pt-3 border-t">
                       <button
-                        onClick={() => toggleSuggestions(listing.id)}
+                        onClick={() => toggleSuggestions(listing)}
                         className="flex items-center gap-2 text-sm text-teal-600 hover:text-teal-700 font-medium transition-colors"
                       >
                         <Sparkles className="h-4 w-4" />

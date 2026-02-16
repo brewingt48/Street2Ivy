@@ -25,8 +25,8 @@ export default function StudentSchedulePage() {
           My Schedule
         </h1>
         <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-          Manage your sport seasons, academic calendar, and weekly availability. Your schedule directly
-          impacts your <strong>Match Engine&trade;</strong> scores.
+          Manage your sport seasons, academic calendar, and weekly availability. Keeping your schedule
+          up to date helps us find better project matches for you.
         </p>
       </div>
 
@@ -35,12 +35,11 @@ export default function StudentSchedulePage() {
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2 text-lg">
             <Target className="h-5 w-5 text-teal-600" />
-            How Your Schedule Powers the Match Engine&trade;
+            How Your Schedule Improves Your Matches
           </CardTitle>
           <CardDescription>
-            The Match Engine&trade; uses your schedule to calculate a <strong>Temporal Fit</strong> signal
-            &mdash; one of six signals that determine your match score for every opportunity. Keeping your
-            schedule accurate means better, more realistic project recommendations.
+            Your schedule helps us understand when you&apos;re available so we can recommend projects that
+            fit your life. The more accurate your schedule, the better your recommendations will be.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -54,14 +53,13 @@ export default function StudentSchedulePage() {
                 <h3 className="font-semibold text-sm text-slate-900 dark:text-white">Sport Seasons</h3>
               </div>
               <p className="text-xs text-slate-600 dark:text-slate-300">
-                Add your sport seasons (in-season and off-season) so the engine knows when you&apos;re training,
-                competing, and traveling. <strong>In-season</strong> projects will score lower if your practice
-                and competition load is heavy, while <strong>off-season</strong> opportunities will rank higher
-                since you have more bandwidth.
+                Add your sport seasons (in-season and off-season) so we know when you&apos;re training,
+                competing, and traveling. Projects that fit your <strong>off-season</strong> will rank
+                higher since you have more bandwidth.
               </p>
               <div className="flex items-center gap-1 text-xs text-teal-600 dark:text-teal-400 font-medium pt-1">
                 <Zap className="h-3 w-3" />
-                Impacts: Season conflicts, intensity scoring
+                Helps with: Season &amp; travel conflicts
               </div>
             </div>
 
@@ -74,13 +72,13 @@ export default function StudentSchedulePage() {
                 <h3 className="font-semibold text-sm text-slate-900 dark:text-white">Custom &amp; Work Blocks</h3>
               </div>
               <p className="text-xs text-slate-600 dark:text-slate-300">
-                Block off recurring time for jobs, tutoring, clubs, or other commitments. The engine subtracts
-                these hours from your total availability. If a project needs 15&nbsp;hours/week and you only have
-                10 free, your match score drops &mdash; keeping your results realistic and honest.
+                Block off recurring time for jobs, tutoring, clubs, or other commitments. These hours are
+                subtracted from your availability so you only get recommended for projects you can actually
+                commit to.
               </p>
               <div className="flex items-center gap-1 text-xs text-teal-600 dark:text-teal-400 font-medium pt-1">
                 <Zap className="h-3 w-3" />
-                Impacts: Available hours, workload feasibility
+                Helps with: Realistic availability
               </div>
             </div>
 
@@ -93,14 +91,12 @@ export default function StudentSchedulePage() {
                 <h3 className="font-semibold text-sm text-slate-900 dark:text-white">Available Hours/Week</h3>
               </div>
               <p className="text-xs text-slate-600 dark:text-slate-300">
-                Set your total available hours per week for project work. The engine compares this against each
-                listing&apos;s required hours. A close match scores high; if you have <strong>more</strong> hours
-                than needed you&apos;re still in good shape; if you have <strong>fewer</strong>, the score drops
-                proportionally.
+                Set how many hours per week you can dedicate to project work. We&apos;ll prioritize projects
+                that match your availability &mdash; you&apos;ll see better results when this is accurate.
               </p>
               <div className="flex items-center gap-1 text-xs text-teal-600 dark:text-teal-400 font-medium pt-1">
                 <Zap className="h-3 w-3" />
-                Impacts: Hours match score (25% of total)
+                Helps with: Hours-based matching
               </div>
             </div>
           </div>
@@ -112,20 +108,19 @@ export default function StudentSchedulePage() {
               <div>
                 <p className="text-xs font-semibold text-slate-900 dark:text-white">Travel Conflicts</p>
                 <p className="text-xs text-slate-500 dark:text-slate-400">
-                  Each sport season includes estimated travel days/month. The engine checks for overlap between
-                  travel dates and project timelines &mdash; heavy travel during a project window lowers the
-                  match score to flag potential availability issues.
+                  Each sport season includes estimated travel days per month. If you have heavy travel during
+                  a project&apos;s timeline, we&apos;ll flag it so you can focus on opportunities that work
+                  with your schedule.
                 </p>
               </div>
             </div>
             <div className="flex gap-3 p-3 rounded-lg bg-white/80 dark:bg-slate-900/40 border border-slate-200 dark:border-slate-700">
               <TrendingUp className="h-4 w-4 text-teal-600 shrink-0 mt-0.5" />
               <div>
-                <p className="text-xs font-semibold text-slate-900 dark:text-white">Score Updates</p>
+                <p className="text-xs font-semibold text-slate-900 dark:text-white">Automatic Updates</p>
                 <p className="text-xs text-slate-500 dark:text-slate-400">
-                  When you add, change, or remove a schedule, your match scores are <strong>automatically
-                  recalculated</strong>. Check your dashboard&apos;s &ldquo;Recommended For You&rdquo; section
-                  to see updated recommendations after making changes.
+                  When you update your schedule, your recommendations refresh automatically. Check your
+                  dashboard&apos;s &ldquo;Recommended For You&rdquo; section to see the latest matches.
                 </p>
               </div>
             </div>
@@ -138,10 +133,10 @@ export default function StudentSchedulePage() {
               <div className="space-y-1">
                 <p className="text-xs font-semibold text-blue-900 dark:text-blue-200">Quick Tips for Better Matches</p>
                 <ul className="text-xs text-blue-700 dark:text-blue-300 space-y-0.5">
-                  <li>&bull; <strong>Add all active sport seasons</strong> &mdash; the engine can&apos;t avoid scheduling conflicts it doesn&apos;t know about</li>
-                  <li>&bull; <strong>Be realistic with available hours</strong> &mdash; overestimating leads to matches you can&apos;t actually commit to</li>
-                  <li>&bull; <strong>Update when things change</strong> &mdash; if your season ends or you pick up a new commitment, update your schedule so matches stay accurate</li>
-                  <li>&bull; <strong>Off-season is your best window</strong> &mdash; projects starting during your off-season will naturally score higher</li>
+                  <li>&bull; <strong>Add all active sport seasons</strong> &mdash; we can&apos;t avoid scheduling conflicts we don&apos;t know about</li>
+                  <li>&bull; <strong>Be realistic with available hours</strong> &mdash; overestimating leads to recommendations you can&apos;t actually commit to</li>
+                  <li>&bull; <strong>Update when things change</strong> &mdash; if your season ends or you pick up a new commitment, update your schedule so your recommendations stay accurate</li>
+                  <li>&bull; <strong>Off-season is your best window</strong> &mdash; projects during your off-season will naturally rank higher</li>
                 </ul>
               </div>
             </div>

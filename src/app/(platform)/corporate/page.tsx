@@ -43,6 +43,7 @@ import {
 } from 'lucide-react';
 import { HelpSupportCard } from '@/components/shared/help-support-card';
 import { MatchScoreBadge } from '@/components/matching/MatchScoreBadge';
+import { TalentPoolInsights } from '@/components/corporate/talent-pool-insights';
 
 interface DashboardData {
   listings: { active: number; draft: number; closed: number; total: number };
@@ -330,6 +331,12 @@ export default function CorporateDashboardPage() {
           </CardContent>
         </Card>
       )}
+
+      {/* Talent Pool Insights — Tenant vs Network */}
+      <div className="grid gap-4 md:grid-cols-2">
+        <TalentPoolInsights variant="full" defaultExpanded={false} scope="tenant" />
+        <TalentPoolInsights variant="full" defaultExpanded={false} scope="network" />
+      </div>
 
       {/* How the Match Engine Works — Corporate Partner Guide */}
       {hasMatchEngine && (

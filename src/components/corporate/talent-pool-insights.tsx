@@ -28,6 +28,7 @@ interface TalentPoolInsightsProps {
   variant: 'full' | 'compact';
   defaultExpanded?: boolean;
   listingContext?: ListingContext;
+  scope?: 'tenant' | 'network';
 }
 
 type TabKey = 'sports' | 'universities' | 'availability' | 'skills';
@@ -56,19 +57,19 @@ function BarChart({ items, maxCount, label }: { items: { name: string; count: nu
   );
 }
 
-export function TalentPoolInsights({ variant, defaultExpanded = false, listingContext }: TalentPoolInsightsProps) {
+export function TalentPoolInsights({ variant, defaultExpanded = false, listingContext, scope = 'tenant' }: TalentPoolInsightsProps) {
   const [data, setData] = useState<InsightsData | null>(null);
   const [loading, setLoading] = useState(true);
   const [expanded, setExpanded] = useState(defaultExpanded);
   const [activeTab, setActiveTab] = useState<TabKey>('sports');
 
   useEffect(() => {
-    fetch('/api/corporate/talent-pool-insights')
+    fetch(`/api/corporate/talent-pool-insights?scope=${scope}`)
       .then((r) => r.json())
       .then((d) => setData(d))
       .catch(console.error)
       .finally(() => setLoading(false));
-  }, []);
+  }, [scope]);
 
   // Generate contextual tips based on listing context
   const tips: string[] = [];
@@ -149,7 +150,7 @@ export function TalentPoolInsights({ variant, defaultExpanded = false, listingCo
         <CardTitle className="flex items-center justify-between text-sm">
           <span className="flex items-center gap-2">
             <Users className="h-4 w-4 text-teal-600" />
-            Talent Pool Insights
+            {scope === 'network' ? 'Network Talent Pool' : 'Your Talent Pool'}
             <Badge variant="outline" className="text-xs font-normal">{data.totalStudents} students</Badge>
           </span>
           {expanded ? <ChevronUp className="h-4 w-4 text-slate-400" /> : <ChevronDown className="h-4 w-4 text-slate-400" />}

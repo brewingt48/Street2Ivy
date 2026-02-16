@@ -5,31 +5,41 @@
  * to help corporate partners craft better project postings.
  */
 
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { sql } from '@/lib/db';
 import { getCurrentSession } from '@/lib/auth/middleware';
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     const session = await getCurrentSession();
     if (!session || (session.data.role !== 'corporate_partner' && session.data.role !== 'admin')) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
 
+    const { searchParams } = new URL(request.url);
+    const scope = searchParams.get('scope') || 'tenant';
+    const tenantId = session.data.tenantId;
+
+    // Tenant filter: only applied when scope=tenant and user has a tenant
+    const tenantFilter = scope === 'tenant' && tenantId
+      ? sql`AND u.tenant_id = ${tenantId}`
+      : sql``;
+
     // Run all 5 queries in parallel
     const [totalResult, sportsResult, universityResult, availabilityResult, skillsResult] = await Promise.all([
       // Total active students
-      sql`SELECT COUNT(*) as count FROM users WHERE role = 'student' AND is_active = true`,
+      sql`SELECT COUNT(*) as count FROM users u WHERE u.role = 'student' AND u.is_active = true ${tenantFilter}`,
 
       // Top sports from metadata
       sql`
         SELECT sport, COUNT(*) as student_count
         FROM (
-          SELECT TRIM(unnest(string_to_array(metadata->>'sportsPlayed', ','))) as sport
-          FROM users
-          WHERE role = 'student' AND is_active = true
-            AND metadata->>'sportsPlayed' IS NOT NULL
-            AND metadata->>'sportsPlayed' != ''
+          SELECT TRIM(unnest(string_to_array(u.metadata->>'sportsPlayed', ','))) as sport
+          FROM users u
+          WHERE u.role = 'student' AND u.is_active = true
+            AND u.metadata->>'sportsPlayed' IS NOT NULL
+            AND u.metadata->>'sportsPlayed' != ''
+            ${tenantFilter}
         ) parsed
         WHERE sport != ''
         GROUP BY sport
@@ -39,10 +49,11 @@ export async function GET() {
 
       // Top universities
       sql`
-        SELECT university, COUNT(*) as student_count
-        FROM users
-        WHERE role = 'student' AND is_active = true AND university IS NOT NULL AND university != ''
-        GROUP BY university
+        SELECT u.university, COUNT(*) as student_count
+        FROM users u
+        WHERE u.role = 'student' AND u.is_active = true AND u.university IS NOT NULL AND u.university != ''
+          ${tenantFilter}
+        GROUP BY u.university
         ORDER BY student_count DESC
         LIMIT 15
       `,
@@ -62,6 +73,7 @@ export async function GET() {
         WHERE u.role = 'student' AND u.is_active = true
           AND ss.is_active = true
           AND ss.available_hours_per_week IS NOT NULL
+          ${tenantFilter}
         GROUP BY bucket
         ORDER BY bucket
       `,
@@ -73,6 +85,7 @@ export async function GET() {
         JOIN skills s ON s.id = us.skill_id
         JOIN users u ON u.id = us.user_id
         WHERE u.role = 'student' AND u.is_active = true
+          ${tenantFilter}
         GROUP BY s.name
         ORDER BY student_count DESC
         LIMIT 20
