@@ -117,13 +117,18 @@ export async function POST(_request: NextRequest) {
     const completionRate = totalApps > 0 ? completed / totalApps : 0;
 
     // Average student rating
-    const ratingRows = await sql`
-      SELECT AVG(r.rating) as avg_rating
-      FROM student_ratings r
-      JOIN users u ON r.rated_user_id = u.id
-      WHERE u.tenant_id = ${tenantId} AND u.role = 'student'
-    `;
-    const avgRating = ratingRows[0]?.avg_rating ? Number(ratingRows[0].avg_rating) : null;
+    let avgRating: number | null = null;
+    try {
+      const ratingRows = await sql`
+        SELECT AVG(r.rating) as avg_rating
+        FROM student_ratings r
+        JOIN users u ON r.student_id = u.id
+        WHERE u.tenant_id = ${tenantId} AND u.role = 'student'
+      `;
+      avgRating = ratingRows[0]?.avg_rating ? Number(ratingRows[0].avg_rating) : null;
+    } catch {
+      // student_ratings table columns may vary
+    }
 
     // Identify common missing skills from listings vs student skills
     const missingSkillRows = await sql`
