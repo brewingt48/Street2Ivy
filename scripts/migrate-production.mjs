@@ -28,7 +28,7 @@ const sql = postgres(DATABASE_URL, {
   connect_timeout: 30,
 });
 
-async function runSqlFile(filepath, label) {
+async function runSqlFile(filepath, label, { required = true } = {}) {
   console.log(`\n=== Applying: ${label} ===`);
   const content = readFileSync(filepath, 'utf8');
   try {
@@ -38,6 +38,9 @@ async function runSqlFile(filepath, label) {
     // Some errors are expected (e.g., types/tables already exist)
     if (err.code === '42710' || err.code === '42P07') {
       console.log(`⚠️  ${label}: Some objects already exist (safe to ignore)`);
+    } else if (!required) {
+      console.log(`⚠️  ${label} (optional) failed: ${err.message}`);
+      console.log('   Continuing anyway since this is seed/optional data...');
     } else {
       console.error(`❌ ${label} failed:`, err.message);
       throw err;
@@ -86,20 +89,20 @@ async function main() {
 
   // Step 2: Migrations in order
   const migrations = [
-    '004_shared_network.sql',
-    '005_listing_type.sql',
-    '005_holy_cross_seed.sql',
-    '006_match_engine.sql',
-    '007_match_engine_seed.sql',
-    '008_holy_cross_match_engine.sql',
-    '009_legal_policies.sql',
-    '010_listing_visibility.sql',
-    '011_team_huddle.sql',
-    '012_huddle_branding.sql',
+    { file: '004_shared_network.sql', required: true },
+    { file: '005_listing_type.sql', required: true },
+    { file: '005_holy_cross_seed.sql', required: false },  // Tenant-specific seed data
+    { file: '006_match_engine.sql', required: true },
+    { file: '007_match_engine_seed.sql', required: false }, // References specific tenant UUIDs
+    { file: '008_holy_cross_match_engine.sql', required: false }, // Holy Cross specific
+    { file: '009_legal_policies.sql', required: true },
+    { file: '010_listing_visibility.sql', required: true },
+    { file: '011_team_huddle.sql', required: true },
+    { file: '012_huddle_branding.sql', required: true },
   ];
 
-  for (const migration of migrations) {
-    await runSqlFile(join(ROOT, 'migrations', migration), migration);
+  for (const { file, required } of migrations) {
+    await runSqlFile(join(ROOT, 'migrations', file), file, { required });
   }
 
   // Step 3: Additional tables from Drizzle schema not in SQL files

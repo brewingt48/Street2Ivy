@@ -1,4 +1,5 @@
 legacy/
+*.sql
 .env.local
 .env.example
 .circleci/
