@@ -7,6 +7,7 @@
     "build": "next build",
     "start": "node server.js",
     "lint": "next lint",
+    "test": "npx tsc --noEmit",
     "heroku-postbuild": "npm run build && cp -r .next/static .next/standalone/.next/static && (cp -r public .next/standalone/public 2>/dev/null || true)"
   },
   "dependencies": {
