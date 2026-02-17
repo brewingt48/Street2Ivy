@@ -11,6 +11,7 @@ import { getCurrentSession } from '@/lib/auth/middleware';
 import { z } from 'zod';
 import { checkAiAccessV2, incrementUsageV2, getUsageStatusV2 } from '@/lib/ai/config';
 import { askClaude } from '@/lib/ai/claude-client';
+import { safeParseAiJson } from '@/lib/ai/parse-json';
 
 const listingOptimizerSchema = z.object({
   listingId: z.string().uuid(),
@@ -56,8 +57,10 @@ function buildOptimizerPrompt(
 }
 
 function parseOptimizerResponse(aiResponse: string): Record<string, unknown> | null {
+  const parsed = safeParseAiJson<Record<string, unknown>>(aiResponse, 'listing-optimizer');
+  if (!parsed) return null;
+
   try {
-    const parsed = JSON.parse(aiResponse);
     return {
       attractivenessScore: (parsed.attractiveness_score || parsed.attractivenessScore) as number,
       clarityScore: (parsed.clarity_score || parsed.clarityScore) as number,

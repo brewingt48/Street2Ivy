@@ -11,6 +11,7 @@ import { getCurrentSession } from '@/lib/auth/middleware';
 import { z } from 'zod';
 import { checkAiAccessV2, incrementUsageV2, getUsageStatusV2 } from '@/lib/ai/config';
 import { askClaude } from '@/lib/ai/claude-client';
+import { safeParseAiJson } from '@/lib/ai/parse-json';
 
 const talentDiscoverySchema = z.object({
   listingId: z.string().uuid(),
@@ -88,9 +89,11 @@ function parseDiscoveryResponse(
   aiResponse: string,
   students: StudentProfile[],
 ): Record<string, unknown>[] | null {
+  const parsed = safeParseAiJson<Record<string, unknown>>(aiResponse, 'talent-discovery');
+  if (!parsed) return null;
+
   try {
-    const parsed = JSON.parse(aiResponse);
-    const items: DiscoveryItem[] = parsed.discoveries || parsed;
+    const items: DiscoveryItem[] = (parsed.discoveries as DiscoveryItem[]) || (Array.isArray(parsed) ? parsed : []);
 
     return items.map((item) => {
       const idx = (item.student_index || item.studentIndex || 1) - 1;
