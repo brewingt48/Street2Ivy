@@ -34,6 +34,7 @@ import {
   Eye,
   Lock,
 } from 'lucide-react';
+import { DiffView } from '@/components/coaching/diff-view';
 
 interface Profile {
   id: string;
@@ -113,6 +114,9 @@ export default function SettingsPage() {
   const [aiTrainingOptOut, setAiTrainingOptOut] = useState(false);
   const [aiCoachingEnabled, setAiCoachingEnabled] = useState(true);
 
+  // AI Diff View access (students only)
+  const [hasDiffView, setHasDiffView] = useState(false);
+
   // UI state
   const [profileSaving, setProfileSaving] = useState(false);
   const [profileMsg, setProfileMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
@@ -157,6 +161,19 @@ export default function SettingsPage() {
         if (privacyData.preferences) {
           setAiTrainingOptOut(privacyData.preferences.aiTrainingOptOut ?? false);
           setAiCoachingEnabled(privacyData.preferences.aiCoachingEnabled ?? true);
+        }
+
+        // Check AI diff-view access for students
+        if (p.role === 'student') {
+          fetch('/api/ai/usage')
+            .then((r) => r.json())
+            .then((data) => {
+              const plan = data.plan || 'starter';
+              if (plan === 'professional' || plan === 'enterprise') {
+                setHasDiffView(true);
+              }
+            })
+            .catch(() => {}); // Silently fail — just don't show DiffView
         }
       })
       .catch(console.error)
@@ -429,6 +446,16 @@ export default function SettingsPage() {
               rows={3}
             />
           </div>
+
+          {/* AI Bio Improvement — Students only */}
+          {profile?.role === 'student' && (
+            <DiffView
+              hasAccess={hasDiffView}
+              contentType="bio"
+              initialContent={bio}
+              onApply={(updatedBio) => setBio(updatedBio)}
+            />
+          )}
 
           {/* Corporate Partner: Company Information */}
           {profile?.role === 'corporate_partner' && (

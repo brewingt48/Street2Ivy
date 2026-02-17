@@ -37,6 +37,7 @@ import {
   Target,
   BookOpen,
   Image as ImageIcon,
+  UserPen,
 } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
@@ -130,6 +131,7 @@ function getNavItems(role: string): NavSection[] {
             { href: '/invites', label: 'Invites', icon: Mail },
             { href: '/student/schedule', label: 'My Schedule', icon: Calendar, featureGate: 'matchEngineSchedule' },
             { href: '/coaching', label: 'AI Coach', icon: Sparkles },
+            { href: '/settings', label: 'Update Profile', icon: UserPen },
             { href: '/huddle', label: 'Team Huddle', icon: BookOpen, featureGate: 'teamHuddle' },
             { href: '/inbox', label: 'Messages', icon: Inbox },
           ],
