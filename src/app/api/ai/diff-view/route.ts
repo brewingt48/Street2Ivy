@@ -41,11 +41,19 @@ export async function POST(request: NextRequest) {
     const userId = session.data.userId;
     const tenantId = session.data.tenantId;
 
-    // Step 1: Check AI access
-    const accessCheck = await checkAiAccessV2(tenantId, userId, 'student_coaching', 'diff_view');
+    // Step 1: Check AI access (student_coaching feature, diffView capability)
+    const accessCheck = await checkAiAccessV2(tenantId, userId, 'student_coaching');
     if (!accessCheck.allowed) {
       return NextResponse.json(
         { error: accessCheck.denial?.message || 'Access denied', denial: accessCheck.denial },
+        { status: 403 }
+      );
+    }
+
+    // Step 1b: Check diffView capability is enabled on the plan
+    if (!accessCheck.config.studentCoaching?.diffView) {
+      return NextResponse.json(
+        { error: 'AI bio improvement requires a Professional or Enterprise plan.', denial: { reason: 'feature_disabled' } },
         { status: 403 }
       );
     }
