@@ -258,6 +258,7 @@ function getFeatureSection(
         allowedActions: config.studentCoaching.allowedQuickActions,
       };
     case 'project_scoping':
+    case 'candidate_screening':
       return {
         enabled: config.projectScoping.enabled,
         limit: config.projectScoping.interactionsPerUserPerMonth,

@@ -97,7 +97,7 @@ export function TalentDiscoveryPanel({
             </p>
           </div>
           <Badge className="bg-teal-100 text-teal-700 border-0 text-xs">
-            Available on Professional plan
+            Requires Professional or Enterprise Plan
           </Badge>
         </CardContent>
       </Card>
