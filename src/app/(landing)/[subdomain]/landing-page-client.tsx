@@ -119,12 +119,20 @@ export function LandingPageClient({ tenant, stats, partners, legalPolicies = [] 
   const branding = tenant.branding ?? {};
   const primary = branding.primaryColor ?? '#0f766e';
   const secondary = branding.secondaryColor ?? '#f8fafc';
+  const logoUrl = branding.logoUrl ?? null;
   const socialLinks = tenant.social_links ?? {};
   const contactInfo = tenant.contact_info ?? {};
 
   const displayName = tenant.display_name ?? tenant.name;
   const sportName = tenant.sport ?? 'Athletics';
   const teamName = tenant.team_name ?? displayName;
+
+  /* Enterprise customization: section visibility & custom text */
+  const sv = (branding as Record<string, unknown>).sectionVisibility as Record<string, boolean> | undefined;
+  const sectionVisible = (key: string) => !sv || sv[key] !== false;
+  const ctaHeadline = ((branding as Record<string, unknown>).ctaHeadline as string) || '';
+  const ctaSubheadline = ((branding as Record<string, unknown>).ctaSubheadline as string) || '';
+  const footerText = ((branding as Record<string, unknown>).footerText as string) || '';
 
   /* Build a compelling default headline using the team name */
   const defaultHeadline = `${teamName}. Where Champions Are Made — On and Off the Field.`;
@@ -153,6 +161,41 @@ export function LandingPageClient({ tenant, stats, partners, legalPolicies = [] 
 
   return (
     <div className="min-h-screen bg-white text-gray-900 overflow-x-hidden">
+      {/* ================================================================
+          TOP NAV BAR (logo + institution name)
+         ================================================================ */}
+      <nav
+        className="sticky top-0 z-50 backdrop-blur-md border-b"
+        style={{ backgroundColor: `${primary}f0`, borderColor: `${primary}40` }}
+      >
+        <div className="max-w-6xl mx-auto px-6 py-3 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            {logoUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={logoUrl} alt={`${displayName} logo`} className="h-8 object-contain" />
+            ) : (
+              <span className="text-lg font-bold" style={{ color: secondary }}>
+                {displayName}
+              </span>
+            )}
+            {logoUrl && (
+              <span className="text-sm font-medium hidden sm:inline" style={{ color: `${secondary}cc` }}>
+                {displayName}
+              </span>
+            )}
+          </div>
+          <div className="flex items-center gap-4">
+            <a
+              href={`/register?tenant=${tenant.subdomain}&role=student`}
+              className="text-sm font-medium px-4 py-1.5 rounded-lg transition-all hover:scale-105"
+              style={{ backgroundColor: secondary, color: primary }}
+            >
+              Get Started
+            </a>
+          </div>
+        </div>
+      </nav>
+
       {/* ================================================================
           SECTION 1 -- HERO
          ================================================================ */}
@@ -302,7 +345,7 @@ export function LandingPageClient({ tenant, stats, partners, legalPolicies = [] 
       {/* ================================================================
           SECTION 3 -- THE COMPETITIVE LOOP (4-step flow)
          ================================================================ */}
-      <section className="py-20 px-6">
+      {sectionVisible('competitiveLoop') && <section className="py-20 px-6">
         <div className="max-w-6xl mx-auto">
           <motion.div
             initial="hidden"
@@ -417,12 +460,12 @@ export function LandingPageClient({ tenant, stats, partners, legalPolicies = [] 
             Proveground is a matching and discovery platform. All work, contracts, and payments are arranged directly between participants, outside the platform.
           </motion.p>
         </div>
-      </section>
+      </section>}
 
       {/* ================================================================
           SECTION 4 -- VALUE PROPOSITION CARDS
          ================================================================ */}
-      <section className="py-20 px-6 bg-gray-50">
+      {sectionVisible('valueProps') && <section className="py-20 px-6 bg-gray-50">
         <div className="max-w-6xl mx-auto">
           <motion.div
             initial="hidden"
@@ -518,12 +561,12 @@ export function LandingPageClient({ tenant, stats, partners, legalPolicies = [] 
             </motion.div>
           </motion.div>
         </div>
-      </section>
+      </section>}
 
       {/* ================================================================
           SECTION 5 -- ALUMNI PARTNERS SHOWCASE
          ================================================================ */}
-      {partners.length > 0 && (
+      {sectionVisible('alumniPartners') && partners.length > 0 && (
         <section className="py-20 px-6">
           <div className="max-w-6xl mx-auto">
             <motion.div
@@ -621,7 +664,7 @@ export function LandingPageClient({ tenant, stats, partners, legalPolicies = [] 
       {/* ================================================================
           SECTION 6 -- ABOUT
          ================================================================ */}
-      {tenant.about_content && (
+      {sectionVisible('about') && tenant.about_content && (
         <section className="py-20 px-6">
           <div className="max-w-3xl mx-auto text-center">
             <motion.div
@@ -647,7 +690,7 @@ export function LandingPageClient({ tenant, stats, partners, legalPolicies = [] 
       {/* ================================================================
           SECTION 6.5 -- PHOTO GALLERY
          ================================================================ */}
-      {Array.isArray(tenant.gallery_images) && tenant.gallery_images.length > 0 && (
+      {sectionVisible('gallery') && Array.isArray(tenant.gallery_images) && tenant.gallery_images.length > 0 && (
         <section className="py-20 px-6 bg-gray-50">
           <div className="max-w-6xl mx-auto">
             <motion.div
@@ -686,7 +729,7 @@ export function LandingPageClient({ tenant, stats, partners, legalPolicies = [] 
       {/* ================================================================
           SECTION 7 -- SOCIAL LINKS + CONTACT
          ================================================================ */}
-      {(Object.keys(socialLinks).length > 0 || contactInfo.email || contactInfo.phone) && (
+      {sectionVisible('socialContact') && (Object.keys(socialLinks).length > 0 || contactInfo.email || contactInfo.phone) && (
         <section className="py-12 px-6 bg-gray-50 border-t border-gray-200">
           <div className="max-w-3xl mx-auto flex flex-col sm:flex-row items-center justify-center gap-6">
             {/* Social icons */}
@@ -732,14 +775,14 @@ export function LandingPageClient({ tenant, stats, partners, legalPolicies = [] 
       {/* ================================================================
           SECTION 8 -- AI COACHING (feature-gated)
          ================================================================ */}
-      {!!tenant.features?.aiCoaching && (
+      {sectionVisible('aiCoaching') && !!tenant.features?.aiCoaching && (
         <AICoachingSection primary={primary} subdomain={tenant.subdomain} />
       )}
 
       {/* ================================================================
           SECTION 8.5 -- NETWORK ECOSYSTEM
          ================================================================ */}
-      <section className="py-20 px-6 bg-white">
+      {sectionVisible('networkEcosystem') && <section className="py-20 px-6 bg-white">
         <div className="max-w-6xl mx-auto">
           <motion.div
             initial="hidden"
@@ -844,7 +887,7 @@ export function LandingPageClient({ tenant, stats, partners, legalPolicies = [] 
             ))}
           </motion.div>
         </div>
-      </section>
+      </section>}
 
       {/* ================================================================
           SECTION 9 -- CTA FOOTER
@@ -867,15 +910,14 @@ export function LandingPageClient({ tenant, stats, partners, legalPolicies = [] 
             className="text-3xl sm:text-4xl font-bold mb-4"
             style={{ color: secondary }}
           >
-            This is your ground.
+            {ctaHeadline || 'This is your ground.'}
           </motion.h2>
           <motion.p
             variants={fadeUp}
             className="text-lg mb-10 max-w-xl mx-auto"
             style={{ color: `${secondary}bb` }}
           >
-            Where talent is proven, not presumed. Students, partners, and programs
-            building the future &mdash; together.
+            {ctaSubheadline || 'Where talent is proven, not presumed. Students, partners, and programs building the future \u2014 together.'}
           </motion.p>
 
           <motion.div variants={fadeUp} className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -917,15 +959,19 @@ export function LandingPageClient({ tenant, stats, partners, legalPolicies = [] 
               ))}
             </div>
           )}
-          <p>
-            &copy; {new Date().getFullYear()} {displayName}. Powered by{' '}
-            <a
-              href="/"
-              className="text-white hover:underline"
-            >
-              Proveground
-            </a>
-          </p>
+          {footerText ? (
+            <p>{footerText}</p>
+          ) : (
+            <p>
+              &copy; {new Date().getFullYear()} {displayName}. Powered by{' '}
+              <a
+                href="/"
+                className="text-white hover:underline"
+              >
+                Proveground
+              </a>
+            </p>
+          )}
         </div>
       </footer>
     </div>

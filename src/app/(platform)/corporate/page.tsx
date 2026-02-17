@@ -201,6 +201,66 @@ export default function CorporateDashboardPage() {
         </div>
       </div>
 
+      {/* AI Project Management */}
+      <Card className="border-teal-200 dark:border-teal-800 bg-gradient-to-r from-teal-50/50 to-cyan-50/50 dark:from-teal-900/10 dark:to-cyan-900/10">
+        <CardHeader className="flex flex-row items-center justify-between">
+          <div>
+            <CardTitle className="flex items-center gap-2">
+              <Sparkles className="h-5 w-5 text-teal-600" />
+              AI Project Management
+            </CardTitle>
+            <CardDescription>
+              AI-powered tools to help you find, evaluate, and engage the best student talent
+            </CardDescription>
+          </div>
+          <Link href="/corporate/ai-tools">
+            <Button variant="ghost" size="sm" className="text-teal-600">
+              View All <ArrowRight className="ml-1 h-3 w-3" />
+            </Button>
+          </Link>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-3 md:grid-cols-3">
+            <div
+              className="p-3 rounded-lg border bg-white dark:bg-slate-800/50 hover:shadow-sm transition-shadow cursor-pointer"
+              onClick={() => router.push('/corporate/applications')}
+            >
+              <div className="flex items-center gap-2 mb-1">
+                <div className="w-7 h-7 rounded-md bg-teal-100 flex items-center justify-center">
+                  <FileText className="h-4 w-4 text-teal-600" />
+                </div>
+                <h4 className="font-medium text-sm">Candidate Screening</h4>
+              </div>
+              <p className="text-xs text-slate-500">AI analysis of applicant fit with interview questions</p>
+            </div>
+            <div
+              className="p-3 rounded-lg border bg-white dark:bg-slate-800/50 hover:shadow-sm transition-shadow cursor-pointer"
+              onClick={() => router.push('/corporate/projects')}
+            >
+              <div className="flex items-center gap-2 mb-1">
+                <div className="w-7 h-7 rounded-md bg-amber-100 flex items-center justify-center">
+                  <Briefcase className="h-4 w-4 text-amber-600" />
+                </div>
+                <h4 className="font-medium text-sm">Listing Optimizer</h4>
+              </div>
+              <p className="text-xs text-slate-500">Improve your listings to attract top talent</p>
+            </div>
+            <div
+              className="p-3 rounded-lg border bg-white dark:bg-slate-800/50 hover:shadow-sm transition-shadow cursor-pointer"
+              onClick={() => router.push('/corporate/search-students')}
+            >
+              <div className="flex items-center gap-2 mb-1">
+                <div className="w-7 h-7 rounded-md bg-blue-100 flex items-center justify-center">
+                  <Search className="h-4 w-4 text-blue-600" />
+                </div>
+                <h4 className="font-medium text-sm">Talent Discovery</h4>
+              </div>
+              <p className="text-xs text-slate-500">AI-powered outreach recommendations per student</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => router.push('/corporate/projects')}>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">

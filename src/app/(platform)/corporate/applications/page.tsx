@@ -18,8 +18,9 @@ import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
-import { FileText, Clock, CheckCircle2, XCircle, ChevronDown, ChevronUp, Mail, GraduationCap, Download, Star } from 'lucide-react';
+import { FileText, Clock, CheckCircle2, XCircle, ChevronDown, ChevronUp, Mail, GraduationCap, Download, Star, Sparkles } from 'lucide-react';
 import { ExportButton } from '@/components/analytics/export-button';
+import { CandidateInsightsCard } from '@/components/corporate/candidate-insights-card';
 
 interface Application {
   id: string;
@@ -101,6 +102,10 @@ export default function CorporateApplicationsPage() {
   // Track which apps are already rated
   const [ratedApps, setRatedApps] = useState<Set<string>>(new Set());
 
+  // AI Candidate Screening
+  const [hasAiScreening, setHasAiScreening] = useState(false);
+  const [aiInsightsAppId, setAiInsightsAppId] = useState<string | null>(null);
+
   const fetchApps = async (status: string) => {
     setLoading(true);
     try {
@@ -115,6 +120,17 @@ export default function CorporateApplicationsPage() {
   };
 
   useEffect(() => { fetchApps(statusFilter); }, [statusFilter]);
+
+  // Check AI access on mount
+  useEffect(() => {
+    fetch('/api/ai/usage')
+      .then((r) => r.json())
+      .then((data) => {
+        const plan = data.plan || 'starter';
+        setHasAiScreening(plan === 'professional' || plan === 'enterprise');
+      })
+      .catch(() => {});
+  }, []);
 
   const handleRespond = async () => {
     if (!respondingApp) return;
@@ -294,11 +310,33 @@ export default function CorporateApplicationsPage() {
                           <Star className="h-3 w-3 mr-1 fill-amber-400" /> Rated
                         </Badge>
                       )}
+                      {(app.status === 'pending' || app.status === 'accepted') && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="text-teal-600 hover:text-teal-700 border-teal-200 hover:bg-teal-50"
+                          onClick={() => setAiInsightsAppId(aiInsightsAppId === app.id ? null : app.id)}
+                        >
+                          <Sparkles className="h-3 w-3 mr-1" /> AI Insights
+                        </Button>
+                      )}
                       <Button variant="ghost" size="sm" onClick={() => setExpandedId(isExpanded ? null : app.id)}>
                         {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                       </Button>
                     </div>
                   </div>
+
+                  {/* AI Candidate Insights */}
+                  {aiInsightsAppId === app.id && (
+                    <div className="mt-4">
+                      <CandidateInsightsCard
+                        applicationId={app.id}
+                        studentName={app.studentName}
+                        hasAccess={hasAiScreening}
+                        onClose={() => setAiInsightsAppId(null)}
+                      />
+                    </div>
+                  )}
 
                   {isExpanded && (
                     <div className="mt-4 pt-4 border-t space-y-3">

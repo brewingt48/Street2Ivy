@@ -354,7 +354,7 @@ export default function AdminHomepageCMS() {
                   heroCopy: { ...settings.heroCopy, tagline: e.target.value },
                 })
               }
-              placeholder="From Campus to Career"
+              placeholder="Prove it with real work"
               className="mt-1"
             />
             <p className="text-xs text-slate-400 mt-1">Small uppercase text above the main headline.</p>

@@ -43,6 +43,7 @@ import {
   Lightbulb,
 } from 'lucide-react';
 import { TalentPoolInsights } from '@/components/corporate/talent-pool-insights';
+import { ListingOptimizerDialog } from '@/components/corporate/listing-optimizer-dialog';
 
 interface Listing {
   id: string;
@@ -92,6 +93,20 @@ export default function CorporateProjectsPage() {
   const [loadingRecs, setLoadingRecs] = useState<Record<string, boolean>>({});
   const [insightsTarget, setInsightsTarget] = useState<string | null>(null);
   const [togglingVisibility, setTogglingVisibility] = useState<string | null>(null);
+
+  // AI Listing Optimizer
+  const [hasAiOptimizer, setHasAiOptimizer] = useState(false);
+  const [optimizerTarget, setOptimizerTarget] = useState<Listing | null>(null);
+
+  useEffect(() => {
+    fetch('/api/ai/usage')
+      .then((r) => r.json())
+      .then((data) => {
+        const plan = data.plan || 'starter';
+        setHasAiOptimizer(plan === 'professional' || plan === 'enterprise');
+      })
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     fetch('/api/listings')
@@ -264,6 +279,14 @@ export default function CorporateProjectsPage() {
                     <div className="flex items-center gap-2 shrink-0">
                       <Button variant="outline" size="sm" onClick={() => router.push(`/corporate/projects/${listing.id}/edit`)}>
                         <Edit className="h-3 w-3 mr-1" /> Edit
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="text-teal-600 hover:text-teal-700 border-teal-200 hover:bg-teal-50"
+                        onClick={() => setOptimizerTarget(listing)}
+                      >
+                        <Lightbulb className="h-3 w-3 mr-1" /> Optimize
                       </Button>
                       {listing.status === 'published' && (
                         <>
@@ -444,6 +467,15 @@ export default function CorporateProjectsPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* AI Listing Optimizer Dialog */}
+      <ListingOptimizerDialog
+        listingId={optimizerTarget?.id || ''}
+        listingTitle={optimizerTarget?.title || ''}
+        hasAccess={hasAiOptimizer}
+        open={!!optimizerTarget}
+        onOpenChange={(open) => !open && setOptimizerTarget(null)}
+      />
     </div>
   );
 }

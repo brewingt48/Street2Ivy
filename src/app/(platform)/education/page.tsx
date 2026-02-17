@@ -10,7 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
-import { GraduationCap, Briefcase, CheckCircle2, Clock, Info, TrendingUp, ArrowRight, Star, Crown, Lock, Sparkles, Building2, Plus, Globe, BookOpen, Video, FileText as FileTextIcon, Users, BarChart3 } from 'lucide-react';
+import { GraduationCap, Briefcase, CheckCircle2, Clock, Info, TrendingUp, ArrowRight, Star, Crown, Lock, Sparkles, Building2, Plus, Globe, BookOpen, Video, FileText as FileTextIcon, Users, BarChart3, Palette, Paintbrush } from 'lucide-react';
 import { HelpSupportCard } from '@/components/shared/help-support-card';
 
 interface Stats {
@@ -104,10 +104,57 @@ export default function EducationDashboardPage() {
               <li>&bull; <strong>Students</strong> &mdash; View and manage enrolled students from your institution</li>
               <li>&bull; <strong>Corporate Partners</strong> &mdash; Approve or manage corporate partners within your tenant</li>
               <li>&bull; <strong>Partners &amp; Network</strong> &mdash; Invite corporate partners to your talent engine and manage relationships</li>
-              <li>&bull; <strong>Branding &amp; Settings</strong> &mdash; Customize your institution&apos;s branding and configuration</li>
+              <li>&bull; <strong>Branding &amp; Settings</strong> &mdash; Upload your logo, set brand colors, customize hero content, manage your photo gallery, toggle landing page sections, and control CTA/footer text. Enterprise plans unlock full homepage customization.</li>
             </ul>
           </div>
         </div>
+      </div>
+
+      {/* Customization Quick Actions */}
+      <div className="grid gap-4 md:grid-cols-2">
+        <Link href="/education/settings">
+          <Card className="border-teal-200 dark:border-teal-800 bg-gradient-to-r from-teal-50 to-emerald-50 dark:from-teal-900/20 dark:to-emerald-900/20 hover:shadow-md transition-all cursor-pointer group">
+            <CardContent className="flex items-center gap-4 py-5">
+              <div className="h-12 w-12 rounded-xl bg-teal-100 dark:bg-teal-800/40 flex items-center justify-center group-hover:scale-110 transition-transform">
+                <Palette className="h-6 w-6 text-teal-600 dark:text-teal-400" />
+              </div>
+              <div className="flex-1">
+                <p className="text-sm font-semibold text-teal-900 dark:text-teal-200">Customize Your Landing Page</p>
+                <p className="text-xs text-teal-600 dark:text-teal-400 mt-0.5">
+                  Upload your logo, set brand colors, customize headlines, manage your photo gallery, and control which sections appear on your homepage.
+                </p>
+              </div>
+              <ArrowRight className="h-5 w-5 text-teal-400 group-hover:translate-x-1 transition-transform" />
+            </CardContent>
+          </Card>
+        </Link>
+        <Card className="border-slate-200 dark:border-slate-700">
+          <CardContent className="flex items-center gap-4 py-5">
+            <div className="h-12 w-12 rounded-xl bg-slate-100 dark:bg-slate-700/40 flex items-center justify-center">
+              <Paintbrush className="h-6 w-6 text-slate-500 dark:text-slate-400" />
+            </div>
+            <div className="flex-1">
+              <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">Customization Capabilities</p>
+              <div className="flex flex-wrap gap-1.5 mt-1.5">
+                {[
+                  'Logo Upload',
+                  'Brand Colors',
+                  'Hero Video',
+                  'Headlines & Copy',
+                  'Photo Gallery',
+                  'Social Links',
+                  'Section Visibility',
+                  'CTA Text',
+                  'Footer Text',
+                ].map((feature) => (
+                  <span key={feature} className="text-[10px] px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300">
+                    {feature}
+                  </span>
+                ))}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">

@@ -29,6 +29,20 @@ const updateBrandingSchema = z.object({
     phone: z.string().max(50).optional(),
     address: z.string().max(500).optional(),
   }).optional(),
+  // Enterprise customization fields (stored in branding JSONB)
+  ctaHeadline: z.string().max(200).optional(),
+  ctaSubheadline: z.string().max(500).optional(),
+  footerText: z.string().max(500).optional(),
+  sectionVisibility: z.object({
+    competitiveLoop: z.boolean().optional(),
+    valueProps: z.boolean().optional(),
+    alumniPartners: z.boolean().optional(),
+    about: z.boolean().optional(),
+    gallery: z.boolean().optional(),
+    socialContact: z.boolean().optional(),
+    aiCoaching: z.boolean().optional(),
+    networkEcosystem: z.boolean().optional(),
+  }).optional(),
 });
 
 export async function GET() {
@@ -56,6 +70,8 @@ export async function GET() {
     }
 
     // Read from individual columns (source of truth for landing page)
+    // Enterprise fields from branding JSONB
+    const brandingData = (tenant.branding || {}) as Record<string, unknown>;
     return NextResponse.json({
       branding: {
         heroVideoUrl: tenant.hero_video_url || '',
@@ -66,6 +82,11 @@ export async function GET() {
         aboutContent: tenant.about_content || '',
         socialLinks: (tenant.social_links as Record<string, string>) || {},
         contactInfo: (tenant.contact_info as Record<string, string>) || {},
+        // Enterprise customization fields (from branding JSONB)
+        ctaHeadline: (brandingData.ctaHeadline as string) || '',
+        ctaSubheadline: (brandingData.ctaSubheadline as string) || '',
+        footerText: (brandingData.footerText as string) || '',
+        sectionVisibility: (brandingData.sectionVisibility as Record<string, boolean>) || null,
       },
     });
   } catch (error) {
@@ -130,6 +151,11 @@ export async function PUT(request: NextRequest) {
     if (updates.aboutContent !== undefined) newBranding.aboutContent = updates.aboutContent;
     if (updates.socialLinks !== undefined) newBranding.socialLinks = updates.socialLinks;
     if (updates.contactInfo !== undefined) newBranding.contactInfo = updates.contactInfo;
+    // Enterprise customization fields (only for enterprise plan tenants)
+    if (updates.ctaHeadline !== undefined) newBranding.ctaHeadline = updates.ctaHeadline;
+    if (updates.ctaSubheadline !== undefined) newBranding.ctaSubheadline = updates.ctaSubheadline;
+    if (updates.footerText !== undefined) newBranding.footerText = updates.footerText;
+    if (updates.sectionVisibility !== undefined) newBranding.sectionVisibility = updates.sectionVisibility;
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const brandingJson = sql.json(newBranding as any);
@@ -176,6 +202,11 @@ export async function PUT(request: NextRequest) {
         aboutContent: updated.about_content || '',
         socialLinks: updated.social_links || {},
         contactInfo: updated.contact_info || {},
+        // Enterprise fields from updated branding JSONB
+        ctaHeadline: newBranding.ctaHeadline || '',
+        ctaSubheadline: newBranding.ctaSubheadline || '',
+        footerText: newBranding.footerText || '',
+        sectionVisibility: newBranding.sectionVisibility || null,
       },
     });
   } catch (error) {

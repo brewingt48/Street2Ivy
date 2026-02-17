@@ -36,8 +36,10 @@ import {
   Building2,
   AlertCircle,
   Mail,
+  Sparkles,
 } from 'lucide-react';
 import { TalentPoolInsights } from '@/components/corporate/talent-pool-insights';
+import { TalentDiscoveryPanel } from '@/components/corporate/talent-discovery-panel';
 
 interface Student {
   id: string;
@@ -85,6 +87,11 @@ export default function SearchStudentsPage() {
   const [sending, setSending] = useState(false);
   const [inviteSuccess, setInviteSuccess] = useState(false);
 
+  // AI Talent Discovery
+  const [hasAiDiscovery, setHasAiDiscovery] = useState(false);
+  const [discoveryListingId, setDiscoveryListingId] = useState('');
+  const [showDiscovery, setShowDiscovery] = useState(false);
+
   const fetchStudents = useCallback(async () => {
     setLoading(true);
     try {
@@ -115,6 +122,17 @@ export default function SearchStudentsPage() {
       .then((r) => r.json())
       .then((d) => setListings((d.listings || []).map((l: Record<string, unknown>) => ({ id: l.id as string, title: l.title as string }))))
       .catch(console.error);
+  }, []);
+
+  // Check AI access on mount
+  useEffect(() => {
+    fetch('/api/ai/usage')
+      .then((r) => r.json())
+      .then((data) => {
+        const plan = data.plan || 'starter';
+        setHasAiDiscovery(plan === 'professional' || plan === 'enterprise');
+      })
+      .catch(() => {});
   }, []);
 
   const handleSearch = (e: React.FormEvent) => {
@@ -263,9 +281,46 @@ export default function SearchStudentsPage() {
       {/* Talent Pool Insights */}
       <TalentPoolInsights variant="full" defaultExpanded={false} scope={scope} />
 
-      {/* Results count */}
-      {!loading && total > 0 && (
-        <p className="text-sm text-slate-500">{total} student{total !== 1 ? 's' : ''} found</p>
+      {/* AI Talent Discovery */}
+      {students.length > 0 && listings.length > 0 && (
+        <Card className="border-teal-200 dark:border-teal-800">
+          <CardContent className="py-4">
+            <div className="flex items-center gap-3 flex-wrap">
+              <div className="flex items-center gap-2 text-sm font-medium text-teal-700 dark:text-teal-400">
+                <Sparkles className="h-4 w-4" />
+                AI Talent Discovery
+              </div>
+              <Select value={discoveryListingId} onValueChange={setDiscoveryListingId}>
+                <SelectTrigger className="w-[280px]">
+                  <SelectValue placeholder="Select a listing to match against..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {listings.map((l) => (
+                    <SelectItem key={l.id} value={l.id}>{l.title}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Button
+                size="sm"
+                className="bg-teal-600 hover:bg-teal-700"
+                disabled={!discoveryListingId}
+                onClick={() => setShowDiscovery(true)}
+              >
+                <Sparkles className="h-3 w-3 mr-1" /> Analyze Students
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Talent Discovery Results */}
+      {showDiscovery && discoveryListingId && students.length > 0 && (
+        <TalentDiscoveryPanel
+          listingId={discoveryListingId}
+          listingTitle={listings.find((l) => l.id === discoveryListingId)?.title || 'Selected Listing'}
+          studentIds={students.map((s) => s.id).slice(0, 10)}
+          hasAccess={hasAiDiscovery}
+        />
       )}
 
       {/* Results */}

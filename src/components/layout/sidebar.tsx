@@ -154,6 +154,7 @@ function getNavItems(role: string): NavSection[] {
             { href: '/corporate/reviews', label: 'My Reviews', icon: Star },
             { href: '/corporate/invites', label: 'Sent Invites', icon: Mail },
             { href: '/corporate/search-students', label: 'Find Students', icon: Search },
+            { href: '/corporate/ai-tools', label: 'AI Tools', icon: Sparkles, featureGate: 'aiCoaching' },
             { href: '/huddle', label: 'Team Huddle', icon: BookOpen, featureGate: 'teamHuddle' },
             { href: '/inbox', label: 'Messages', icon: Inbox },
           ],
