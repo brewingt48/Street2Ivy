@@ -12,6 +12,7 @@ import { getCurrentSession } from '@/lib/auth/middleware';
 import { checkAiAccessV2, incrementUsageV2, getUsageStatusV2 } from '@/lib/ai/config';
 import { buildTalentInsightsPrompt } from '@/lib/ai/prompts';
 import { askClaude } from '@/lib/ai/claude-client';
+import { safeParseAiJson } from '@/lib/ai/parse-json';
 
 export async function POST(_request: NextRequest) {
   try {
@@ -165,28 +166,26 @@ export async function POST(_request: NextRequest) {
     });
 
     // Step 5: Parse JSON response
-    let insights;
-    try {
-      const parsed = JSON.parse(aiResponse);
-      insights = {
-        demandTrends: (parsed.demandTrends as Array<{ skill: string; demand: string; trend: string }>).map(
-          (d) => ({
-            skill: d.skill,
-            demand: d.demand as 'high' | 'medium' | 'low',
-            trend: d.trend as 'rising' | 'stable' | 'declining',
-          })
-        ),
-        emergingSkills: parsed.emergingSkills as string[],
-        marketAlignment: parsed.marketAlignment as number,
-        actionItems: parsed.actionItems as string[],
-      };
-    } catch {
-      console.error('Failed to parse AI talent insights response:', aiResponse);
+    const aiParsed = safeParseAiJson<Record<string, unknown>>(aiResponse, 'talent-insights');
+    if (!aiParsed) {
       return NextResponse.json(
         { error: 'Failed to parse AI response' },
         { status: 500 }
       );
     }
+
+    const insights = {
+      demandTrends: ((aiParsed.demandTrends || aiParsed.demand_trends) as Array<{ skill: string; demand: string; trend: string }>).map(
+        (d) => ({
+          skill: d.skill,
+          demand: d.demand as 'high' | 'medium' | 'low',
+          trend: d.trend as 'rising' | 'stable' | 'declining',
+        })
+      ),
+      emergingSkills: (aiParsed.emergingSkills || aiParsed.emerging_skills) as string[],
+      marketAlignment: (aiParsed.marketAlignment ?? aiParsed.market_alignment) as number,
+      actionItems: (aiParsed.actionItems || aiParsed.action_items) as string[],
+    };
 
     // Step 6: Increment usage and return
     await incrementUsageV2(tenantId, userId, 'talent_insights');

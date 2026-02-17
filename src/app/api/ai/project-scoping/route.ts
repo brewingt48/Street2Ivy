@@ -11,6 +11,7 @@ import { getCurrentSession } from '@/lib/auth/middleware';
 import { z } from 'zod';
 import { checkAiAccessV2, incrementUsageV2, getUsageStatusV2 } from '@/lib/ai/config';
 import { askClaude } from '@/lib/ai/claude-client';
+import { safeParseAiJson } from '@/lib/ai/parse-json';
 
 const projectScopingSchema = z.object({
   description: z.string().min(1).max(10000),
@@ -101,9 +102,10 @@ function parseResponse(
   aiResponse: string,
   action: string
 ): Record<string, unknown> | null {
-  try {
-    const parsed = JSON.parse(aiResponse);
+  const parsed = safeParseAiJson<Record<string, unknown>>(aiResponse, 'project-scoping');
+  if (!parsed) return null;
 
+  try {
     if (action === 'review_description') {
       return {
         feedback: parsed.feedback as string,

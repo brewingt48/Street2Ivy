@@ -15,6 +15,7 @@ import { sql } from '@/lib/db';
 import { getCurrentSession } from '@/lib/auth/middleware';
 import { checkAiAccessV2, incrementUsageV2 } from '@/lib/ai/config';
 import { askClaude } from '@/lib/ai/claude-client';
+import { safeParseAiJson } from '@/lib/ai/parse-json';
 
 // -------------------------------------------------------------------------
 // GET — Fetch latest report
@@ -275,11 +276,8 @@ export async function POST(_request: NextRequest) {
     });
 
     // Step 5: Parse JSON response
-    let reportData;
-    try {
-      reportData = JSON.parse(aiResponse);
-    } catch {
-      console.error('Failed to parse AI institutional analytics response:', aiResponse);
+    const reportData = safeParseAiJson<Record<string, unknown>>(aiResponse, 'institutional-analytics');
+    if (!reportData) {
       return NextResponse.json(
         { error: 'Failed to parse AI response' },
         { status: 500 }
@@ -291,6 +289,13 @@ export async function POST(_request: NextRequest) {
     const periodStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
     const periodEnd = now.toISOString().split('T')[0];
 
+    const execSummary = (reportData.executiveSummary as string) || null;
+    const skillAnalysis = JSON.stringify(reportData.skillAnalysis || null);
+    const strategicRecs = JSON.stringify(reportData.strategicRecommendations || null);
+    const projectOutcomes = reportData.projectOutcomes as Record<string, unknown> | undefined;
+    const successPatterns = (projectOutcomes?.analysis as string) || null;
+    const benchmark = JSON.stringify({ score: reportData.benchmarkScore, engagement: reportData.studentEngagement });
+
     const insertedRows = await sql`
       INSERT INTO institutional_analytics_reports (
         tenant_id, reporting_period_start, reporting_period_end,
@@ -300,11 +305,11 @@ export async function POST(_request: NextRequest) {
       )
       VALUES (
         ${tenantId}, ${periodStart}, ${periodEnd},
-        ${reportData.executiveSummary || null},
-        ${JSON.stringify(reportData.skillAnalysis || null)}::jsonb,
-        ${JSON.stringify(reportData.strategicRecommendations || null)}::jsonb,
-        ${reportData.projectOutcomes?.analysis || null},
-        ${JSON.stringify({ score: reportData.benchmarkScore, engagement: reportData.studentEngagement })}::jsonb,
+        ${execSummary},
+        ${skillAnalysis}::jsonb,
+        ${strategicRecs}::jsonb,
+        ${successPatterns},
+        ${benchmark}::jsonb,
         ${totalStudents}, ${activeProjects + completedProjects},
         ${accessCheck.config.model}
       )

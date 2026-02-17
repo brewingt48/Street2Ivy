@@ -12,6 +12,7 @@ import { getCurrentSession } from '@/lib/auth/middleware';
 import { z } from 'zod';
 import { checkAiAccessV2, incrementUsageV2, getUsageStatusV2 } from '@/lib/ai/config';
 import { askClaude } from '@/lib/ai/claude-client';
+import { safeParseAiJson } from '@/lib/ai/parse-json';
 
 const diffViewSchema = z.object({
   content: z.string().min(1).max(10000),
@@ -145,24 +146,22 @@ export async function POST(request: NextRequest) {
     });
 
     // Step 5: Parse JSON response
-    let suggestions;
-    try {
-      const parsed = JSON.parse(aiResponse);
-      if (!Array.isArray(parsed)) {
-        throw new Error('Expected JSON array');
-      }
-      suggestions = parsed.map((item: Record<string, unknown>) => ({
-        original: item.original as string,
-        suggested: item.suggested as string,
-        reason: item.reason as string,
-      }));
-    } catch {
-      console.error('Failed to parse AI diff view response:', aiResponse);
+    const aiParsed = safeParseAiJson<Record<string, unknown>[] | Record<string, unknown>>(aiResponse, 'diff-view');
+    if (!aiParsed) {
       return NextResponse.json(
         { error: 'Failed to parse AI response' },
         { status: 500 }
       );
     }
+
+    const suggestionsArray = Array.isArray(aiParsed)
+      ? aiParsed
+      : (aiParsed.suggestions as Record<string, unknown>[]) || [];
+    const suggestions = suggestionsArray.map((item: Record<string, unknown>) => ({
+      original: item.original as string,
+      suggested: item.suggested as string,
+      reason: item.reason as string,
+    }));
 
     // Step 6: Increment usage and return
     await incrementUsageV2(tenantId, userId, 'student_coaching');
