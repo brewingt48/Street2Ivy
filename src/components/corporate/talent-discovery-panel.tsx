@@ -8,6 +8,7 @@
  */
 
 import { useState } from 'react';
+import { csrfFetch } from '@/lib/security/csrf-fetch';
 import {
   Card,
   CardContent,
@@ -113,7 +114,7 @@ export function TalentDiscoveryPanel({
     setDiscoveries(null);
 
     try {
-      const response = await fetch('/api/ai/talent-discovery', {
+      const response = await csrfFetch('/api/ai/talent-discovery', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ listingId, studentIds: studentIds.slice(0, 10) }),

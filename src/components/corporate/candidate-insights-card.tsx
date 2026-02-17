@@ -8,6 +8,7 @@
  */
 
 import { useState } from 'react';
+import { csrfFetch } from '@/lib/security/csrf-fetch';
 import {
   Card,
   CardContent,
@@ -158,7 +159,7 @@ export function CandidateInsightsCard({
     setInsights(null);
 
     try {
-      const response = await fetch('/api/ai/candidate-screening', {
+      const response = await csrfFetch('/api/ai/candidate-screening', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ applicationId }),

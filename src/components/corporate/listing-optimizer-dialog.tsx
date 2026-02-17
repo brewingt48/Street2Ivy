@@ -8,6 +8,7 @@
  */
 
 import { useState } from 'react';
+import { csrfFetch } from '@/lib/security/csrf-fetch';
 import {
   Dialog,
   DialogContent,
@@ -144,7 +145,7 @@ export function ListingOptimizerDialog({
     setResult(null);
 
     try {
-      const response = await fetch('/api/ai/listing-optimizer', {
+      const response = await csrfFetch('/api/ai/listing-optimizer', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ listingId }),
