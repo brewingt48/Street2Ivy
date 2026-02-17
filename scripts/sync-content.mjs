@@ -53,8 +53,26 @@ async function main() {
     // Delete any existing tenant with the same subdomain but different ID
     await target`DELETE FROM tenants WHERE subdomain = ${t.subdomain} AND id != ${t.id}`;
     await target`
-      INSERT INTO tenants (id, subdomain, name, display_name, status, sharetribe_config, branding, institution_domain, corporate_partner_ids, features, created_at, updated_at)
-      VALUES (${t.id}, ${t.subdomain}, ${t.name}, ${t.display_name}, ${t.status}, ${target.json(t.sharetribe_config || {})}, ${target.json(t.branding || {})}, ${t.institution_domain}, ${target.json(t.corporate_partner_ids || [])}, ${target.json(t.features || {})}, ${t.created_at}, ${t.updated_at})
+      INSERT INTO tenants (
+        id, subdomain, name, display_name, status,
+        sharetribe_config, branding, institution_domain, corporate_partner_ids, features,
+        marketplace_type, sport, team_name, conference, mascot_url,
+        hero_video_url, hero_video_poster_url, hero_headline, hero_subheadline,
+        gallery_images, social_links, about_content, contact_info,
+        shared_network_enabled, network_tier,
+        max_network_applications_per_month, network_partner_limit,
+        created_at, updated_at
+      )
+      VALUES (
+        ${t.id}, ${t.subdomain}, ${t.name}, ${t.display_name}, ${t.status},
+        ${target.json(t.sharetribe_config || {})}, ${target.json(t.branding || {})}, ${t.institution_domain}, ${target.json(t.corporate_partner_ids || [])}, ${target.json(t.features || {})},
+        ${t.marketplace_type}, ${t.sport}, ${t.team_name}, ${t.conference}, ${t.mascot_url},
+        ${t.hero_video_url}, ${t.hero_video_poster_url}, ${t.hero_headline}, ${t.hero_subheadline},
+        ${target.json(t.gallery_images || [])}, ${target.json(t.social_links || {})}, ${t.about_content}, ${target.json(t.contact_info || {})},
+        ${t.shared_network_enabled}, ${t.network_tier},
+        ${t.max_network_applications_per_month}, ${t.network_partner_limit},
+        ${t.created_at}, ${t.updated_at}
+      )
       ON CONFLICT (id) DO UPDATE SET
         subdomain = EXCLUDED.subdomain,
         name = EXCLUDED.name,
@@ -65,6 +83,23 @@ async function main() {
         institution_domain = EXCLUDED.institution_domain,
         corporate_partner_ids = EXCLUDED.corporate_partner_ids,
         features = EXCLUDED.features,
+        marketplace_type = EXCLUDED.marketplace_type,
+        sport = EXCLUDED.sport,
+        team_name = EXCLUDED.team_name,
+        conference = EXCLUDED.conference,
+        mascot_url = EXCLUDED.mascot_url,
+        hero_video_url = EXCLUDED.hero_video_url,
+        hero_video_poster_url = EXCLUDED.hero_video_poster_url,
+        hero_headline = EXCLUDED.hero_headline,
+        hero_subheadline = EXCLUDED.hero_subheadline,
+        gallery_images = EXCLUDED.gallery_images,
+        social_links = EXCLUDED.social_links,
+        about_content = EXCLUDED.about_content,
+        contact_info = EXCLUDED.contact_info,
+        shared_network_enabled = EXCLUDED.shared_network_enabled,
+        network_tier = EXCLUDED.network_tier,
+        max_network_applications_per_month = EXCLUDED.max_network_applications_per_month,
+        network_partner_limit = EXCLUDED.network_partner_limit,
         updated_at = EXCLUDED.updated_at
     `;
   }
