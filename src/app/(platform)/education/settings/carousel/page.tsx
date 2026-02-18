@@ -142,6 +142,7 @@ export default function TenantCarouselPage() {
   const [images, setImages] = useState<CarouselImage[]>([]);
   const [intervalMs, setIntervalMs] = useState(5000);
   const [primaryColor, setPrimaryColor] = useState('#0f766e');
+  const [currentHeroPoster, setCurrentHeroPoster] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -168,6 +169,11 @@ export default function TenantCarouselPage() {
         }
         if (settingsData.tenant?.branding?.primaryColor) {
           setPrimaryColor(settingsData.tenant.branding.primaryColor);
+        }
+        // Remember the current hero poster image so we can offer to add it
+        const posterUrl = brandingData.branding?.heroVideoPosterUrl;
+        if (posterUrl) {
+          setCurrentHeroPoster(posterUrl);
         }
       })
       .catch(console.error)
@@ -314,6 +320,43 @@ export default function TenantCarouselPage() {
           it falls back to the single hero video or poster image from your branding settings.
         </p>
       </div>
+
+      {/* Current hero image notice — offer to include in carousel */}
+      {currentHeroPoster && images.length === 0 && (
+        <div className="rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 p-4">
+          <div className="flex items-start gap-4">
+            <div className="w-24 h-16 rounded-md overflow-hidden bg-slate-200 shrink-0">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={currentHeroPoster}
+                alt="Current hero image"
+                className="w-full h-full object-cover"
+              />
+            </div>
+            <div className="flex-1">
+              <p className="text-sm font-medium text-amber-800 dark:text-amber-200">
+                Current Hero Image
+              </p>
+              <p className="text-xs text-amber-700 dark:text-amber-300 mt-0.5">
+                Your landing page currently uses this image as the hero background. Add it to the
+                carousel to keep it as part of the rotation.
+              </p>
+              <Button
+                size="sm"
+                variant="outline"
+                className="mt-2 text-xs border-amber-300 hover:bg-amber-100"
+                onClick={() => {
+                  setImages([{ src: currentHeroPoster, alt: 'Hero background image' }]);
+                  setCurrentHeroPoster(null);
+                }}
+              >
+                <Plus className="h-3 w-3 mr-1" />
+                Add to Carousel
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Live Preview */}
       <Card>

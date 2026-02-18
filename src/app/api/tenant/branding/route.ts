@@ -183,27 +183,49 @@ export async function PUT(request: NextRequest) {
     const socialJson = updates.socialLinks !== undefined ? sql.json(updates.socialLinks as any) : sql.json((current.social_links || {}) as any);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const contactJson = updates.contactInfo !== undefined ? sql.json(updates.contactInfo as any) : sql.json((current.contact_info || {}) as any);
+    // Resolve hero carousel — need to handle null JSONB carefully
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const heroCarouselJson = updates.heroCarousel !== undefined ? (updates.heroCarousel ? sql.json(updates.heroCarousel as any) : null) : (current.hero_carousel ? sql.json(current.hero_carousel as any) : null);
+    const heroCarouselValue = updates.heroCarousel !== undefined
+      ? updates.heroCarousel
+      : (current.hero_carousel || null);
 
     // Write to BOTH branding JSON and individual columns (landing page reads individual columns)
-    const [updated] = await sql`
-      UPDATE tenants
-      SET branding = ${brandingJson},
-          hero_video_url = ${heroVideoUrl},
-          hero_video_poster_url = ${heroVideoPosterUrl},
-          hero_headline = ${heroHeadline},
-          hero_subheadline = ${heroSubheadline},
-          hero_carousel = ${heroCarouselJson},
-          gallery_images = ${galleryJson},
-          about_content = ${aboutContent},
-          social_links = ${socialJson},
-          contact_info = ${contactJson},
-          updated_at = NOW()
-      WHERE id = ${tenantId}
-      RETURNING id, hero_video_url, hero_video_poster_url, hero_headline, hero_subheadline,
-                hero_carousel, gallery_images, about_content, social_links, contact_info
-    `;
+    // Use a conditional update for hero_carousel to handle null vs JSONB properly
+    const [updated] = heroCarouselValue
+      ? await sql`
+          UPDATE tenants
+          SET branding = ${brandingJson},
+              hero_video_url = ${heroVideoUrl},
+              hero_video_poster_url = ${heroVideoPosterUrl},
+              hero_headline = ${heroHeadline},
+              hero_subheadline = ${heroSubheadline},
+              hero_carousel = ${sql.json(heroCarouselValue as any)},
+              gallery_images = ${galleryJson},
+              about_content = ${aboutContent},
+              social_links = ${socialJson},
+              contact_info = ${contactJson},
+              updated_at = NOW()
+          WHERE id = ${tenantId}
+          RETURNING id, hero_video_url, hero_video_poster_url, hero_headline, hero_subheadline,
+                    hero_carousel, gallery_images, about_content, social_links, contact_info
+        `
+      : await sql`
+          UPDATE tenants
+          SET branding = ${brandingJson},
+              hero_video_url = ${heroVideoUrl},
+              hero_video_poster_url = ${heroVideoPosterUrl},
+              hero_headline = ${heroHeadline},
+              hero_subheadline = ${heroSubheadline},
+              hero_carousel = NULL,
+              gallery_images = ${galleryJson},
+              about_content = ${aboutContent},
+              social_links = ${socialJson},
+              contact_info = ${contactJson},
+              updated_at = NOW()
+          WHERE id = ${tenantId}
+          RETURNING id, hero_video_url, hero_video_poster_url, hero_headline, hero_subheadline,
+                    hero_carousel, gallery_images, about_content, social_links, contact_info
+        `;
 
     return NextResponse.json({
       branding: {
