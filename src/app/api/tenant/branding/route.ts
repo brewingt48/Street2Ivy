@@ -11,28 +11,28 @@ import { getCurrentSession } from '@/lib/auth/middleware';
 import { z } from 'zod';
 
 const updateBrandingSchema = z.object({
-  heroVideoUrl: z.string().max(2000).optional(),
+  heroVideoUrl: z.string().optional(),
   heroHeadline: z.string().max(500).optional(),
   heroSubheadline: z.string().max(1000).optional(),
-  heroVideoPosterUrl: z.string().max(2000).optional(),
-  galleryImages: z.array(z.string().max(2000)).max(20).optional(),
-  aboutContent: z.string().max(5000).optional(),
+  heroVideoPosterUrl: z.string().optional(),
+  galleryImages: z.array(z.string()).max(20).optional(),
+  aboutContent: z.string().max(10000).optional(),
   socialLinks: z.object({
-    twitter: z.string().max(300).optional(),
-    instagram: z.string().max(300).optional(),
-    tiktok: z.string().max(300).optional(),
-    youtube: z.string().max(300).optional(),
-    linkedin: z.string().max(300).optional(),
+    twitter: z.string().optional(),
+    instagram: z.string().optional(),
+    tiktok: z.string().optional(),
+    youtube: z.string().optional(),
+    linkedin: z.string().optional(),
   }).optional(),
   contactInfo: z.object({
-    email: z.string().max(300).optional(),
-    phone: z.string().max(50).optional(),
-    address: z.string().max(500).optional(),
+    email: z.string().optional(),
+    phone: z.string().optional(),
+    address: z.string().max(1000).optional(),
   }).optional(),
   // Hero carousel (multiple rotating images with timing)
   heroCarousel: z.object({
     images: z.array(z.object({
-      src: z.string().max(2000),
+      src: z.string(),
       alt: z.string().max(500),
     })).max(20).optional(),
     intervalMs: z.number().min(1000).max(15000).optional(),
