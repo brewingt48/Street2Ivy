@@ -15,7 +15,7 @@ export default async function SubdomainLandingPage({
   const rows = await sql`
     SELECT id, name, display_name, subdomain, marketplace_type, sport, team_name, conference,
            hero_video_url, hero_video_poster_url, hero_headline, hero_subheadline,
-           gallery_images, social_links, about_content, contact_info,
+           hero_carousel, gallery_images, social_links, about_content, contact_info,
            branding, features
     FROM tenants
     WHERE subdomain = ${subdomain} AND status = 'active'

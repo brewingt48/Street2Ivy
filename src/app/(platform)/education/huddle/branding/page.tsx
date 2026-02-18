@@ -25,6 +25,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { FileUpload } from '@/components/ui/file-upload';
+import { HeroPreview } from '@/components/huddle/hero-preview';
 import {
   Save,
   CheckCircle2,
@@ -271,6 +272,21 @@ export default function HuddleBrandingPage() {
         </div>
       )}
 
+      {/* Live Preview — sticky, collapsible preview of changes */}
+      <HeroPreview
+        bannerType={bannerType}
+        bannerImageUrl={bannerImageUrl}
+        bannerVideoUrl={bannerVideoUrl}
+        bannerOverlayOpacity={bannerOverlayOpacity}
+        logoUrl={logoUrl}
+        primaryColor={primaryColor}
+        secondaryColor={secondaryColor}
+        welcomeTitle={welcomeTitle}
+        welcomeMessage={welcomeMessage}
+        tenantName={tenantDefaults?.name || 'Your Institution'}
+        sectionOrder={sectionOrder}
+      />
+
       {/* Hero Banner Section */}
       <Card>
         <CardHeader>
@@ -375,20 +391,6 @@ export default function HuddleBrandingPage() {
             </div>
           )}
 
-          {/* Banner Preview */}
-          {bannerType !== 'none' && (bannerImageUrl || bannerVideoUrl) && (
-            <div className="relative h-32 rounded-lg overflow-hidden">
-              {bannerType === 'video' && bannerVideoUrl ? (
-                <video src={bannerVideoUrl} muted playsInline className="absolute inset-0 w-full h-full object-cover" />
-              ) : bannerImageUrl ? (
-                <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${bannerImageUrl})` }} />
-              ) : null}
-              <div className="absolute inset-0" style={{ backgroundColor: `rgba(0,0,0,${bannerOverlayOpacity})` }} />
-              <div className="relative z-10 flex items-center justify-center h-full">
-                <p className="text-white font-bold text-sm">Banner Preview</p>
-              </div>
-            </div>
-          )}
         </CardContent>
       </Card>
 
@@ -629,33 +631,21 @@ export default function HuddleBrandingPage() {
         </CardContent>
       </Card>
 
-      {/* Preview Link */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Eye className="h-5 w-5 text-teal-600" />
-            Preview
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-sm text-slate-500 mb-3">
-            Save your changes, then preview the branded landing page as students will see it.
-          </p>
-          <Button
-            variant="outline"
-            onClick={() => window.open('/huddle', '_blank')}
-          >
-            <Eye className="h-4 w-4 mr-2" />
-            Open Team Huddle Landing Page
-          </Button>
-        </CardContent>
-      </Card>
-
       {/* Bottom Save */}
       <div className="flex items-center justify-between pb-8">
-        <Button variant="ghost" onClick={() => router.push('/education/huddle')}>
-          <ArrowLeft className="h-4 w-4 mr-1" /> Back
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button variant="ghost" onClick={() => router.push('/education/huddle')}>
+            <ArrowLeft className="h-4 w-4 mr-1" /> Back
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => window.open('/huddle', '_blank')}
+          >
+            <Eye className="h-4 w-4 mr-1" />
+            Open Full Preview
+          </Button>
+        </div>
         <div className="flex items-center gap-2">
           {saved && (
             <span className="text-sm text-green-600 flex items-center gap-1">

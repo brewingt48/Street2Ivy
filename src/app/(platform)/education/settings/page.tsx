@@ -307,6 +307,31 @@ export default function EducationSettingsPage() {
         </div>
       )}
 
+      {/* Quick Actions */}
+      {canCustomize && (
+        <Card>
+          <CardContent className="py-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="h-10 w-10 rounded-lg bg-teal-50 dark:bg-teal-900/30 flex items-center justify-center">
+                  <Image className="h-5 w-5 text-teal-600" />
+                </div>
+                <div>
+                  <p className="font-medium text-sm text-slate-900 dark:text-white">Hero Carousel</p>
+                  <p className="text-xs text-slate-500">Add rotating background images to your landing page hero</p>
+                </div>
+              </div>
+              <a href="/education/settings/carousel">
+                <Button variant="outline" size="sm">
+                  Manage Carousel
+                  <ExternalLink className="h-3.5 w-3.5 ml-1.5" />
+                </Button>
+              </a>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Left: Settings */}
         <div className="space-y-6">

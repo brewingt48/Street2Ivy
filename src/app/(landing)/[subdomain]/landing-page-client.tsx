@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
-import { motion, useInView } from 'framer-motion';
+import { useState, useEffect, useRef, useCallback } from 'react';
+import { motion, useInView, AnimatePresence } from 'framer-motion';
 import {
   Search,
   Sparkles,
@@ -60,6 +60,7 @@ interface Tenant {
   hero_video_poster_url: string | null;
   hero_headline: string | null;
   hero_subheadline: string | null;
+  hero_carousel: { images?: Array<{ src: string; alt: string }>; intervalMs?: number } | null;
   gallery_images: unknown[];
   social_links: SocialLinks | null;
   about_content: string | null;
@@ -145,6 +146,23 @@ export function LandingPageClient({ tenant, stats, partners, legalPolicies = [] 
   const listingCount = Number(stats.listing_count) || 0;
   const partnerCount = Number(stats.partner_count) || 0;
 
+  /* --- Hero carousel --- */
+  const carousel = tenant.hero_carousel;
+  const carouselImages = carousel?.images && carousel.images.length > 0 ? carousel.images : null;
+  const carouselInterval = carousel?.intervalMs ?? 5000;
+  const [currentSlide, setCurrentSlide] = useState(0);
+
+  const nextSlide = useCallback(() => {
+    if (!carouselImages) return;
+    setCurrentSlide((prev) => (prev + 1) % carouselImages.length);
+  }, [carouselImages]);
+
+  useEffect(() => {
+    if (!carouselImages || carouselImages.length <= 1) return;
+    const timer = setInterval(nextSlide, carouselInterval);
+    return () => clearInterval(timer);
+  }, [carouselImages, carouselInterval, nextSlide]);
+
   /* --- Social icon map --- */
   function socialIcon(key: string) {
     switch (key) {
@@ -205,26 +223,47 @@ export function LandingPageClient({ tenant, stats, partners, legalPolicies = [] 
           background: `linear-gradient(135deg, ${primary} 0%, ${primary}dd 50%, ${primary}aa 100%)`,
         }}
       >
-        {/* Video background (if provided) */}
-        {tenant.hero_video_url && (
-          <video
-            autoPlay
-            muted
-            loop
-            playsInline
-            poster={tenant.hero_video_poster_url ?? undefined}
-            className="absolute inset-0 w-full h-full object-cover opacity-30"
-          >
-            <source src={tenant.hero_video_url} type="video/mp4" />
-          </video>
-        )}
+        {/* Carousel background (multiple rotating images) */}
+        {carouselImages ? (
+          <div className="absolute inset-0">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={currentSlide}
+                initial={{ opacity: 0, scale: 1.02 }}
+                animate={{ opacity: 1, scale: 1.08 }}
+                exit={{ opacity: 0 }}
+                transition={{ opacity: { duration: 0.6 }, scale: { duration: 4, ease: 'linear' } }}
+                className="absolute inset-0 bg-cover bg-center opacity-40"
+                style={{ backgroundImage: `url(${carouselImages[currentSlide].src})` }}
+                role="img"
+                aria-label={carouselImages[currentSlide].alt}
+              />
+            </AnimatePresence>
+          </div>
+        ) : (
+          <>
+            {/* Video background (if provided) */}
+            {tenant.hero_video_url && (
+              <video
+                autoPlay
+                muted
+                loop
+                playsInline
+                poster={tenant.hero_video_poster_url ?? undefined}
+                className="absolute inset-0 w-full h-full object-cover opacity-30"
+              >
+                <source src={tenant.hero_video_url} type="video/mp4" />
+              </video>
+            )}
 
-        {/* Image background (if no video but poster/image provided) */}
-        {!tenant.hero_video_url && tenant.hero_video_poster_url && (
-          <div
-            className="absolute inset-0 w-full h-full bg-cover bg-center bg-no-repeat opacity-40"
-            style={{ backgroundImage: `url(${tenant.hero_video_poster_url})` }}
-          />
+            {/* Image background (if no video but poster/image provided) */}
+            {!tenant.hero_video_url && tenant.hero_video_poster_url && (
+              <div
+                className="absolute inset-0 w-full h-full bg-cover bg-center bg-no-repeat opacity-40"
+                style={{ backgroundImage: `url(${tenant.hero_video_poster_url})` }}
+              />
+            )}
+          </>
         )}
 
         {/* Overlay gradient */}
@@ -306,6 +345,25 @@ export function LandingPageClient({ tenant, stats, partners, legalPolicies = [] 
           </motion.div>
 
         </motion.div>
+
+        {/* Carousel dot indicators */}
+        {carouselImages && carouselImages.length > 1 && (
+          <div className="absolute bottom-6 right-6 flex gap-1.5 z-10">
+            {carouselImages.map((_, i) => (
+              <button
+                key={i}
+                onClick={() => setCurrentSlide(i)}
+                aria-label={`Go to slide ${i + 1}`}
+                className={`h-1.5 rounded-full transition-all duration-300 ${
+                  i === currentSlide ? 'w-5' : 'w-1.5 hover:opacity-75'
+                }`}
+                style={{
+                  backgroundColor: i === currentSlide ? secondary : `${secondary}50`,
+                }}
+              />
+            ))}
+          </div>
+        )}
       </section>
 
       {/* ================================================================

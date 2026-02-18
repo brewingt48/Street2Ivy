@@ -29,6 +29,14 @@ const updateBrandingSchema = z.object({
     phone: z.string().max(50).optional(),
     address: z.string().max(500).optional(),
   }).optional(),
+  // Hero carousel (multiple rotating images with timing)
+  heroCarousel: z.object({
+    images: z.array(z.object({
+      src: z.string().max(500),
+      alt: z.string().max(200),
+    })).max(20).optional(),
+    intervalMs: z.number().min(1000).max(15000).optional(),
+  }).nullable().optional(),
   // Enterprise customization fields (stored in branding JSONB)
   ctaHeadline: z.string().max(200).optional(),
   ctaSubheadline: z.string().max(500).optional(),
@@ -60,7 +68,7 @@ export async function GET() {
     const [tenant] = await sql`
       SELECT id, branding, features,
              hero_video_url, hero_video_poster_url, hero_headline, hero_subheadline,
-             gallery_images, about_content, social_links, contact_info
+             hero_carousel, gallery_images, about_content, social_links, contact_info
       FROM tenants
       WHERE id = ${tenantId}
     `;
@@ -78,6 +86,7 @@ export async function GET() {
         heroHeadline: tenant.hero_headline || '',
         heroSubheadline: tenant.hero_subheadline || '',
         heroVideoPosterUrl: tenant.hero_video_poster_url || '',
+        heroCarousel: tenant.hero_carousel || null,
         galleryImages: (tenant.gallery_images as string[]) || [],
         aboutContent: tenant.about_content || '',
         socialLinks: (tenant.social_links as Record<string, string>) || {},
@@ -136,13 +145,14 @@ export async function PUT(request: NextRequest) {
     // Get current individual column values for merge
     const [current] = await sql`
       SELECT hero_video_url, hero_video_poster_url, hero_headline, hero_subheadline,
-             gallery_images, about_content, social_links, contact_info
+             hero_carousel, gallery_images, about_content, social_links, contact_info
       FROM tenants WHERE id = ${tenantId}
     `;
 
     // Also keep branding JSON in sync for backward compatibility
     const currentBranding = (tenant.branding || {}) as Record<string, unknown>;
     const newBranding = { ...currentBranding };
+    if (updates.heroCarousel !== undefined) newBranding.heroCarousel = updates.heroCarousel;
     if (updates.heroVideoUrl !== undefined) newBranding.heroVideoUrl = updates.heroVideoUrl;
     if (updates.heroHeadline !== undefined) newBranding.heroHeadline = updates.heroHeadline;
     if (updates.heroSubheadline !== undefined) newBranding.heroSubheadline = updates.heroSubheadline;
@@ -173,6 +183,8 @@ export async function PUT(request: NextRequest) {
     const socialJson = updates.socialLinks !== undefined ? sql.json(updates.socialLinks as any) : sql.json((current.social_links || {}) as any);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const contactJson = updates.contactInfo !== undefined ? sql.json(updates.contactInfo as any) : sql.json((current.contact_info || {}) as any);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const heroCarouselJson = updates.heroCarousel !== undefined ? (updates.heroCarousel ? sql.json(updates.heroCarousel as any) : null) : (current.hero_carousel ? sql.json(current.hero_carousel as any) : null);
 
     // Write to BOTH branding JSON and individual columns (landing page reads individual columns)
     const [updated] = await sql`
@@ -182,6 +194,7 @@ export async function PUT(request: NextRequest) {
           hero_video_poster_url = ${heroVideoPosterUrl},
           hero_headline = ${heroHeadline},
           hero_subheadline = ${heroSubheadline},
+          hero_carousel = ${heroCarouselJson},
           gallery_images = ${galleryJson},
           about_content = ${aboutContent},
           social_links = ${socialJson},
@@ -189,7 +202,7 @@ export async function PUT(request: NextRequest) {
           updated_at = NOW()
       WHERE id = ${tenantId}
       RETURNING id, hero_video_url, hero_video_poster_url, hero_headline, hero_subheadline,
-                gallery_images, about_content, social_links, contact_info
+                hero_carousel, gallery_images, about_content, social_links, contact_info
     `;
 
     return NextResponse.json({
@@ -198,6 +211,7 @@ export async function PUT(request: NextRequest) {
         heroHeadline: updated.hero_headline || '',
         heroSubheadline: updated.hero_subheadline || '',
         heroVideoPosterUrl: updated.hero_video_poster_url || '',
+        heroCarousel: updated.hero_carousel || null,
         galleryImages: updated.gallery_images || [],
         aboutContent: updated.about_content || '',
         socialLinks: updated.social_links || {},
