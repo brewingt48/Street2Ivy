@@ -197,7 +197,15 @@ export default function TenantCarouselPage() {
         setTimeout(() => setSaved(false), 3000);
       } else {
         const d = await res.json();
-        setError(d.error || 'Failed to save');
+        // Show detailed validation errors if available
+        let msg = d.error || 'Failed to save';
+        if (d.details) {
+          const detailMessages = Object.entries(d.details)
+            .map(([field, errs]) => `${field}: ${(errs as string[]).join(', ')}`)
+            .join('; ');
+          if (detailMessages) msg += ` — ${detailMessages}`;
+        }
+        setError(msg);
       }
     } catch {
       setError('Failed to save settings');

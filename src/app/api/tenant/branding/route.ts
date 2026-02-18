@@ -11,11 +11,11 @@ import { getCurrentSession } from '@/lib/auth/middleware';
 import { z } from 'zod';
 
 const updateBrandingSchema = z.object({
-  heroVideoUrl: z.string().max(500).optional(),
-  heroHeadline: z.string().max(200).optional(),
-  heroSubheadline: z.string().max(500).optional(),
-  heroVideoPosterUrl: z.string().max(500).optional(),
-  galleryImages: z.array(z.string().max(500)).max(20).optional(),
+  heroVideoUrl: z.string().max(2000).optional(),
+  heroHeadline: z.string().max(500).optional(),
+  heroSubheadline: z.string().max(1000).optional(),
+  heroVideoPosterUrl: z.string().max(2000).optional(),
+  galleryImages: z.array(z.string().max(2000)).max(20).optional(),
   aboutContent: z.string().max(5000).optional(),
   socialLinks: z.object({
     twitter: z.string().max(300).optional(),
@@ -32,8 +32,8 @@ const updateBrandingSchema = z.object({
   // Hero carousel (multiple rotating images with timing)
   heroCarousel: z.object({
     images: z.array(z.object({
-      src: z.string().max(500),
-      alt: z.string().max(200),
+      src: z.string().max(2000),
+      alt: z.string().max(500),
     })).max(20).optional(),
     intervalMs: z.number().min(1000).max(15000).optional(),
   }).nullable().optional(),
@@ -119,8 +119,10 @@ export async function PUT(request: NextRequest) {
     const body = await request.json();
     const parsed = updateBrandingSchema.safeParse(body);
     if (!parsed.success) {
+      const fieldErrors = parsed.error.flatten().fieldErrors;
+      console.error('Tenant branding PUT validation error:', JSON.stringify(fieldErrors), 'Body keys:', Object.keys(body));
       return NextResponse.json(
-        { error: 'Validation failed', details: parsed.error.flatten().fieldErrors },
+        { error: 'Validation failed', details: fieldErrors },
         { status: 400 }
       );
     }
