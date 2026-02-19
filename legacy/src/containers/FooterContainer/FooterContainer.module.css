@@ -1,0 +1,52 @@
+.footerWrapper {
+  width: 100%;
+}
+
+.sloganBar {
+  background-color: var(--colorGrey900, #1a1a1a);
+  padding: 16px 24px;
+  text-align: center;
+  border-top: 1px solid var(--colorGrey800, #333);
+}
+
+.slogan {
+  margin: 0;
+  color: var(--colorGrey300, #b3b3b3);
+  font-size: 14px;
+  font-style: italic;
+  letter-spacing: 0.5px;
+}
+
+@media (min-width: 768px) {
+  .sloganBar {
+    padding: 20px 48px;
+  }
+
+  .slogan {
+    font-size: 16px;
+  }
+}
+
+/* Legal fallback links - always visible regardless of CMS configuration */
+.legalFallback {
+  text-align: center;
+  padding: 12px 24px;
+  background-color: var(--colorGrey900, #1a1a1a);
+  border-top: 1px solid var(--colorGrey800, #333);
+  font-size: 13px;
+}
+
+.legalFallback a {
+  color: var(--colorGrey400, #999);
+  text-decoration: none;
+}
+
+.legalFallback a:hover {
+  color: var(--colorGrey100, #eee);
+  text-decoration: underline;
+}
+
+.legalSeparator {
+  color: var(--colorGrey600, #666);
+  margin: 0 8px;
+}

@@ -1,0 +1,95 @@
+.banner {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 9999;
+  background-color: var(--colorGrey900, #1a1a1a);
+  border-top: 2px solid var(--marketplaceColor, #2c5282);
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
+  padding: 16px 24px;
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.content {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: center;
+}
+
+@media (min-width: 768px) {
+  .content {
+    flex-direction: row;
+    justify-content: space-between;
+    gap: 24px;
+  }
+}
+
+.text {
+  margin: 0;
+  color: var(--colorGrey200, #ddd);
+  font-size: 14px;
+  line-height: 1.5;
+  flex: 1;
+}
+
+.link {
+  color: var(--marketplaceColorLight, #4a90d9);
+  text-decoration: underline;
+}
+
+.link:hover {
+  color: var(--colorWhite, #fff);
+}
+
+.buttons {
+  display: flex;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.declineButton {
+  padding: 8px 20px;
+  border: 1px solid var(--colorGrey500, #666);
+  border-radius: 4px;
+  background: transparent;
+  color: var(--colorGrey300, #bbb);
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.declineButton:hover {
+  background: var(--colorGrey800, #333);
+  color: var(--colorWhite, #fff);
+}
+
+.acceptButton {
+  padding: 8px 24px;
+  border: none;
+  border-radius: 4px;
+  background: var(--marketplaceColor, #2c5282);
+  color: var(--colorWhite, #fff);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.acceptButton:hover {
+  background: var(--marketplaceColorDark, #3a6ba5);
+}
