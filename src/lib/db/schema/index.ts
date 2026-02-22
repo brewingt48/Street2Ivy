@@ -25,3 +25,6 @@ export * from './waitlist';
 export * from './network';
 export * from './matching';
 export * from './skills-gap';
+export * from './handshake';
+export * from './portfolio';
+export * from './outcomes';
