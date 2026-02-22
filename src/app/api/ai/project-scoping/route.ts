@@ -12,6 +12,7 @@ import { z } from 'zod';
 import { checkAiAccessV2, incrementUsageV2, getUsageStatusV2 } from '@/lib/ai/config';
 import { askClaude } from '@/lib/ai/claude-client';
 import { safeParseAiJson } from '@/lib/ai/parse-json';
+import { AI_DISCLAIMER_TEXT } from '@/lib/ai/prompts';
 
 const projectScopingSchema = z.object({
   description: z.string().min(1).max(10000),
@@ -219,7 +220,7 @@ export async function POST(request: NextRequest) {
     await incrementUsageV2(tenantId, userId, 'project_scoping');
     const usage = await getUsageStatusV2(tenantId, userId, 'project_scoping');
 
-    return NextResponse.json({ result, usage });
+    return NextResponse.json({ result, usage, disclaimer: AI_DISCLAIMER_TEXT });
   } catch (error) {
     console.error('AI project scoping error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

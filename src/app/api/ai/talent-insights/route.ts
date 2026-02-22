@@ -10,7 +10,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { sql } from '@/lib/db';
 import { getCurrentSession } from '@/lib/auth/middleware';
 import { checkAiAccessV2, incrementUsageV2, getUsageStatusV2 } from '@/lib/ai/config';
-import { buildTalentInsightsPrompt } from '@/lib/ai/prompts';
+import { buildTalentInsightsPrompt, AI_DISCLAIMER_TEXT } from '@/lib/ai/prompts';
 import { askClaude } from '@/lib/ai/claude-client';
 import { safeParseAiJson } from '@/lib/ai/parse-json';
 
@@ -191,7 +191,7 @@ export async function POST(_request: NextRequest) {
     await incrementUsageV2(tenantId, userId, 'talent_insights');
     const usage = await getUsageStatusV2(tenantId, userId, 'talent_insights');
 
-    return NextResponse.json({ insights, usage });
+    return NextResponse.json({ insights, usage, disclaimer: AI_DISCLAIMER_TEXT });
   } catch (error) {
     console.error('AI talent insights error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

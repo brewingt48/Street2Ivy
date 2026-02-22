@@ -13,6 +13,7 @@ import { z } from 'zod';
 import { checkAiAccessV2, incrementUsageV2, getUsageStatusV2 } from '@/lib/ai/config';
 import { askClaude } from '@/lib/ai/claude-client';
 import { safeParseAiJson } from '@/lib/ai/parse-json';
+import { AI_FAIRNESS_CONSTRAINTS, AI_DISCLAIMER_TEXT } from '@/lib/ai/prompts';
 
 const candidateScreeningSchema = z.object({
   applicationId: z.string().uuid(),
@@ -57,13 +58,15 @@ function buildScreeningPrompt(
     `- Matched Skills: ${matchedSkills.join(', ') || 'None'}`,
     `- Missing Skills: ${missingSkills.join(', ') || 'None'}`,
     ``,
+    AI_FAIRNESS_CONSTRAINTS,
     `## Instructions`,
     `Analyze this candidate's fit for the project and return a JSON object with:`,
-    `- "fit_assessment": A 2-3 sentence assessment of the applicant's overall fit for this project`,
-    `- "strengths": An array of 3-5 specific strengths this applicant brings to this project`,
-    `- "concerns": An array of gaps or areas of concern (can be empty if excellent fit)`,
-    `- "interview_questions": An array of 3-5 tailored interview questions specific to this applicant-project pairing`,
-    `- "confidence_score": A number from 0-100 representing how confident the match is`,
+    `- "fit_assessment": A 2-3 sentence assessment of the applicant's overall fit for this project based ONLY on their stated skills, coursework, and experience vs. the stated project requirements`,
+    `- "strengths": An array of 3-5 specific strengths this applicant brings to this project (based only on explicitly stated qualifications)`,
+    `- "concerns": An array of skill gaps or missing qualifications relative to the stated requirements (can be empty if excellent fit)`,
+    `- "interview_questions": An array of 3-5 tailored interview questions focused on verifying stated skills and project-relevant competencies`,
+    `- "confidence_score": A number from 0-100 representing how confident the skills match is (based only on stated facts)`,
+    `- "disclaimer": The exact text: "${AI_DISCLAIMER_TEXT}"`,
     ``,
     `Return ONLY valid JSON, no markdown.`,
   ].join('\n');
@@ -174,7 +177,7 @@ export async function POST(request: NextRequest) {
     await incrementUsageV2(tenantId, userId, 'candidate_screening');
     const usage = await getUsageStatusV2(tenantId, userId, 'candidate_screening');
 
-    return NextResponse.json({ insights, usage });
+    return NextResponse.json({ insights, usage, disclaimer: AI_DISCLAIMER_TEXT });
   } catch (error) {
     console.error('AI candidate screening error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

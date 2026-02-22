@@ -10,6 +10,7 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
+import { csrfFetch } from '@/lib/security/csrf-fetch';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -21,6 +22,7 @@ import {
   Share2,
   Plus,
   AlertCircle,
+  Info,
 } from 'lucide-react';
 import { PortfolioEditor } from '@/components/portfolio/portfolio-editor';
 import { ProjectSelector } from '@/components/portfolio/project-selector';
@@ -67,6 +69,7 @@ type TabKey = (typeof TABS)[number]['key'];
 
 export default function PortfolioPage() {
   const [portfolio, setPortfolio] = useState<PortfolioData | null>(null);
+  const [hasCompletedProjects, setHasCompletedProjects] = useState(false);
   const [activeTab, setActiveTab] = useState<TabKey>('profile');
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
@@ -90,6 +93,7 @@ export default function PortfolioPage() {
       }
       const data = await res.json();
       setPortfolio(data.portfolio || null);
+      setHasCompletedProjects(!!data.hasCompletedProjects);
     } catch (err) {
       console.error('Failed to load portfolio:', err);
       setError('Failed to load portfolio. Please try again.');
@@ -106,7 +110,7 @@ export default function PortfolioPage() {
     setCreating(true);
     setError(null);
     try {
-      const res = await fetch('/api/student/portfolio', {
+      const res = await csrfFetch('/api/student/portfolio', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({}),
@@ -169,7 +173,7 @@ export default function PortfolioPage() {
     );
   }
 
-  // No portfolio — create CTA
+  // No portfolio — create CTA or completed-project warning
   if (!portfolio) {
     return (
       <div className="space-y-6">
@@ -179,32 +183,55 @@ export default function PortfolioPage() {
             My Portfolio
           </h1>
         </div>
-        <Card>
-          <CardContent className="flex flex-col items-center justify-center py-16 text-center">
-            <FolderOpen className="h-16 w-16 text-muted-foreground mb-4" />
-            <h2 className="text-xl font-semibold text-slate-900 dark:text-white">
-              Create Your Portfolio
-            </h2>
-            <p className="text-sm text-muted-foreground mt-2 max-w-md">
-              Showcase your projects, skills, and achievements to employers.
-              Your Proveground portfolio is a living proof-of-work resume.
-            </p>
-            <Button
-              className="mt-6"
-              size="lg"
-              onClick={handleCreatePortfolio}
-              disabled={creating}
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              {creating ? 'Creating...' : 'Create Portfolio'}
-            </Button>
-            {error && (
-              <p className="text-sm text-red-600 dark:text-red-400 mt-3">
-                {error}
+
+        {!hasCompletedProjects ? (
+          /* Student has no completed projects — show guidance */
+          <Card>
+            <CardContent className="flex flex-col items-center justify-center py-16 text-center">
+              <Info className="h-16 w-16 text-amber-500 mb-4" />
+              <h2 className="text-xl font-semibold text-slate-900 dark:text-white">
+                Complete a Project First
+              </h2>
+              <p className="text-sm text-muted-foreground mt-2 max-w-md">
+                Your portfolio showcases real work you&apos;ve done on the platform.
+                To create a portfolio, you need to complete at least one project.
+                Apply to projects, do great work, and your portfolio will be ready
+                to build.
               </p>
-            )}
-          </CardContent>
-        </Card>
+              <Button className="mt-6" size="lg" variant="outline" asChild>
+                <a href="/dashboard">Browse Projects</a>
+              </Button>
+            </CardContent>
+          </Card>
+        ) : (
+          /* Student has completed projects — show create CTA */
+          <Card>
+            <CardContent className="flex flex-col items-center justify-center py-16 text-center">
+              <FolderOpen className="h-16 w-16 text-muted-foreground mb-4" />
+              <h2 className="text-xl font-semibold text-slate-900 dark:text-white">
+                Create Your Portfolio
+              </h2>
+              <p className="text-sm text-muted-foreground mt-2 max-w-md">
+                Showcase your projects, skills, and achievements to employers.
+                Your Proveground portfolio is a living proof-of-work resume.
+              </p>
+              <Button
+                className="mt-6"
+                size="lg"
+                onClick={handleCreatePortfolio}
+                disabled={creating}
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                {creating ? 'Creating...' : 'Create Portfolio'}
+              </Button>
+              {error && (
+                <p className="text-sm text-red-600 dark:text-red-400 mt-3">
+                  {error}
+                </p>
+              )}
+            </CardContent>
+          </Card>
+        )}
       </div>
     );
   }

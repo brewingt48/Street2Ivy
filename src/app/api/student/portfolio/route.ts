@@ -7,6 +7,7 @@
 
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
+import { sql } from '@/lib/db';
 import { getCurrentSession } from '@/lib/auth/middleware';
 import { hasFeature } from '@/lib/tenant/features';
 import { createPortfolio, getPortfolio, updatePortfolio } from '@/lib/portfolio';
@@ -27,7 +28,22 @@ export async function GET() {
     }
 
     const portfolio = await getPortfolio(session.data.userId);
-    return NextResponse.json({ portfolio });
+
+    // Check if the student has any completed projects (for empty-state messaging)
+    let hasCompletedProjects = false;
+    try {
+      const rows = await sql`
+        SELECT 1 FROM project_applications
+        WHERE student_id = ${session.data.userId}
+          AND status = 'completed'
+        LIMIT 1
+      `;
+      hasCompletedProjects = rows.length > 0;
+    } catch {
+      // Non-fatal — default to false
+    }
+
+    return NextResponse.json({ portfolio, hasCompletedProjects });
   } catch (error) {
     console.error('Portfolio GET error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

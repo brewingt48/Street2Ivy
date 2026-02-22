@@ -26,6 +26,7 @@ import {
   Zap,
   Info,
 } from 'lucide-react';
+import { AiDisclaimer } from '@/components/shared/ai-disclaimer';
 
 interface AiFeature {
   key: string;
@@ -350,6 +351,9 @@ export default function AiFeaturesPage() {
         </Card>
       )}
 
+      {/* AI Bias Warning */}
+      <AiDisclaimer />
+
       {/* Info Card */}
       <Card>
         <CardContent className="py-4">
@@ -359,9 +363,10 @@ export default function AiFeaturesPage() {
               <p className="font-medium mb-1">About AI Features</p>
               <p className="text-slate-500">
                 AI features are powered by advanced language models and are designed to help your students
-                succeed. Usage is tracked monthly and resets at the beginning of each billing period.
-                Feature availability is determined by your institution&apos;s plan tier. Contact your
-                platform administrator if you need access to additional features.
+                succeed. All talent analysis is based exclusively on facts explicitly submitted by candidates
+                and stated job/project requirements. Usage is tracked monthly and resets at the beginning of
+                each billing period. Feature availability is determined by your institution&apos;s plan tier.
+                Your platform administrator can enable or disable AI features at any time.
               </p>
             </div>
           </div>

@@ -7,6 +7,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Lock, Sparkles } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
+import { AiDisclaimer } from '@/components/shared/ai-disclaimer';
 
 export default function CoachingPage() {
   const [access, setAccess] = useState<{ allowed: boolean; reason?: string } | null>(null);
@@ -61,8 +62,11 @@ export default function CoachingPage() {
   }
 
   return (
-    <div className="h-[calc(100vh-120px)]">
-      <CoachingPanel />
+    <div className="space-y-3">
+      <AiDisclaimer variant="inline" />
+      <div className="h-[calc(100vh-150px)]">
+        <CoachingPanel />
+      </div>
     </div>
   );
 }

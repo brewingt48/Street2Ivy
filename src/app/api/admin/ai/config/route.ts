@@ -29,6 +29,8 @@ const updateAiConfigSchema = z.object({
     maxMonthlyUses: z.number().int().optional(),
     features: z.array(z.string()).optional(),
   }).optional(),
+  // Toggle AI on/off for a tenant
+  aiEnabled: z.boolean().optional(),
 });
 
 export async function GET() {
@@ -80,11 +82,15 @@ export async function GET() {
           // Ignore resolution errors
         }
 
+        // aiCoaching flag controls whether AI is enabled for this tenant
+        const aiEnabled = features.aiCoaching !== false;
+
         return {
           tenantId,
           tenantName: t.name as string,
           subdomain: t.subdomain as string,
           plan,
+          aiEnabled,
           hasLegacyOverride: !!legacyAiConfig,
           legacyOverride: legacyAiConfig || null,
           v2Overrides,
@@ -119,12 +125,22 @@ export async function PUT(request: NextRequest) {
       );
     }
 
-    const { tenantId, overrides, aiConfig } = parsed.data;
+    const { tenantId, overrides, aiConfig, aiEnabled } = parsed.data;
 
     // Verify tenant exists
     const existing = await sql`SELECT id FROM tenants WHERE id = ${tenantId}`;
     if (existing.length === 0) {
       return NextResponse.json({ error: 'Tenant not found' }, { status: 404 });
+    }
+
+    // Handle AI enabled/disabled toggle
+    if (aiEnabled !== undefined) {
+      await sql`
+        UPDATE tenants
+        SET features = features || jsonb_build_object('aiCoaching', ${aiEnabled}::boolean),
+            updated_at = NOW()
+        WHERE id = ${tenantId}
+      `;
     }
 
     // Handle v2 overrides via tenant_ai_overrides table

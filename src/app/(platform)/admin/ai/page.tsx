@@ -37,7 +37,10 @@ import {
   AlertTriangle,
   CheckCircle2,
   Activity,
+  Power,
+  PowerOff,
 } from 'lucide-react';
+import { AiDisclaimer } from '@/components/shared/ai-disclaimer';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -75,6 +78,7 @@ interface TenantOverride {
   tenantName: string;
   subdomain: string;
   plan: string;
+  aiEnabled: boolean;
   hasOverride: boolean;
   override: { model?: string; maxMonthlyUses?: number; features?: string[] } | null;
 }
@@ -281,6 +285,34 @@ export default function AdminAiPage() {
   };
 
   // ---------------------------------------------------------------------------
+  // AI toggle handler
+  // ---------------------------------------------------------------------------
+
+  const handleToggleAi = async (tenantId: string, currentlyEnabled: boolean) => {
+    try {
+      const res = await csrfFetch('/api/admin/ai/config', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tenantId, aiEnabled: !currentlyEnabled }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || 'Failed to toggle AI');
+      }
+
+      // Refresh config data
+      const configRes = await fetch('/api/admin/ai/config');
+      if (configRes.ok) {
+        const config = await configRes.json();
+        setConfigData(config);
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to toggle AI');
+    }
+  };
+
+  // ---------------------------------------------------------------------------
   // Loading state
   // ---------------------------------------------------------------------------
 
@@ -323,6 +355,9 @@ export default function AdminAiPage() {
           Monitor usage, configure tiers, and manage AI access across tenants
         </p>
       </div>
+
+      {/* AI Bias Warning */}
+      <AiDisclaimer />
 
       {/* Error banner */}
       {error && (
@@ -613,6 +648,24 @@ export default function AdminAiPage() {
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
+                        {/* AI Enabled Toggle */}
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className={`h-8 gap-1.5 text-xs font-medium ${
+                            tenant.aiEnabled
+                              ? 'text-green-600 hover:text-red-600 hover:bg-red-50'
+                              : 'text-red-600 hover:text-green-600 hover:bg-green-50'
+                          }`}
+                          onClick={() => handleToggleAi(tenant.tenantId, tenant.aiEnabled)}
+                          title={tenant.aiEnabled ? 'Click to disable AI for this tenant' : 'Click to enable AI for this tenant'}
+                        >
+                          {tenant.aiEnabled ? (
+                            <><Power className="h-3.5 w-3.5" /> AI On</>
+                          ) : (
+                            <><PowerOff className="h-3.5 w-3.5" /> AI Off</>
+                          )}
+                        </Button>
                         {tenant.hasOverride && (
                           <Badge variant="outline" className="bg-teal-100 text-teal-700 border-0 text-[10px]">
                             Overridden

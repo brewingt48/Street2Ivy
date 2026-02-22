@@ -13,6 +13,7 @@ import { z } from 'zod';
 import { checkAiAccessV2, incrementUsageV2, getUsageStatusV2 } from '@/lib/ai/config';
 import { askClaude } from '@/lib/ai/claude-client';
 import { safeParseAiJson } from '@/lib/ai/parse-json';
+import { AI_FAIRNESS_CONSTRAINTS, AI_DISCLAIMER_TEXT } from '@/lib/ai/prompts';
 
 const matchInsightsSchema = z.object({
   listingId: z.string().uuid(),
@@ -119,14 +120,14 @@ export async function POST(request: NextRequest) {
       `## Skill Comparison`,
       `- Matched Skills: ${matchedSkills.join(', ') || 'None'}`,
       `- Missing Skills: ${missingSkills.join(', ') || 'None'}`,
-      ``,
+      AI_FAIRNESS_CONSTRAINTS,
       `## Instructions`,
-      `Analyze the match and return a JSON object with the following fields:`,
-      `- "match_assessment": A 2-3 sentence assessment of the student's fit for this project`,
-      `- "strengths": An array of 3-5 specific strengths the student brings to this project`,
-      `- "gaps": An array of skill gaps or areas the student should develop (can be empty if perfect match)`,
-      `- "interview_tips": An array of 3-5 specific interview tips tailored to this listing and the student's profile`,
-      `- "confidence_score": A number from 0-100 representing how confident the match is`,
+      `Analyze the match based ONLY on the stated skills, qualifications, and project requirements above. Return a JSON object with the following fields:`,
+      `- "match_assessment": A 2-3 sentence assessment of the student's fit based solely on explicit skill alignment and stated qualifications`,
+      `- "strengths": An array of 3-5 specific strengths based on the student's stated skills that match the project requirements`,
+      `- "gaps": An array of skill gaps relative to the stated requirements (can be empty if perfect match)`,
+      `- "interview_tips": An array of 3-5 specific interview tips focused on demonstrating stated skills for this project`,
+      `- "confidence_score": A number from 0-100 representing skills alignment confidence (based only on stated facts)`,
       ``,
       `Return ONLY valid JSON, no markdown.`,
     ].join('\n');
@@ -164,7 +165,7 @@ export async function POST(request: NextRequest) {
     await incrementUsageV2(tenantId, userId, 'student_coaching');
     const usage = await getUsageStatusV2(tenantId, userId, 'student_coaching');
 
-    return NextResponse.json({ insights, usage });
+    return NextResponse.json({ insights, usage, disclaimer: AI_DISCLAIMER_TEXT });
   } catch (error) {
     console.error('AI match insights error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

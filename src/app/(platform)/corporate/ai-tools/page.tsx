@@ -33,6 +33,7 @@ import {
   TrendingUp,
   Zap,
 } from 'lucide-react';
+import { AiDisclaimer } from '@/components/shared/ai-disclaimer';
 
 interface UsageData {
   used: number;
@@ -281,11 +282,12 @@ export default function CorporateAiToolsPage() {
           <div className="grid gap-4 md:grid-cols-3 text-sm text-slate-600 dark:text-slate-300">
             <div>
               <p className="font-semibold text-slate-900 dark:text-white mb-1">
-                1. Context-Aware Analysis
+                1. Facts-Based Analysis
               </p>
               <p>
-                Each AI tool analyzes your specific listing details, required skills, and
-                student profiles to provide tailored insights — not generic advice.
+                All AI analysis is based solely on information explicitly submitted by candidates
+                and the stated requirements of your project listings. No assumptions or inferences
+                are made beyond what is directly provided.
               </p>
             </div>
             <div>
@@ -299,16 +301,19 @@ export default function CorporateAiToolsPage() {
             </div>
             <div>
               <p className="font-semibold text-slate-900 dark:text-white mb-1">
-                3. Better Outcomes
+                3. One Input Among Many
               </p>
               <p>
-                AI-assisted screening helps you focus on the best candidates faster,
-                while optimized listings attract more and better applicants.
+                AI insights are designed to assist — not replace — your judgment.
+                Use these tools alongside your own evaluation for the best outcomes.
               </p>
             </div>
           </div>
         </CardContent>
       </Card>
+
+      {/* AI Bias Warning */}
+      <AiDisclaimer />
     </div>
   );
 }

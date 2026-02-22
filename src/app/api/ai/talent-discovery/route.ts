@@ -12,6 +12,7 @@ import { z } from 'zod';
 import { checkAiAccessV2, incrementUsageV2, getUsageStatusV2 } from '@/lib/ai/config';
 import { askClaude } from '@/lib/ai/claude-client';
 import { safeParseAiJson } from '@/lib/ai/parse-json';
+import { AI_FAIRNESS_CONSTRAINTS, AI_DISCLAIMER_TEXT } from '@/lib/ai/prompts';
 
 const talentDiscoverySchema = z.object({
   listingId: z.string().uuid(),
@@ -62,13 +63,15 @@ function buildDiscoveryPrompt(
     `## Student Profiles`,
     studentEntries,
     ``,
+    AI_FAIRNESS_CONSTRAINTS,
     `## Instructions`,
-    `Analyze each student's fit for this project. Return a JSON object with:`,
+    `Analyze each student's fit for this project based ONLY on their stated skills, major, coursework, and bio vs. the stated project requirements. Return a JSON object with:`,
     `- "discoveries": An array of objects, one per student, each with:`,
     `  - "student_index": The student number (1-based, matching the order above)`,
-    `  - "summary": A 1-2 sentence explanation of why this student is a good (or poor) fit`,
-    `  - "talking_points": An array of 2-3 specific points the corporate partner could highlight when reaching out to this student`,
-    `  - "fit_score": A number from 0-100 representing the overall student-project fit`,
+    `  - "summary": A 1-2 sentence explanation of fit based solely on explicit skill and qualification alignment`,
+    `  - "talking_points": An array of 2-3 specific points about the student's stated skills or experience relevant to the project`,
+    `  - "fit_score": A number from 0-100 based strictly on skills match and stated qualifications (not assumptions)`,
+    `- "disclaimer": The exact text: "${AI_DISCLAIMER_TEXT}"`,
     ``,
     `Order the discoveries array from highest fit_score to lowest.`,
     `Return ONLY valid JSON, no markdown.`,
@@ -217,7 +220,7 @@ export async function POST(request: NextRequest) {
     await incrementUsageV2(tenantId, userId, 'candidate_screening');
     const usage = await getUsageStatusV2(tenantId, userId, 'candidate_screening');
 
-    return NextResponse.json({ discoveries, usage });
+    return NextResponse.json({ discoveries, usage, disclaimer: AI_DISCLAIMER_TEXT });
   } catch (error) {
     console.error('AI talent discovery error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
