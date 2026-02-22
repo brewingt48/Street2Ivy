@@ -273,10 +273,10 @@ export default function EducationStudentsPage() {
           {/* Grad Year Filter */}
           {filters.gradYears.length > 0 && (
             <Select value={gradYearFilter || '__all__'} onValueChange={(v) => { setGradYearFilter(v === '__all__' ? '' : v); setPage(1); }}>
-              <SelectTrigger className="w-32 h-8 text-xs">
+              <SelectTrigger className="w-36 h-8 text-xs">
                 <SelectValue placeholder="All Years" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="max-h-64">
                 <SelectItem value="__all__">All Years</SelectItem>
                 {filters.gradYears.map((y) => (
                   <SelectItem key={y} value={String(y)}>{String(y)}</SelectItem>
@@ -288,10 +288,10 @@ export default function EducationStudentsPage() {
           {/* Sport Filter */}
           {filters.sports.length > 0 && (
             <Select value={sportFilter || '__all__'} onValueChange={(v) => { setSportFilter(v === '__all__' ? '' : v); setPage(1); }}>
-              <SelectTrigger className="w-36 h-8 text-xs">
+              <SelectTrigger className="w-48 h-8 text-xs">
                 <SelectValue placeholder="All Sports" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="max-h-64">
                 <SelectItem value="__all__">All Sports</SelectItem>
                 {filters.sports.map((s) => (
                   <SelectItem key={s} value={s}>{s}</SelectItem>

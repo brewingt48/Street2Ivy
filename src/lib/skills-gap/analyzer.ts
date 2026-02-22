@@ -195,7 +195,7 @@ export async function analyzeStudentGaps(
  */
 export async function aggregateInstitutionGaps(
   institutionId: string,
-  _filters?: { program?: string; cohort?: string; graduationYear?: string }
+  _filters?: { program?: string; cohort?: string; graduationYear?: string; targetRoleId?: string }
 ): Promise<{
   totalStudents: number;
   averageReadiness: number;
@@ -222,13 +222,22 @@ export async function aggregateInstitutionGaps(
     };
   }
 
-  // Get most recent snapshots for each student
-  const snapshotRows = await sql`
-    SELECT DISTINCT ON (student_id) student_id, overall_readiness_score, gaps, strengths
-    FROM skill_gap_snapshots
-    WHERE student_id = ANY(${studentIds}::uuid[])
-    ORDER BY student_id, snapshot_date DESC
-  `;
+  // Get most recent snapshots for each student, optionally filtered by target role
+  const targetRoleId = _filters?.targetRoleId;
+  const snapshotRows = targetRoleId
+    ? await sql`
+        SELECT DISTINCT ON (student_id) student_id, overall_readiness_score, gaps, strengths
+        FROM skill_gap_snapshots
+        WHERE student_id = ANY(${studentIds}::uuid[])
+          AND target_role_id = ${targetRoleId}
+        ORDER BY student_id, snapshot_date DESC
+      `
+    : await sql`
+        SELECT DISTINCT ON (student_id) student_id, overall_readiness_score, gaps, strengths
+        FROM skill_gap_snapshots
+        WHERE student_id = ANY(${studentIds}::uuid[])
+        ORDER BY student_id, snapshot_date DESC
+      `;
 
   // Compute readiness distribution
   const tierCounts: Record<string, number> = {

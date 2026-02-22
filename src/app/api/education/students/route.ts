@@ -12,6 +12,42 @@ import { getCurrentSession } from '@/lib/auth/middleware';
 
 const VALID_SORT_KEYS = ['name', 'major', 'graduation_year', 'sport', 'readiness_score', 'created_at', 'gpa'] as const;
 
+// Comprehensive list of NCAA / college sports
+const ALL_COLLEGE_SPORTS = [
+  'Baseball',
+  'Basketball',
+  'Beach Volleyball',
+  'Bowling',
+  'Cheerleading',
+  'Cross Country',
+  'Diving',
+  'Equestrian',
+  'Fencing',
+  'Field Hockey',
+  'Football',
+  'Golf',
+  'Gymnastics',
+  'Ice Hockey',
+  'Lacrosse',
+  'Rifle',
+  'Rowing',
+  'Rugby',
+  'Sailing',
+  'Skiing',
+  'Soccer',
+  'Softball',
+  'Squash',
+  'Swimming',
+  'Swimming & Diving',
+  'Synchronized Swimming',
+  'Tennis',
+  'Track & Field',
+  'Triathlon',
+  'Volleyball',
+  'Water Polo',
+  'Wrestling',
+];
+
 export async function GET(request: NextRequest) {
   try {
     const session = await getCurrentSession();
@@ -114,12 +150,12 @@ export async function GET(request: NextRequest) {
       WHERE role = 'student' AND tenant_id = ${tenantId} AND major IS NOT NULL AND major != ''
       ORDER BY major
     `;
-    const gradYears = await sql`
+    const dbGradYears = await sql`
       SELECT DISTINCT graduation_year FROM users
       WHERE role = 'student' AND tenant_id = ${tenantId} AND graduation_year IS NOT NULL
       ORDER BY graduation_year DESC
     `;
-    const sports = await sql`
+    const dbSports = await sql`
       SELECT DISTINCT ss.sport_name
       FROM student_schedules sch
       JOIN sport_seasons ss ON ss.id = sch.sport_season_id
@@ -127,6 +163,20 @@ export async function GET(request: NextRequest) {
       WHERE u.role = 'student' AND u.tenant_id = ${tenantId} AND sch.is_active = TRUE
       ORDER BY ss.sport_name
     `;
+
+    // Generate graduation years: current year - 2 through current year + 6
+    const currentYear = new Date().getFullYear();
+    const staticYears: number[] = [];
+    for (let y = currentYear + 6; y >= currentYear - 2; y--) {
+      staticYears.push(y);
+    }
+    // Merge with DB years (include any DB years outside our static range)
+    const dbYears = dbGradYears.map((g: Record<string, unknown>) => g.graduation_year as number);
+    const allYears = Array.from(new Set([...staticYears, ...dbYears])).sort((a, b) => b - a);
+
+    // Merge comprehensive sports list with DB sports
+    const dbSportNames = dbSports.map((s: Record<string, unknown>) => s.sport_name as string);
+    const allSports = Array.from(new Set([...ALL_COLLEGE_SPORTS, ...dbSportNames])).sort();
 
     return NextResponse.json({
       students: students.map((s: Record<string, unknown>) => {
@@ -156,8 +206,8 @@ export async function GET(request: NextRequest) {
       totalPages: Math.ceil(total / limit),
       filters: {
         majors: majors.map((m: Record<string, unknown>) => m.major as string),
-        gradYears: gradYears.map((g: Record<string, unknown>) => g.graduation_year as number),
-        sports: sports.map((s: Record<string, unknown>) => s.sport_name as string),
+        gradYears: allYears,
+        sports: allSports,
       },
     });
   } catch (error) {

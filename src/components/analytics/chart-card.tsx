@@ -118,9 +118,20 @@ export function ChartCard(props: ChartCardProps) {
                 ))}
               </LineChart>
             ) : props.type === 'bar' ? (
-              <BarChart data={data}>
+              <BarChart data={data} margin={{ bottom: 60 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                <XAxis dataKey={props.xKey} tick={{ fontSize: 12 }} stroke="#94a3b8" />
+                <XAxis
+                  dataKey={props.xKey}
+                  tick={{ fontSize: 11 }}
+                  stroke="#94a3b8"
+                  angle={-35}
+                  textAnchor="end"
+                  interval={0}
+                  height={70}
+                  tickFormatter={(value: string) =>
+                    value.length > 16 ? value.slice(0, 14) + '...' : value
+                  }
+                />
                 <YAxis tick={{ fontSize: 12 }} stroke="#94a3b8" />
                 <Tooltip
                   contentStyle={{
@@ -150,10 +161,13 @@ export function ChartCard(props: ChartCardProps) {
                   nameKey={props.nameKey}
                   cx="50%"
                   cy="50%"
-                  outerRadius={100}
-                  label={({ name, percent }: { name?: string; percent?: number }) =>
-                    `${name || ''} ${((percent || 0) * 100).toFixed(0)}%`
-                  }
+                  outerRadius={90}
+                  label={({ name, percent }: { name?: string; percent?: number }) => {
+                    const pct = (percent || 0) * 100;
+                    if (pct < 5) return '';
+                    const displayName = (name || '').length > 14 ? (name || '').slice(0, 12) + '...' : (name || '');
+                    return `${displayName} ${pct.toFixed(0)}%`;
+                  }}
                   labelLine={{ stroke: '#94a3b8' }}
                 >
                   {data.map((_, i) => (
