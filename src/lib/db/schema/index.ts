@@ -24,3 +24,4 @@ export * from './audit';
 export * from './waitlist';
 export * from './network';
 export * from './matching';
+export * from './skills-gap';
