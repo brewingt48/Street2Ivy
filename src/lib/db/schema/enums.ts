@@ -75,3 +75,10 @@ export const attachmentFileTypeEnum = pgEnum('attachment_file_type', [
   'image',
   'document',
 ]);
+
+export const verificationSourceEnum = pgEnum('verification_source_type', [
+  'self_reported',
+  'project_completion',
+  'employer_endorsement',
+  'assessment',
+]);
