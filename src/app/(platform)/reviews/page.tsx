@@ -4,7 +4,7 @@
  * My Reviews Page (Student)
  *
  * Two tabs: "Reviews I Received" (ratings from corporates) and
- * "Reviews I Gave" (ratings the student gave to corporates).
+ * "Reviews I've Given" (ratings the student gave to corporates).
  */
 
 import { useState, useEffect } from 'react';
@@ -59,7 +59,7 @@ function StarRating({ rating }: { rating: number }) {
 
 const TABS = [
   { key: 'received', label: 'Reviews I Received' },
-  { key: 'given', label: 'Reviews I Gave' },
+  { key: 'given', label: "Reviews I've Given" },
 ] as const;
 
 type TabKey = (typeof TABS)[number]['key'];

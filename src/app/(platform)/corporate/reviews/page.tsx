@@ -4,7 +4,7 @@
  * My Reviews Page (Corporate)
  *
  * Two tabs: "Reviews I Received" (public ratings from students) and
- * "Reviews I Gave" (feedback the corporate gave to students).
+ * "Reviews I've Given" (feedback the corporate gave to students).
  */
 
 import { useState, useEffect } from 'react';
@@ -71,7 +71,7 @@ function LargeStarRating({ rating }: { rating: number }) {
 
 const TABS = [
   { key: 'received', label: 'Reviews I Received' },
-  { key: 'given', label: 'Reviews I Gave' },
+  { key: 'given', label: "Reviews I've Given" },
 ] as const;
 
 type TabKey = (typeof TABS)[number]['key'];
