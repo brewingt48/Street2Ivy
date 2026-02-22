@@ -114,6 +114,30 @@ export const FEATURE_DEFINITIONS: Record<string, {
     description: 'Admin API for Match Engine\u2122 configuration and monitoring',
     plans: ['enterprise'],
   },
+  // --- Skills Gap Analyzer ---
+  skillsGapAnalyzer: {
+    label: 'Skills Gap Analyzer',
+    description: 'Student skills gap analysis with readiness scoring against target roles',
+    plans: ['professional', 'enterprise'],
+  },
+  // --- Portfolio Builder ---
+  portfolioBuilder: {
+    label: 'Portfolio Builder',
+    description: 'Shareable verified portfolios with badges and public profile pages',
+    plans: ['professional', 'enterprise'],
+  },
+  // --- Outcomes Dashboard ---
+  outcomesDashboard: {
+    label: 'Outcomes Dashboard',
+    description: 'Outcomes-based reporting with engagement, skills, and employer metrics',
+    plans: ['professional', 'enterprise'],
+  },
+  // --- Handshake Integration ---
+  handshakeIntegration: {
+    label: 'Handshake Integration',
+    description: 'Connect Handshake EDU API for enriched employer demand data and outcome correlations',
+    plans: ['enterprise'],
+  },
 };
 
 /** Plan defaults — includes new premium features */
@@ -140,6 +164,10 @@ export const PLAN_DEFAULTS: Record<string, Record<string, unknown>> = {
     matchEngineSchedule: false,
     matchEngineAttractive: false,
     matchEngineAdmin: false,
+    skillsGapAnalyzer: false,
+    portfolioBuilder: false,
+    outcomesDashboard: false,
+    handshakeIntegration: false,
   },
   professional: {
     maxStudents: 500,
@@ -163,6 +191,10 @@ export const PLAN_DEFAULTS: Record<string, Record<string, unknown>> = {
     matchEngineSchedule: true,
     matchEngineAttractive: false,
     matchEngineAdmin: false,
+    skillsGapAnalyzer: true,
+    portfolioBuilder: true,
+    outcomesDashboard: true,
+    handshakeIntegration: false,
   },
   enterprise: {
     maxStudents: -1, // unlimited
@@ -186,6 +218,10 @@ export const PLAN_DEFAULTS: Record<string, Record<string, unknown>> = {
     matchEngineSchedule: true,
     matchEngineAttractive: true,
     matchEngineAdmin: true,
+    skillsGapAnalyzer: true,
+    portfolioBuilder: true,
+    outcomesDashboard: true,
+    handshakeIntegration: true,
   },
 };
 
