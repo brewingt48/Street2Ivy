@@ -85,7 +85,9 @@ export async function GET(request: Request) {
         periodStart,
         periodEnd,
         cohortFilter: cohort || null,
-        computedAt: (cached[0].computed_at as Date).toISOString(),
+        computedAt: cached[0].computed_at instanceof Date
+          ? cached[0].computed_at.toISOString()
+          : String(cached[0].computed_at),
         metrics,
       });
     }

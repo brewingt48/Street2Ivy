@@ -462,14 +462,7 @@ export async function computeStudentEngagementMetrics(
         AND u.role = 'student'
     ) student_counts
     GROUP BY bucket
-    ORDER BY
-      CASE bucket
-        WHEN '0 projects' THEN 1
-        WHEN '1 project' THEN 2
-        WHEN '2-3 projects' THEN 3
-        WHEN '4-5 projects' THEN 4
-        WHEN '6+ projects' THEN 5
-      END
+    ORDER BY MIN(completed_count)
   `;
   const distribution: Record<string, number> = {};
   for (const row of distRows) {
