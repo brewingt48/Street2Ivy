@@ -35,6 +35,10 @@ import {
   Crown,
   Calendar,
   Target,
+  Crosshair,
+  FolderOpen,
+  LineChart,
+  Link2,
 } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
@@ -128,6 +132,8 @@ function getNavItems(role: string): NavSection[] {
             { href: '/invites', label: 'Invites', icon: Mail },
             { href: '/student/schedule', label: 'My Schedule', icon: Calendar, featureGate: 'matchEngineSchedule' },
             { href: '/coaching', label: 'AI Coach', icon: Sparkles },
+            { href: '/dashboard/skills-gap', label: 'Skills Gap', icon: Crosshair, featureGate: 'skillsGapAnalyzer' },
+            { href: '/dashboard/portfolio', label: 'My Portfolio', icon: FolderOpen, featureGate: 'portfolioBuilder' },
             { href: '/inbox', label: 'Messages', icon: Inbox },
           ],
         },
@@ -174,6 +180,8 @@ function getNavItems(role: string): NavSection[] {
             { href: '/education/waitlist', label: 'Waitlist', icon: ClipboardList },
             { href: '/education/ai-insights', label: 'AI Insights', icon: Sparkles },
             { href: '/education/match-engine', label: 'Match Engine\u2122', icon: Target, featureGate: 'matchEngine' },
+            { href: '/education/skills-analytics', label: 'Skills Analytics', icon: Crosshair, featureGate: 'skillsGapAnalyzer' },
+            { href: '/education/outcomes', label: 'Outcomes', icon: LineChart, featureGate: 'outcomesDashboard' },
             { href: '/inbox', label: 'Messages', icon: Inbox },
           ],
         },
@@ -182,6 +190,8 @@ function getNavItems(role: string): NavSection[] {
           items: [
             { href: '/education/partners', label: 'Partners & Network', icon: Globe },
             { href: '/education/ai-features', label: 'AI Features', icon: Sparkles },
+            { href: '/education/handshake', label: 'Handshake', icon: Link2, featureGate: 'handshakeIntegration' },
+            { href: '/education/reports', label: 'Reports', icon: FileText, featureGate: 'outcomesDashboard' },
             { href: '/education/settings', label: 'Branding & Settings', icon: Palette },
           ],
         },
