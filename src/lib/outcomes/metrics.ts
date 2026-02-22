@@ -91,6 +91,9 @@ export async function computeAllMetrics(
   const engagementMetrics = await computeStudentEngagementMetrics(institutionId, periodStart, periodEnd, cohortFilter);
   Object.assign(metrics, engagementMetrics);
 
+  const portfolioResults = await computePortfolioMetrics(institutionId, periodStart, periodEnd, cohortFilter);
+  Object.assign(metrics, portfolioResults);
+
   return {
     institutionId,
     periodStart,
@@ -480,6 +483,77 @@ export async function computeStudentEngagementMetrics(
     institutionId, 'engagement_distribution', 0,
     { distribution }, periodStart, periodEnd, cohortFilter,
   );
+
+  return results;
+}
+
+// ---------------------------------------------------------------------------
+// Portfolio metrics
+// ---------------------------------------------------------------------------
+
+export async function computePortfolioMetrics(
+  institutionId: string,
+  periodStart: string,
+  periodEnd: string,
+  cohortFilter?: string,
+): Promise<Record<string, MetricResult>> {
+  const results: Record<string, MetricResult> = {};
+
+  // 1. Total portfolio views in period
+  const viewsRows = await sql`
+    SELECT COUNT(*) as total_views
+    FROM portfolio_views pv
+    JOIN student_portfolios sp ON sp.id = pv.portfolio_id
+    JOIN users u ON u.id = sp.student_id
+    WHERE u.tenant_id = ${institutionId}
+      AND pv.viewed_at >= ${periodStart}::date
+      AND pv.viewed_at <= ${periodEnd}::date
+  `;
+  const totalViews = Number(viewsRows[0]?.total_views || 0);
+  await saveMetric(institutionId, 'portfolio_views_total', totalViews, {}, periodStart, periodEnd, cohortFilter);
+  results['portfolio_views_total'] = { value: totalViews, metadata: {} };
+
+  // 2. Views by type (anonymous, student, employer, etc.)
+  const viewsByTypeRows = await sql`
+    SELECT pv.viewer_type, COUNT(*) as count
+    FROM portfolio_views pv
+    JOIN student_portfolios sp ON sp.id = pv.portfolio_id
+    JOIN users u ON u.id = sp.student_id
+    WHERE u.tenant_id = ${institutionId}
+      AND pv.viewed_at >= ${periodStart}::date
+      AND pv.viewed_at <= ${periodEnd}::date
+    GROUP BY pv.viewer_type
+    ORDER BY count DESC
+  `;
+  const viewsByType: Record<string, number> = {};
+  for (const row of viewsByTypeRows) {
+    viewsByType[row.viewer_type as string] = Number(row.count);
+  }
+  await saveMetric(institutionId, 'portfolio_views_by_type', totalViews, { distribution: viewsByType }, periodStart, periodEnd, cohortFilter);
+  results['portfolio_views_by_type'] = { value: totalViews, metadata: { distribution: viewsByType } };
+
+  // 3. Most viewed portfolios (top 10)
+  const topPortfolioRows = await sql`
+    SELECT sp.slug, sp.display_name, sp.view_count,
+           COUNT(pv.id) as period_views
+    FROM student_portfolios sp
+    JOIN users u ON u.id = sp.student_id
+    LEFT JOIN portfolio_views pv ON pv.portfolio_id = sp.id
+      AND pv.viewed_at >= ${periodStart}::date
+      AND pv.viewed_at <= ${periodEnd}::date
+    WHERE u.tenant_id = ${institutionId}
+    GROUP BY sp.id, sp.slug, sp.display_name, sp.view_count
+    ORDER BY period_views DESC
+    LIMIT 10
+  `;
+  const topPortfolios = topPortfolioRows.map(r => ({
+    slug: r.slug as string,
+    displayName: r.display_name as string,
+    totalViews: Number(r.view_count),
+    periodViews: Number(r.period_views),
+  }));
+  await saveMetric(institutionId, 'most_viewed_portfolios', topPortfolios.length, { portfolios: topPortfolios }, periodStart, periodEnd, cohortFilter);
+  results['most_viewed_portfolios'] = { value: topPortfolios.length, metadata: { portfolios: topPortfolios } };
 
   return results;
 }
