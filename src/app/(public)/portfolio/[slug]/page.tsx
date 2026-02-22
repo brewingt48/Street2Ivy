@@ -15,10 +15,12 @@ import {
   Link as LinkIcon,
   Linkedin,
   CheckCircle,
+  Briefcase,
 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { BadgeIcon } from '@/components/portfolio/badge-icon';
 import { ProjectCard } from '@/components/portfolio/project-card';
 import { SkillsRadarChart } from '@/components/portfolio/skills-radar-chart';
@@ -91,6 +93,13 @@ export default function PublicPortfolioPage() {
   const [error, setError] = useState('');
   const [copied, setCopied] = useState(false);
 
+  // Employer context overlay (only populated for authenticated corporate_partner viewers)
+  const [employerContext, setEmployerContext] = useState<{
+    isEmployer: boolean;
+    listings: Array<{ id: string; title: string; skills: string[] }>;
+    matchSummary: string | null;
+  } | null>(null);
+
   /* ---- Fetch portfolio data ---- */
   useEffect(() => {
     if (!slug) return;
@@ -130,6 +139,32 @@ export default function PublicPortfolioPage() {
       // Silently ignore view tracking errors
     });
   }, [slug]);
+
+  /* ---- Non-blocking employer context check ---- */
+  useEffect(() => {
+    fetch('/api/corporate/dashboard')
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data?.listings) {
+          // User is an employer - compute skill overlap
+          const employerListings = data.listings.map((l: Record<string, unknown>) => ({
+            id: l.id as string,
+            title: l.title as string,
+            skills: ((l.skills_required as unknown[]) || []).map((s: unknown) =>
+              typeof s === 'string' ? s : (s as Record<string, string>)?.name || ''
+            ),
+          }));
+          setEmployerContext({
+            isEmployer: true,
+            listings: employerListings,
+            matchSummary: null,
+          });
+        }
+      })
+      .catch(() => {
+        /* not an employer, silently ignore */
+      });
+  }, []);
 
   /* ---- Share handlers ---- */
   const handleCopyLink = useCallback(() => {
@@ -271,6 +306,65 @@ export default function PublicPortfolioPage() {
               <CardContent>
                 {/* Skills data not yet in portfolio API -- pass empty array for placeholder */}
                 <SkillsRadarChart skills={[]} />
+              </CardContent>
+            </Card>
+          </section>
+        )}
+
+        {/* ---------------------------------------------------------------- */}
+        {/*  Employer context overlay                                        */}
+        {/* ---------------------------------------------------------------- */}
+        {employerContext?.isEmployer && (
+          <section className="mb-10">
+            <Card className="border-indigo-200 bg-indigo-50">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-base flex items-center gap-2">
+                  <Briefcase className="h-4 w-4 text-indigo-600" />
+                  Employer View
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-slate-600 mb-3">
+                  You&apos;re viewing this portfolio as an employer. This candidate&apos;s skills may align with your active listings.
+                </p>
+                {employerContext.listings.length > 0 && (
+                  <div className="space-y-2">
+                    {employerContext.listings.slice(0, 3).map((listing) => {
+                      // Compute skill overlap with portfolio badges
+                      const portfolioSkills =
+                        portfolio?.badges
+                          ?.filter((b) => b.badgeType === 'skill_verified')
+                          .map((b) => b.label.replace('Verified: ', '')) || [];
+                      const matchedSkills = listing.skills.filter((s) =>
+                        portfolioSkills.some(
+                          (ps) => ps.toLowerCase() === s.toLowerCase()
+                        )
+                      );
+                      return (
+                        <div
+                          key={listing.id}
+                          className="flex items-center justify-between p-2 bg-white rounded border"
+                        >
+                          <div>
+                            <p className="text-sm font-medium">{listing.title}</p>
+                            <p className="text-xs text-slate-500">
+                              {matchedSkills.length} of {listing.skills.length} skills match
+                            </p>
+                          </div>
+                          <Badge
+                            variant={
+                              matchedSkills.length > 0 ? 'default' : 'secondary'
+                            }
+                          >
+                            {matchedSkills.length > 0
+                              ? 'Potential Match'
+                              : 'Review Skills'}
+                          </Badge>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
               </CardContent>
             </Card>
           </section>
