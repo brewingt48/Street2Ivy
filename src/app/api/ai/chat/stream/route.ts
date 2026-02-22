@@ -133,8 +133,8 @@ export async function POST(request: NextRequest) {
         content: m.content as string,
       }));
 
-    // Build system prompt
-    const systemPrompt = buildCoachingSystemPrompt(studentProfile);
+    // Build system prompt (includes skills gap context when available)
+    const systemPrompt = await buildCoachingSystemPrompt(studentProfile, undefined, userId);
 
     // If quickAction is set, prepend context
     if (quickAction && quickAction in QUICK_ACTION_LABELS) {

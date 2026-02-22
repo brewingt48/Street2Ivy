@@ -6,15 +6,17 @@
  */
 
 import type { StudentProfileForAi, MatchDataForAi } from './types';
+import { getStudentGapContext } from '@/lib/skills-gap/coach-context';
 
 /**
  * Build the main coaching system prompt.
  * Includes student profile context and optionally match data.
  */
-export function buildCoachingSystemPrompt(
+export async function buildCoachingSystemPrompt(
   student: StudentProfileForAi,
-  matchData?: MatchDataForAi
-): string {
+  matchData?: MatchDataForAi,
+  studentId?: string
+): Promise<string> {
   const parts: string[] = [
     `You are an AI career coach for Proveground, a platform connecting students with real-world corporate projects and internship opportunities.`,
     ``,
@@ -42,6 +44,19 @@ export function buildCoachingSystemPrompt(
     parts.push(`- Match Score: ${matchData.matchScore}%`);
     parts.push(`- Matched Skills: ${matchData.matchedSkills.join(', ') || 'None'}`);
     parts.push(`- Skills to Develop: ${matchData.missingSkills.join(', ') || 'None'}`);
+  }
+
+  // Append skills gap context if available
+  try {
+    if (studentId) {
+      const gapContext = await getStudentGapContext(studentId);
+      if (gapContext) {
+        parts.push('');
+        parts.push(gapContext);
+      }
+    }
+  } catch {
+    // Non-fatal: gap context is optional enrichment
   }
 
   parts.push(``);
