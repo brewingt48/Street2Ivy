@@ -70,16 +70,26 @@ const PLAN_COLORS: Record<string, { bg: string; text: string; border: string }> 
 export default function AiFeaturesPage() {
   const [data, setData] = useState<AiFeaturesData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     fetch('/api/tenant/ai-features')
-      .then((r) => r.json())
-      .then((result) => {
+      .then(async (r) => {
+        const result = await r.json();
+        if (!r.ok) {
+          setError(result.error || 'Failed to load AI features');
+          return;
+        }
         if (result.plan) {
           setData(result);
+        } else {
+          setError('Unexpected response from server');
         }
       })
-      .catch(console.error)
+      .catch((err) => {
+        console.error(err);
+        setError('Failed to connect to server');
+      })
       .finally(() => setLoading(false));
   }, []);
 
@@ -97,9 +107,22 @@ export default function AiFeaturesPage() {
 
   if (!data) {
     return (
-      <div className="text-center py-20">
-        <Sparkles className="h-12 w-12 text-slate-300 mx-auto mb-4" />
-        <p className="text-slate-500">Unable to load AI features</p>
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-3xl font-bold text-slate-900 dark:text-white">AI Features</h1>
+          <p className="text-slate-500 dark:text-slate-400 mt-1">
+            View your institution&apos;s AI capabilities and usage
+          </p>
+        </div>
+        <Card>
+          <CardContent className="py-12 text-center">
+            <Sparkles className="h-12 w-12 text-slate-300 mx-auto mb-4" />
+            <h3 className="font-semibold text-slate-700 text-lg mb-2">Unable to Load AI Features</h3>
+            <p className="text-sm text-slate-500 max-w-md mx-auto">
+              {error || 'Could not retrieve AI feature configuration. Please try refreshing the page.'}
+            </p>
+          </CardContent>
+        </Card>
       </div>
     );
   }

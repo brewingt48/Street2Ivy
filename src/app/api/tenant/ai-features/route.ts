@@ -125,25 +125,29 @@ export async function GET() {
       };
     });
 
-    // Get usage stats for this month
-    const now = new Date();
-    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
-
-    const usageRows = await sql`
-      SELECT
-        feature,
-        COUNT(*) as count
-      FROM ai_usage_counters_v2
-      WHERE tenant_id = ${tenantId}
-        AND created_at >= ${monthStart}
-      GROUP BY feature
-    `;
-
+    // Get usage stats for this month (wrapped in try/catch for resilience)
     const usageByFeature: Record<string, number> = {};
     let totalUsage = 0;
-    for (const row of usageRows) {
-      usageByFeature[row.feature] = Number(row.count);
-      totalUsage += Number(row.count);
+    try {
+      const now = new Date();
+      const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+
+      const usageRows = await sql`
+        SELECT
+          feature,
+          COUNT(*) as count
+        FROM ai_usage_counters_v2
+        WHERE tenant_id = ${tenantId}
+          AND created_at >= ${monthStart}
+        GROUP BY feature
+      `;
+
+      for (const row of usageRows) {
+        usageByFeature[row.feature] = Number(row.count);
+        totalUsage += Number(row.count);
+      }
+    } catch {
+      // Usage table may not exist yet — non-fatal, continue with zero usage
     }
 
     // Determine monthly limit based on plan

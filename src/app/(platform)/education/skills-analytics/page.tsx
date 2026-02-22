@@ -64,8 +64,67 @@ export default function SkillsAnalyticsPage() {
 
   if (!data) {
     return (
-      <div className="text-center py-16 text-slate-400">
-        <p>Unable to load skills analytics data.</p>
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
+            <Crosshair className="h-6 w-6 text-teal-600" />
+            Skills Analytics
+          </h1>
+          <p className="text-sm text-slate-500 mt-1">
+            Institution-wide skills gap analysis and readiness metrics
+          </p>
+        </div>
+        <Card>
+          <CardContent className="py-12 text-center">
+            <AlertTriangle className="h-12 w-12 text-amber-400 mx-auto mb-4" />
+            <h3 className="font-semibold text-slate-700 text-lg mb-2">No Skills Analytics Data Available</h3>
+            <p className="text-sm text-slate-500 max-w-md mx-auto mb-4">
+              Skills analytics requires student skill gap snapshots to be generated. This happens when students are analyzed against target roles.
+            </p>
+            <div className="text-left max-w-sm mx-auto space-y-2 text-sm text-slate-500">
+              <p className="font-medium text-slate-600">To populate this dashboard:</p>
+              <ol className="list-decimal list-inside space-y-1">
+                <li>Ensure students have skills on their profiles</li>
+                <li>Create target roles with skill requirements</li>
+                <li>Run skills gap analysis for your students</li>
+              </ol>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // Show informative state when data exists but no students/snapshots
+  if (data.totalStudents === 0 && data.topGaps.length === 0 && data.topStrengths.length === 0) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
+            <Crosshair className="h-6 w-6 text-teal-600" />
+            Skills Analytics
+          </h1>
+          <p className="text-sm text-slate-500 mt-1">
+            Institution-wide skills gap analysis and readiness metrics
+          </p>
+        </div>
+        <Card>
+          <CardContent className="py-12 text-center">
+            <Crosshair className="h-12 w-12 text-slate-300 mx-auto mb-4" />
+            <h3 className="font-semibold text-slate-700 text-lg mb-2">No Skills Data Yet</h3>
+            <p className="text-sm text-slate-500 max-w-md mx-auto mb-4">
+              Skills analytics will populate once students have been analyzed against target roles. This requires skill gap snapshots to be generated.
+            </p>
+            <div className="text-left max-w-sm mx-auto space-y-2 text-sm text-slate-500">
+              <p className="font-medium text-slate-600">To get started:</p>
+              <ol className="list-decimal list-inside space-y-1">
+                <li>Ensure students have skills listed on their profiles</li>
+                <li>Define target roles with required skill sets</li>
+                <li>Skills gap analysis will run automatically</li>
+              </ol>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     );
   }
