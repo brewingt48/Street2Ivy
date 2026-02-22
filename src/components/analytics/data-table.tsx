@@ -9,8 +9,9 @@
 import { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { ExportButton } from './export-button';
-import { ChevronLeft, ChevronRight, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ArrowUpDown, ArrowUp, ArrowDown, Search } from 'lucide-react';
 import type { CsvColumn } from '@/lib/export/csv';
 
 export interface TableColumn {
@@ -29,6 +30,14 @@ interface DataTableProps {
   exportFilename?: string;
   pageSize?: number;
   onRowClick?: (row: Record<string, unknown>) => void;
+  /** Enable a search bar that filters rows across all text columns */
+  searchable?: boolean;
+  /** Placeholder for the search input */
+  searchPlaceholder?: string;
+  /** Column keys to search within (defaults to all columns) */
+  searchKeys?: string[];
+  /** Custom render function for individual cells */
+  renderCell?: (col: TableColumn, value: unknown, row: Record<string, unknown>) => React.ReactNode | undefined;
 }
 
 export function DataTable({
@@ -38,14 +47,33 @@ export function DataTable({
   exportFilename,
   pageSize = 10,
   onRowClick,
+  searchable,
+  searchPlaceholder,
+  searchKeys,
+  renderCell,
 }: DataTableProps) {
   const [page, setPage] = useState(1);
   const [sortKey, setSortKey] = useState<string | null>(null);
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
+  const [searchQuery, setSearchQuery] = useState('');
+
+  // Filter data by search query
+  const filteredData = useMemo(() => {
+    if (!searchable || !searchQuery.trim()) return data;
+    const q = searchQuery.toLowerCase();
+    const keys = searchKeys || columns.map((c) => c.key);
+    return data.filter((row) =>
+      keys.some((key) => {
+        const val = row[key];
+        if (val === null || val === undefined) return false;
+        return String(val).toLowerCase().includes(q);
+      })
+    );
+  }, [data, searchQuery, searchable, searchKeys, columns]);
 
   const sortedData = useMemo(() => {
-    if (!sortKey) return data;
-    return [...data].sort((a, b) => {
+    if (!sortKey) return filteredData;
+    return [...filteredData].sort((a, b) => {
       const av = a[sortKey];
       const bv = b[sortKey];
       if (av === null || av === undefined) return 1;
@@ -57,7 +85,7 @@ export function DataTable({
       const bs = String(bv);
       return sortDir === 'asc' ? as.localeCompare(bs) : bs.localeCompare(as);
     });
-  }, [data, sortKey, sortDir]);
+  }, [filteredData, sortKey, sortDir]);
 
   const totalPages = Math.max(1, Math.ceil(sortedData.length / pageSize));
   const start = (page - 1) * pageSize;
@@ -85,7 +113,9 @@ export function DataTable({
         <div className="flex items-center justify-between">
           <CardTitle className="text-base">{title}</CardTitle>
           <div className="flex items-center gap-2">
-            <span className="text-xs text-slate-400">{data.length} records</span>
+            <span className="text-xs text-slate-400">
+              {searchQuery ? `${filteredData.length} of ${data.length}` : data.length} records
+            </span>
             {exportFilename && (
               <ExportButton
                 data={data}
@@ -95,6 +125,17 @@ export function DataTable({
             )}
           </div>
         </div>
+        {searchable && (
+          <div className="relative mt-2">
+            <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
+            <Input
+              className="pl-9 h-9 text-sm"
+              placeholder={searchPlaceholder || 'Search...'}
+              value={searchQuery}
+              onChange={(e) => { setSearchQuery(e.target.value); setPage(1); }}
+            />
+          </div>
+        )}
       </CardHeader>
       <CardContent>
         {data.length === 0 ? (
@@ -143,7 +184,7 @@ export function DataTable({
                             col.align === 'right' ? 'text-right' : col.align === 'center' ? 'text-center' : 'text-left'
                           } ${col.className || ''}`}
                         >
-                          {col.format ? col.format(row[col.key], row) : String(row[col.key] ?? '')}
+                          {renderCell?.(col, row[col.key], row) ?? (col.format ? col.format(row[col.key], row) : String(row[col.key] ?? ''))}
                         </td>
                       ))}
                     </tr>

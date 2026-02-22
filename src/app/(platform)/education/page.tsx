@@ -345,7 +345,12 @@ export default function EducationDashboardPage() {
                         {idx + 1}
                       </div>
                       <div>
-                        <p className="text-sm font-medium">{s.name}</p>
+                        <Link
+                          href={`/education/students?q=${encodeURIComponent(s.email)}`}
+                          className="text-sm font-medium hover:text-teal-600 transition-colors"
+                        >
+                          {s.name}
+                        </Link>
                         <p className="text-xs text-slate-400">{s.email}</p>
                       </div>
                     </div>
@@ -396,7 +401,12 @@ export default function EducationDashboardPage() {
               {recentStudents.map((s) => (
                 <div key={s.id} className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium">{s.name}</p>
+                    <Link
+                      href={`/education/students?q=${encodeURIComponent(s.email)}`}
+                      className="text-sm font-medium hover:text-teal-600 transition-colors"
+                    >
+                      {s.name}
+                    </Link>
                     <p className="text-xs text-slate-400">{s.email}</p>
                   </div>
                   {s.university && <Badge variant="outline" className="text-xs">{s.university}</Badge>}

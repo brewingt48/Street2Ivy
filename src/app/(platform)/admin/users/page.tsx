@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { csrfFetch } from '@/lib/security/csrf-fetch';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -61,9 +62,11 @@ const approvalColors: Record<string, string> = {
 };
 
 export default function AdminUsersPage() {
+  const searchParams = useSearchParams();
+  const initialQuery = searchParams.get('q') || '';
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
-  const [query, setQuery] = useState('');
+  const [query, setQuery] = useState(initialQuery);
   const [roleFilter, setRoleFilter] = useState('');
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);

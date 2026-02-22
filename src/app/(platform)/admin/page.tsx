@@ -227,7 +227,12 @@ export default function AdminDashboardPage() {
               {recentUsers.map((u) => (
                 <div key={u.id as string} className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium">{u.name as string}</p>
+                    <Link
+                      href={`/admin/users?q=${encodeURIComponent(u.email as string)}`}
+                      className="text-sm font-medium hover:text-teal-600 transition-colors"
+                    >
+                      {u.name as string}
+                    </Link>
                     <p className="text-xs text-slate-400">{u.email as string}</p>
                   </div>
                   <Badge variant="outline" className="text-xs">{(u.role as string).replace('_', ' ')}</Badge>

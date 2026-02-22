@@ -12,6 +12,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { DateRangePicker } from '@/components/analytics/date-range-picker';
@@ -56,6 +57,7 @@ interface AnalyticsData {
 }
 
 export default function EducationAnalyticsPage() {
+  const router = useRouter();
   const [range, setRange] = useState<RangeKey>('30d');
   const [data, setData] = useState<AnalyticsData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -202,6 +204,24 @@ export default function EducationAnalyticsPage() {
           columns={studentColumns}
           exportFilename={`student-performance-${range}`}
           pageSize={15}
+          searchable
+          searchPlaceholder="Search students by name, email, or university..."
+          searchKeys={['name', 'email', 'university']}
+          onRowClick={(row) => router.push(`/education/students?q=${encodeURIComponent(row.email as string)}`)}
+          renderCell={(col, value, row) => {
+            if (col.key === 'name') {
+              return (
+                <Link
+                  href={`/education/students?q=${encodeURIComponent(row.email as string)}`}
+                  className="text-sm font-medium text-slate-900 dark:text-white hover:text-teal-600 dark:hover:text-teal-400 transition-colors"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  {value as string}
+                </Link>
+              );
+            }
+            return undefined;
+          }}
         />
       </div>
 
@@ -218,6 +238,9 @@ export default function EducationAnalyticsPage() {
             columns={corpColumns}
             exportFilename={`corporate-partners-${range}`}
             pageSize={10}
+            searchable
+            searchPlaceholder="Search partners..."
+            searchKeys={['name']}
           />
         </div>
       )}
