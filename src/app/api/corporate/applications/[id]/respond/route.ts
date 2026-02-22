@@ -5,6 +5,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { sql } from '@/lib/db';
 import { getCurrentSession } from '@/lib/auth/middleware';
+import { evaluateAfterProjectCompletion } from '@/lib/portfolio/badges';
 import { z } from 'zod';
 import crypto from 'crypto';
 
@@ -172,6 +173,37 @@ export async function POST(
             ${JSON.stringify({ applicationId: params.id, listingTitle: app.listing_title })}::jsonb
           )
         `;
+
+        // --- Post-completion hook: skill verification & badge evaluation ---
+        try {
+          const appDetails = await sql`SELECT listing_id FROM project_applications WHERE id = ${params.id}`;
+          if (appDetails.length > 0) {
+            const listingId = appDetails[0].listing_id as string;
+            const listings = await sql`SELECT skills_required FROM listings WHERE id = ${listingId}`;
+            if (listings.length > 0) {
+              const skillsRequired = (listings[0].skills_required || []) as Array<string | { name: string }>;
+              for (const skill of skillsRequired) {
+                const skillName = typeof skill === 'string' ? skill : skill.name;
+                if (!skillName) continue;
+                const skillRows = await sql`SELECT id FROM skills WHERE LOWER(name) = LOWER(${skillName})`;
+                if (skillRows.length > 0) {
+                  const skillId = skillRows[0].id as string;
+                  await sql`
+                    INSERT INTO user_skills (user_id, skill_id, proficiency_level, verification_source, project_id, verified_at, updated_at)
+                    VALUES (${app.student_id}, ${skillId}, 3, 'project_completion', ${listingId}, NOW(), NOW())
+                    ON CONFLICT (user_id, skill_id)
+                    DO UPDATE SET verification_source = 'project_completion', project_id = ${listingId}, verified_at = NOW(), updated_at = NOW()
+                  `;
+                }
+              }
+            }
+            // Evaluate badges
+            await evaluateAfterProjectCompletion(app.student_id as string, listingId);
+          }
+        } catch (hookError) {
+          console.error('Post-completion hook error (non-fatal):', hookError);
+        }
+
         break;
       }
     }
