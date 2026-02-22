@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
-import { motion, useInView } from 'framer-motion';
+import { useState, useEffect, useRef, useCallback } from 'react';
+import { motion, useInView, AnimatePresence } from 'framer-motion';
 import {
   Search,
   Sparkles,
@@ -60,6 +60,7 @@ interface Tenant {
   hero_video_poster_url: string | null;
   hero_headline: string | null;
   hero_subheadline: string | null;
+  hero_carousel: { images?: Array<{ src: string; alt: string }>; intervalMs?: number } | null;
   gallery_images: unknown[];
   social_links: SocialLinks | null;
   about_content: string | null;
@@ -89,10 +90,17 @@ interface Partner {
   alumni_bio: string | null;
 }
 
+interface LegalPolicy {
+  title: string;
+  slug: string;
+  scope: string;
+}
+
 interface LandingPageClientProps {
   tenant: Tenant;
   stats: Stats;
   partners: Partner[];
+  legalPolicies?: LegalPolicy[];
 }
 
 /* --- Animation helpers --- */
@@ -108,16 +116,24 @@ const stagger = {
 
 /* --- Component --- */
 
-export function LandingPageClient({ tenant, stats, partners }: LandingPageClientProps) {
+export function LandingPageClient({ tenant, stats, partners, legalPolicies = [] }: LandingPageClientProps) {
   const branding = tenant.branding ?? {};
   const primary = branding.primaryColor ?? '#0f766e';
   const secondary = branding.secondaryColor ?? '#f8fafc';
+  const logoUrl = branding.logoUrl ?? null;
   const socialLinks = tenant.social_links ?? {};
   const contactInfo = tenant.contact_info ?? {};
 
   const displayName = tenant.display_name ?? tenant.name;
   const sportName = tenant.sport ?? 'Athletics';
   const teamName = tenant.team_name ?? displayName;
+
+  /* Enterprise customization: section visibility & custom text */
+  const sv = (branding as Record<string, unknown>).sectionVisibility as Record<string, boolean> | undefined;
+  const sectionVisible = (key: string) => !sv || sv[key] !== false;
+  const ctaHeadline = ((branding as Record<string, unknown>).ctaHeadline as string) || '';
+  const ctaSubheadline = ((branding as Record<string, unknown>).ctaSubheadline as string) || '';
+  const footerText = ((branding as Record<string, unknown>).footerText as string) || '';
 
   /* Build a compelling default headline using the team name */
   const defaultHeadline = `${teamName}. Where Champions Are Made — On and Off the Field.`;
@@ -129,6 +145,23 @@ export function LandingPageClient({ tenant, stats, partners }: LandingPageClient
   const studentCount = Number(stats.student_count) || 0;
   const listingCount = Number(stats.listing_count) || 0;
   const partnerCount = Number(stats.partner_count) || 0;
+
+  /* --- Hero carousel --- */
+  const carousel = tenant.hero_carousel;
+  const carouselImages = carousel?.images && carousel.images.length > 0 ? carousel.images : null;
+  const carouselInterval = carousel?.intervalMs ?? 5000;
+  const [currentSlide, setCurrentSlide] = useState(0);
+
+  const nextSlide = useCallback(() => {
+    if (!carouselImages) return;
+    setCurrentSlide((prev) => (prev + 1) % carouselImages.length);
+  }, [carouselImages]);
+
+  useEffect(() => {
+    if (!carouselImages || carouselImages.length <= 1) return;
+    const timer = setInterval(nextSlide, carouselInterval);
+    return () => clearInterval(timer);
+  }, [carouselImages, carouselInterval, nextSlide]);
 
   /* --- Social icon map --- */
   function socialIcon(key: string) {
@@ -147,6 +180,41 @@ export function LandingPageClient({ tenant, stats, partners }: LandingPageClient
   return (
     <div className="min-h-screen bg-white text-gray-900 overflow-x-hidden">
       {/* ================================================================
+          TOP NAV BAR (logo + institution name)
+         ================================================================ */}
+      <nav
+        className="sticky top-0 z-50 backdrop-blur-md border-b"
+        style={{ backgroundColor: `${primary}f0`, borderColor: `${primary}40` }}
+      >
+        <div className="max-w-6xl mx-auto px-6 py-3 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            {logoUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={logoUrl} alt={`${displayName} logo`} className="h-8 object-contain" />
+            ) : (
+              <span className="text-lg font-bold" style={{ color: secondary }}>
+                {displayName}
+              </span>
+            )}
+            {logoUrl && (
+              <span className="text-sm font-medium hidden sm:inline" style={{ color: `${secondary}cc` }}>
+                {displayName}
+              </span>
+            )}
+          </div>
+          <div className="flex items-center gap-4">
+            <a
+              href={`/register?tenant=${tenant.subdomain}&role=student`}
+              className="text-sm font-medium px-4 py-1.5 rounded-lg transition-all hover:scale-105"
+              style={{ backgroundColor: secondary, color: primary }}
+            >
+              Get Started
+            </a>
+          </div>
+        </div>
+      </nav>
+
+      {/* ================================================================
           SECTION 1 -- HERO
          ================================================================ */}
       <section
@@ -155,26 +223,47 @@ export function LandingPageClient({ tenant, stats, partners }: LandingPageClient
           background: `linear-gradient(135deg, ${primary} 0%, ${primary}dd 50%, ${primary}aa 100%)`,
         }}
       >
-        {/* Video background (if provided) */}
-        {tenant.hero_video_url && (
-          <video
-            autoPlay
-            muted
-            loop
-            playsInline
-            poster={tenant.hero_video_poster_url ?? undefined}
-            className="absolute inset-0 w-full h-full object-cover opacity-30"
-          >
-            <source src={tenant.hero_video_url} type="video/mp4" />
-          </video>
-        )}
+        {/* Carousel background (multiple rotating images) */}
+        {carouselImages ? (
+          <div className="absolute inset-0">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={currentSlide}
+                initial={{ opacity: 0, scale: 1.02 }}
+                animate={{ opacity: 1, scale: 1.08 }}
+                exit={{ opacity: 0 }}
+                transition={{ opacity: { duration: 0.6 }, scale: { duration: 4, ease: 'linear' } }}
+                className="absolute inset-0 bg-cover bg-center opacity-40"
+                style={{ backgroundImage: `url(${carouselImages[currentSlide].src})` }}
+                role="img"
+                aria-label={carouselImages[currentSlide].alt}
+              />
+            </AnimatePresence>
+          </div>
+        ) : (
+          <>
+            {/* Video background (if provided) */}
+            {tenant.hero_video_url && (
+              <video
+                autoPlay
+                muted
+                loop
+                playsInline
+                poster={tenant.hero_video_poster_url ?? undefined}
+                className="absolute inset-0 w-full h-full object-cover opacity-30"
+              >
+                <source src={tenant.hero_video_url} type="video/mp4" />
+              </video>
+            )}
 
-        {/* Image background (if no video but poster/image provided) */}
-        {!tenant.hero_video_url && tenant.hero_video_poster_url && (
-          <div
-            className="absolute inset-0 w-full h-full bg-cover bg-center bg-no-repeat opacity-40"
-            style={{ backgroundImage: `url(${tenant.hero_video_poster_url})` }}
-          />
+            {/* Image background (if no video but poster/image provided) */}
+            {!tenant.hero_video_url && tenant.hero_video_poster_url && (
+              <div
+                className="absolute inset-0 w-full h-full bg-cover bg-center bg-no-repeat opacity-40"
+                style={{ backgroundImage: `url(${tenant.hero_video_poster_url})` }}
+              />
+            )}
+          </>
         )}
 
         {/* Overlay gradient */}
@@ -256,6 +345,25 @@ export function LandingPageClient({ tenant, stats, partners }: LandingPageClient
           </motion.div>
 
         </motion.div>
+
+        {/* Carousel dot indicators */}
+        {carouselImages && carouselImages.length > 1 && (
+          <div className="absolute bottom-6 right-6 flex gap-1.5 z-10">
+            {carouselImages.map((_, i) => (
+              <button
+                key={i}
+                onClick={() => setCurrentSlide(i)}
+                aria-label={`Go to slide ${i + 1}`}
+                className={`h-1.5 rounded-full transition-all duration-300 ${
+                  i === currentSlide ? 'w-5' : 'w-1.5 hover:opacity-75'
+                }`}
+                style={{
+                  backgroundColor: i === currentSlide ? secondary : `${secondary}50`,
+                }}
+              />
+            ))}
+          </div>
+        )}
       </section>
 
       {/* ================================================================
@@ -295,7 +403,7 @@ export function LandingPageClient({ tenant, stats, partners }: LandingPageClient
       {/* ================================================================
           SECTION 3 -- THE COMPETITIVE LOOP (4-step flow)
          ================================================================ */}
-      <section className="py-20 px-6">
+      {sectionVisible('competitiveLoop') && <section className="py-20 px-6">
         <div className="max-w-6xl mx-auto">
           <motion.div
             initial="hidden"
@@ -410,12 +518,12 @@ export function LandingPageClient({ tenant, stats, partners }: LandingPageClient
             Proveground is a matching and discovery platform. All work, contracts, and payments are arranged directly between participants, outside the platform.
           </motion.p>
         </div>
-      </section>
+      </section>}
 
       {/* ================================================================
           SECTION 4 -- VALUE PROPOSITION CARDS
          ================================================================ */}
-      <section className="py-20 px-6 bg-gray-50">
+      {sectionVisible('valueProps') && <section className="py-20 px-6 bg-gray-50">
         <div className="max-w-6xl mx-auto">
           <motion.div
             initial="hidden"
@@ -497,24 +605,26 @@ export function LandingPageClient({ tenant, stats, partners }: LandingPageClient
               </div>
               <h3 className="text-xl font-semibold mb-3">For Programs</h3>
               <p className="text-gray-500 leading-relaxed mb-4">
-                Lead with vision. Launch a branded talent marketplace powered by Proveground&apos;s proprietary <strong>Match Engine&trade;</strong> &mdash; connecting your students to the right opportunities across the network, schedule-aware and data-driven.
+                Lead with vision. Launch a branded talent engine powered by Proveground&apos;s proprietary <strong>Match Engine&trade;</strong> &mdash; connecting your students to the right opportunities across the network, schedule-aware and data-driven.
               </p>
               <a
-                href="/for-universities"
+                href="https://calendly.com/proveground/demo"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="inline-flex items-center gap-1 text-sm font-semibold transition-colors"
                 style={{ color: primary }}
               >
-                Learn More <ArrowRight className="h-4 w-4" />
+                Schedule a Demo <ArrowRight className="h-4 w-4" />
               </a>
             </motion.div>
           </motion.div>
         </div>
-      </section>
+      </section>}
 
       {/* ================================================================
           SECTION 5 -- ALUMNI PARTNERS SHOWCASE
          ================================================================ */}
-      {partners.length > 0 && (
+      {sectionVisible('alumniPartners') && partners.length > 0 && (
         <section className="py-20 px-6">
           <div className="max-w-6xl mx-auto">
             <motion.div
@@ -612,7 +722,7 @@ export function LandingPageClient({ tenant, stats, partners }: LandingPageClient
       {/* ================================================================
           SECTION 6 -- ABOUT
          ================================================================ */}
-      {tenant.about_content && (
+      {sectionVisible('about') && tenant.about_content && (
         <section className="py-20 px-6">
           <div className="max-w-3xl mx-auto text-center">
             <motion.div
@@ -638,7 +748,7 @@ export function LandingPageClient({ tenant, stats, partners }: LandingPageClient
       {/* ================================================================
           SECTION 6.5 -- PHOTO GALLERY
          ================================================================ */}
-      {Array.isArray(tenant.gallery_images) && tenant.gallery_images.length > 0 && (
+      {sectionVisible('gallery') && Array.isArray(tenant.gallery_images) && tenant.gallery_images.length > 0 && (
         <section className="py-20 px-6 bg-gray-50">
           <div className="max-w-6xl mx-auto">
             <motion.div
@@ -677,7 +787,7 @@ export function LandingPageClient({ tenant, stats, partners }: LandingPageClient
       {/* ================================================================
           SECTION 7 -- SOCIAL LINKS + CONTACT
          ================================================================ */}
-      {(Object.keys(socialLinks).length > 0 || contactInfo.email || contactInfo.phone) && (
+      {sectionVisible('socialContact') && (Object.keys(socialLinks).length > 0 || contactInfo.email || contactInfo.phone) && (
         <section className="py-12 px-6 bg-gray-50 border-t border-gray-200">
           <div className="max-w-3xl mx-auto flex flex-col sm:flex-row items-center justify-center gap-6">
             {/* Social icons */}
@@ -723,14 +833,14 @@ export function LandingPageClient({ tenant, stats, partners }: LandingPageClient
       {/* ================================================================
           SECTION 8 -- AI COACHING (feature-gated)
          ================================================================ */}
-      {!!tenant.features?.aiCoaching && (
+      {sectionVisible('aiCoaching') && !!tenant.features?.aiCoaching && (
         <AICoachingSection primary={primary} subdomain={tenant.subdomain} />
       )}
 
       {/* ================================================================
           SECTION 8.5 -- NETWORK ECOSYSTEM
          ================================================================ */}
-      <section className="py-20 px-6 bg-white">
+      {sectionVisible('networkEcosystem') && <section className="py-20 px-6 bg-white">
         <div className="max-w-6xl mx-auto">
           <motion.div
             initial="hidden"
@@ -748,7 +858,7 @@ export function LandingPageClient({ tenant, stats, partners }: LandingPageClient
             >
               {displayName} is part of the Proveground ecosystem &mdash; a unified talent network
               where institutions, alumni, and industry partners share opportunities and grow
-              together. Your marketplace is live. The network is working for you.
+              together. Your talent engine is live. The network is working for you.
             </motion.p>
           </motion.div>
 
@@ -772,7 +882,7 @@ export function LandingPageClient({ tenant, stats, partners }: LandingPageClient
               </div>
               <h3 className="text-xl font-semibold mb-3">Exclusive Opportunities</h3>
               <p className="text-gray-500 leading-relaxed">
-                Your marketplace is private to your program. Listings are visible only to your students, vetted by your team. Quality and trust, by design.
+                Your talent engine is private to your program. Listings are visible only to your students, vetted by your team. Quality and trust, by design.
               </p>
             </motion.div>
 
@@ -835,7 +945,7 @@ export function LandingPageClient({ tenant, stats, partners }: LandingPageClient
             ))}
           </motion.div>
         </div>
-      </section>
+      </section>}
 
       {/* ================================================================
           SECTION 9 -- CTA FOOTER
@@ -858,15 +968,14 @@ export function LandingPageClient({ tenant, stats, partners }: LandingPageClient
             className="text-3xl sm:text-4xl font-bold mb-4"
             style={{ color: secondary }}
           >
-            This is your ground.
+            {ctaHeadline || 'This is your ground.'}
           </motion.h2>
           <motion.p
             variants={fadeUp}
             className="text-lg mb-10 max-w-xl mx-auto"
             style={{ color: `${secondary}bb` }}
           >
-            Where talent is proven, not presumed. Students, partners, and programs
-            building the future &mdash; together.
+            {ctaSubheadline || 'Where talent is proven, not presumed. Students, partners, and programs building the future \u2014 together.'}
           </motion.p>
 
           <motion.div variants={fadeUp} className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -893,16 +1002,35 @@ export function LandingPageClient({ tenant, stats, partners }: LandingPageClient
       {/* ================================================================
           FOOTER
          ================================================================ */}
-      <footer className="py-8 px-6 bg-gray-900 text-gray-400 text-center text-sm">
-        <p>
-          &copy; {new Date().getFullYear()} {displayName}. Powered by{' '}
-          <a
-            href="/"
-            className="text-white hover:underline"
-          >
-            Proveground
-          </a>
-        </p>
+      <footer className="py-8 px-6 bg-gray-900 text-gray-400 text-sm">
+        <div className="max-w-7xl mx-auto flex flex-col items-center gap-3">
+          {legalPolicies.length > 0 && (
+            <div className="flex flex-wrap items-center justify-center gap-4">
+              {legalPolicies.map((p) => (
+                <a
+                  key={`${p.scope}-${p.slug}`}
+                  href={p.scope === 'platform' ? `/legal/${p.slug}` : `/${tenant.subdomain}/legal/${p.slug}`}
+                  className="hover:text-white transition-colors"
+                >
+                  {p.title}
+                </a>
+              ))}
+            </div>
+          )}
+          {footerText ? (
+            <p>{footerText}</p>
+          ) : (
+            <p>
+              &copy; {new Date().getFullYear()} {displayName}. Powered by{' '}
+              <a
+                href="/"
+                className="text-white hover:underline"
+              >
+                Proveground
+              </a>
+            </p>
+          )}
+        </div>
       </footer>
     </div>
   );

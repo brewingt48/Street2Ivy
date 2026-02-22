@@ -39,7 +39,7 @@ export function emailShell(options: {
   <div class="container">
     <div class="card">
       <div class="header">
-        <a href="${process.env.NEXT_PUBLIC_APP_URL || 'https://street2ivy-dev-c54ffcb26038.herokuapp.com'}" class="logo">Proveground</a>
+        <a href="${process.env.NEXT_PUBLIC_APP_URL || 'https://proveground.com'}" class="logo">Proveground</a>
       </div>
       <div class="body">
         ${body}

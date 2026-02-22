@@ -21,6 +21,7 @@ export async function GET() {
     const features = tenantId ? await getTenantFeatures(tenantId) : {};
     const hasAdvancedReporting = !tenantId || checkFeature(features, 'advancedReporting');
     const hasStudentRatings = !tenantId || checkFeature(features, 'studentRatings');
+    const hasTeamHuddle = !tenantId || checkFeature(features, 'teamHuddle');
 
     // All queries scoped by tenant_id
     const totalStudents = await sql`
@@ -41,11 +42,6 @@ export async function GET() {
       JOIN users u ON u.id = pa.student_id
       WHERE pa.status = 'completed'
         ${tenantId ? sql`AND u.tenant_id = ${tenantId}` : sql``}
-    `;
-
-    const waitlistCount = await sql`
-      SELECT COUNT(*) as count FROM student_waitlist
-      WHERE contacted = false
     `;
 
     // Average student performance rating (gated by studentRatings feature)
@@ -94,7 +90,6 @@ export async function GET() {
         totalStudents: parseInt(totalStudents[0].count as string),
         activeProjects: parseInt(activeProjects[0].count as string),
         completedProjects: parseInt(completedProjects[0].count as string),
-        waitlistCount: parseInt(waitlistCount[0].count as string),
         avgStudentRating: hasStudentRatings && avgPerformance[0]?.avg_rating ? Number(avgPerformance[0].avg_rating) : null,
         totalStudentRatings: hasStudentRatings ? (parseInt(avgPerformance[0]?.total_ratings as string) || 0) : 0,
         ratedStudents: hasStudentRatings ? (parseInt(avgPerformance[0]?.rated_students as string) || 0) : 0,
@@ -102,6 +97,7 @@ export async function GET() {
       features: {
         advancedReporting: hasAdvancedReporting,
         studentRatings: hasStudentRatings,
+        teamHuddle: hasTeamHuddle,
       },
       recentStudents: recentStudents.map((s: Record<string, unknown>) => ({
         id: s.id,

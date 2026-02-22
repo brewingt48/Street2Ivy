@@ -97,10 +97,6 @@ export function middleware(request: NextRequest) {
   const subdomain = extractSubdomain(hostname);
   const defaultTenantId = process.env.TENANT_ID || '';
 
-  if (subdomain) {
-    response.headers.set('x-tenant-subdomain', subdomain);
-  }
-
   response.headers.set('x-tenant-id', defaultTenantId);
   response.headers.set('x-tenant-subdomain', subdomain || 'proveground');
 

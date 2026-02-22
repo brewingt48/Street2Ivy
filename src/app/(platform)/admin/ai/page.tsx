@@ -8,6 +8,7 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
+import { csrfFetch } from '@/lib/security/csrf-fetch';
 import {
   Card,
   CardContent,
@@ -252,7 +253,7 @@ export default function AdminAiPage() {
       if (overrideLimit !== '') aiConfig.maxMonthlyUses = Number(overrideLimit);
       if (overrideFeatures.length > 0) aiConfig.features = overrideFeatures;
 
-      const res = await fetch('/api/admin/ai/config', {
+      const res = await csrfFetch('/api/admin/ai/config', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ tenantId: editingTenant, aiConfig }),

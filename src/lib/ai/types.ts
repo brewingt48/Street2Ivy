@@ -17,6 +17,9 @@ export type AiFeature =
   | 'match_insights'
   | 'diff_view'
   | 'project_scoping'
+  | 'candidate_screening'
+  | 'listing_optimizer'
+  | 'talent_discovery'
   | 'portfolio_intelligence'
   | 'talent_insights';
 
@@ -166,6 +169,7 @@ export interface AiAccessResult {
 export type AiFeatureKey =
   | 'student_coaching'
   | 'project_scoping'
+  | 'candidate_screening'
   | 'portfolio_intelligence'
   | 'talent_insights'
   | 'institutional_analytics';

@@ -9,6 +9,7 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
+import { csrfFetch } from '@/lib/security/csrf-fetch';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -298,7 +299,7 @@ export default function TiersPage() {
         },
       };
 
-      const res = await fetch(`/api/admin/tiers/${editingTier.id}`, {
+      const res = await csrfFetch(`/api/admin/tiers/${editingTier.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),

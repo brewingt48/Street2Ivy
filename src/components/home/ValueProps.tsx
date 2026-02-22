@@ -20,7 +20,7 @@ const cards = [
   {
     icon: Building2,
     headline: 'Lead with vision.',
-    body: 'Launch a fully branded talent marketplace powered by Proveground\u2019s proprietary Match Engine\u2122 \u2014 connecting your students to the right opportunities across the entire network. Schedule-aware, skill-matched, and data-driven.',
+    body: 'Launch a fully branded talent engine powered by Proveground\u2019s proprietary Match Engine\u2122 \u2014 connecting your students to the right opportunities across the entire network. Schedule-aware, skill-matched, and data-driven.',
     label: 'For Programs',
   },
 ];

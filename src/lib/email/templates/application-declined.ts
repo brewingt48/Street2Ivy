@@ -21,7 +21,7 @@ export function applicationDeclinedEmail(data: {
         <p>After careful consideration, they have decided to move forward with other candidates for this project.</p>
         <p>Don't be discouraged — there are many more opportunities waiting for you on Proveground!</p>
         <p style="text-align: center; margin: 24px 0;">
-          <a href="${process.env.NEXT_PUBLIC_APP_URL || 'https://street2ivy-dev-c54ffcb26038.herokuapp.com'}/projects" class="btn">Browse Projects</a>
+          <a href="${process.env.NEXT_PUBLIC_APP_URL || 'https://proveground.com'}/projects" class="btn">Browse Projects</a>
         </p>
       `,
     }),

@@ -9,6 +9,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { csrfFetch } from '@/lib/security/csrf-fetch';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -127,7 +128,7 @@ export default function NewTenantPage() {
     setCreating(true);
     setError('');
     try {
-      const res = await fetch('/api/admin/tenants', {
+      const res = await csrfFetch('/api/admin/tenants', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -469,7 +470,7 @@ export default function NewTenantPage() {
 
               {/* Athletic Program Toggle */}
               <div className="border-t pt-5 space-y-4">
-                <Label className="text-sm font-medium text-slate-700">Marketplace Type</Label>
+                <Label className="text-sm font-medium text-slate-700">Tenant Type</Label>
                 <div className="grid grid-cols-2 gap-3">
                   {[
                     { value: 'institution' as const, label: 'Standard Institution', desc: 'University, college, or training program', icon: Building2 },
@@ -704,7 +705,7 @@ export default function NewTenantPage() {
                     </div>
                   </div>
                   <div>
-                    <Label className="text-xs text-slate-500 uppercase tracking-wider">Marketplace Type</Label>
+                    <Label className="text-xs text-slate-500 uppercase tracking-wider">Tenant Type</Label>
                     <p className="text-slate-700 capitalize flex items-center gap-2">
                       {marketplaceType === 'athletic' ? (
                         <>

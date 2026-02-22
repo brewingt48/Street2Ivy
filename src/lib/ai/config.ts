@@ -30,7 +30,7 @@ export const AI_TIER_CONFIGS: Record<string, AiTierConfig> = {
   professional: {
     model: 'claude-sonnet-4-20250514',
     maxMonthlyUses: 50,
-    features: ['coaching', 'match_insights', 'diff_view', 'project_scoping'],
+    features: ['coaching', 'match_insights', 'diff_view', 'project_scoping', 'candidate_screening', 'listing_optimizer', 'talent_discovery'],
   },
   enterprise: {
     model: 'claude-sonnet-4-20250514',
@@ -40,6 +40,9 @@ export const AI_TIER_CONFIGS: Record<string, AiTierConfig> = {
       'match_insights',
       'diff_view',
       'project_scoping',
+      'candidate_screening',
+      'listing_optimizer',
+      'talent_discovery',
       'portfolio_intelligence',
       'talent_insights',
     ],

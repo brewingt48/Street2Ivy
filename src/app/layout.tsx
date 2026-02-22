@@ -23,7 +23,7 @@ export const metadata: Metadata = {
   title: 'Proveground — Where Talent Is Proven',
   description:
     'Proveground connects high-performing students with alumni and corporate partners through real internships and project work.',
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://street2ivy-dev-c54ffcb26038.herokuapp.com'),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://proveground.com'),
   openGraph: {
     title: 'Proveground — Where Talent Is Proven',
     description: 'Where talent is proven, not presumed. Real internships, real projects, real reputation.',

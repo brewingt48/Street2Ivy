@@ -8,6 +8,7 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
+import { csrfFetch } from '@/lib/security/csrf-fetch';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -40,6 +41,10 @@ import {
   Share2,
   Phone,
   X,
+  Upload,
+  Eye,
+  EyeOff,
+  Paintbrush,
 } from 'lucide-react';
 
 interface TenantSettings {
@@ -111,6 +116,21 @@ export default function EducationSettingsPage() {
   const [brandingSaving, setBrandingSaving] = useState(false);
   const [brandingMsg, setBrandingMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
+  // Enterprise customization state — section visibility & custom text
+  const [ctaHeadlineCustom, setCtaHeadlineCustom] = useState('');
+  const [ctaSubheadlineCustom, setCtaSubheadlineCustom] = useState('');
+  const [footerText, setFooterText] = useState('');
+  const [sectionVisibility, setSectionVisibility] = useState<Record<string, boolean>>({
+    competitiveLoop: true,
+    valueProps: true,
+    alumniPartners: true,
+    about: true,
+    gallery: true,
+    socialContact: true,
+    aiCoaching: true,
+    networkEcosystem: true,
+  });
+
   const fetchSettings = useCallback(async () => {
     try {
       const res = await fetch('/api/education/settings');
@@ -160,6 +180,13 @@ export default function EducationSettingsPage() {
           setAboutContent(data.branding.aboutContent || '');
           setSocialLinks(data.branding.socialLinks || {});
           setContactInfo(data.branding.contactInfo || {});
+          // Enterprise fields
+          setCtaHeadlineCustom(data.branding.ctaHeadline || '');
+          setCtaSubheadlineCustom(data.branding.ctaSubheadline || '');
+          setFooterText(data.branding.footerText || '');
+          if (data.branding.sectionVisibility) {
+            setSectionVisibility((prev) => ({ ...prev, ...data.branding.sectionVisibility }));
+          }
         }
       })
       .catch(console.error);
@@ -186,7 +213,7 @@ export default function EducationSettingsPage() {
     setSaved(false);
     setError('');
     try {
-      const res = await fetch('/api/education/settings', {
+      const res = await csrfFetch('/api/education/settings', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -280,6 +307,31 @@ export default function EducationSettingsPage() {
         </div>
       )}
 
+      {/* Quick Actions */}
+      {canCustomize && (
+        <Card>
+          <CardContent className="py-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="h-10 w-10 rounded-lg bg-teal-50 dark:bg-teal-900/30 flex items-center justify-center">
+                  <Image className="h-5 w-5 text-teal-600" />
+                </div>
+                <div>
+                  <p className="font-medium text-sm text-slate-900 dark:text-white">Hero Carousel</p>
+                  <p className="text-xs text-slate-500">Add rotating background images to your landing page hero</p>
+                </div>
+              </div>
+              <a href="/education/settings/carousel">
+                <Button variant="outline" size="sm">
+                  Manage Carousel
+                  <ExternalLink className="h-3.5 w-3.5 ml-1.5" />
+                </Button>
+              </a>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Left: Settings */}
         <div className="space-y-6">
@@ -307,7 +359,7 @@ export default function EducationSettingsPage() {
                 <Input
                   value={tagline}
                   onChange={(e) => setTagline(e.target.value)}
-                  placeholder="From Campus to Career"
+                  placeholder="Your institution's tagline"
                   disabled={!canCustomize}
                 />
               </div>
@@ -317,7 +369,7 @@ export default function EducationSettingsPage() {
                 <textarea
                   value={welcomeMessage}
                   onChange={(e) => setWelcomeMessage(e.target.value)}
-                  placeholder="Welcome to our Proveground portal! Explore paid project opportunities with top companies..."
+                  placeholder="Welcome to our Proveground portal! Explore real-world project opportunities with corporate partners..."
                   rows={3}
                   disabled={!canCustomize}
                   className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
@@ -374,14 +426,71 @@ export default function EducationSettingsPage() {
               </div>
 
               <div className="space-y-2">
-                <Label>Logo URL</Label>
-                <Input
-                  value={logoUrl}
-                  onChange={(e) => setLogoUrl(e.target.value)}
-                  placeholder="https://your-school.edu/logo.png"
-                  disabled={!canCustomize}
-                />
-                <p className="text-xs text-slate-400">Recommended: 200x60 PNG with transparent background</p>
+                <Label>Logo</Label>
+                {/* Logo preview */}
+                {logoUrl && (
+                  <div className="rounded-lg border border-slate-200 dark:border-slate-700 p-4 bg-slate-50 dark:bg-slate-800/50 flex items-center justify-center">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={logoUrl} alt="Logo preview" className="max-h-16 object-contain" />
+                  </div>
+                )}
+                {/* File upload */}
+                <div className="flex items-center gap-2">
+                  <label
+                    className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-md border-2 border-dashed text-sm font-medium transition-colors cursor-pointer ${
+                      canCustomize
+                        ? 'border-teal-300 text-teal-700 hover:bg-teal-50 dark:border-teal-600 dark:text-teal-400 dark:hover:bg-teal-900/20'
+                        : 'border-slate-200 text-slate-400 cursor-not-allowed'
+                    }`}
+                  >
+                    <Upload className="h-4 w-4" />
+                    Upload Logo
+                    <input
+                      type="file"
+                      accept="image/png,image/jpeg,image/webp,image/svg+xml"
+                      className="hidden"
+                      disabled={!canCustomize}
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (!file) return;
+                        if (file.size > 2 * 1024 * 1024) {
+                          setError('Logo file must be under 2MB');
+                          return;
+                        }
+                        const reader = new FileReader();
+                        reader.onload = () => {
+                          if (typeof reader.result === 'string') {
+                            setLogoUrl(reader.result);
+                          }
+                        };
+                        reader.readAsDataURL(file);
+                      }}
+                    />
+                  </label>
+                  {logoUrl && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                      onClick={() => setLogoUrl('')}
+                      disabled={!canCustomize}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
+                {/* URL fallback */}
+                <details className="text-xs">
+                  <summary className="text-slate-400 cursor-pointer hover:text-slate-600">Or paste a URL instead</summary>
+                  <Input
+                    value={logoUrl.startsWith('data:') ? '' : logoUrl}
+                    onChange={(e) => setLogoUrl(e.target.value)}
+                    placeholder="https://your-school.edu/logo.png"
+                    disabled={!canCustomize}
+                    className="mt-1"
+                  />
+                </details>
+                <p className="text-xs text-slate-400">Recommended: 200x60 PNG with transparent background. Max 2MB.</p>
               </div>
             </CardContent>
           </Card>
@@ -577,7 +686,7 @@ export default function EducationSettingsPage() {
                 setContentSaving(true);
                 setContentMsg(null);
                 try {
-                  const res = await fetch('/api/education/content', {
+                  const res = await csrfFetch('/api/education/content', {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -630,7 +739,7 @@ export default function EducationSettingsPage() {
               <Input
                 value={tenantHeroTagline}
                 onChange={(e) => setTenantHeroTagline(e.target.value)}
-                placeholder="From Campus to Career"
+                placeholder="Your institution's tagline"
                 className="mt-1"
               />
             </div>
@@ -662,7 +771,7 @@ export default function EducationSettingsPage() {
               <Input
                 value={tenantCtaHeadline}
                 onChange={(e) => setTenantCtaHeadline(e.target.value)}
-                placeholder="Ready to Bridge the Gap Between Campus and Career?"
+                placeholder="Ready to prove what you can do?"
                 className="mt-1"
               />
             </div>
@@ -690,7 +799,7 @@ export default function EducationSettingsPage() {
           setFaqMsg(null);
           try {
             const orderedItems = faqItems.map((item, i) => ({ ...item, order: i }));
-            const res = await fetch('/api/education/faq', {
+            const res = await csrfFetch('/api/education/faq', {
               method: 'PUT',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ items: orderedItems }),
@@ -727,7 +836,7 @@ export default function EducationSettingsPage() {
                 setBrandingSaving(true);
                 setBrandingMsg(null);
                 try {
-                  const res = await fetch('/api/tenant/branding', {
+                  const res = await csrfFetch('/api/tenant/branding', {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -739,6 +848,10 @@ export default function EducationSettingsPage() {
                       aboutContent: aboutContent || undefined,
                       socialLinks,
                       contactInfo,
+                      ctaHeadline: ctaHeadlineCustom || undefined,
+                      ctaSubheadline: ctaSubheadlineCustom || undefined,
+                      footerText: footerText || undefined,
+                      sectionVisibility,
                     }),
                   });
                   if (!res.ok) {
@@ -1007,6 +1120,116 @@ export default function EducationSettingsPage() {
         </CardContent>
       </Card>
 
+      {/* Enterprise Homepage Customization */}
+      <Card className={planName !== 'enterprise' ? 'opacity-60' : ''}>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="flex items-center gap-2">
+                <Paintbrush className="h-5 w-5 text-teal-600" />
+                Homepage Customization
+                {planName !== 'enterprise' && <Lock className="h-4 w-4 text-slate-400" />}
+                <Badge className="bg-amber-100 text-amber-700 border-0 ml-1">Enterprise</Badge>
+              </CardTitle>
+              <CardDescription className="mt-1">
+                Full control over every section of your landing page.
+                {planName !== 'enterprise' && ' Upgrade to Enterprise for maximum customization.'}
+              </CardDescription>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          {/* Section Visibility Toggles */}
+          <div className={`space-y-3 p-4 border rounded-lg ${planName !== 'enterprise' ? 'pointer-events-none' : ''}`}>
+            <p className="text-xs font-semibold text-slate-500 uppercase flex items-center gap-2">
+              <Eye className="h-3.5 w-3.5" />
+              Section Visibility
+            </p>
+            <p className="text-xs text-slate-400">Choose which sections appear on your landing page.</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {[
+                { key: 'competitiveLoop', label: 'The Competitive Loop\u2122' },
+                { key: 'valueProps', label: 'Value Proposition Cards' },
+                { key: 'alumniPartners', label: 'Alumni Partners Showcase' },
+                { key: 'about', label: 'About Section' },
+                { key: 'gallery', label: 'Photo Gallery' },
+                { key: 'socialContact', label: 'Social Links & Contact' },
+                { key: 'aiCoaching', label: 'AI Coaching Section' },
+                { key: 'networkEcosystem', label: 'Network Ecosystem' },
+              ].map((section) => (
+                <label key={section.key} className="flex items-center gap-3 p-2 rounded-lg border bg-slate-50 dark:bg-slate-800/50 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+                  <input
+                    type="checkbox"
+                    checked={sectionVisibility[section.key] !== false}
+                    onChange={(e) =>
+                      setSectionVisibility((prev) => ({ ...prev, [section.key]: e.target.checked }))
+                    }
+                    disabled={planName !== 'enterprise'}
+                    className="rounded border-slate-300 text-teal-600 focus:ring-teal-500"
+                  />
+                  <div className="flex items-center gap-2 flex-1">
+                    {sectionVisibility[section.key] !== false ? (
+                      <Eye className="h-3.5 w-3.5 text-teal-600" />
+                    ) : (
+                      <EyeOff className="h-3.5 w-3.5 text-slate-400" />
+                    )}
+                    <span className="text-sm text-slate-700 dark:text-slate-300">{section.label}</span>
+                  </div>
+                </label>
+              ))}
+            </div>
+          </div>
+
+          {/* CTA Footer Customization */}
+          <div className={`space-y-3 p-4 border rounded-lg ${planName !== 'enterprise' ? 'pointer-events-none' : ''}`}>
+            <p className="text-xs font-semibold text-slate-500 uppercase flex items-center gap-2">
+              <Type className="h-3.5 w-3.5" />
+              Call-to-Action Footer
+            </p>
+            <div>
+              <Label>CTA Headline</Label>
+              <Input
+                value={ctaHeadlineCustom}
+                onChange={(e) => setCtaHeadlineCustom(e.target.value)}
+                placeholder="This is your ground."
+                disabled={planName !== 'enterprise'}
+                className="mt-1"
+              />
+              <p className="text-xs text-slate-400 mt-1">The main heading in the bottom call-to-action section</p>
+            </div>
+            <div>
+              <Label>CTA Subheadline</Label>
+              <Input
+                value={ctaSubheadlineCustom}
+                onChange={(e) => setCtaSubheadlineCustom(e.target.value)}
+                placeholder="Where talent is proven, not presumed."
+                disabled={planName !== 'enterprise'}
+                className="mt-1"
+              />
+            </div>
+          </div>
+
+          {/* Footer Customization */}
+          <div className={`space-y-3 p-4 border rounded-lg ${planName !== 'enterprise' ? 'pointer-events-none' : ''}`}>
+            <p className="text-xs font-semibold text-slate-500 uppercase flex items-center gap-2">
+              <FileText className="h-3.5 w-3.5" />
+              Footer Text
+            </p>
+            <div>
+              <Label>Custom Footer Text</Label>
+              <Input
+                value={footerText}
+                onChange={(e) => setFooterText(e.target.value)}
+                placeholder="Leave blank for default (e.g., '\u00a9 2025 Your Institution. Powered by Proveground')"
+                disabled={planName !== 'enterprise'}
+                className="mt-1"
+              />
+              <p className="text-xs text-slate-400 mt-1">Custom text displayed in the page footer. Leave blank to use the default.</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Save Button */}
       {error && (
         <div className="rounded-lg bg-red-50 dark:bg-red-900/20 p-4 text-sm text-red-700 dark:text-red-300">
@@ -1056,7 +1279,7 @@ function UpgradeRequestCard({ currentPlan }: { currentPlan: string }) {
     if (!selectedPlan) return;
     setRequesting(true);
     try {
-      const res = await fetch('/api/education/upgrade-request', {
+      const res = await csrfFetch('/api/education/upgrade-request', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ requestedPlan: selectedPlan, message }),

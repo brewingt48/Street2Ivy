@@ -24,7 +24,7 @@ export default function AuthLayout({
             </h1>
           </Link>
           <p className="text-sm text-slate-500 dark:text-slate-400">
-            From Campus to Career — Real Projects, Real Impact
+            Prove it with real work — Real Projects, Real Impact
           </p>
         </div>
         {children}

@@ -11,6 +11,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
+import { csrfFetch } from '@/lib/security/csrf-fetch';
 import {
   Card,
   CardContent,
@@ -178,7 +179,7 @@ export default function PartnerListingDetailPage() {
   const handleStatusChange = async (newStatus: string) => {
     setStatusChangeLoading(true);
     try {
-      const res = await fetch(`/api/partner/listings/${listingId}`, {
+      const res = await csrfFetch(`/api/partner/listings/${listingId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: newStatus }),
@@ -202,7 +203,7 @@ export default function PartnerListingDetailPage() {
     setConfirmDialog((prev) => ({ ...prev, open: false }));
 
     try {
-      const res = await fetch(`/api/partner/applications/${appId}/status`, {
+      const res = await csrfFetch(`/api/partner/applications/${appId}/status`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: action }),

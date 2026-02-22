@@ -138,6 +138,11 @@ export const FEATURE_DEFINITIONS: Record<string, {
     description: 'Connect Handshake EDU API for enriched employer demand data and outcome correlations',
     plans: ['enterprise'],
   },
+  teamHuddle: {
+    label: 'Team Huddle',
+    description: 'Premium content hub for e-learning, career resources, and alumni insights',
+    plans: ['professional', 'enterprise'],
+  },
 };
 
 /** Plan defaults — includes new premium features */
@@ -168,6 +173,7 @@ export const PLAN_DEFAULTS: Record<string, Record<string, unknown>> = {
     portfolioBuilder: false,
     outcomesDashboard: false,
     handshakeIntegration: false,
+    teamHuddle: false,
   },
   professional: {
     maxStudents: 500,
@@ -195,6 +201,7 @@ export const PLAN_DEFAULTS: Record<string, Record<string, unknown>> = {
     portfolioBuilder: true,
     outcomesDashboard: true,
     handshakeIntegration: false,
+    teamHuddle: true,
   },
   enterprise: {
     maxStudents: -1, // unlimited
@@ -222,6 +229,7 @@ export const PLAN_DEFAULTS: Record<string, Record<string, unknown>> = {
     portfolioBuilder: true,
     outcomesDashboard: true,
     handshakeIntegration: true,
+    teamHuddle: true,
   },
 };
 

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { csrfFetch } from '@/lib/security/csrf-fetch';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -118,7 +119,7 @@ export function ScheduleBuilder({ className }: ScheduleBuilderProps) {
         payload.customBlocks = customBlocks;
       }
 
-      const res = await fetch('/api/match-engine/schedules', {
+      const res = await csrfFetch('/api/match-engine/schedules', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
@@ -144,7 +145,7 @@ export function ScheduleBuilder({ className }: ScheduleBuilderProps) {
 
   const handleDelete = async (id: string) => {
     try {
-      const res = await fetch(`/api/match-engine/schedules/${id}`, {
+      const res = await csrfFetch(`/api/match-engine/schedules/${id}`, {
         method: 'DELETE',
       });
       if (!res.ok) throw new Error('Failed to delete');

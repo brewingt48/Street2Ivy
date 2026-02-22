@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { csrfFetch } from '@/lib/security/csrf-fetch';
 import {
   Card,
   CardContent,
@@ -168,7 +169,7 @@ export function MatchInsightsCard({ listingId, hasAccess }: MatchInsightsCardPro
     setInsights(null);
 
     try {
-      const response = await fetch('/api/ai/match-insights', {
+      const response = await csrfFetch('/api/ai/match-insights', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ listingId }),

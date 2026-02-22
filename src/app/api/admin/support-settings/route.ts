@@ -15,7 +15,7 @@ import { z } from 'zod';
 const SECTION_KEY = 'support_settings';
 
 const DEFAULT_SUPPORT_SETTINGS = {
-  supportEmail: 'support@street2ivy.com',
+  supportEmail: 'support@proveground.com',
   supportPhone: '',
   officeHours: 'Mon-Fri 9am-5pm EST',
   helpCenterUrl: '',

@@ -18,6 +18,8 @@ export async function GET() {
       return NextResponse.json({ error: 'Admin access required' }, { status: 403 });
     }
 
+    const tenantId = session.data.tenantId;
+
     const [scoreStats] = await sql`
       SELECT
         COUNT(*) as total_scores,
@@ -29,6 +31,7 @@ export async function GET() {
         COUNT(DISTINCT student_id) as unique_students,
         COUNT(DISTINCT listing_id) as unique_listings
       FROM match_scores
+      WHERE tenant_id = ${tenantId}
     `;
 
     const [queueStats] = await sql`
@@ -37,19 +40,12 @@ export async function GET() {
         COUNT(*) FILTER (WHERE processed_at IS NOT NULL) as processed,
         COUNT(*) as total
       FROM recomputation_queue
-    `;
-
-    const [feedbackStats] = await sql`
-      SELECT
-        COUNT(*) as total_feedback,
-        AVG(rating)::numeric(3,2) as avg_rating
-      FROM match_feedback
+      WHERE tenant_id = ${tenantId}
     `;
 
     return NextResponse.json({
       scores: scoreStats,
       queue: queueStats,
-      feedback: feedbackStats,
     });
   } catch (error) {
     console.error('Failed to get stats:', error);

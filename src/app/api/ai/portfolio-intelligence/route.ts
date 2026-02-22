@@ -12,6 +12,7 @@ import { getCurrentSession } from '@/lib/auth/middleware';
 import { checkAiAccessV2, incrementUsageV2, getUsageStatusV2 } from '@/lib/ai/config';
 import { buildPortfolioIntelligencePrompt } from '@/lib/ai/prompts';
 import { askClaude } from '@/lib/ai/claude-client';
+import { safeParseAiJson } from '@/lib/ai/parse-json';
 
 export async function POST(_request: NextRequest) {
   try {
@@ -117,13 +118,18 @@ export async function POST(_request: NextRequest) {
     const completionRate = totalApps > 0 ? completed / totalApps : 0;
 
     // Average student rating
-    const ratingRows = await sql`
-      SELECT AVG(r.rating) as avg_rating
-      FROM student_ratings r
-      JOIN users u ON r.rated_user_id = u.id
-      WHERE u.tenant_id = ${tenantId} AND u.role = 'student'
-    `;
-    const avgRating = ratingRows[0]?.avg_rating ? Number(ratingRows[0].avg_rating) : null;
+    let avgRating: number | null = null;
+    try {
+      const ratingRows = await sql`
+        SELECT AVG(r.rating) as avg_rating
+        FROM student_ratings r
+        JOIN users u ON r.student_id = u.id
+        WHERE u.tenant_id = ${tenantId} AND u.role = 'student'
+      `;
+      avgRating = ratingRows[0]?.avg_rating ? Number(ratingRows[0].avg_rating) : null;
+    } catch {
+      // student_ratings table columns may vary
+    }
 
     // Identify common missing skills from listings vs student skills
     const missingSkillRows = await sql`
@@ -185,22 +191,20 @@ export async function POST(_request: NextRequest) {
     });
 
     // Step 5: Parse JSON response
-    let insights;
-    try {
-      const parsed = JSON.parse(aiResponse);
-      insights = {
-        programStrengths: parsed.programStrengths as string[],
-        skillGaps: parsed.skillGaps as string[],
-        recommendations: parsed.recommendations as string[],
-        industryReadiness: parsed.industryReadiness as number,
-      };
-    } catch {
-      console.error('Failed to parse AI portfolio intelligence response:', aiResponse);
+    const aiParsed = safeParseAiJson<Record<string, unknown>>(aiResponse, 'portfolio-intelligence');
+    if (!aiParsed) {
       return NextResponse.json(
         { error: 'Failed to parse AI response' },
         { status: 500 }
       );
     }
+
+    const insights = {
+      programStrengths: (aiParsed.programStrengths || aiParsed.program_strengths) as string[],
+      skillGaps: (aiParsed.skillGaps || aiParsed.skill_gaps) as string[],
+      recommendations: aiParsed.recommendations as string[],
+      industryReadiness: (aiParsed.industryReadiness ?? aiParsed.industry_readiness) as number,
+    };
 
     // Step 6: Increment usage and return
     await incrementUsageV2(tenantId, userId, 'portfolio_intelligence');

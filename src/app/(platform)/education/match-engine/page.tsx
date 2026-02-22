@@ -1,53 +1,50 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { csrfFetch } from '@/lib/security/csrf-fetch';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import {
   Target,
   BarChart3,
-  Users,
   RefreshCw,
-  Settings2,
-  ListOrdered,
   AlertCircle,
   CheckCircle2,
   Loader2,
-  Clock,
+  Info,
 } from 'lucide-react';
 
 interface EngineStats {
   scores: {
-    total_scores: string;
-    stale_scores: string;
     avg_score: string;
-    max_score: string;
-    min_score: string;
-    avg_computation_ms: string;
-    unique_students: string;
     unique_listings: string;
-  };
-  queue: {
-    pending: string;
-    processed: string;
-    total: string;
-  };
-  feedback: {
-    total_feedback: string;
-    avg_rating: string;
   };
 }
 
-interface EngineConfig {
-  minScoreThreshold: number;
-  isDefault?: boolean;
+function InfoTooltip({ text }: { text: string }) {
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <button type="button" className="inline-flex text-slate-400 hover:text-slate-600 transition-colors">
+          <Info className="h-3.5 w-3.5" />
+        </button>
+      </TooltipTrigger>
+      <TooltipContent side="top" className="max-w-xs text-xs leading-relaxed">
+        {text}
+      </TooltipContent>
+    </Tooltip>
+  );
 }
 
 export default function MatchEngineDashboard() {
   const [stats, setStats] = useState<EngineStats | null>(null);
-  const [config, setConfig] = useState<EngineConfig | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [recomputing, setRecomputing] = useState(false);
@@ -57,21 +54,11 @@ export default function MatchEngineDashboard() {
     setLoading(true);
     setError(null);
     try {
-      const [statsRes, configRes] = await Promise.all([
-        fetch('/api/match-engine/admin/stats'),
-        fetch('/api/match-engine/admin/config'),
-      ]);
+      const statsRes = await fetch('/api/match-engine/admin/stats');
 
       if (statsRes.ok) {
         const statsData = await statsRes.json();
         setStats(statsData);
-      }
-
-      if (configRes.ok) {
-        const configData = await configRes.json();
-        setConfig(configData.config);
-      } else if (configRes.status === 403) {
-        setError('Match Engine\u2122 Admin requires Enterprise plan.');
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load data');
@@ -88,7 +75,7 @@ export default function MatchEngineDashboard() {
     setRecomputing(true);
     setRecomputeMessage(null);
     try {
-      const res = await fetch('/api/match-engine/admin/recompute', {
+      const res = await csrfFetch('/api/match-engine/admin/recompute', {
         method: 'POST',
       });
       const data = await res.json();
@@ -105,16 +92,17 @@ export default function MatchEngineDashboard() {
   };
 
   return (
+    <TooltipProvider delayDuration={200}>
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
             <Target className="h-6 w-6 text-teal-600" />
-            Proveground&apos;s Proprietary <strong>Match Engine&trade;</strong>
+            Match Engine&trade;
           </h1>
           <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-            Proprietary bi-directional matching system &mdash; multi-dimensional scoring
+            Real-time scoring stats for your network &mdash; hover the <Info className="inline h-3 w-3 text-slate-400" /> icons for details
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -157,8 +145,8 @@ export default function MatchEngineDashboard() {
       )}
 
       {loading ? (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {Array.from({ length: 8 }).map((_, i) => (
+        <div className="grid gap-4 sm:grid-cols-2">
+          {Array.from({ length: 2 }).map((_, i) => (
             <Card key={i}>
               <CardContent className="p-4">
                 <Skeleton className="h-4 w-24 mb-2" />
@@ -169,47 +157,14 @@ export default function MatchEngineDashboard() {
         </div>
       ) : (
         <>
-          {/* Stats Grid */}
           {stats && (
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              <Card>
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-2 text-sm text-slate-500 mb-1">
-                    <BarChart3 className="h-4 w-4" />
-                    Total Match Scores
-                  </div>
-                  <p className="text-2xl font-bold text-slate-900 dark:text-white">
-                    {Number(stats.scores.total_scores).toLocaleString()}
-                  </p>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-2 text-sm text-slate-500 mb-1">
-                    <AlertCircle className="h-4 w-4 text-amber-500" />
-                    Stale Scores
-                  </div>
-                  <p className="text-2xl font-bold text-slate-900 dark:text-white">
-                    {Number(stats.scores.stale_scores).toLocaleString()}
-                  </p>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-2 text-sm text-slate-500 mb-1">
-                    <Users className="h-4 w-4" />
-                    Students Scored
-                  </div>
-                  <p className="text-2xl font-bold text-slate-900 dark:text-white">
-                    {Number(stats.scores.unique_students).toLocaleString()}
-                  </p>
-                </CardContent>
-              </Card>
+            <div className="grid gap-4 sm:grid-cols-2">
               <Card>
                 <CardContent className="p-4">
                   <div className="flex items-center gap-2 text-sm text-slate-500 mb-1">
                     <Target className="h-4 w-4" />
-                    Avg Match Score
+                    Avg Student Match Score
+                    <InfoTooltip text="The average match score (0–100) presented to your students. Higher averages indicate stronger alignment between your students and available project opportunities." />
                   </div>
                   <p className="text-2xl font-bold text-slate-900 dark:text-white">
                     {Number(stats.scores.avg_score || 0).toFixed(1)}
@@ -219,41 +174,9 @@ export default function MatchEngineDashboard() {
               <Card>
                 <CardContent className="p-4">
                   <div className="flex items-center gap-2 text-sm text-slate-500 mb-1">
-                    <ListOrdered className="h-4 w-4" />
-                    Queue Pending
-                  </div>
-                  <p className="text-2xl font-bold text-slate-900 dark:text-white">
-                    {Number(stats.queue.pending).toLocaleString()}
-                  </p>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-2 text-sm text-slate-500 mb-1">
-                    <CheckCircle2 className="h-4 w-4 text-emerald-500" />
-                    Queue Processed
-                  </div>
-                  <p className="text-2xl font-bold text-slate-900 dark:text-white">
-                    {Number(stats.queue.processed).toLocaleString()}
-                  </p>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-2 text-sm text-slate-500 mb-1">
-                    <Clock className="h-4 w-4" />
-                    Avg Compute Time
-                  </div>
-                  <p className="text-2xl font-bold text-slate-900 dark:text-white">
-                    {Number(stats.scores.avg_computation_ms || 0).toFixed(0)}ms
-                  </p>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-2 text-sm text-slate-500 mb-1">
                     <BarChart3 className="h-4 w-4" />
-                    Listings Scored
+                    Projects Scored
+                    <InfoTooltip text="The number of unique project listings that have been evaluated by the Match Engine for your network's students." />
                   </div>
                   <p className="text-2xl font-bold text-slate-900 dark:text-white">
                     {Number(stats.scores.unique_listings).toLocaleString()}
@@ -262,72 +185,9 @@ export default function MatchEngineDashboard() {
               </Card>
             </div>
           )}
-
-          {/* Engine Configuration Overview */}
-          {config && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base flex items-center gap-2">
-                  <Settings2 className="h-4 w-4 text-teal-600" />
-                  Engine Configuration
-                  {config.isDefault !== false && (
-                    <Badge variant="secondary" className="text-xs">
-                      Default
-                    </Badge>
-                  )}
-                </CardTitle>
-                <CardDescription>
-                  Proveground&apos;s proprietary <strong>Match Engine&trade;</strong> uses a multi-dimensional assessment to produce a single composite score
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <div className="p-4 rounded-lg bg-slate-50 dark:bg-slate-800/50">
-                    <p className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Minimum Score Threshold</p>
-                    <p className="text-2xl font-bold text-slate-900 dark:text-white">{config.minScoreThreshold}</p>
-                    <p className="text-xs text-slate-500 mt-1">Scores below this threshold are filtered from results</p>
-                  </div>
-                  <div className="p-4 rounded-lg bg-slate-50 dark:bg-slate-800/50">
-                    <p className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Scoring Dimensions</p>
-                    <p className="text-2xl font-bold text-slate-900 dark:text-white">Multi-Factor</p>
-                    <p className="text-xs text-slate-500 mt-1">Proprietary algorithm evaluates multiple dimensions per match</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Feedback Stats */}
-          {stats && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base flex items-center gap-2">
-                  <BarChart3 className="h-4 w-4 text-teal-600" />
-                  Match Feedback
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center gap-6">
-                  <div>
-                    <p className="text-sm text-slate-500">Total Feedback</p>
-                    <p className="text-xl font-bold text-slate-900 dark:text-white">
-                      {Number(stats.feedback.total_feedback).toLocaleString()}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-slate-500">Avg Rating</p>
-                    <p className="text-xl font-bold text-slate-900 dark:text-white">
-                      {stats.feedback.avg_rating
-                        ? `${Number(stats.feedback.avg_rating).toFixed(1)} / 5`
-                        : 'N/A'}
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          )}
         </>
       )}
     </div>
+    </TooltipProvider>
   );
 }

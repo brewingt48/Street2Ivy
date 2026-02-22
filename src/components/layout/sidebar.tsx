@@ -39,6 +39,9 @@ import {
   FolderOpen,
   LineChart,
   Link2,
+  BookOpen,
+  Image as ImageIcon,
+  UserPen,
 } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
@@ -134,6 +137,8 @@ function getNavItems(role: string): NavSection[] {
             { href: '/coaching', label: 'AI Coach', icon: Sparkles },
             { href: '/dashboard/skills-gap', label: 'Skills Gap', icon: Crosshair, featureGate: 'skillsGapAnalyzer' },
             { href: '/dashboard/portfolio', label: 'My Portfolio', icon: FolderOpen, featureGate: 'portfolioBuilder' },
+            { href: '/settings', label: 'Update Profile', icon: UserPen },
+            { href: '/huddle', label: 'Team Huddle', icon: BookOpen, featureGate: 'teamHuddle' },
             { href: '/inbox', label: 'Messages', icon: Inbox },
           ],
         },
@@ -157,6 +162,8 @@ function getNavItems(role: string): NavSection[] {
             { href: '/corporate/reviews', label: 'My Reviews', icon: Star },
             { href: '/corporate/invites', label: 'Sent Invites', icon: Mail },
             { href: '/corporate/search-students', label: 'Find Students', icon: Search },
+            { href: '/corporate/ai-tools', label: 'AI Tools', icon: Sparkles, featureGate: 'aiCoaching' },
+            { href: '/huddle', label: 'Team Huddle', icon: BookOpen, featureGate: 'teamHuddle' },
             { href: '/inbox', label: 'Messages', icon: Inbox },
           ],
         },
@@ -177,8 +184,6 @@ function getNavItems(role: string): NavSection[] {
             { href: '/education/students', label: 'Students', icon: GraduationCap },
             { href: '/education/corporates', label: 'Corporate Partners', icon: Briefcase },
             { href: '/education/reports', label: 'Issue Reports', icon: AlertTriangle },
-            { href: '/education/waitlist', label: 'Waitlist', icon: ClipboardList },
-            { href: '/education/ai-insights', label: 'AI Insights', icon: Sparkles },
             { href: '/education/match-engine', label: 'Match Engine\u2122', icon: Target, featureGate: 'matchEngine' },
             { href: '/education/skills-analytics', label: 'Skills Analytics', icon: Crosshair, featureGate: 'skillsGapAnalyzer' },
             { href: '/education/outcomes', label: 'Outcomes', icon: LineChart, featureGate: 'outcomesDashboard' },
@@ -189,9 +194,11 @@ function getNavItems(role: string): NavSection[] {
           title: 'Institution',
           items: [
             { href: '/education/partners', label: 'Partners & Network', icon: Globe },
+            { href: '/education/huddle', label: 'Team Huddle', icon: BookOpen, featureGate: 'teamHuddle' },
             { href: '/education/ai-features', label: 'AI Features', icon: Sparkles },
             { href: '/education/handshake', label: 'Handshake', icon: Link2, featureGate: 'handshakeIntegration' },
-            { href: '/education/reports', label: 'Reports', icon: FileText, featureGate: 'outcomesDashboard' },
+            { href: '/education/outcomes/reports', label: 'Reports', icon: FileText, featureGate: 'outcomesDashboard' },
+            { href: '/education/legal-policies', label: 'Legal Policies', icon: FileText },
             { href: '/education/settings', label: 'Branding & Settings', icon: Palette },
           ],
         },
@@ -235,15 +242,16 @@ function getNavItems(role: string): NavSection[] {
           title: 'Content',
           items: [
             { href: '/admin/homepage', label: 'Homepage Editor', icon: Home },
+            { href: '/admin/hero-carousel', label: 'Hero Carousel', icon: ImageIcon },
             { href: '/admin/faq', label: 'FAQ Manager', icon: HelpCircle },
             { href: '/admin/blog', label: 'Blog', icon: Newspaper },
+            { href: '/admin/legal-policies', label: 'Legal Policies', icon: FileText },
             { href: '/admin/content', label: 'Landing Page (Raw)', icon: Globe },
           ],
         },
         {
           title: 'System',
           items: [
-            { href: '/admin/waitlist', label: 'Waitlist', icon: ClipboardList },
             { href: '/admin/coaching', label: 'AI Coaching', icon: Sparkles },
             { href: '/admin/ai', label: 'AI Management', icon: Sparkles },
             { href: '/admin/tiers', label: 'Subscription Tiers', icon: Crown },

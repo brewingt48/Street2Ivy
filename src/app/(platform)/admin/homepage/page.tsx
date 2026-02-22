@@ -11,6 +11,7 @@
  */
 
 import { useState, useEffect } from 'react';
+import { csrfFetch } from '@/lib/security/csrf-fetch';
 import {
   Card,
   CardContent,
@@ -119,7 +120,7 @@ export default function AdminHomepageCMS() {
     setError('');
     setSaved(false);
     try {
-      const res = await fetch('/api/admin/settings', {
+      const res = await csrfFetch('/api/admin/settings', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(settings),
@@ -353,7 +354,7 @@ export default function AdminHomepageCMS() {
                   heroCopy: { ...settings.heroCopy, tagline: e.target.value },
                 })
               }
-              placeholder="From Campus to Career"
+              placeholder="Prove it with real work"
               className="mt-1"
             />
             <p className="text-xs text-slate-400 mt-1">Small uppercase text above the main headline.</p>

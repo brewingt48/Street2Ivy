@@ -23,6 +23,10 @@ const MAGIC_BYTES: Record<string, Buffer[]> = {
   'application/zip': [Buffer.from([0x50, 0x4b, 0x03, 0x04])],
   'text/csv': [], // No magic bytes for CSV — validated by extension only
   'text/plain': [], // No magic bytes for text
+  // Video types
+  'video/mp4': [],      // MP4 uses 'ftyp' at byte offset 4, not byte 0 — handled in verifyMagicBytes
+  'video/webm': [Buffer.from([0x1a, 0x45, 0xdf, 0xa3])],  // EBML/Matroska header
+  'video/quicktime': [], // MOV also uses ftyp at byte offset 4 — handled in verifyMagicBytes
 };
 
 /**
@@ -142,10 +146,20 @@ export function verifyMagicBytes(
   // Unknown MIME type
   if (!patterns) return false;
 
+  const fileBuffer = Buffer.from(buffer);
+
+  // Special case: MP4 and MOV use 'ftyp' signature at bytes 4-7 (not byte 0)
+  // Must check before the empty-patterns shortcut since these have empty arrays
+  if (declaredMimeType === 'video/mp4' || declaredMimeType === 'video/quicktime') {
+    if (fileBuffer.length >= 8) {
+      const ftyp = fileBuffer.subarray(4, 8).toString('ascii');
+      return ftyp === 'ftyp';
+    }
+    return false;
+  }
+
   // MIME types with no magic bytes (text, CSV) — allow based on extension only
   if (patterns.length === 0) return true;
-
-  const fileBuffer = Buffer.from(buffer);
 
   // Check if any magic byte pattern matches the file header
   return patterns.some((pattern) => {

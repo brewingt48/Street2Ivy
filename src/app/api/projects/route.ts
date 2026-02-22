@@ -64,11 +64,23 @@ export async function GET(request: NextRequest) {
     if (scope === 'institution' && studentTenantId) {
       conditions.push(sql`l.tenant_id = ${studentTenantId}`);
     } else if (scope === 'network') {
+      // Show listings from other tenants that are marked as network-visible,
+      // plus listings with no tenant (platform-wide)
       if (studentTenantId) {
-        conditions.push(sql`(l.tenant_id IS NULL OR l.tenant_id != ${studentTenantId})`);
+        conditions.push(sql`(
+          (l.tenant_id != ${studentTenantId} AND l.visibility = 'network')
+          OR l.tenant_id IS NULL
+        )`);
       } else {
-        conditions.push(sql`l.tenant_id IS NULL`);
+        conditions.push(sql`(l.visibility = 'network' OR l.tenant_id IS NULL)`);
       }
+    } else if (!scope && studentTenantId) {
+      // Default "all": show own tenant's listings + network-visible from other tenants
+      conditions.push(sql`(
+        l.tenant_id = ${studentTenantId}
+        OR (l.tenant_id != ${studentTenantId} AND l.visibility = 'network')
+        OR l.tenant_id IS NULL
+      )`);
     }
 
     const whereClause = conditions.reduce((acc, cond, i) =>
@@ -82,7 +94,7 @@ export async function GET(request: NextRequest) {
         l.remote_allowed, l.compensation, l.hours_per_week,
         l.duration, l.start_date, l.end_date, l.max_applicants,
         l.requires_nda, l.skills_required, l.published_at, l.created_at,
-        l.tenant_id as listing_tenant_id,
+        l.visibility, l.tenant_id as listing_tenant_id,
         t.name as tenant_name,
         u.id as author_id, u.first_name as author_first_name,
         u.last_name as author_last_name, u.display_name as author_display_name,
@@ -160,6 +172,7 @@ export async function GET(request: NextRequest) {
           publishedAt: l.published_at,
           createdAt: l.created_at,
           applicationCount: parseInt(l.application_count as string),
+          visibility: l.visibility || 'tenant',
           isInstitutionExclusive,
           tenantName: (l.tenant_name as string) || null,
           author: {

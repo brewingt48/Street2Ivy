@@ -42,6 +42,7 @@ export async function GET() {
           matchEngineSchedule: true,
           matchEngineAttractive: true,
           matchEngineAdmin: true,
+          teamHuddle: true,
           maxStudents: -1,
           maxListings: -1,
         },

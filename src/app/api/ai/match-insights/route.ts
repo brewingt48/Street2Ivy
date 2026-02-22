@@ -12,6 +12,7 @@ import { getCurrentSession } from '@/lib/auth/middleware';
 import { z } from 'zod';
 import { checkAiAccessV2, incrementUsageV2, getUsageStatusV2 } from '@/lib/ai/config';
 import { askClaude } from '@/lib/ai/claude-client';
+import { safeParseAiJson } from '@/lib/ai/parse-json';
 
 const matchInsightsSchema = z.object({
   listingId: z.string().uuid(),
@@ -143,23 +144,21 @@ export async function POST(request: NextRequest) {
     });
 
     // Step 7: Parse JSON response
-    let insights;
-    try {
-      const parsed = JSON.parse(aiResponse);
-      insights = {
-        matchAssessment: parsed.match_assessment as string,
-        strengths: parsed.strengths as string[],
-        gaps: parsed.gaps as string[],
-        interviewTips: parsed.interview_tips as string[],
-        confidenceScore: parsed.confidence_score as number,
-      };
-    } catch {
-      console.error('Failed to parse AI match insights response:', aiResponse);
+    const aiParsed = safeParseAiJson<Record<string, unknown>>(aiResponse, 'match-insights');
+    if (!aiParsed) {
       return NextResponse.json(
         { error: 'Failed to parse AI response' },
         { status: 500 }
       );
     }
+
+    const insights = {
+      matchAssessment: (aiParsed.match_assessment || aiParsed.matchAssessment) as string,
+      strengths: aiParsed.strengths as string[],
+      gaps: aiParsed.gaps as string[],
+      interviewTips: (aiParsed.interview_tips || aiParsed.interviewTips) as string[],
+      confidenceScore: (aiParsed.confidence_score ?? aiParsed.confidenceScore) as number,
+    };
 
     // Step 8: Increment usage and return
     await incrementUsageV2(tenantId, userId, 'student_coaching');

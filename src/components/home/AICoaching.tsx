@@ -2,7 +2,7 @@
 
 import { useRef, useState, useEffect } from 'react';
 import { motion, useInView } from 'framer-motion';
-import { Sparkles, ArrowRight } from 'lucide-react';
+import { Sparkles } from 'lucide-react';
 
 const chatMessages = [
   {
@@ -65,22 +65,11 @@ export function AICoaching() {
               initial={{ opacity: 0, y: 20 }}
               animate={isInView ? { opacity: 1, y: 0 } : {}}
               transition={{ duration: 0.6, delay: 0.2 }}
-              className="text-[#3a3a3a] text-base leading-relaxed mb-6"
+              className="text-[#3a3a3a] text-base leading-relaxed"
             >
               Personalized career coaching powered by Anthropic&apos;s Claude &mdash; from interview
               prep to project strategy. Not a chatbot. A coach that meets you where you are.
             </motion.p>
-
-            <motion.a
-              initial={{ opacity: 0, y: 20 }}
-              animate={isInView ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.6, delay: 0.3 }}
-              href="/register"
-              className="inline-flex items-center gap-2 text-[#d4a843] font-semibold hover:text-[#f0c75e] transition-colors group"
-            >
-              Explore AI Coaching
-              <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
-            </motion.a>
           </div>
 
           {/* Right column — Chat mockup */}

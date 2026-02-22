@@ -10,14 +10,13 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
-import { GraduationCap, Briefcase, CheckCircle2, Clock, Info, TrendingUp, ArrowRight, Star, Crown, Lock, Sparkles } from 'lucide-react';
+import { GraduationCap, Briefcase, CheckCircle2, Clock, Info, TrendingUp, ArrowRight, Star, Crown, Lock, Sparkles, Building2, Plus, Globe, BookOpen, Video, FileText as FileTextIcon, Users, BarChart3, Palette, Paintbrush } from 'lucide-react';
 import { HelpSupportCard } from '@/components/shared/help-support-card';
 
 interface Stats {
   totalStudents: number;
   activeProjects: number;
   completedProjects: number;
-  waitlistCount: number;
   avgStudentRating: number | null;
   totalStudentRatings: number;
   ratedStudents: number;
@@ -43,14 +42,14 @@ interface TopStudent {
 interface FeatureFlags {
   advancedReporting: boolean;
   studentRatings: boolean;
+  teamHuddle: boolean;
 }
 
 export default function EducationDashboardPage() {
   const [stats, setStats] = useState<Stats | null>(null);
   const [recentStudents, setRecentStudents] = useState<RecentStudent[]>([]);
   const [topStudents, setTopStudents] = useState<TopStudent[]>([]);
-  const [featureFlags, setFeatureFlags] = useState<FeatureFlags>({ advancedReporting: true, studentRatings: true });
-  const [hasAiInsights, setHasAiInsights] = useState(false);
+  const [featureFlags, setFeatureFlags] = useState<FeatureFlags>({ advancedReporting: true, studentRatings: true, teamHuddle: false });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -66,12 +65,12 @@ export default function EducationDashboardPage() {
       })
       .catch(console.error)
       .finally(() => setLoading(false));
-    // Check if tenant has enterprise AI insights access
+    // Check AI usage access
     fetch('/api/ai/usage')
       .then((r) => r.json())
       .then((usage) => {
         if (usage.plan === 'enterprise') {
-          setHasAiInsights(true);
+          // enterprise features available
         }
       })
       .catch(() => {});
@@ -104,11 +103,58 @@ export default function EducationDashboardPage() {
             <ul className="space-y-1 text-teal-700 dark:text-teal-400">
               <li>&bull; <strong>Students</strong> &mdash; View and manage enrolled students from your institution</li>
               <li>&bull; <strong>Corporate Partners</strong> &mdash; Approve or manage corporate partners within your tenant</li>
-              <li>&bull; <strong>Waitlist</strong> &mdash; Review and manage students waiting for approval</li>
-              <li>&bull; <strong>Branding &amp; Settings</strong> &mdash; Customize your institution&apos;s branding and configuration</li>
+              <li>&bull; <strong>Partners &amp; Network</strong> &mdash; Invite corporate partners to your talent engine and manage relationships</li>
+              <li>&bull; <strong>Branding &amp; Settings</strong> &mdash; Upload your logo, set brand colors, customize hero content, manage your photo gallery, toggle landing page sections, and control CTA/footer text. Enterprise plans unlock full homepage customization.</li>
             </ul>
           </div>
         </div>
+      </div>
+
+      {/* Customization Quick Actions */}
+      <div className="grid gap-4 md:grid-cols-2">
+        <Link href="/education/settings">
+          <Card className="border-teal-200 dark:border-teal-800 bg-gradient-to-r from-teal-50 to-emerald-50 dark:from-teal-900/20 dark:to-emerald-900/20 hover:shadow-md transition-all cursor-pointer group">
+            <CardContent className="flex items-center gap-4 py-5">
+              <div className="h-12 w-12 rounded-xl bg-teal-100 dark:bg-teal-800/40 flex items-center justify-center group-hover:scale-110 transition-transform">
+                <Palette className="h-6 w-6 text-teal-600 dark:text-teal-400" />
+              </div>
+              <div className="flex-1">
+                <p className="text-sm font-semibold text-teal-900 dark:text-teal-200">Customize Your Landing Page</p>
+                <p className="text-xs text-teal-600 dark:text-teal-400 mt-0.5">
+                  Upload your logo, set brand colors, customize headlines, manage your photo gallery, and control which sections appear on your homepage.
+                </p>
+              </div>
+              <ArrowRight className="h-5 w-5 text-teal-400 group-hover:translate-x-1 transition-transform" />
+            </CardContent>
+          </Card>
+        </Link>
+        <Card className="border-slate-200 dark:border-slate-700">
+          <CardContent className="flex items-center gap-4 py-5">
+            <div className="h-12 w-12 rounded-xl bg-slate-100 dark:bg-slate-700/40 flex items-center justify-center">
+              <Paintbrush className="h-6 w-6 text-slate-500 dark:text-slate-400" />
+            </div>
+            <div className="flex-1">
+              <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">Customization Capabilities</p>
+              <div className="flex flex-wrap gap-1.5 mt-1.5">
+                {[
+                  'Logo Upload',
+                  'Brand Colors',
+                  'Hero Video',
+                  'Headlines & Copy',
+                  'Photo Gallery',
+                  'Social Links',
+                  'Section Visibility',
+                  'CTA Text',
+                  'Footer Text',
+                ].map((feature) => (
+                  <span key={feature} className="text-[10px] px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300">
+                    {feature}
+                  </span>
+                ))}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
@@ -175,19 +221,24 @@ export default function EducationDashboardPage() {
             </CardContent>
           </Card>
         )}
-        <Link href="/education/waitlist">
-          <Card className="hover:border-teal-300 hover:shadow-sm transition-all cursor-pointer">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Waitlist</CardTitle>
-              <Clock className="h-4 w-4 text-slate-400" />
-            </CardHeader>
-            <CardContent><div className="text-2xl font-bold">{stats?.waitlistCount || 0}</div></CardContent>
-          </Card>
-        </Link>
       </div>
 
-      {/* Analytics Link */}
-      <div className="flex justify-end">
+      {/* Quick Actions */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Link href="/education/partners">
+            <Button className="bg-teal-600 hover:bg-teal-700 gap-1.5" size="sm">
+              <Plus className="h-4 w-4" />
+              Invite Corporate Partner
+            </Button>
+          </Link>
+          <Link href="/education/partners">
+            <Button variant="outline" size="sm" className="gap-1.5">
+              <Globe className="h-4 w-4" />
+              Manage Partners
+            </Button>
+          </Link>
+        </div>
         <Link href="/education/analytics">
           <Button variant="outline" size="sm" className="gap-1.5">
             <TrendingUp className="h-4 w-4" />
@@ -197,46 +248,78 @@ export default function EducationDashboardPage() {
         </Link>
       </div>
 
-      {/* AI Insights Card (Enterprise) */}
-      {hasAiInsights ? (
-        <Link href="/education/ai-insights">
-          <Card className="border-purple-200 dark:border-purple-800 bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20 hover:shadow-md transition-all cursor-pointer">
-            <CardContent className="flex items-center justify-between py-5">
-              <div className="flex items-center gap-4">
-                <div className="h-12 w-12 rounded-xl bg-purple-100 dark:bg-purple-800/40 flex items-center justify-center">
-                  <Sparkles className="h-6 w-6 text-purple-600 dark:text-purple-400" />
+      {/* Team Huddle — Content Hub */}
+      {featureFlags.teamHuddle ? (
+        <Card className="border-teal-200 dark:border-teal-800 bg-gradient-to-r from-teal-50 to-emerald-50 dark:from-teal-900/20 dark:to-emerald-900/20">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <BookOpen className="h-5 w-5 text-teal-600" />
+              Team Huddle
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-slate-600 dark:text-slate-300 mb-4">
+              Curate and manage e-learning content, inspirational videos, articles, and career resources for your students.
+            </p>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+              <Link href="/education/huddle">
+                <div className="flex items-center gap-2 p-3 rounded-lg border border-teal-200 dark:border-teal-700 bg-white dark:bg-slate-800 hover:shadow-sm transition-all cursor-pointer">
+                  <FileTextIcon className="h-4 w-4 text-teal-600" />
+                  <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Posts</span>
                 </div>
-                <div>
-                  <p className="text-sm font-semibold text-purple-900 dark:text-purple-200">AI-Powered Insights</p>
-                  <p className="text-xs text-purple-600 dark:text-purple-400 mt-0.5">
-                    Portfolio intelligence &amp; talent market analysis for your institution
-                  </p>
+              </Link>
+              <Link href="/education/huddle/topics">
+                <div className="flex items-center gap-2 p-3 rounded-lg border border-teal-200 dark:border-teal-700 bg-white dark:bg-slate-800 hover:shadow-sm transition-all cursor-pointer">
+                  <BookOpen className="h-4 w-4 text-teal-600" />
+                  <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Topics</span>
                 </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <Badge className="bg-purple-100 text-purple-700 border-0">Enterprise</Badge>
-                <ArrowRight className="h-4 w-4 text-purple-400" />
-              </div>
-            </CardContent>
-          </Card>
-        </Link>
+              </Link>
+              <Link href="/education/huddle/contributors">
+                <div className="flex items-center gap-2 p-3 rounded-lg border border-teal-200 dark:border-teal-700 bg-white dark:bg-slate-800 hover:shadow-sm transition-all cursor-pointer">
+                  <Users className="h-4 w-4 text-teal-600" />
+                  <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Contributors</span>
+                </div>
+              </Link>
+              <Link href="/education/huddle/analytics">
+                <div className="flex items-center gap-2 p-3 rounded-lg border border-teal-200 dark:border-teal-700 bg-white dark:bg-slate-800 hover:shadow-sm transition-all cursor-pointer">
+                  <BarChart3 className="h-4 w-4 text-teal-600" />
+                  <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Analytics</span>
+                </div>
+              </Link>
+            </div>
+            <div className="flex items-center gap-2">
+              <Link href="/education/huddle/new">
+                <Button className="bg-teal-600 hover:bg-teal-700 gap-1.5" size="sm">
+                  <Plus className="h-4 w-4" />
+                  New Post
+                </Button>
+              </Link>
+              <Link href="/education/huddle">
+                <Button variant="outline" size="sm" className="gap-1.5">
+                  Manage Content
+                  <ArrowRight className="h-3 w-3" />
+                </Button>
+              </Link>
+            </div>
+          </CardContent>
+        </Card>
       ) : (
         <Card className="border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/30">
           <CardContent className="flex items-center justify-between py-5">
             <div className="flex items-center gap-4">
               <div className="h-12 w-12 rounded-xl bg-slate-100 dark:bg-slate-700/40 flex items-center justify-center">
-                <Sparkles className="h-6 w-6 text-slate-400" />
+                <BookOpen className="h-6 w-6 text-slate-400" />
               </div>
               <div>
-                <p className="text-sm font-semibold text-slate-500 dark:text-slate-400">AI-Powered Insights</p>
+                <p className="text-sm font-semibold text-slate-500 dark:text-slate-400">Team Huddle</p>
                 <p className="text-xs text-slate-400 mt-0.5">
-                  Portfolio intelligence &amp; talent market analysis — available on the Enterprise plan
+                  Premium content hub for e-learning &amp; career resources — available on Professional and Enterprise plans
                 </p>
               </div>
             </div>
             <div className="flex items-center gap-2">
               <Badge variant="outline" className="text-slate-400">
-                <Lock className="h-3 w-3 mr-1" /> Enterprise
+                <Lock className="h-3 w-3 mr-1" /> Professional
               </Badge>
             </div>
           </CardContent>
@@ -345,10 +428,6 @@ export default function EducationDashboardPage() {
             <div>
               <p className="font-medium text-slate-900 dark:text-white mb-1">Completed</p>
               <p>Projects that have been successfully completed by students from your institution.</p>
-            </div>
-            <div>
-              <p className="font-medium text-slate-900 dark:text-white mb-1">Waitlist</p>
-              <p>Students waiting for approval to join the platform. Review and approve them from the Waitlist page.</p>
             </div>
           </div>
         </CardContent>

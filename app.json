@@ -1,0 +1,22 @@
+{
+  "name": "street2ivy",
+  "description": "Campus2Career marketplace platform",
+  "buildpacks": [
+    { "url": "heroku/nodejs" }
+  ],
+  "environments": {
+    "test": {
+      "addons": [
+        "heroku-postgresql:essential-0"
+      ],
+      "env": {
+        "NODE_ENV": "test",
+        "NEXTAUTH_SECRET": "test-secret-for-ci-only",
+        "NEXTAUTH_URL": "http://localhost:3000"
+      },
+      "scripts": {
+        "test": "npx tsc --noEmit"
+      }
+    }
+  }
+}

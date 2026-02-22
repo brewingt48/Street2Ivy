@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback, type KeyboardEvent } from 'react';
+import { csrfFetch } from '@/lib/security/csrf-fetch';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -181,7 +182,7 @@ export function CoachingPanel() {
 
   const createConversation = useCallback(async (): Promise<string | null> => {
     try {
-      const res = await fetch('/api/ai/conversations', {
+      const res = await csrfFetch('/api/ai/conversations', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({}),
@@ -211,7 +212,7 @@ export function CoachingPanel() {
     async (id: string) => {
       setDeletingId(id);
       try {
-        const res = await fetch(`/api/ai/conversations/${id}`, { method: 'DELETE' });
+        const res = await csrfFetch(`/api/ai/conversations/${id}`, { method: 'DELETE' });
         if (!res.ok) throw new Error('Failed to delete');
         setConversations((prev) => prev.filter((c) => c.id !== id));
         if (activeConversation === id) {
@@ -252,7 +253,7 @@ export function CoachingPanel() {
       setError(null);
 
       try {
-        const response = await fetch('/api/ai/chat/stream', {
+        const response = await csrfFetch('/api/ai/chat/stream', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({

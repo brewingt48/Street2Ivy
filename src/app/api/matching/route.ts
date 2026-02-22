@@ -37,7 +37,8 @@ export async function GET(request: NextRequest) {
         return NextResponse.json({ error: 'listingId is required' }, { status: 400 });
       }
 
-      const recommendations = await getRecommendedStudents(listingId, limit);
+      const scope = (searchParams.get('scope') as 'tenant' | 'network' | undefined) || undefined;
+      const recommendations = await getRecommendedStudents(listingId, limit, scope);
       return NextResponse.json({ recommendations });
     }
 

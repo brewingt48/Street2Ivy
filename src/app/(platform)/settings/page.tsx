@@ -7,6 +7,7 @@
  */
 
 import { useState, useEffect } from 'react';
+import { csrfFetch } from '@/lib/security/csrf-fetch';
 import {
   Card,
   CardContent,
@@ -33,6 +34,7 @@ import {
   Eye,
   Lock,
 } from 'lucide-react';
+import { DiffView } from '@/components/coaching/diff-view';
 
 interface Profile {
   id: string;
@@ -112,6 +114,9 @@ export default function SettingsPage() {
   const [aiTrainingOptOut, setAiTrainingOptOut] = useState(false);
   const [aiCoachingEnabled, setAiCoachingEnabled] = useState(true);
 
+  // AI Diff View access (students only)
+  const [hasDiffView, setHasDiffView] = useState(false);
+
   // UI state
   const [profileSaving, setProfileSaving] = useState(false);
   const [profileMsg, setProfileMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
@@ -157,6 +162,19 @@ export default function SettingsPage() {
           setAiTrainingOptOut(privacyData.preferences.aiTrainingOptOut ?? false);
           setAiCoachingEnabled(privacyData.preferences.aiCoachingEnabled ?? true);
         }
+
+        // Check AI diff-view access for students
+        if (p.role === 'student') {
+          fetch('/api/ai/usage')
+            .then((r) => r.json())
+            .then((data) => {
+              const plan = data.plan || 'starter';
+              if (plan === 'professional' || plan === 'enterprise') {
+                setHasDiffView(true);
+              }
+            })
+            .catch(() => {}); // Silently fail — just don't show DiffView
+        }
       })
       .catch(console.error)
       .finally(() => setLoading(false));
@@ -166,7 +184,7 @@ export default function SettingsPage() {
     setProfileSaving(true);
     setProfileMsg(null);
     try {
-      const res = await fetch('/api/profile', {
+      const res = await csrfFetch('/api/profile', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -207,7 +225,7 @@ export default function SettingsPage() {
     setSkillsSaving(true);
     setSkillsMsg(null);
     try {
-      const res = await fetch('/api/skills', {
+      const res = await csrfFetch('/api/skills', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ skillIds: Array.from(selectedSkillIds) }),
@@ -242,7 +260,7 @@ export default function SettingsPage() {
     }
 
     try {
-      const res = await fetch('/api/auth/reset-password', {
+      const res = await csrfFetch('/api/auth/reset-password', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -269,7 +287,7 @@ export default function SettingsPage() {
     setPrivacySaving(true);
     setPrivacyMsg(null);
     try {
-      const res = await fetch('/api/profile/privacy', {
+      const res = await csrfFetch('/api/profile/privacy', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ aiTrainingOptOut, aiCoachingEnabled }),
@@ -424,10 +442,20 @@ export default function SettingsPage() {
               onChange={(e) => setBio(e.target.value)}
               placeholder={profile?.role === 'admin' || profile?.role === 'educational_admin'
                 ? 'Brief description of your role...'
-                : 'Tell companies about yourself...'}
+                : 'Tell us about yourself...'}
               rows={3}
             />
           </div>
+
+          {/* AI Bio Improvement — Students only */}
+          {profile?.role === 'student' && (
+            <DiffView
+              hasAccess={hasDiffView}
+              contentType="bio"
+              initialContent={bio}
+              onApply={(updatedBio) => setBio(updatedBio)}
+            />
+          )}
 
           {/* Corporate Partner: Company Information */}
           {profile?.role === 'corporate_partner' && (

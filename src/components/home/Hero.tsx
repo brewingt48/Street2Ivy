@@ -20,7 +20,7 @@ const carouselImages = [
   },
   {
     src: 'https://images.unsplash.com/photo-1551958219-acbc608c6377?w=1920&q=80',
-    alt: 'Women\u2019s college soccer — athletes battling for possession',
+    alt: 'Women\u2019s college soccer \u2014 athletes battling for possession',
   },
   {
     src: 'https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=1920&q=80',
@@ -61,27 +61,44 @@ const carouselImages = [
   },
 ];
 
+const DEMO_URL = 'https://calendly.com/proveground/demo';
+
 interface HeroProps {
   mode?: 'video' | 'carousel';
+  images?: Array<{ src: string; alt: string }>;
+  intervalMs?: number;
 }
 
-export function Hero({ mode = 'carousel' }: HeroProps) {
+export function Hero({ mode = 'carousel', images, intervalMs = 3500 }: HeroProps) {
   const [loaded, setLoaded] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
+
+  // Use admin-configured images if provided, otherwise fall back to hardcoded defaults
+  const activeImages = images && images.length > 0 ? images : carouselImages;
 
   useEffect(() => {
     setLoaded(true);
   }, []);
 
   const nextSlide = useCallback(() => {
-    setCurrentSlide((prev) => (prev + 1) % carouselImages.length);
-  }, []);
+    setCurrentSlide((prev) => (prev + 1) % activeImages.length);
+  }, [activeImages.length]);
 
   useEffect(() => {
     if (mode !== 'carousel') return;
-    const timer = setInterval(nextSlide, 3500);
+    const timer = setInterval(nextSlide, intervalMs);
     return () => clearInterval(timer);
-  }, [mode, nextSlide]);
+  }, [mode, nextSlide, intervalMs]);
+
+  const scrollToHowItWorks = (e: React.MouseEvent) => {
+    e.preventDefault();
+    const el = document.getElementById('how-it-works');
+    if (el) {
+      const offset = 80; // slight offset so heading isn't jammed against top
+      const top = el.getBoundingClientRect().top + window.scrollY - offset;
+      window.scrollTo({ top, behavior: 'smooth' });
+    }
+  };
 
   return (
     <section className="relative h-screen min-h-[700px] flex items-center justify-center overflow-hidden">
@@ -93,10 +110,9 @@ export function Hero({ mode = 'carousel' }: HeroProps) {
           loop
           playsInline
           preload="metadata"
-          poster={carouselImages[0].src}
+          poster={activeImages[0].src}
           className="absolute inset-0 w-full h-full object-cover"
         >
-          {/* Replace with Proveground hero video */}
           <source
             src="https://videos.pexels.com/video-files/5190065/5190065-uhd_2560_1440_25fps.mp4"
             type="video/mp4"
@@ -112,9 +128,9 @@ export function Hero({ mode = 'carousel' }: HeroProps) {
               exit={{ opacity: 0 }}
               transition={{ opacity: { duration: 0.6 }, scale: { duration: 4, ease: 'linear' } }}
               className="absolute inset-0 bg-cover bg-center"
-              style={{ backgroundImage: `url(${carouselImages[currentSlide].src})` }}
+              style={{ backgroundImage: `url(${activeImages[currentSlide].src})` }}
               role="img"
-              aria-label={carouselImages[currentSlide].alt}
+              aria-label={activeImages[currentSlide].alt}
             />
           </AnimatePresence>
         </div>
@@ -154,8 +170,8 @@ export function Hero({ mode = 'carousel' }: HeroProps) {
           transition={{ duration: 0.6, delay: 0.85 }}
           className="mt-5 text-base sm:text-lg text-white/75 max-w-xl mx-auto leading-relaxed"
         >
-          ProveGround gives every network its own branded marketplace and matching
-          engine &mdash; turning real project work into verified results that launch careers.
+          ProveGround gives every network its own branded talent engine &mdash; turning
+          real project work into verified results that launch careers.
         </motion.p>
 
         {/* CTA */}
@@ -166,16 +182,19 @@ export function Hero({ mode = 'carousel' }: HeroProps) {
           className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3"
         >
           <a
-            href="#the-moment"
+            href="#how-it-works"
+            onClick={scrollToHowItWorks}
             className="inline-flex items-center justify-center rounded-full bg-[#d4a843] px-7 py-3 text-sm font-semibold text-[#1a1a2e] hover:bg-[#f0c75e] transition-all duration-200 shadow-lg shadow-[#d4a843]/25"
           >
             See How It Works
           </a>
           <a
-            href="/login"
+            href={DEMO_URL}
+            target="_blank"
+            rel="noopener noreferrer"
             className="inline-flex items-center justify-center rounded-full border border-white/30 px-7 py-3 text-sm font-semibold text-white hover:bg-white/10 transition-all duration-200"
           >
-            Sign In
+            Request a Demo
           </a>
         </motion.div>
       </div>
@@ -187,7 +206,11 @@ export function Hero({ mode = 'carousel' }: HeroProps) {
         transition={{ delay: 1.6 }}
         className="absolute bottom-8 left-1/2 -translate-x-1/2"
       >
-        <a href="#the-moment" aria-label="Scroll to learn more">
+        <a
+          href="#how-it-works"
+          onClick={scrollToHowItWorks}
+          aria-label="Scroll to learn more"
+        >
           <ChevronDown className="h-5 w-5 text-white/40 animate-scroll-indicator" />
         </a>
       </motion.div>
@@ -200,7 +223,7 @@ export function Hero({ mode = 'carousel' }: HeroProps) {
           transition={{ delay: 1.4 }}
           className="absolute bottom-8 right-8 flex gap-1.5"
         >
-          {carouselImages.map((_, i) => (
+          {activeImages.map((_, i) => (
             <button
               key={i}
               onClick={() => setCurrentSlide(i)}

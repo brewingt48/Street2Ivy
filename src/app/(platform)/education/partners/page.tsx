@@ -8,6 +8,7 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
+import { csrfFetch } from '@/lib/security/csrf-fetch';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -142,7 +143,7 @@ export default function PartnersNetworkPage() {
     setInviteMsg(null);
     try {
       const slug = alumniForm.slug || alumniForm.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-      const res = await fetch('/api/tenant/partners/invite', {
+      const res = await csrfFetch('/api/tenant/partners/invite', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -187,7 +188,7 @@ export default function PartnersNetworkPage() {
     setInviteMsg(null);
     try {
       const slug = corporateForm.slug || corporateForm.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-      const res = await fetch('/api/tenant/partners/invite', {
+      const res = await csrfFetch('/api/tenant/partners/invite', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -222,8 +223,6 @@ export default function PartnersNetworkPage() {
 
   const relationshipColors: Record<string, string> = {
     exclusive: 'bg-purple-100 text-purple-700',
-    preferred: 'bg-blue-100 text-blue-700',
-    standard: 'bg-slate-100 text-slate-600',
     network: 'bg-teal-100 text-teal-700',
   };
 
@@ -311,7 +310,7 @@ export default function PartnersNetworkPage() {
                   <Badge className="bg-teal-100 text-teal-700 border-0 text-xs">Network</Badge>
                 </p>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                  Partners from the <strong>shared Proveground marketplace</strong>. They post projects visible to students
+                  Partners from the <strong>shared Proveground talent engine</strong>. They post projects visible to students
                   across multiple institutions. Your students can apply, but so can students from other schools.
                 </p>
               </div>
@@ -410,7 +409,7 @@ export default function PartnersNetworkPage() {
                       </div>
                     </div>
                     <Badge className="bg-purple-100 text-purple-700 border-0 text-xs">
-                      {partner.access?.relationship === 'preferred' ? 'Preferred' : 'Exclusive'}
+                      Exclusive
                     </Badge>
                   </div>
                 </CardHeader>
@@ -470,7 +469,7 @@ export default function PartnersNetworkPage() {
           <Badge className="bg-teal-100 text-teal-700 border-0 ml-1">{networkPartners.length}</Badge>
         </h2>
         <p className="text-xs text-slate-500 dark:text-slate-400 mb-3 ml-7">
-          Shared marketplace partners whose projects are visible to students across multiple institutions.
+          Shared talent engine partners whose projects are visible to students across multiple institutions.
         </p>
 
         {networkPartners.length === 0 ? (
@@ -481,7 +480,7 @@ export default function PartnersNetworkPage() {
               </div>
               <p className="text-sm font-medium text-slate-600 dark:text-slate-300">No network partners available yet</p>
               <p className="text-xs text-slate-400 mt-1 max-w-sm mx-auto">
-                When corporate partners join the Proveground shared marketplace, their projects will appear here for your students to apply to.
+                When corporate partners join the Proveground shared talent engine, their projects will appear here for your students to apply to.
               </p>
             </CardContent>
           </Card>

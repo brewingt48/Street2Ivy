@@ -5,7 +5,7 @@
 import { emailShell } from './shell';
 
 export function passwordResetEmail(data: { firstName: string; resetToken: string }): { subject: string; html: string } {
-  const resetUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'https://street2ivy-dev-c54ffcb26038.herokuapp.com'}/reset-password?token=${data.resetToken}`;
+  const resetUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'https://proveground.com'}/reset-password?token=${data.resetToken}`;
 
   return {
     subject: 'Reset Your Password — Proveground',

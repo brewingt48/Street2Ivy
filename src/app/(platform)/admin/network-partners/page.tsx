@@ -9,6 +9,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
+import { csrfFetch } from '@/lib/security/csrf-fetch';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -234,7 +235,7 @@ export default function NetworkPartnersPage() {
         body.alumniPosition = newAlumniPosition || undefined;
       }
 
-      const res = await fetch('/api/admin/network-partners', {
+      const res = await csrfFetch('/api/admin/network-partners', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),

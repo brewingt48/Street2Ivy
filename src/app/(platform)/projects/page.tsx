@@ -45,6 +45,7 @@ import {
   TrendingUp,
   Shield,
   FileText,
+  AlertCircle,
 } from 'lucide-react';
 import { MatchScoreBadge } from '@/components/matching/MatchScoreBadge';
 
@@ -100,6 +101,7 @@ export default function ProjectsPage() {
   const [pagination, setPagination] = useState<Pagination | null>(null);
   const [categories, setCategories] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState(false);
   const [matchScores, setMatchScores] = useState<Record<string, number>>({});
   const [hasMatchEngine, setHasMatchEngine] = useState(false);
 
@@ -133,6 +135,7 @@ export default function ProjectsPage() {
   const fetchProjects = useCallback(async () => {
     setLoading(true);
     try {
+      setFetchError(false);
       const params = new URLSearchParams();
       if (search) params.set('q', search);
       if (listingTypeFilter) params.set('type', listingTypeFilter);
@@ -151,6 +154,7 @@ export default function ProjectsPage() {
       if (data.categories) setCategories(data.categories);
     } catch (err) {
       console.error('Failed to fetch projects:', err);
+      setFetchError(true);
     } finally {
       setLoading(false);
     }
@@ -187,7 +191,7 @@ export default function ProjectsPage() {
           Browse Opportunities
         </h1>
         <p className="text-slate-500 dark:text-slate-400 mt-1">
-          Discover projects and internships from top companies
+          Discover projects and internships from top corporate partners
         </p>
         <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">
           Proveground connects you with opportunities. All work, contracts, and payments are arranged directly between you and the partner.
@@ -497,6 +501,20 @@ export default function ProjectsPage() {
             </Card>
           ))}
         </div>
+      )}
+
+      {/* Fetch error state */}
+      {fetchError && !loading && (
+        <Card>
+          <CardContent className="py-12 text-center">
+            <AlertCircle className="h-12 w-12 text-red-300 mx-auto mb-4" />
+            <p className="text-slate-500 font-medium">Failed to load projects</p>
+            <p className="text-sm text-slate-400 mt-1">Please check your connection and try again.</p>
+            <Button variant="outline" className="mt-4" onClick={() => fetchProjects()}>
+              Retry
+            </Button>
+          </CardContent>
+        </Card>
       )}
 
       {/* Empty state */}

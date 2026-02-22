@@ -29,10 +29,6 @@ export async function GET() {
       SELECT status, COUNT(*) as count FROM project_applications GROUP BY status
     `;
 
-    const waitlistCount = await sql`
-      SELECT COUNT(*) as count FROM student_waitlist WHERE contacted = false
-    `;
-
     const eduAppCount = await sql`
       SELECT status, COUNT(*) as count FROM edu_admin_applications GROUP BY status
     `;
@@ -54,7 +50,6 @@ export async function GET() {
       applications: Object.fromEntries(
         appCount.map((r: Record<string, unknown>) => [r.status as string, parseInt(r.count as string)])
       ),
-      waitlist: parseInt(waitlistCount[0].count as string),
       eduApplications: Object.fromEntries(
         eduAppCount.map((r: Record<string, unknown>) => [r.status as string, parseInt(r.count as string)])
       ),

@@ -6,6 +6,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { csrfFetch } from '@/lib/security/csrf-fetch';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -15,6 +16,7 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ArrowLeft, Save, Send, AlertCircle, Sparkles, FileText, Briefcase } from 'lucide-react';
 import { ScopingWizard } from '@/components/corporate/scoping-wizard';
+import { TalentPoolInsights } from '@/components/corporate/talent-pool-insights';
 
 interface Skill { id: string; name: string; category: string; }
 
@@ -43,6 +45,7 @@ export default function NewListingPage() {
   const [skillSearch, setSkillSearch] = useState('');
   const [showScopingWizard, setShowScopingWizard] = useState(false);
   const [hasAiScoping, setHasAiScoping] = useState(false);
+  const [milestones, setMilestones] = useState<Array<{ title: string; description: string; weekNumber: number }>>([]);
 
   useEffect(() => {
     fetch('/api/skills').then((r) => r.json()).then((d) => setAllSkills(d.skills || [])).catch(console.error);
@@ -72,13 +75,14 @@ export default function NewListingPage() {
     maxApplicants: maxApplicants ? parseInt(maxApplicants) : undefined,
     requiresNda,
     skillsRequired: selectedSkills.length > 0 ? selectedSkills : undefined,
+    metadata: milestones.length > 0 ? { milestones } : undefined,
   });
 
   const handleSaveDraft = async () => {
     if (!title || !description) { setError('Title and description are required'); return; }
     setSaving(true); setError('');
     try {
-      const res = await fetch('/api/listings', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(buildPayload()) });
+      const res = await csrfFetch('/api/listings', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(buildPayload()) });
       if (!res.ok) { const d = await res.json(); const details = d.details ? Object.entries(d.details).map(([k, v]) => `${k}: ${(v as string[]).join(', ')}`).join('; ') : ''; throw new Error(details || d.error || 'Failed to save'); }
       router.push('/corporate/projects');
     } catch (err) { setError(err instanceof Error ? err.message : 'Failed to save'); } finally { setSaving(false); }
@@ -88,10 +92,10 @@ export default function NewListingPage() {
     if (!title || !description) { setError('Title and description are required'); return; }
     setPublishing(true); setError('');
     try {
-      const createRes = await fetch('/api/listings', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(buildPayload()) });
+      const createRes = await csrfFetch('/api/listings', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(buildPayload()) });
       if (!createRes.ok) { const d = await createRes.json(); const details = d.details ? Object.entries(d.details).map(([k, v]) => `${k}: ${(v as string[]).join(', ')}`).join('; ') : ''; throw new Error(details || d.error || 'Failed to create'); }
       const { listing } = await createRes.json();
-      await fetch(`/api/listings/${listing.id}/publish`, { method: 'POST' });
+      await csrfFetch(`/api/listings/${listing.id}/publish`, { method: 'POST' });
       router.push('/corporate/projects');
     } catch (err) { setError(err instanceof Error ? err.message : 'Failed to publish'); } finally { setPublishing(false); }
   };
@@ -106,7 +110,7 @@ export default function NewListingPage() {
         <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Create New Listing</h1>
         <p className="text-slate-500 dark:text-slate-400 mt-1">Describe your project to attract the best student talent</p>
         <p className="text-xs text-slate-400 mt-2">
-          Fill in the details below. <strong>Title</strong> and <strong>Description</strong> are required. Add skills to help our matching algorithm connect you with the right students. You can save as a draft and publish later.
+          Fill in the details below. <strong>Title</strong> and <strong>Description</strong> are required. Add skills to help our matching engine connect you with the right students. You can save as a draft and publish later.
         </p>
       </div>
 
@@ -207,6 +211,12 @@ export default function NewListingPage() {
         </CardContent>
       </Card>
 
+      {/* Posting Insights */}
+      <TalentPoolInsights
+        variant="compact"
+        listingContext={{ hoursPerWeek: hoursPerWeek ? parseInt(hoursPerWeek) : undefined, selectedSkills }}
+      />
+
       <Card>
         <CardHeader><CardTitle>Required Skills ({selectedSkills.length})</CardTitle><CardDescription>Select the skills needed for this project</CardDescription></CardHeader>
         <CardContent className="space-y-4">
@@ -227,6 +237,42 @@ export default function NewListingPage() {
         </CardContent>
       </Card>
 
+      {/* AI-Generated Milestones */}
+      {milestones.length > 0 && (
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <CardTitle className="flex items-center gap-2">
+                <Sparkles className="h-4 w-4 text-teal-600" />
+                AI-Generated Milestones ({milestones.length})
+              </CardTitle>
+              <Button variant="ghost" size="sm" onClick={() => setMilestones([])} className="text-slate-400 hover:text-red-500 text-xs">
+                Clear
+              </Button>
+            </div>
+            <CardDescription>Timeline generated by AI Scoping Assistant</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="relative space-y-0">
+              {milestones.map((milestone, index) => (
+                <div key={index} className="relative flex gap-4 pb-4 last:pb-0">
+                  {index < milestones.length - 1 && (
+                    <div className="absolute left-[15px] top-8 bottom-0 w-0.5 bg-slate-200 dark:bg-slate-700" />
+                  )}
+                  <div className="flex items-center justify-center w-8 h-8 rounded-full bg-teal-100 dark:bg-teal-900/30 text-teal-700 text-xs font-bold shrink-0 z-10">
+                    W{milestone.weekNumber}
+                  </div>
+                  <div className="flex-1 bg-slate-50 dark:bg-slate-800/50 rounded-lg p-3 border border-slate-200 dark:border-slate-700">
+                    <h4 className="text-sm font-semibold text-slate-900 dark:text-white">{milestone.title}</h4>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{milestone.description}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       <div className="flex justify-between pb-8">
         <Button variant="ghost" onClick={() => router.push('/corporate/projects')}>Cancel</Button>
         <div className="flex gap-3">
@@ -242,6 +288,7 @@ export default function NewListingPage() {
           description={description}
           onApplyDescription={(d: string) => setDescription(d)}
           onApplySkills={(skills: string[]) => setSelectedSkills((prev) => Array.from(new Set([...prev, ...skills])))}
+          onApplyMilestones={(m) => setMilestones(m)}
           onClose={() => setShowScopingWizard(false)}
         />
       )}

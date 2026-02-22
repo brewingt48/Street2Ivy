@@ -43,6 +43,7 @@ import {
 } from 'lucide-react';
 import { HelpSupportCard } from '@/components/shared/help-support-card';
 import { MatchScoreBadge } from '@/components/matching/MatchScoreBadge';
+import { TalentPoolInsights } from '@/components/corporate/talent-pool-insights';
 
 interface DashboardData {
   listings: { active: number; draft: number; closed: number; total: number };
@@ -200,6 +201,66 @@ export default function CorporateDashboardPage() {
         </div>
       </div>
 
+      {/* AI Project Management */}
+      <Card className="border-teal-200 dark:border-teal-800 bg-gradient-to-r from-teal-50/50 to-cyan-50/50 dark:from-teal-900/10 dark:to-cyan-900/10">
+        <CardHeader className="flex flex-row items-center justify-between">
+          <div>
+            <CardTitle className="flex items-center gap-2">
+              <Sparkles className="h-5 w-5 text-teal-600" />
+              AI Project Management
+            </CardTitle>
+            <CardDescription>
+              AI-powered tools to help you find, evaluate, and engage the best student talent
+            </CardDescription>
+          </div>
+          <Link href="/corporate/ai-tools">
+            <Button variant="ghost" size="sm" className="text-teal-600">
+              View All <ArrowRight className="ml-1 h-3 w-3" />
+            </Button>
+          </Link>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-3 md:grid-cols-3">
+            <div
+              className="p-3 rounded-lg border bg-white dark:bg-slate-800/50 hover:shadow-sm transition-shadow cursor-pointer"
+              onClick={() => router.push('/corporate/applications')}
+            >
+              <div className="flex items-center gap-2 mb-1">
+                <div className="w-7 h-7 rounded-md bg-teal-100 flex items-center justify-center">
+                  <FileText className="h-4 w-4 text-teal-600" />
+                </div>
+                <h4 className="font-medium text-sm">Candidate Screening</h4>
+              </div>
+              <p className="text-xs text-slate-500">AI analysis of applicant fit with interview questions</p>
+            </div>
+            <div
+              className="p-3 rounded-lg border bg-white dark:bg-slate-800/50 hover:shadow-sm transition-shadow cursor-pointer"
+              onClick={() => router.push('/corporate/projects')}
+            >
+              <div className="flex items-center gap-2 mb-1">
+                <div className="w-7 h-7 rounded-md bg-amber-100 flex items-center justify-center">
+                  <Briefcase className="h-4 w-4 text-amber-600" />
+                </div>
+                <h4 className="font-medium text-sm">Listing Optimizer</h4>
+              </div>
+              <p className="text-xs text-slate-500">Improve your listings to attract top talent</p>
+            </div>
+            <div
+              className="p-3 rounded-lg border bg-white dark:bg-slate-800/50 hover:shadow-sm transition-shadow cursor-pointer"
+              onClick={() => router.push('/corporate/search-students')}
+            >
+              <div className="flex items-center gap-2 mb-1">
+                <div className="w-7 h-7 rounded-md bg-blue-100 flex items-center justify-center">
+                  <Search className="h-4 w-4 text-blue-600" />
+                </div>
+                <h4 className="font-medium text-sm">Talent Discovery</h4>
+              </div>
+              <p className="text-xs text-slate-500">AI-powered outreach recommendations per student</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => router.push('/corporate/projects')}>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -268,7 +329,7 @@ export default function CorporateDashboardPage() {
               <CardDescription>
                 {hasMatchEngine
                   ? <>Students matched to your listing using Proveground&apos;s proprietary <strong>Match Engine&trade;</strong>. Composite scores reflect a multi-dimensional assessment of each candidate&apos;s fit.</>
-                  : 'Students matched to your listing\u0027s required skills using our algorithm. The percentage shows how many of your required skills each student has.'}
+                  : 'Students matched to your listing\u0027s required skills using our matching engine. The percentage shows how many of your required skills each student has.'}
               </CardDescription>
             </div>
             <Link href="/corporate/search-students">
@@ -331,6 +392,12 @@ export default function CorporateDashboardPage() {
         </Card>
       )}
 
+      {/* Talent Pool Insights — Tenant vs Network */}
+      <div className="grid gap-4 md:grid-cols-2">
+        <TalentPoolInsights variant="full" defaultExpanded={false} scope="tenant" />
+        <TalentPoolInsights variant="full" defaultExpanded={false} scope="network" />
+      </div>
+
       {/* How the Match Engine Works — Corporate Partner Guide */}
       {hasMatchEngine && (
         <Card className="border-slate-200 dark:border-slate-700">
@@ -351,7 +418,7 @@ export default function CorporateDashboardPage() {
               </div>
               <div>
                 <p className="font-semibold text-slate-900 dark:text-white mb-1">2. Review Matches</p>
-                <p>Students appear in &quot;Recommended&quot; with a composite score (0&ndash;100%). Higher scores mean a stronger overall fit based on multiple proprietary dimensions of our algorithm.</p>
+                <p>Students appear in &quot;Recommended&quot; with a composite score (0&ndash;100%). Higher scores mean a stronger overall fit based on multiple proprietary dimensions of our matching engine.</p>
               </div>
               <div>
                 <p className="font-semibold text-slate-900 dark:text-white mb-1">3. Engage &amp; Hire</p>
@@ -613,7 +680,7 @@ export default function CorporateDashboardPage() {
               <p>
                 {hasMatchEngine
                   ? <>Students matched to your active listings using Proveground&apos;s proprietary <strong>Match Engine&trade;</strong>. Composite scores reflect a multi-dimensional assessment of each student&apos;s fit for your project.</>
-                  : 'Students matched to your active listings using our skills-based algorithm. The percentage shows skill alignment.'}
+                  : 'Students matched to your active listings using our skills-based matching engine. The percentage shows skill alignment.'}
               </p>
             </div>
           </div>

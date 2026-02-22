@@ -20,7 +20,7 @@ export function inviteReceivedEmail(data: {
         <p><strong>${data.companyName}</strong> has invited you to participate in their project <strong>"${data.projectTitle}"</strong>.</p>
         <p>Review the invitation and respond at your convenience:</p>
         <p style="text-align: center; margin: 24px 0;">
-          <a href="${process.env.NEXT_PUBLIC_APP_URL || 'https://street2ivy-dev-c54ffcb26038.herokuapp.com'}/dashboard" class="btn">View Invitation</a>
+          <a href="${process.env.NEXT_PUBLIC_APP_URL || 'https://proveground.com'}/invites" class="btn">View Invitation</a>
         </p>
       `,
     }),

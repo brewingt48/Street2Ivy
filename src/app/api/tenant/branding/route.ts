@@ -11,23 +11,45 @@ import { getCurrentSession } from '@/lib/auth/middleware';
 import { z } from 'zod';
 
 const updateBrandingSchema = z.object({
-  heroVideoUrl: z.string().max(500).optional(),
-  heroHeadline: z.string().max(200).optional(),
-  heroSubheadline: z.string().max(500).optional(),
-  heroVideoPosterUrl: z.string().max(500).optional(),
-  galleryImages: z.array(z.string().max(500)).max(20).optional(),
-  aboutContent: z.string().max(5000).optional(),
+  heroVideoUrl: z.string().optional(),
+  heroHeadline: z.string().max(500).optional(),
+  heroSubheadline: z.string().max(1000).optional(),
+  heroVideoPosterUrl: z.string().optional(),
+  galleryImages: z.array(z.string()).max(20).optional(),
+  aboutContent: z.string().max(10000).optional(),
   socialLinks: z.object({
-    twitter: z.string().max(300).optional(),
-    instagram: z.string().max(300).optional(),
-    tiktok: z.string().max(300).optional(),
-    youtube: z.string().max(300).optional(),
-    linkedin: z.string().max(300).optional(),
+    twitter: z.string().optional(),
+    instagram: z.string().optional(),
+    tiktok: z.string().optional(),
+    youtube: z.string().optional(),
+    linkedin: z.string().optional(),
   }).optional(),
   contactInfo: z.object({
-    email: z.string().max(300).optional(),
-    phone: z.string().max(50).optional(),
-    address: z.string().max(500).optional(),
+    email: z.string().optional(),
+    phone: z.string().optional(),
+    address: z.string().max(1000).optional(),
+  }).optional(),
+  // Hero carousel (multiple rotating images with timing)
+  heroCarousel: z.object({
+    images: z.array(z.object({
+      src: z.string(),
+      alt: z.string().max(500),
+    })).max(20).optional(),
+    intervalMs: z.number().min(1000).max(15000).optional(),
+  }).nullable().optional(),
+  // Enterprise customization fields (stored in branding JSONB)
+  ctaHeadline: z.string().max(200).optional(),
+  ctaSubheadline: z.string().max(500).optional(),
+  footerText: z.string().max(500).optional(),
+  sectionVisibility: z.object({
+    competitiveLoop: z.boolean().optional(),
+    valueProps: z.boolean().optional(),
+    alumniPartners: z.boolean().optional(),
+    about: z.boolean().optional(),
+    gallery: z.boolean().optional(),
+    socialContact: z.boolean().optional(),
+    aiCoaching: z.boolean().optional(),
+    networkEcosystem: z.boolean().optional(),
   }).optional(),
 });
 
@@ -46,7 +68,7 @@ export async function GET() {
     const [tenant] = await sql`
       SELECT id, branding, features,
              hero_video_url, hero_video_poster_url, hero_headline, hero_subheadline,
-             gallery_images, about_content, social_links, contact_info
+             hero_carousel, gallery_images, about_content, social_links, contact_info
       FROM tenants
       WHERE id = ${tenantId}
     `;
@@ -56,16 +78,24 @@ export async function GET() {
     }
 
     // Read from individual columns (source of truth for landing page)
+    // Enterprise fields from branding JSONB
+    const brandingData = (tenant.branding || {}) as Record<string, unknown>;
     return NextResponse.json({
       branding: {
         heroVideoUrl: tenant.hero_video_url || '',
         heroHeadline: tenant.hero_headline || '',
         heroSubheadline: tenant.hero_subheadline || '',
         heroVideoPosterUrl: tenant.hero_video_poster_url || '',
+        heroCarousel: tenant.hero_carousel || null,
         galleryImages: (tenant.gallery_images as string[]) || [],
         aboutContent: tenant.about_content || '',
         socialLinks: (tenant.social_links as Record<string, string>) || {},
         contactInfo: (tenant.contact_info as Record<string, string>) || {},
+        // Enterprise customization fields (from branding JSONB)
+        ctaHeadline: (brandingData.ctaHeadline as string) || '',
+        ctaSubheadline: (brandingData.ctaSubheadline as string) || '',
+        footerText: (brandingData.footerText as string) || '',
+        sectionVisibility: (brandingData.sectionVisibility as Record<string, boolean>) || null,
       },
     });
   } catch (error) {
@@ -89,8 +119,10 @@ export async function PUT(request: NextRequest) {
     const body = await request.json();
     const parsed = updateBrandingSchema.safeParse(body);
     if (!parsed.success) {
+      const fieldErrors = parsed.error.flatten().fieldErrors;
+      console.error('Tenant branding PUT validation error:', JSON.stringify(fieldErrors), 'Body keys:', Object.keys(body));
       return NextResponse.json(
-        { error: 'Validation failed', details: parsed.error.flatten().fieldErrors },
+        { error: 'Validation failed', details: fieldErrors },
         { status: 400 }
       );
     }
@@ -115,13 +147,14 @@ export async function PUT(request: NextRequest) {
     // Get current individual column values for merge
     const [current] = await sql`
       SELECT hero_video_url, hero_video_poster_url, hero_headline, hero_subheadline,
-             gallery_images, about_content, social_links, contact_info
+             hero_carousel, gallery_images, about_content, social_links, contact_info
       FROM tenants WHERE id = ${tenantId}
     `;
 
     // Also keep branding JSON in sync for backward compatibility
     const currentBranding = (tenant.branding || {}) as Record<string, unknown>;
     const newBranding = { ...currentBranding };
+    if (updates.heroCarousel !== undefined) newBranding.heroCarousel = updates.heroCarousel;
     if (updates.heroVideoUrl !== undefined) newBranding.heroVideoUrl = updates.heroVideoUrl;
     if (updates.heroHeadline !== undefined) newBranding.heroHeadline = updates.heroHeadline;
     if (updates.heroSubheadline !== undefined) newBranding.heroSubheadline = updates.heroSubheadline;
@@ -130,6 +163,11 @@ export async function PUT(request: NextRequest) {
     if (updates.aboutContent !== undefined) newBranding.aboutContent = updates.aboutContent;
     if (updates.socialLinks !== undefined) newBranding.socialLinks = updates.socialLinks;
     if (updates.contactInfo !== undefined) newBranding.contactInfo = updates.contactInfo;
+    // Enterprise customization fields (only for enterprise plan tenants)
+    if (updates.ctaHeadline !== undefined) newBranding.ctaHeadline = updates.ctaHeadline;
+    if (updates.ctaSubheadline !== undefined) newBranding.ctaSubheadline = updates.ctaSubheadline;
+    if (updates.footerText !== undefined) newBranding.footerText = updates.footerText;
+    if (updates.sectionVisibility !== undefined) newBranding.sectionVisibility = updates.sectionVisibility;
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const brandingJson = sql.json(newBranding as any);
@@ -147,24 +185,49 @@ export async function PUT(request: NextRequest) {
     const socialJson = updates.socialLinks !== undefined ? sql.json(updates.socialLinks as any) : sql.json((current.social_links || {}) as any);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const contactJson = updates.contactInfo !== undefined ? sql.json(updates.contactInfo as any) : sql.json((current.contact_info || {}) as any);
+    // Resolve hero carousel — need to handle null JSONB carefully
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const heroCarouselValue = updates.heroCarousel !== undefined
+      ? updates.heroCarousel
+      : (current.hero_carousel || null);
 
     // Write to BOTH branding JSON and individual columns (landing page reads individual columns)
-    const [updated] = await sql`
-      UPDATE tenants
-      SET branding = ${brandingJson},
-          hero_video_url = ${heroVideoUrl},
-          hero_video_poster_url = ${heroVideoPosterUrl},
-          hero_headline = ${heroHeadline},
-          hero_subheadline = ${heroSubheadline},
-          gallery_images = ${galleryJson},
-          about_content = ${aboutContent},
-          social_links = ${socialJson},
-          contact_info = ${contactJson},
-          updated_at = NOW()
-      WHERE id = ${tenantId}
-      RETURNING id, hero_video_url, hero_video_poster_url, hero_headline, hero_subheadline,
-                gallery_images, about_content, social_links, contact_info
-    `;
+    // Use a conditional update for hero_carousel to handle null vs JSONB properly
+    const [updated] = heroCarouselValue
+      ? await sql`
+          UPDATE tenants
+          SET branding = ${brandingJson},
+              hero_video_url = ${heroVideoUrl},
+              hero_video_poster_url = ${heroVideoPosterUrl},
+              hero_headline = ${heroHeadline},
+              hero_subheadline = ${heroSubheadline},
+              hero_carousel = ${sql.json(heroCarouselValue as any)},
+              gallery_images = ${galleryJson},
+              about_content = ${aboutContent},
+              social_links = ${socialJson},
+              contact_info = ${contactJson},
+              updated_at = NOW()
+          WHERE id = ${tenantId}
+          RETURNING id, hero_video_url, hero_video_poster_url, hero_headline, hero_subheadline,
+                    hero_carousel, gallery_images, about_content, social_links, contact_info
+        `
+      : await sql`
+          UPDATE tenants
+          SET branding = ${brandingJson},
+              hero_video_url = ${heroVideoUrl},
+              hero_video_poster_url = ${heroVideoPosterUrl},
+              hero_headline = ${heroHeadline},
+              hero_subheadline = ${heroSubheadline},
+              hero_carousel = NULL,
+              gallery_images = ${galleryJson},
+              about_content = ${aboutContent},
+              social_links = ${socialJson},
+              contact_info = ${contactJson},
+              updated_at = NOW()
+          WHERE id = ${tenantId}
+          RETURNING id, hero_video_url, hero_video_poster_url, hero_headline, hero_subheadline,
+                    hero_carousel, gallery_images, about_content, social_links, contact_info
+        `;
 
     return NextResponse.json({
       branding: {
@@ -172,10 +235,16 @@ export async function PUT(request: NextRequest) {
         heroHeadline: updated.hero_headline || '',
         heroSubheadline: updated.hero_subheadline || '',
         heroVideoPosterUrl: updated.hero_video_poster_url || '',
+        heroCarousel: updated.hero_carousel || null,
         galleryImages: updated.gallery_images || [],
         aboutContent: updated.about_content || '',
         socialLinks: updated.social_links || {},
         contactInfo: updated.contact_info || {},
+        // Enterprise fields from updated branding JSONB
+        ctaHeadline: newBranding.ctaHeadline || '',
+        ctaSubheadline: newBranding.ctaSubheadline || '',
+        footerText: newBranding.footerText || '',
+        sectionVisibility: newBranding.sectionVisibility || null,
       },
     });
   } catch (error) {

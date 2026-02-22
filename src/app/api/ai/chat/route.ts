@@ -78,12 +78,13 @@ export async function POST(request: NextRequest) {
 
     // Step 4: Build student profile
     const userRows = await sql`
-      SELECT display_name, university, major, graduation_year, gpa, bio, sports_played, activities
+      SELECT display_name, university, major, graduation_year, gpa, bio, metadata
       FROM users
       WHERE id = ${userId}
     `;
 
     const user = userRows[0] || {};
+    const metadata = (user.metadata || {}) as Record<string, unknown>;
 
     // Step 5: Query student skills
     const skillRows = await sql`
@@ -100,8 +101,8 @@ export async function POST(request: NextRequest) {
       gpa: (user.gpa as string) || null,
       bio: (user.bio as string) || null,
       skills: skillRows.map((s: Record<string, unknown>) => s.name as string),
-      sportsPlayed: (user.sports_played as string) || null,
-      activities: (user.activities as string) || null,
+      sportsPlayed: (metadata.sportsPlayed as string) || null,
+      activities: (metadata.activities as string) || null,
     };
 
     // Step 6: Fetch last 20 messages for context

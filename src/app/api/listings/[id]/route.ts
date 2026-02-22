@@ -22,6 +22,7 @@ const updateListingSchema = z.object({
   maxApplicants: z.union([z.number().int().min(1).max(1000), z.string().transform((v) => { const n = parseInt(v); return isNaN(n) ? undefined : n; }), z.null()]).optional(),
   requiresNda: z.boolean().optional(),
   skillsRequired: z.array(z.string()).optional().nullable(),
+  visibility: z.enum(['tenant', 'network']).optional(),
 });
 
 export async function GET(
@@ -64,6 +65,7 @@ export async function GET(
         requiresNda: l.requires_nda,
         skillsRequired: l.skills_required,
         status: l.status,
+        visibility: l.visibility,
         publishedAt: l.published_at,
         closedAt: l.closed_at,
         createdAt: l.created_at,
@@ -120,6 +122,7 @@ export async function PUT(
     if (data.duration !== undefined) { updates.duration = data.duration; cols.push('duration'); }
     if (data.maxApplicants !== undefined) { updates.max_applicants = data.maxApplicants; cols.push('max_applicants'); }
     if (data.requiresNda !== undefined) { updates.requires_nda = data.requiresNda; cols.push('requires_nda'); }
+    if (data.visibility !== undefined) { updates.visibility = data.visibility; cols.push('visibility'); }
 
     if (cols.length > 0) {
       await sql`

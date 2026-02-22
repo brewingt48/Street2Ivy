@@ -53,6 +53,13 @@ const updateSettingsSchema = z.object({
     headline: z.string().optional(),
     subheadline: z.string().optional(),
   }).optional(),
+  heroCarousel: z.object({
+    images: z.array(z.object({
+      src: z.string().max(500),
+      alt: z.string().max(200),
+    })).max(20).optional(),
+    intervalMs: z.number().min(1000).max(15000).optional(),
+  }).optional(),
 });
 
 export async function GET() {
@@ -110,6 +117,7 @@ export async function PUT(request: NextRequest) {
     if (updates.howItWorksCopy !== undefined) newSettings.howItWorksCopy = { ...(currentSettings.howItWorksCopy as Record<string, unknown> || {}), ...updates.howItWorksCopy };
     if (updates.socialProofCopy !== undefined) newSettings.socialProofCopy = { ...(currentSettings.socialProofCopy as Record<string, unknown> || {}), ...updates.socialProofCopy };
     if (updates.ctaCopy !== undefined) newSettings.ctaCopy = { ...(currentSettings.ctaCopy as Record<string, unknown> || {}), ...updates.ctaCopy };
+    if (updates.heroCarousel !== undefined) newSettings.heroCarousel = updates.heroCarousel;
 
     await sql`
       INSERT INTO landing_content (section, content, updated_by, updated_at)

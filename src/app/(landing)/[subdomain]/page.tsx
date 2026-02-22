@@ -15,7 +15,7 @@ export default async function SubdomainLandingPage({
   const rows = await sql`
     SELECT id, name, display_name, subdomain, marketplace_type, sport, team_name, conference,
            hero_video_url, hero_video_poster_url, hero_headline, hero_subheadline,
-           gallery_images, social_links, about_content, contact_info,
+           hero_carousel, gallery_images, social_links, about_content, contact_info,
            branding, features
     FROM tenants
     WHERE subdomain = ${subdomain} AND status = 'active'
@@ -49,6 +49,18 @@ export default async function SubdomainLandingPage({
     LIMIT 6
   `;
 
+  // Fetch published legal policies (platform + tenant)
+  const legalPolicies = await sql`
+    SELECT title, slug, 'platform' AS scope, sort_order
+    FROM legal_policies
+    WHERE tenant_id IS NULL AND is_published = true
+    UNION ALL
+    SELECT title, slug, 'tenant' AS scope, sort_order
+    FROM legal_policies
+    WHERE tenant_id = ${tenant.id} AND is_published = true
+    ORDER BY scope, sort_order, title
+  `;
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return <LandingPageClient tenant={tenant} stats={statsRows[0] as any} partners={partners as any} />;
+  return <LandingPageClient tenant={tenant} stats={statsRows[0] as any} partners={partners as any} legalPolicies={legalPolicies as any} />;
 }

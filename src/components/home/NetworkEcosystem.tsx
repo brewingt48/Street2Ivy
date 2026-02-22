@@ -42,7 +42,7 @@ const features = [
     icon: Lock,
     title: 'Exclusive Opportunities',
     description:
-      'Programs curate their own private marketplace. Listings stay within your institution — visible only to your students, vetted by your team. Quality and trust, by design.',
+      'Programs curate their own private talent engine. Listings stay within your institution — visible only to your students, vetted by your team. Quality and trust, by design.',
   },
   {
     icon: Share2,
@@ -147,7 +147,7 @@ export function NetworkEcosystem() {
             className="text-white/60 text-base md:text-lg leading-relaxed max-w-2xl mx-auto"
           >
             Proveground connects institutions, alumni networks, and industry partners into one
-            unified talent ecosystem. Each program keeps its own private marketplace — while
+            unified talent ecosystem. Each program keeps its own private talent engine — while
             sharing select opportunities across the network amplifies reach for everyone.
           </motion.p>
         </div>
@@ -298,7 +298,7 @@ export function NetworkEcosystem() {
           className="mt-20 grid grid-cols-2 md:grid-cols-4 gap-px bg-white/[0.06] rounded-2xl overflow-hidden"
         >
           {[
-            { value: 'Private', label: 'Each marketplace is exclusive to its program' },
+            { value: 'Private', label: 'Each talent engine is exclusive to its program' },
             { value: 'Shared', label: 'Select postings extend across partner institutions' },
             { value: 'Verified', label: 'Every engagement and review is authenticated' },
             { value: 'United', label: 'One ecosystem where everyone wins together' },

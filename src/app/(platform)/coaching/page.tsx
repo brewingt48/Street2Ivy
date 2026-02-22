@@ -13,15 +13,21 @@ export default function CoachingPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check AI access
     fetch('/api/ai/usage')
-      .then((r) => r.json())
+      .then((r) => {
+        if (r.ok) return r.json();
+        if (r.status === 403) throw new Error('access_denied');
+        throw new Error('network_error');
+      })
       .then(() => {
-        // If we get usage data, coaching is accessible
         setAccess({ allowed: true });
       })
-      .catch(() => {
-        setAccess({ allowed: false, reason: 'Unable to verify AI access' });
+      .catch((err) => {
+        if (err.message === 'access_denied') {
+          setAccess({ allowed: false, reason: 'AI coaching is not enabled for your institution. Contact your administrator for access.' });
+        } else {
+          setAccess({ allowed: false, reason: 'Unable to verify AI access. Please check your connection and try again.' });
+        }
       })
       .finally(() => setLoading(false));
   }, []);

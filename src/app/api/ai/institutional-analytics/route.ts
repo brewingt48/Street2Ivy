@@ -15,6 +15,7 @@ import { sql } from '@/lib/db';
 import { getCurrentSession } from '@/lib/auth/middleware';
 import { checkAiAccessV2, incrementUsageV2 } from '@/lib/ai/config';
 import { askClaude } from '@/lib/ai/claude-client';
+import { safeParseAiJson } from '@/lib/ai/parse-json';
 
 // -------------------------------------------------------------------------
 // GET — Fetch latest report
@@ -37,10 +38,12 @@ export async function GET() {
     const tenantId = session.data.tenantId;
 
     const reportRows = await sql`
-      SELECT id, tenant_id, generated_by, report_data, created_at
+      SELECT id, tenant_id, engagement_summary, skill_gap_analysis,
+             curriculum_recommendations, student_success_patterns,
+             platform_benchmark, total_students, total_projects, generated_at
       FROM institutional_analytics_reports
       WHERE tenant_id = ${tenantId}
-      ORDER BY created_at DESC
+      ORDER BY generated_at DESC
       LIMIT 1
     `;
 
@@ -56,9 +59,16 @@ export async function GET() {
       report: {
         id: row.id as string,
         tenantId: row.tenant_id as string,
-        generatedBy: row.generated_by as string,
-        data: row.report_data,
-        createdAt: (row.created_at as Date).toISOString(),
+        data: {
+          executiveSummary: row.engagement_summary,
+          skillAnalysis: row.skill_gap_analysis,
+          strategicRecommendations: row.curriculum_recommendations,
+          studentEngagement: { analysis: row.student_success_patterns },
+          benchmarkScore: row.platform_benchmark,
+        },
+        totalStudents: row.total_students,
+        totalProjects: row.total_projects,
+        createdAt: (row.generated_at as Date).toISOString(),
       },
     });
   } catch (error) {
@@ -193,7 +203,7 @@ export async function POST(_request: NextRequest) {
       const ratingRows = await sql`
         SELECT AVG(r.rating) as avg_rating
         FROM student_ratings r
-        JOIN users u ON r.rated_user_id = u.id
+        JOIN users u ON r.student_id = u.id
         WHERE u.tenant_id = ${tenantId} AND u.role = 'student'
       `;
       avgRating = ratingRows[0]?.avg_rating ? Number(ratingRows[0].avg_rating) : null;
@@ -266,11 +276,8 @@ export async function POST(_request: NextRequest) {
     });
 
     // Step 5: Parse JSON response
-    let reportData;
-    try {
-      reportData = JSON.parse(aiResponse);
-    } catch {
-      console.error('Failed to parse AI institutional analytics response:', aiResponse);
+    const reportData = safeParseAiJson<Record<string, unknown>>(aiResponse, 'institutional-analytics');
+    if (!reportData) {
       return NextResponse.json(
         { error: 'Failed to parse AI response' },
         { status: 500 }
@@ -278,10 +285,35 @@ export async function POST(_request: NextRequest) {
     }
 
     // Step 6: Store the report in institutional_analytics_reports
+    const now = new Date();
+    const periodStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
+    const periodEnd = now.toISOString().split('T')[0];
+
+    const execSummary = (reportData.executiveSummary as string) || null;
+    const skillAnalysis = JSON.stringify(reportData.skillAnalysis || null);
+    const strategicRecs = JSON.stringify(reportData.strategicRecommendations || null);
+    const projectOutcomes = reportData.projectOutcomes as Record<string, unknown> | undefined;
+    const successPatterns = (projectOutcomes?.analysis as string) || null;
+    const benchmark = JSON.stringify({ score: reportData.benchmarkScore, engagement: reportData.studentEngagement });
+
     const insertedRows = await sql`
-      INSERT INTO institutional_analytics_reports (tenant_id, generated_by, report_data)
-      VALUES (${tenantId}, ${userId}, ${JSON.stringify(reportData)}::jsonb)
-      RETURNING id, created_at
+      INSERT INTO institutional_analytics_reports (
+        tenant_id, reporting_period_start, reporting_period_end,
+        engagement_summary, skill_gap_analysis, curriculum_recommendations,
+        student_success_patterns, platform_benchmark,
+        total_students, total_projects, model_used
+      )
+      VALUES (
+        ${tenantId}, ${periodStart}, ${periodEnd},
+        ${execSummary},
+        ${skillAnalysis}::jsonb,
+        ${strategicRecs}::jsonb,
+        ${successPatterns},
+        ${benchmark}::jsonb,
+        ${totalStudents}, ${activeProjects + completedProjects},
+        ${accessCheck.config.model}
+      )
+      RETURNING id, generated_at
     `;
 
     // Step 7: Increment usage
@@ -291,9 +323,8 @@ export async function POST(_request: NextRequest) {
       report: {
         id: insertedRows[0].id as string,
         tenantId,
-        generatedBy: userId,
         data: reportData,
-        createdAt: (insertedRows[0].created_at as Date).toISOString(),
+        createdAt: (insertedRows[0].generated_at as Date).toISOString(),
       },
     });
   } catch (error) {

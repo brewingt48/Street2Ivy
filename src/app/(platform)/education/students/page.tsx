@@ -5,12 +5,23 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
+import { csrfFetch } from '@/lib/security/csrf-fetch';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Search, GraduationCap, ChevronLeft, ChevronRight, Download, Star } from 'lucide-react';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Search, GraduationCap, ChevronLeft, ChevronRight, Download, Star, ShieldOff, ShieldCheck, AlertTriangle } from 'lucide-react';
 import { ExportButton } from '@/components/analytics/export-button';
 
 interface Student {
@@ -35,6 +46,12 @@ export default function EducationStudentsPage() {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
+  // Block/Reactivate dialog
+  const [actionStudent, setActionStudent] = useState<Student | null>(null);
+  const [actionType, setActionType] = useState<'block' | 'reactivate'>('block');
+  const [actionReason, setActionReason] = useState('');
+  const [actionSubmitting, setActionSubmitting] = useState(false);
+
   const fetchStudents = useCallback(async () => {
     setLoading(true);
     const params = new URLSearchParams({ page: String(page) });
@@ -49,6 +66,35 @@ export default function EducationStudentsPage() {
   }, [page, query]);
 
   useEffect(() => { fetchStudents(); }, [fetchStudents]);
+
+  const handleStatusAction = async () => {
+    if (!actionStudent) return;
+    setActionSubmitting(true);
+    try {
+      const res = await csrfFetch(`/api/admin/users/${actionStudent.id}/status`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: actionType === 'block' ? 'discontinue' : 'reactivate',
+          reason: actionReason || undefined,
+        }),
+      });
+      if (res.ok) {
+        setStudents((prev) =>
+          prev.map((s) => s.id === actionStudent.id ? { ...s, isActive: actionType === 'reactivate' } : s)
+        );
+        setActionStudent(null);
+        setActionReason('');
+      } else {
+        const data = await res.json();
+        alert(data.error || 'Failed to update student status');
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setActionSubmitting(false);
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -120,8 +166,27 @@ export default function EducationStudentsPage() {
                     </div>
                   )}
                   <Badge className={s.isActive ? 'bg-green-100 text-green-700 border-0' : 'bg-red-100 text-red-700 border-0'}>
-                    {s.isActive ? 'Active' : 'Inactive'}
+                    {s.isActive ? 'Active' : 'Blocked'}
                   </Badge>
+                  {s.isActive ? (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-red-600 hover:text-red-700 hover:bg-red-50 h-7 px-2"
+                      onClick={() => { setActionStudent(s); setActionType('block'); setActionReason(''); }}
+                    >
+                      <ShieldOff className="h-3.5 w-3.5 mr-1" /> Block
+                    </Button>
+                  ) : (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-green-600 hover:text-green-700 hover:bg-green-50 h-7 px-2"
+                      onClick={() => { setActionStudent(s); setActionType('reactivate'); setActionReason(''); }}
+                    >
+                      <ShieldCheck className="h-3.5 w-3.5 mr-1" /> Reactivate
+                    </Button>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -140,6 +205,59 @@ export default function EducationStudentsPage() {
           </Button>
         </div>
       )}
+
+      {/* Block / Reactivate Confirmation Dialog */}
+      <Dialog open={!!actionStudent} onOpenChange={() => setActionStudent(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              {actionType === 'block' ? (
+                <>
+                  <AlertTriangle className="h-5 w-5 text-red-600" />
+                  Block Student
+                </>
+              ) : (
+                <>
+                  <ShieldCheck className="h-5 w-5 text-green-600" />
+                  Reactivate Student
+                </>
+              )}
+            </DialogTitle>
+            <DialogDescription>
+              {actionType === 'block'
+                ? `This will block ${actionStudent?.name} from accessing the platform. They will not be able to log in or apply to projects.`
+                : `This will restore ${actionStudent?.name}'s access to the platform.`}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-3">
+            <div className="space-y-2">
+              <Label>{actionType === 'block' ? 'Reason for blocking (optional)' : 'Note (optional)'}</Label>
+              <Textarea
+                value={actionReason}
+                onChange={(e) => setActionReason(e.target.value)}
+                placeholder={actionType === 'block' ? 'e.g. Policy violation, academic ineligibility...' : 'e.g. Issue resolved, reinstatement approved...'}
+                rows={3}
+              />
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setActionStudent(null)}>Cancel</Button>
+            <Button
+              onClick={handleStatusAction}
+              disabled={actionSubmitting}
+              className={actionType === 'block' ? 'bg-red-600 hover:bg-red-700' : 'bg-green-600 hover:bg-green-700'}
+            >
+              {actionSubmitting
+                ? 'Processing...'
+                : actionType === 'block'
+                  ? 'Block Student'
+                  : 'Reactivate Student'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

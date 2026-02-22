@@ -37,7 +37,7 @@ export async function GET() {
         l.id, l.title, l.description, l.listing_type, l.category, l.location,
         l.remote_allowed, l.compensation, l.hours_per_week,
         l.duration, l.start_date, l.end_date, l.max_applicants,
-        l.requires_nda, l.skills_required, l.status,
+        l.requires_nda, l.skills_required, l.status, l.visibility,
         l.published_at, l.closed_at, l.created_at,
         (SELECT COUNT(*) FROM project_applications pa WHERE pa.listing_id = l.id) as application_count,
         (SELECT COUNT(*) FROM project_applications pa WHERE pa.listing_id = l.id AND pa.status = 'pending') as pending_count
@@ -64,6 +64,7 @@ export async function GET() {
         requiresNda: l.requires_nda,
         skillsRequired: l.skills_required,
         status: l.status,
+        visibility: l.visibility,
         publishedAt: l.published_at,
         closedAt: l.closed_at,
         createdAt: l.created_at,
@@ -102,12 +103,13 @@ export async function POST(request: NextRequest) {
 
     const result = await sql`
       INSERT INTO listings (
-        author_id, title, description, listing_type, category, location,
+        author_id, tenant_id, title, description, listing_type, category, location,
         remote_allowed, compensation, hours_per_week, duration,
         start_date, end_date, max_applicants, requires_nda,
-        skills_required, status
+        skills_required, status, visibility
       ) VALUES (
         ${session.data.userId},
+        ${session.data.tenantId || null},
         ${data.title},
         ${data.description},
         ${data.listingType},
@@ -122,7 +124,8 @@ export async function POST(request: NextRequest) {
         ${data.maxApplicants || null},
         ${data.requiresNda || false},
         ${JSON.stringify(data.skillsRequired || [])}::jsonb,
-        'draft'
+        'draft',
+        'tenant'
       )
       RETURNING id, title, listing_type, status, created_at
     `;
