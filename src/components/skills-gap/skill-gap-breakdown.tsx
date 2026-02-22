@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { AlertTriangle, CheckCircle2 } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, ShieldCheck } from 'lucide-react';
 import Link from 'next/link';
 
 interface GapItem {
@@ -15,6 +15,7 @@ interface GapItem {
   currentLevel: number;
   gapSeverity: string;
   importance: string;
+  verificationSource?: string;
   recommendedProjects: Array<{ id: string; title: string }>;
 }
 
@@ -24,6 +25,31 @@ interface StrengthItem {
   category: string;
   verifiedLevel: number;
   exceedsBy: number;
+  verificationSource?: string;
+}
+
+function VerificationBadge({ source }: { source?: string }) {
+  if (source === 'project_completion') {
+    return (
+      <span className="inline-flex items-center gap-0.5 text-[10px] font-medium text-teal-700 bg-teal-50 border border-teal-200 rounded px-1.5 py-0.5">
+        <ShieldCheck className="h-3 w-3" />
+        Confirmed by Proveground
+      </span>
+    );
+  }
+  if (source === 'employer_endorsement') {
+    return (
+      <span className="inline-flex items-center gap-0.5 text-[10px] font-medium text-blue-700 bg-blue-50 border border-blue-200 rounded px-1.5 py-0.5">
+        <ShieldCheck className="h-3 w-3" />
+        Employer Endorsed
+      </span>
+    );
+  }
+  return (
+    <span className="inline-flex items-center gap-0.5 text-[10px] font-medium text-slate-500 bg-slate-50 border border-slate-200 rounded px-1.5 py-0.5">
+      Self-Reported
+    </span>
+  );
 }
 
 interface SkillGapBreakdownProps {
@@ -87,7 +113,10 @@ export function SkillGapBreakdown({ gaps, strengths }: SkillGapBreakdownProps) {
                     <span className="font-medium text-sm">{gap.skillName}</span>
                     <Badge className={severityColors[gap.gapSeverity] || 'bg-slate-100'}>{gap.gapSeverity}</Badge>
                   </div>
-                  <div className="text-xs text-slate-500">{gap.category}</div>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="text-xs text-slate-500">{gap.category}</span>
+                    <VerificationBadge source={gap.verificationSource} />
+                  </div>
                   <div className="flex items-center gap-2">
                     <div className="flex-1">
                       <div className="flex justify-between text-xs mb-1">
@@ -133,10 +162,13 @@ export function SkillGapBreakdown({ gaps, strengths }: SkillGapBreakdownProps) {
           ) : (
             <div className="flex flex-wrap gap-2">
               {strengths.map((s) => (
-                <Badge key={s.skillId} variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200">
-                  {s.skillName} (Level {s.verifiedLevel})
-                  {s.exceedsBy > 0 && <span className="ml-1 text-emerald-500">+{s.exceedsBy}</span>}
-                </Badge>
+                <div key={s.skillId} className="flex items-center gap-1.5">
+                  <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200">
+                    {s.skillName} (Level {s.verifiedLevel})
+                    {s.exceedsBy > 0 && <span className="ml-1 text-emerald-500">+{s.exceedsBy}</span>}
+                  </Badge>
+                  <VerificationBadge source={s.verificationSource} />
+                </div>
               ))}
             </div>
           )}

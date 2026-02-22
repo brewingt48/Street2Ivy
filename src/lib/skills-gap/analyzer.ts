@@ -15,6 +15,7 @@ export interface GapItem {
   currentLevel: number;
   gapSeverity: string;
   importance: string;
+  verificationSource: string;
   recommendedProjects: Array<{ id: string; title: string }>;
 }
 
@@ -24,6 +25,7 @@ export interface StrengthItem {
   category: string;
   verifiedLevel: number;
   exceedsBy: number;
+  verificationSource: string;
 }
 
 export interface GapAnalysisResult {
@@ -60,18 +62,20 @@ export async function analyzeStudentGaps(
   }
   const role = roleRows[0];
 
-  // 2. Fetch student's skills
+  // 2. Fetch student's skills (including verification source)
   const studentSkillRows = await sql`
-    SELECT us.skill_id, us.proficiency_level, s.name, s.category
+    SELECT us.skill_id, us.proficiency_level, us.verification_source, s.name, s.category
     FROM user_skills us
     JOIN skills s ON s.id = us.skill_id
     WHERE us.user_id = ${studentId}
   `;
 
   const studentSkillsMap = new Map<string, number>();
+  const studentSkillVerification = new Map<string, string>();
   for (const row of studentSkillRows) {
     const level = Number(row.proficiency_level) || 0;
     studentSkillsMap.set(row.skill_id as string, level);
+    studentSkillVerification.set(row.skill_id as string, (row.verification_source as string) || 'self_reported');
   }
 
   // 3. Fetch role requirements
@@ -102,6 +106,8 @@ export async function analyzeStudentGaps(
     const currentLevel = studentSkillsMap.get(skillId) ?? 0;
     const diff = reqLevel - currentLevel;
 
+    const verSource = studentSkillVerification.get(skillId) || 'self_reported';
+
     if (diff > 0) {
       gaps.push({
         skillId,
@@ -111,6 +117,7 @@ export async function analyzeStudentGaps(
         currentLevel,
         gapSeverity: getGapSeverity(diff),
         importance: req.importance as string,
+        verificationSource: verSource,
         recommendedProjects: [],
       });
     } else {
@@ -120,6 +127,7 @@ export async function analyzeStudentGaps(
         category: req.category as string,
         verifiedLevel: currentLevel,
         exceedsBy: Math.abs(diff),
+        verificationSource: verSource,
       });
     }
   }
