@@ -8,6 +8,7 @@
  */
 
 import { useState } from 'react';
+import { csrfFetch } from '@/lib/security/csrf-fetch';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -66,7 +67,7 @@ export function ReportBuilder({ onReportGenerated }: ReportBuilderProps) {
     setLoading(true);
 
     try {
-      const res = await fetch('/api/education/reports', {
+      const res = await csrfFetch('/api/education/reports', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

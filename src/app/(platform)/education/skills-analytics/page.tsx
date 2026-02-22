@@ -240,9 +240,9 @@ export default function SkillsAnalyticsPage() {
               <p className="text-slate-600 dark:text-slate-300">
                 Professions shown here are <strong>target career roles</strong> — curated positions with specifically defined skill requirements.
                 Each target role lists the skills and proficiency levels needed for that career path. Student readiness is measured by comparing
-                their verified skill profiles against these defined requirements. This is the same methodology used for the{' '}
-                <strong>Skills Gap Assessment</strong>. Professions are not randomly selected — they are intentionally configured by your
-                institution or provided as industry-standard benchmarks.
+                the student&apos;s stated skills and those verified by Proveground against these defined requirements. This is the same methodology
+                used for the <strong>Skills Gap Assessment</strong>. Professions are not randomly selected — they are intentionally configured by
+                your institution or provided as industry-standard benchmarks.
               </p>
               <p className="text-slate-500 dark:text-slate-400 mt-1 text-xs">
                 Readiness tiers: Exploring (0-25%), Building (26-50%), Demonstrating (51-75%), Hire-Ready (76-100%)

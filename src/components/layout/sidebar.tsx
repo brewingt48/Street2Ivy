@@ -186,6 +186,7 @@ function getNavItems(role: string): NavSection[] {
             { href: '/education/issue-reports', label: 'Issue Reports', icon: AlertTriangle, featureGate: 'issueReporting' },
             { href: '/education/match-engine', label: 'Match Engine\u2122', icon: Target, featureGate: 'matchEngine' },
             { href: '/education/skills-analytics', label: 'Skills Analytics', icon: Crosshair, featureGate: 'skillsGapAnalyzer' },
+            { href: '/education/target-roles', label: 'Target Roles', icon: Briefcase, featureGate: 'skillsGapAnalyzer' },
             { href: '/education/outcomes', label: 'Outcomes', icon: LineChart, featureGate: 'outcomesDashboard' },
             { href: '/inbox', label: 'Messages', icon: Inbox },
           ],
