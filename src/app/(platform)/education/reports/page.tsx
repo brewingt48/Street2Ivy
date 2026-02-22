@@ -64,7 +64,7 @@ export default function ReportsPage() {
           Reports
         </h1>
         <p className="text-slate-500 dark:text-slate-400 mt-1">
-          Generate and download outcomes reports
+          Generate and download outcomes reports for your institution. Reports compile student engagement, skill development, employer satisfaction, and program performance data into downloadable formats for stakeholder review and accreditation.
         </p>
       </div>
 
@@ -75,6 +75,9 @@ export default function ReportsPage() {
       <Card>
         <CardHeader>
           <CardTitle className="text-lg">Report Archive</CardTitle>
+          <p className="text-sm text-slate-500 mt-1">
+            Previously generated reports are stored here. Download reports at any time for record-keeping or sharing with stakeholders.
+          </p>
         </CardHeader>
         <CardContent>
           {/* Loading State */}

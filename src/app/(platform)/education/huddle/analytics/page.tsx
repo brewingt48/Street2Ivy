@@ -101,7 +101,7 @@ export default function HuddleAnalyticsPage() {
             Huddle Analytics
           </h1>
           <p className="text-slate-500 dark:text-slate-400 mt-1">
-            Track content engagement and contributor performance
+            Track how your Team Huddle content is performing. Views measure how many times posts are opened, Bookmarks show saved content, and Contributors counts users who have posted. Use this to understand what content resonates with your community.
           </p>
         </div>
 

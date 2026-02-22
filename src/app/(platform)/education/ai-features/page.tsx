@@ -140,7 +140,7 @@ export default function AiFeaturesPage() {
       <div>
         <h1 className="text-3xl font-bold text-slate-900 dark:text-white">AI Features</h1>
         <p className="text-slate-500 dark:text-slate-400 mt-1">
-          View your institution&apos;s AI capabilities and usage based on your current plan
+          View your institution&apos;s AI capabilities and usage. AI features include student coaching, match insights, resume analysis, project scoping, and more. Feature availability and usage limits are determined by your plan tier.
         </p>
       </div>
 

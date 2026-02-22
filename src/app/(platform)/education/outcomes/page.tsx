@@ -187,31 +187,55 @@ export default function OutcomesDashboardPage() {
       </div>
 
       {/* Executive Summary Cards */}
-      <ExecutiveSummaryCards metrics={m} />
+      <div>
+        <h2 className="text-lg font-semibold text-slate-800 dark:text-white mb-1">Executive Summary</h2>
+        <p className="text-sm text-slate-500 dark:text-slate-400 mb-3">
+          High-level metrics showing overall program performance: total completed projects, percentage of students actively engaged, average career readiness score, employer participation, and project completion rates.
+        </p>
+        <ExecutiveSummaryCards metrics={m} />
+      </div>
 
       {/* Engagement + Readiness Tier (2-col grid) */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <EngagementFunnel
-          distribution={engagementDistribution}
-          activationRate={activationRate}
-        />
-        <ReadinessTierProgression tierDistribution={tierDistribution} />
+      <div>
+        <h2 className="text-lg font-semibold text-slate-800 dark:text-white mb-1">Engagement &amp; Readiness</h2>
+        <p className="text-sm text-slate-500 dark:text-slate-400 mb-3">
+          Student engagement shows how many projects students have completed (activation rate). Readiness tiers categorize students from Exploring (early stage) to Hire-Ready based on their verified skills relative to career requirements.
+        </p>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <EngagementFunnel
+            distribution={engagementDistribution}
+            activationRate={activationRate}
+          />
+          <ReadinessTierProgression tierDistribution={tierDistribution} />
+        </div>
       </div>
 
       {/* Skills Over Time */}
-      <SkillsOverTimeChart
-        topSkills={topSkills}
-        verifiedCount={verifiedCount}
-        avgReadiness={avgReadiness}
-      />
+      <div>
+        <h2 className="text-lg font-semibold text-slate-800 dark:text-white mb-1">Skills Development</h2>
+        <p className="text-sm text-slate-500 dark:text-slate-400 mb-3">
+          Tracks which skills students are developing through Proveground projects. Verified skills are confirmed through project completion, not self-reported. Shows the most in-demand skills across your student body.
+        </p>
+        <SkillsOverTimeChart
+          topSkills={topSkills}
+          verifiedCount={verifiedCount}
+          avgReadiness={avgReadiness}
+        />
+      </div>
 
       {/* Employer Impact */}
-      <EmployerImpactSection
-        engagementCount={engagementCount}
-        satisfactionAvg={satisfactionAvg}
-        repeatRate={repeatRate}
-        topEmployers={topEmployers}
-      />
+      <div>
+        <h2 className="text-lg font-semibold text-slate-800 dark:text-white mb-1">Employer Impact</h2>
+        <p className="text-sm text-slate-500 dark:text-slate-400 mb-3">
+          Measures employer participation and satisfaction. Tracks how many corporate partners are posting projects, their average satisfaction ratings, and the rate at which employers return for additional projects.
+        </p>
+        <EmployerImpactSection
+          engagementCount={engagementCount}
+          satisfactionAvg={satisfactionAvg}
+          repeatRate={repeatRate}
+          topEmployers={topEmployers}
+        />
+      </div>
 
       {/* Handshake Correlation Placeholder */}
       <Card>

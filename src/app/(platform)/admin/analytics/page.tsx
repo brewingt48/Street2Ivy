@@ -150,106 +150,135 @@ export default function AdminAnalyticsPage() {
       </div>
 
       {/* Summary Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        <StatCard
-          label="Total Users"
-          value={data.summary.totalUsers}
-          icon={Users}
-          href="/admin/users"
-        />
-        <StatCard
-          label="New This Period"
-          value={data.summary.newUsersThisPeriod}
-          icon={UserPlus}
-          href="/admin/users"
-        />
-        <StatCard
-          label="Active Tenants"
-          value={data.summary.activeTenants}
-          icon={Building2}
-          href="/admin/tenants"
-        />
-        <StatCard
-          label="Total Listings"
-          value={data.summary.totalListings}
-          icon={Briefcase}
-        />
-        <StatCard
-          label="Applications"
-          value={data.summary.totalApplications}
-          icon={FileText}
-        />
-        <StatCard
-          label="Completion Rate"
-          value={`${data.summary.platformCompletionRate}%`}
-          icon={CheckCircle2}
-        />
+      <div>
+        <p className="text-sm text-slate-500 dark:text-slate-400 mb-3">
+          Platform-wide performance overview. Total Users counts all registered accounts, Active Tenants shows institutions and companies with recent activity, and Completion Rate tracks what percentage of accepted applications result in completed projects.
+        </p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <StatCard
+            label="Total Users"
+            value={data.summary.totalUsers}
+            icon={Users}
+            href="/admin/users"
+          />
+          <StatCard
+            label="New This Period"
+            value={data.summary.newUsersThisPeriod}
+            icon={UserPlus}
+            href="/admin/users"
+          />
+          <StatCard
+            label="Active Tenants"
+            value={data.summary.activeTenants}
+            icon={Building2}
+            href="/admin/tenants"
+          />
+          <StatCard
+            label="Total Listings"
+            value={data.summary.totalListings}
+            icon={Briefcase}
+          />
+          <StatCard
+            label="Applications"
+            value={data.summary.totalApplications}
+            icon={FileText}
+          />
+          <StatCard
+            label="Completion Rate"
+            value={`${data.summary.platformCompletionRate}%`}
+            icon={CheckCircle2}
+          />
+        </div>
       </div>
 
       {/* Charts Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <ChartCard
-          type="line"
-          title="User Growth"
-          description="New registrations over time by role"
-          data={userGrowthData}
-          xKey="date"
-          series={[
-            { key: 'students', label: 'Students', color: '#0d9488' },
-            { key: 'corporates', label: 'Corporates', color: '#0284c7' },
-            { key: 'eduAdmins', label: 'Edu Admins', color: '#7c3aed' },
-          ]}
-        />
-        <ChartCard
-          type="bar"
-          title="Application Volume"
-          description="Applications submitted, accepted, and completed"
-          data={appVolumeData}
-          xKey="date"
-          series={[
-            { key: 'submitted', label: 'Submitted', color: '#0d9488' },
-            { key: 'accepted', label: 'Accepted', color: '#0284c7' },
-            { key: 'completed', label: 'Completed', color: '#059669' },
-          ]}
-        />
+      <div>
+        <h2 className="text-lg font-semibold text-slate-800 dark:text-white mb-1">Growth Trends</h2>
+        <p className="text-sm text-slate-500 dark:text-slate-400 mb-3">
+          User Growth tracks new registrations by role (students, corporates, edu admins) over the selected period. Application Volume shows how applications flow from submission through acceptance to completion.
+        </p>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <ChartCard
+            type="line"
+            title="User Growth"
+            description="New registrations over time by role"
+            data={userGrowthData}
+            xKey="date"
+            series={[
+              { key: 'students', label: 'Students', color: '#0d9488' },
+              { key: 'corporates', label: 'Corporates', color: '#0284c7' },
+              { key: 'eduAdmins', label: 'Edu Admins', color: '#7c3aed' },
+            ]}
+          />
+          <ChartCard
+            type="bar"
+            title="Application Volume"
+            description="Applications submitted, accepted, and completed"
+            data={appVolumeData}
+            xKey="date"
+            series={[
+              { key: 'submitted', label: 'Submitted', color: '#0d9488' },
+              { key: 'accepted', label: 'Accepted', color: '#0284c7' },
+              { key: 'completed', label: 'Completed', color: '#059669' },
+            ]}
+          />
+        </div>
       </div>
 
       {/* Role & Category Breakdown */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <ChartCard
-          type="pie"
-          title="Users by Role"
-          data={data.usersByRole}
-          nameKey="role"
-          valueKey="count"
-        />
-        <ChartCard
-          type="pie"
-          title="Listings by Category"
-          data={data.listingsByCategory}
-          nameKey="category"
-          valueKey="count"
-        />
+      <div>
+        <h2 className="text-lg font-semibold text-slate-800 dark:text-white mb-1">Platform Composition</h2>
+        <p className="text-sm text-slate-500 dark:text-slate-400 mb-3">
+          Users by Role shows the breakdown of account types across the platform. Listings by Category shows what types of projects are most commonly posted by corporate partners.
+        </p>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <ChartCard
+            type="pie"
+            title="Users by Role"
+            data={data.usersByRole}
+            nameKey="role"
+            valueKey="count"
+          />
+          <ChartCard
+            type="pie"
+            title="Listings by Category"
+            data={data.listingsByCategory}
+            nameKey="category"
+            valueKey="count"
+          />
+        </div>
       </div>
 
       {/* Tenant Health Table */}
-      <DataTable
-        title="Tenant Health"
-        data={data.tenantHealth as unknown as Record<string, unknown>[]}
-        columns={tenantColumns}
-        exportFilename={`tenant-health-${range}`}
-        pageSize={10}
-        onRowClick={(row) => router.push(`/admin/tenants`)}
-      />
+      <div>
+        <h2 className="text-lg font-semibold text-slate-800 dark:text-white mb-1">Tenant Health</h2>
+        <p className="text-sm text-slate-500 dark:text-slate-400 mb-3">
+          Activity overview for each tenant (institution or corporate partner) on the platform, showing user counts, listing activity, and when they were last active. Helps identify tenants that may need outreach or support.
+        </p>
+        <DataTable
+          title="Tenant Health"
+          data={data.tenantHealth as unknown as Record<string, unknown>[]}
+          columns={tenantColumns}
+          exportFilename={`tenant-health-${range}`}
+          pageSize={10}
+          onRowClick={(row) => router.push(`/admin/tenants`)}
+        />
+      </div>
 
       {/* Top Institutions */}
-      <DataTable
-        title="Top Institutions"
-        data={data.topInstitutions as unknown as Record<string, unknown>[]}
-        columns={institutionColumns}
-        exportFilename={`top-institutions-${range}`}
-        pageSize={10}
-      />
+      <div>
+        <h2 className="text-lg font-semibold text-slate-800 dark:text-white mb-1">Top Institutions</h2>
+        <p className="text-sm text-slate-500 dark:text-slate-400 mb-3">
+          Institutions ranked by student enrollment and successful project placements. Use this to identify your most engaged institutional partners.
+        </p>
+        <DataTable
+          title="Top Institutions"
+          data={data.topInstitutions as unknown as Record<string, unknown>[]}
+          columns={institutionColumns}
+          exportFilename={`top-institutions-${range}`}
+          pageSize={10}
+        />
+      </div>
     </div>
   );
 }

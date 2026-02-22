@@ -102,7 +102,7 @@ export default function MatchEngineDashboard() {
             Match Engine&trade;
           </h1>
           <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-            Real-time scoring stats for your network &mdash; hover the <Info className="inline h-3 w-3 text-slate-400" /> icons for details
+            The Match Engine evaluates student-project fit using multiple dimensions to surface the strongest opportunities. Below are real-time scoring stats for your network &mdash; hover the <Info className="inline h-3 w-3 text-slate-400" /> icons for details on each metric.
           </p>
         </div>
         <div className="flex items-center gap-2">

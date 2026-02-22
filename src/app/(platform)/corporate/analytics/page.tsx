@@ -174,95 +174,124 @@ export default function CorporateAnalyticsPage() {
       </div>
 
       {/* Summary Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        <StatCard
-          label="Active Listings"
-          value={data.summary.activeListings}
-          icon={Briefcase}
-          href="/corporate/projects"
-        />
-        <StatCard
-          label="Total Applications"
-          value={data.summary.totalApplications}
-          icon={FileText}
-          href="/corporate/applications"
-        />
-        <StatCard
-          label="Avg Time to Fill"
-          value={data.summary.avgTimeToFill !== null ? `${data.summary.avgTimeToFill}` : 'N/A'}
-          suffix={data.summary.avgTimeToFill !== null ? 'days' : undefined}
-          icon={Clock}
-        />
-        <StatCard
-          label="Completion Rate"
-          value={`${data.summary.completionRate}%`}
-          icon={CheckCircle2}
-        />
-        <StatCard
-          label="Invite Accept Rate"
-          value={`${data.summary.inviteAcceptRate}%`}
-          icon={UserCheck}
-        />
-        <StatCard
-          label="Avg Applicants / Listing"
-          value={data.summary.avgApplicantsPerListing}
-          icon={Users}
-        />
+      <div>
+        <p className="text-sm text-slate-500 dark:text-slate-400 mb-3">
+          Your hiring pipeline at a glance. Active Listings counts published projects, Avg Time to Fill measures days from posting to acceptance, Completion Rate tracks what percentage of accepted students finish the project, and Invite Accept Rate shows how often students accept your direct invitations.
+        </p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <StatCard
+            label="Active Listings"
+            value={data.summary.activeListings}
+            icon={Briefcase}
+            href="/corporate/projects"
+          />
+          <StatCard
+            label="Total Applications"
+            value={data.summary.totalApplications}
+            icon={FileText}
+            href="/corporate/applications"
+          />
+          <StatCard
+            label="Avg Time to Fill"
+            value={data.summary.avgTimeToFill !== null ? `${data.summary.avgTimeToFill}` : 'N/A'}
+            suffix={data.summary.avgTimeToFill !== null ? 'days' : undefined}
+            icon={Clock}
+          />
+          <StatCard
+            label="Completion Rate"
+            value={`${data.summary.completionRate}%`}
+            icon={CheckCircle2}
+          />
+          <StatCard
+            label="Invite Accept Rate"
+            value={`${data.summary.inviteAcceptRate}%`}
+            icon={UserCheck}
+          />
+          <StatCard
+            label="Avg Applicants / Listing"
+            value={data.summary.avgApplicantsPerListing}
+            icon={Users}
+          />
+        </div>
       </div>
 
       {/* Charts Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <ChartCard
-          type="bar"
-          title="Application Funnel"
-          description="Application pipeline from submission to completion"
-          data={funnelData}
-          xKey="stage"
-          series={[{ key: 'count', label: 'Applications', color: '#0d9488' }]}
-        />
-        <ChartCard
-          type="line"
-          title="Application Activity"
-          description="Applications received and accepted over time"
-          data={timelineData}
-          xKey="date"
-          series={[
-            { key: 'received', label: 'Received', color: '#0d9488' },
-            { key: 'accepted', label: 'Accepted', color: '#0284c7' },
-          ]}
-        />
+      <div>
+        <h2 className="text-lg font-semibold text-slate-800 dark:text-white mb-1">Pipeline Analysis</h2>
+        <p className="text-sm text-slate-500 dark:text-slate-400 mb-3">
+          The Application Funnel shows how applications progress from submission through acceptance to project completion. Application Activity tracks incoming and accepted applications over your selected time period.
+        </p>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <ChartCard
+            type="bar"
+            title="Application Funnel"
+            description="Application pipeline from submission to completion"
+            data={funnelData}
+            xKey="stage"
+            series={[{ key: 'count', label: 'Applications', color: '#0d9488' }]}
+          />
+          <ChartCard
+            type="line"
+            title="Application Activity"
+            description="Applications received and accepted over time"
+            data={timelineData}
+            xKey="date"
+            series={[
+              { key: 'received', label: 'Received', color: '#0d9488' },
+              { key: 'accepted', label: 'Accepted', color: '#0284c7' },
+            ]}
+          />
+        </div>
       </div>
 
       {/* Top Skills */}
       {skillsData.length > 0 && (
-        <ChartCard
-          type="bar"
-          title="Most Requested Skills"
-          description="Skills you've listed across your projects"
-          data={skillsData}
-          xKey="skill"
-          series={[{ key: 'listings', label: 'Listings' }]}
-          height={250}
-        />
+        <div>
+          <h2 className="text-lg font-semibold text-slate-800 dark:text-white mb-1">Skills Demand</h2>
+          <p className="text-sm text-slate-500 dark:text-slate-400 mb-3">
+            Shows the skills you&apos;ve listed most frequently across your project postings. This helps you understand your hiring patterns and the talent profile you&apos;re seeking.
+          </p>
+          <ChartCard
+            type="bar"
+            title="Most Requested Skills"
+            description="Skills you've listed across your projects"
+            data={skillsData}
+            xKey="skill"
+            series={[{ key: 'listings', label: 'Listings' }]}
+            height={250}
+          />
+        </div>
       )}
 
       {/* Listing Performance Table */}
-      <DataTable
-        title="Listing Performance"
-        data={data.listingPerformance as unknown as Record<string, unknown>[]}
-        columns={listingColumns}
-        exportFilename={`listing-performance-${range}`}
-        pageSize={10}
-      />
+      <div>
+        <h2 className="text-lg font-semibold text-slate-800 dark:text-white mb-1">Listing Performance</h2>
+        <p className="text-sm text-slate-500 dark:text-slate-400 mb-3">
+          Performance breakdown for each of your project listings, including how many applicants each received, how many were accepted, and how many completed the project.
+        </p>
+        <DataTable
+          title="Listing Performance"
+          data={data.listingPerformance as unknown as Record<string, unknown>[]}
+          columns={listingColumns}
+          exportFilename={`listing-performance-${range}`}
+          pageSize={10}
+        />
+      </div>
 
       {/* All Applications Table */}
-      <DataTable
-        title="All Applications"
-        data={data.allApplications as unknown as Record<string, unknown>[]}
-        columns={appColumns}
-        exportFilename={`applications-received-${range}`}
-        pageSize={10}
-      />
+      <div>
+        <h2 className="text-lg font-semibold text-slate-800 dark:text-white mb-1">All Applications</h2>
+        <p className="text-sm text-slate-500 dark:text-slate-400 mb-3">
+          Complete record of all applications received across your listings. Sort by any column and export the data for offline analysis.
+        </p>
+        <DataTable
+          title="All Applications"
+          data={data.allApplications as unknown as Record<string, unknown>[]}
+          columns={appColumns}
+          exportFilename={`applications-received-${range}`}
+          pageSize={10}
+        />
+      </div>
     </div>
   );
 }

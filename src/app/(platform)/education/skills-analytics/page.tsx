@@ -169,27 +169,44 @@ export default function SkillsAnalyticsPage() {
       </div>
 
       {/* Summary Stats */}
-      <div className="grid gap-4 md:grid-cols-4">
-        {statCards.map((stat) => (
-          <Card key={stat.label}>
-            <CardContent className="flex items-center gap-3 p-4">
-              <stat.icon className={`h-8 w-8 ${stat.color}`} />
-              <div>
-                <p className="text-2xl font-bold text-slate-800">{stat.value}</p>
-                <p className="text-xs text-slate-500">{stat.label}</p>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+      <div>
+        <p className="text-sm text-slate-500 mb-3">
+          A snapshot of your institution&apos;s workforce readiness. These metrics are computed from student skill profiles compared against target career role requirements.
+        </p>
+        <div className="grid gap-4 md:grid-cols-4">
+          {statCards.map((stat) => (
+            <Card key={stat.label}>
+              <CardContent className="flex items-center gap-3 p-4">
+                <stat.icon className={`h-8 w-8 ${stat.color}`} />
+                <div>
+                  <p className="text-2xl font-bold text-slate-800">{stat.value}</p>
+                  <p className="text-xs text-slate-500">{stat.label}</p>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
       </div>
 
       {/* Charts */}
-      <div className="grid gap-6 lg:grid-cols-2">
-        <InstitutionGapsChart gaps={data.topGaps} />
-        <ReadinessDistribution distribution={data.readinessDistribution} />
+      <div>
+        <h2 className="text-lg font-semibold text-slate-800 mb-1">Gap & Readiness Analysis</h2>
+        <p className="text-sm text-slate-500 mb-3">
+          Identifies the most common skill deficiencies across your student body and shows how students are distributed across readiness tiers (Exploring, Building, Demonstrating, Hire-Ready).
+        </p>
+        <div className="grid gap-6 lg:grid-cols-2">
+          <InstitutionGapsChart gaps={data.topGaps} />
+          <ReadinessDistribution distribution={data.readinessDistribution} />
+        </div>
       </div>
 
       {/* Heatmap */}
+      <div>
+        <h2 className="text-lg font-semibold text-slate-800 mb-1">Skills Coverage Heatmap</h2>
+        <p className="text-sm text-slate-500 mb-3">
+          Shows the percentage of students who have each skill as a strength or gap. Green bars represent institutional strengths; red bars highlight skills where students need additional development.
+        </p>
+      </div>
       <SkillsHeatmap
         strengths={data.topStrengths}
         gaps={data.topGaps}

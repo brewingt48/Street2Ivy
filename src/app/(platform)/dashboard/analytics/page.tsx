@@ -175,89 +175,112 @@ export default function StudentAnalyticsPage() {
       </div>
 
       {/* Summary Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        <StatCard
-          label="Total Applications"
-          value={data.summary.totalApplications}
-          icon={FileText}
-          href="/applications"
-        />
-        <StatCard
-          label="Acceptance Rate"
-          value={`${data.summary.acceptanceRate}%`}
-          icon={CheckCircle2}
-          href="/applications"
-        />
-        <StatCard
-          label="Avg Response Time"
-          value={data.summary.avgResponseTime !== null ? `${data.summary.avgResponseTime}` : 'N/A'}
-          suffix={data.summary.avgResponseTime !== null ? 'days' : undefined}
-          icon={Clock}
-        />
-        <StatCard
-          label="Completed Projects"
-          value={data.summary.completedProjects}
-          icon={Award}
-          href="/applications"
-        />
-        <StatCard
-          label="Profile Completeness"
-          value={`${data.summary.profileCompleteness}%`}
-          icon={User}
-          href="/settings"
-        />
-        <StatCard
-          label="Skills Listed"
-          value={data.summary.skillCount}
-          icon={Zap}
-          href="/settings"
-        />
+      <div>
+        <p className="text-sm text-slate-500 dark:text-slate-400 mb-3">
+          Your career progress at a glance. Total Applications is how many projects you&apos;ve applied to, Acceptance Rate is the percentage accepted, Avg Response Time is how long corporate partners take to respond, and Completed Projects counts successfully finished work.
+        </p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <StatCard
+            label="Total Applications"
+            value={data.summary.totalApplications}
+            icon={FileText}
+            href="/applications"
+          />
+          <StatCard
+            label="Acceptance Rate"
+            value={`${data.summary.acceptanceRate}%`}
+            icon={CheckCircle2}
+            href="/applications"
+          />
+          <StatCard
+            label="Avg Response Time"
+            value={data.summary.avgResponseTime !== null ? `${data.summary.avgResponseTime}` : 'N/A'}
+            suffix={data.summary.avgResponseTime !== null ? 'days' : undefined}
+            icon={Clock}
+          />
+          <StatCard
+            label="Completed Projects"
+            value={data.summary.completedProjects}
+            icon={Award}
+            href="/applications"
+          />
+          <StatCard
+            label="Profile Completeness"
+            value={`${data.summary.profileCompleteness}%`}
+            icon={User}
+            href="/settings"
+          />
+          <StatCard
+            label="Skills Listed"
+            value={data.summary.skillCount}
+            icon={Zap}
+            href="/settings"
+          />
+        </div>
       </div>
 
       {/* Charts Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <ChartCard
-          type="line"
-          title="Application Activity"
-          description="Applications submitted and accepted over time"
-          data={timelineData}
-          xKey="date"
-          series={[
-            { key: 'submitted', label: 'Submitted', color: '#0d9488' },
-            { key: 'accepted', label: 'Accepted', color: '#0284c7' },
-          ]}
-        />
-        <ChartCard
-          type="pie"
-          title="Applications by Status"
-          description="Breakdown of all application outcomes"
-          data={data.applicationsByStatus}
-          nameKey="status"
-          valueKey="count"
-        />
+      <div>
+        <h2 className="text-lg font-semibold text-slate-800 dark:text-white mb-1">Activity Trends</h2>
+        <p className="text-sm text-slate-500 dark:text-slate-400 mb-3">
+          Application Activity shows your submissions and acceptances over time. Applications by Status breaks down all your applications by their current outcome.
+        </p>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <ChartCard
+            type="line"
+            title="Application Activity"
+            description="Applications submitted and accepted over time"
+            data={timelineData}
+            xKey="date"
+            series={[
+              { key: 'submitted', label: 'Submitted', color: '#0d9488' },
+              { key: 'accepted', label: 'Accepted', color: '#0284c7' },
+            ]}
+          />
+          <ChartCard
+            type="pie"
+            title="Applications by Status"
+            description="Breakdown of all application outcomes"
+            data={data.applicationsByStatus}
+            nameKey="status"
+            valueKey="count"
+          />
+        </div>
       </div>
 
       {/* Skills Chart */}
       {skillsChartData.length > 0 && (
-        <ChartCard
-          type="bar"
-          title="Top Skills Used"
-          description="Your skills most associated with applications"
-          data={skillsChartData}
-          xKey="skill"
-          series={[{ key: 'applications', label: 'Applications' }]}
-          height={250}
-        />
+        <div>
+          <h2 className="text-lg font-semibold text-slate-800 dark:text-white mb-1">Skills Impact</h2>
+          <p className="text-sm text-slate-500 dark:text-slate-400 mb-3">
+            Shows which of your skills are most associated with the projects you&apos;ve applied to. Use this to understand which skills are helping you get matched with opportunities.
+          </p>
+          <ChartCard
+            type="bar"
+            title="Top Skills Used"
+            description="Your skills most associated with applications"
+            data={skillsChartData}
+            xKey="skill"
+            series={[{ key: 'applications', label: 'Applications' }]}
+            height={250}
+          />
+        </div>
       )}
 
       {/* Full Applications Table */}
-      <DataTable
-        title="All Applications"
-        data={data.allApplications as unknown as Record<string, unknown>[]}
-        columns={appColumns}
-        exportFilename={`my-applications-${range}`}
-        pageSize={10}
-      />
+      <div>
+        <h2 className="text-lg font-semibold text-slate-800 dark:text-white mb-1">Application History</h2>
+        <p className="text-sm text-slate-500 dark:text-slate-400 mb-3">
+          Complete record of all your project applications with current status, corporate partner, and key dates. You can sort columns and export this data.
+        </p>
+        <DataTable
+          title="All Applications"
+          data={data.allApplications as unknown as Record<string, unknown>[]}
+          columns={appColumns}
+          exportFilename={`my-applications-${range}`}
+          pageSize={10}
+        />
+      </div>
     </div>
   );
 }

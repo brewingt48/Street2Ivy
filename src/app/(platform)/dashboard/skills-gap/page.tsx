@@ -94,7 +94,7 @@ export default function SkillsGapPage() {
             Skills Gap Analyzer
           </h1>
           <p className="text-sm text-slate-500 mt-1">
-            Measure your readiness for target career roles
+            Select a target career role to see how your current skills compare to what employers are looking for. Your readiness score is calculated by comparing your skill levels against the requirements for the selected role. Skills confirmed through completed Proveground projects carry more weight than self-reported skills.
           </p>
         </div>
       </div>

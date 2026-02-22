@@ -135,68 +135,91 @@ export default function EducationAnalyticsPage() {
       </div>
 
       {/* Summary Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-        <StatCard
-          label="Total Students"
-          value={data.summary.totalStudents}
-          icon={GraduationCap}
-          href="/education/students"
-        />
-        <StatCard
-          label="Placement Rate"
-          value={`${data.summary.placementRate}%`}
-          icon={Target}
-        />
-        <StatCard
-          label="Active Projects"
-          value={data.summary.activeProjects}
-          icon={Briefcase}
-        />
-        <StatCard
-          label="Completed Projects"
-          value={data.summary.completedProjects}
-          icon={CheckCircle2}
-        />
+      <div>
+        <p className="text-sm text-slate-500 dark:text-slate-400 mb-3">
+          Key performance indicators for your institution. Total Students counts enrolled students, Placement Rate tracks the percentage who have been accepted into projects, and Active/Completed Projects measure current and past project participation.
+        </p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+          <StatCard
+            label="Total Students"
+            value={data.summary.totalStudents}
+            icon={GraduationCap}
+            href="/education/students"
+          />
+          <StatCard
+            label="Placement Rate"
+            value={`${data.summary.placementRate}%`}
+            icon={Target}
+          />
+          <StatCard
+            label="Active Projects"
+            value={data.summary.activeProjects}
+            icon={Briefcase}
+          />
+          <StatCard
+            label="Completed Projects"
+            value={data.summary.completedProjects}
+            icon={CheckCircle2}
+          />
+        </div>
       </div>
 
       {/* Charts Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <ChartCard
-          type="line"
-          title="Student Enrollment"
-          description="New student registrations over time"
-          data={enrollmentData}
-          xKey="date"
-          series={[{ key: 'newStudents', label: 'New Students', color: '#0d9488' }]}
-        />
-        <ChartCard
-          type="pie"
-          title="Application Outcomes"
-          description="How student applications are resolved"
-          data={data.applicationsByStatus}
-          nameKey="status"
-          valueKey="count"
-        />
+      <div>
+        <h2 className="text-lg font-semibold text-slate-800 dark:text-white mb-1">Trends</h2>
+        <p className="text-sm text-slate-500 dark:text-slate-400 mb-3">
+          Student Enrollment tracks new registrations over the selected time period. Application Outcomes shows how student applications have been resolved (pending, accepted, rejected, completed).
+        </p>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <ChartCard
+            type="line"
+            title="Student Enrollment"
+            description="New student registrations over time"
+            data={enrollmentData}
+            xKey="date"
+            series={[{ key: 'newStudents', label: 'New Students', color: '#0d9488' }]}
+          />
+          <ChartCard
+            type="pie"
+            title="Application Outcomes"
+            description="How student applications are resolved"
+            data={data.applicationsByStatus}
+            nameKey="status"
+            valueKey="count"
+          />
+        </div>
       </div>
 
       {/* Student Activity Table */}
-      <DataTable
-        title="Student Activity"
-        data={data.studentPerformance as unknown as Record<string, unknown>[]}
-        columns={studentColumns}
-        exportFilename={`student-performance-${range}`}
-        pageSize={15}
-      />
+      <div>
+        <h2 className="text-lg font-semibold text-slate-800 dark:text-white mb-1">Student Activity</h2>
+        <p className="text-sm text-slate-500 dark:text-slate-400 mb-3">
+          Individual student performance showing application counts, acceptance rates, and project completions. Use this to identify high-performing students and those who may need additional support.
+        </p>
+        <DataTable
+          title="Student Activity"
+          data={data.studentPerformance as unknown as Record<string, unknown>[]}
+          columns={studentColumns}
+          exportFilename={`student-performance-${range}`}
+          pageSize={15}
+        />
+      </div>
 
       {/* Corporate Partner Activity */}
       {data.corporatePartnerActivity.length > 0 && (
-        <DataTable
-          title="Corporate Partner Activity"
-          data={data.corporatePartnerActivity as unknown as Record<string, unknown>[]}
-          columns={corpColumns}
-          exportFilename={`corporate-partners-${range}`}
-          pageSize={10}
-        />
+        <div>
+          <h2 className="text-lg font-semibold text-slate-800 dark:text-white mb-1">Corporate Partner Activity</h2>
+          <p className="text-sm text-slate-500 dark:text-slate-400 mb-3">
+            Shows which corporate partners are most active on the platform, including how many project listings they have posted and how many students they have hired.
+          </p>
+          <DataTable
+            title="Corporate Partner Activity"
+            data={data.corporatePartnerActivity as unknown as Record<string, unknown>[]}
+            columns={corpColumns}
+            exportFilename={`corporate-partners-${range}`}
+            pageSize={10}
+          />
+        </div>
       )}
     </div>
   );
