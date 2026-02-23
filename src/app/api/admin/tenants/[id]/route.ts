@@ -80,7 +80,7 @@ export async function GET(
       FROM tenants t
       LEFT JOIN users u ON u.tenant_id = t.id
       LEFT JOIN listings l ON l.tenant_id = t.id
-      LEFT JOIN project_applications pa ON pa.tenant_id = t.id
+      LEFT JOIN project_applications pa ON pa.listing_id = l.id
       WHERE t.id = ${id}
       GROUP BY t.id
     `;
