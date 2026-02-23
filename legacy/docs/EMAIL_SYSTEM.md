@@ -1,6 +1,6 @@
 # Email System
 
-Campus2Career uses Mailgun to send transactional emails for all platform notifications.
+Proveground uses Mailgun to send transactional emails for all platform notifications.
 
 ## Architecture
 
@@ -28,7 +28,7 @@ Set via Heroku config vars:
 |----------|----------|---------|-------------|
 | `MAILGUN_API_KEY` | Yes | — | Mailgun API key (provisioned via Heroku add-on) |
 | `MAILGUN_DOMAIN` | Yes | — | Sending domain (e.g. `mg.street2ivy.com`) |
-| `MAILGUN_FROM_NAME` | No | `Campus2Career` | Display name in From header |
+| `MAILGUN_FROM_NAME` | No | `Proveground` | Display name in From header |
 | `MAILGUN_FROM_EMAIL` | No | `noreply@{MAILGUN_DOMAIN}` | From email address |
 | `EMAIL_ENABLED` | No | `true` | Set to `false` to disable sending (logs only) |
 | `REACT_APP_MARKETPLACE_ROOT_URL` | No | `https://street2ivy.com` | Base URL for links in emails |
@@ -66,7 +66,7 @@ Email failures are non-blocking — they are caught and logged but never prevent
 
 All templates share a consistent layout:
 
-- **Header**: Navy (#0f172a) background with "Campus2Career by Street2Ivy" branding
+- **Header**: Navy (#0f172a) background with "Proveground by Street2Ivy" branding
 - **Body**: White card with type-specific content, info cards, and CTA buttons
 - **CTA Button**: Teal (#00A89A) with white text
 - **Footer**: Slate-50 background with copyright and notification preferences link

@@ -28,7 +28,7 @@ const BLOCKED_PASSWORDS = new Set([
   'letmein', 'welcome', 'welcome1',
   'admin', 'administrator', 'admin123',
   'proveground', 'proveground1', 'proveground123',
-  'street2ivy', 'campus2career',
+  'street2ivy', 'proveground',
   'abc123', 'abcdef', 'abcdefg',
   'iloveyou', 'sunshine', 'princess', 'football', 'charlie',
   'trustno1', 'dragon', 'master', 'monkey', 'shadow',

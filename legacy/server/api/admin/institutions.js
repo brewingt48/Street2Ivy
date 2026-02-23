@@ -279,7 +279,7 @@ async function checkInstitutionMembership(req, res) {
       return res.status(200).json({
         isMember: false,
         message:
-          'Your institution is not a member of Campus2Career. Please contact your school administrator.',
+          'Your institution is not a member of Proveground. Please contact your school administrator.',
       });
     }
 
@@ -299,7 +299,7 @@ async function checkInstitutionMembership(req, res) {
       aiCoachingEnabled: isMember ? institution.aiCoachingEnabled : false,
       aiCoachingUrl: isMember && institution.aiCoachingEnabled ? institution.aiCoachingUrl : null,
       message: isMember
-        ? 'Your institution is an active member of Campus2Career.'
+        ? 'Your institution is an active member of Proveground.'
         : 'Your institution membership is not currently active. Please contact your school administrator.',
     });
   } catch (e) {
@@ -336,7 +336,7 @@ async function getMyInstitution(req, res) {
         institutionName: null,
         aiCoachingEnabled: false,
         aiCoachingUrl: null,
-        message: 'Your institution is not a member of Campus2Career.',
+        message: 'Your institution is not a member of Proveground.',
       });
     }
 

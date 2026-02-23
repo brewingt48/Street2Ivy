@@ -1,5 +1,5 @@
 /**
- * Mailgun Email Service for Street2Ivy / Campus2Career
+ * Mailgun Email Service for Street2Ivy / Proveground
  *
  * Sends transactional emails for platform events using Mailgun.
  * Uses professional per-notification-type HTML templates (Phase 4)
@@ -10,7 +10,7 @@
  *   MAILGUN_DOMAIN    – Sending domain (e.g. mg.street2ivy.com or sandbox domain)
  *
  * Optional:
- *   MAILGUN_FROM_NAME  – Display name in From header (default: "Campus2Career")
+ *   MAILGUN_FROM_NAME  – Display name in From header (default: "Proveground")
  *   MAILGUN_FROM_EMAIL – From address (default: noreply@<MAILGUN_DOMAIN>)
  *   EMAIL_ENABLED       – Set to "false" to disable sending (still logs)
  */
@@ -53,7 +53,7 @@ function isEmailEnabled() {
 }
 
 function getFromAddress() {
-  const name = process.env.MAILGUN_FROM_NAME || 'Campus2Career';
+  const name = process.env.MAILGUN_FROM_NAME || 'Proveground';
   const email =
     process.env.MAILGUN_FROM_EMAIL || `noreply@${process.env.MAILGUN_DOMAIN || 'street2ivy.com'}`;
   return `${name} <${email}>`;
@@ -108,7 +108,7 @@ function wrapInHtmlTemplate(subject, plainTextBody) {
           <!-- Header -->
           <tr>
             <td style="background-color:#0f172a;padding:20px 32px;">
-              <span style="font-size:22px;font-weight:700;color:#FFFFFF;font-family:Georgia,'Times New Roman',serif;letter-spacing:-0.3px;">Campus2Career</span>
+              <span style="font-size:22px;font-weight:700;color:#FFFFFF;font-family:Georgia,'Times New Roman',serif;letter-spacing:-0.3px;">Proveground</span>
               <span style="font-size:11px;color:#94A3B8;margin-left:6px;">by Street2Ivy</span>
             </td>
           </tr>
@@ -121,8 +121,8 @@ function wrapInHtmlTemplate(subject, plainTextBody) {
           <!-- Footer -->
           <tr>
             <td style="padding:20px 32px;background-color:#F8FAFC;border-top:1px solid #E2E8F0;font-size:12px;color:#94A3B8;text-align:center;">
-              <p style="margin:0 0 4px 0;">Street2Ivy, Inc. &middot; Campus2Career Platform</p>
-              <p style="margin:0;">You received this email because you have an account on Campus2Career.</p>
+              <p style="margin:0 0 4px 0;">Street2Ivy, Inc. &middot; Proveground Platform</p>
+              <p style="margin:0;">You received this email because you have an account on Proveground.</p>
             </td>
           </tr>
         </table>

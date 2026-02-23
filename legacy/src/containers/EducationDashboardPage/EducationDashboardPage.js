@@ -520,7 +520,7 @@ const MessagesPanel = props => {
                       {messageTab === 'received'
                         ? (msg.senderName || 'Unknown')
                         : (msg.recipientType === 'all-students' ? 'All Students' :
-                           msg.recipientType === 'system-admin' ? 'Campus2Career Support' :
+                           msg.recipientType === 'system-admin' ? 'Proveground Support' :
                            msg.recipientName || 'Unknown')}
                     </td>
                     <td className={css.messageSubjectCell}>
@@ -571,7 +571,7 @@ const MessagesPanel = props => {
               ) : (
                 <p><strong>To:</strong> {
                   selectedMessage.recipientType === 'all-students' ? 'All Students' :
-                  selectedMessage.recipientType === 'system-admin' ? 'Campus2Career Support' :
+                  selectedMessage.recipientType === 'system-admin' ? 'Proveground Support' :
                   selectedMessage.recipientName || 'Unknown'
                 }</p>
               )}
@@ -758,7 +758,7 @@ const CustomizeLandingPanel = ({ institutionDomain }) => {
           <p className={css.customizeDescription}>
             {intl.formatMessage(
               { id: 'EducationDashboardPage.customizeDescription' },
-              { subdomain: `${subdomainPreview}.campus2career.com` }
+              { subdomain: `${subdomainPreview}.proveground.com` }
             )}
           </p>
         </div>
@@ -885,9 +885,9 @@ const CustomizeLandingPanel = ({ institutionDomain }) => {
                   type="text"
                   value={formState.hero.title}
                   onChange={e => updateField('hero', 'title', e.target.value)}
-                  placeholder="e.g. Howard University x Campus2Career"
+                  placeholder="e.g. Howard University x Proveground"
                 />
-                <span className={css.fieldHint}>Leave blank to use the default Campus2Career headline</span>
+                <span className={css.fieldHint}>Leave blank to use the default Proveground headline</span>
               </div>
               <div className={css.formField}>
                 <label>Hero Subtitle</label>
@@ -1187,7 +1187,7 @@ const AlumniNetworkPanel = ({ institutionDomain }) => {
           <textarea
             value={inviteMessage}
             onChange={e => setInviteMessage(e.target.value)}
-            placeholder="Join our alumni network on Campus2Career and connect with current students..."
+            placeholder="Join our alumni network on Proveground and connect with current students..."
             rows={2}
           />
         </div>
@@ -1304,8 +1304,8 @@ const AlumniNetworkPanel = ({ institutionDomain }) => {
 const getIsOnTenantSubdomain = () => {
   if (typeof window === 'undefined') return false;
   const hostname = window.location.hostname;
-  // Match school subdomains: e.g., howard.campus2career.com or howard.street2ivy.com
-  const match = hostname.match(/^([a-z0-9-]+)\.(campus2career|street2ivy)\.com$/);
+  // Match school subdomains: e.g., howard.proveground.com or howard.street2ivy.com
+  const match = hostname.match(/^([a-z0-9-]+)\.(proveground|street2ivy)\.com$/);
   if (match && match[1] !== 'www' && match[1] !== 'app') {
     return true;
   }
@@ -1453,7 +1453,7 @@ const PartnersPanel = ({
             <p className={css.partnerTenantNoticeText}>
               Switch to your institution&#39;s subdomain
               {institutionDomain
-                ? ` (${institutionDomain.split('.')[0]}.campus2career.com)`
+                ? ` (${institutionDomain.split('.')[0]}.proveground.com)`
                 : ''} to approve, reject, or remove corporate partners.
             </p>
           </div>
@@ -1772,7 +1772,7 @@ const EducationDashboardPageComponent = props => {
             <button
               className={`${css.tab} ${activeTab === 'messages' ? css.activeTab : ''}`}
               onClick={() => setActiveTab('messages')}
-              title="Send and manage communications with students and the Campus2Career team"
+              title="Send and manage communications with students and the Proveground team"
             >
               <FormattedMessage id="EducationDashboardPage.tabMessages" />
             </button>
@@ -1803,10 +1803,10 @@ const EducationDashboardPageComponent = props => {
 
           {/* Tab Description */}
           <div className={css.tabDescription}>
-            {activeTab === 'overview' && 'A snapshot of your institution\'s Campus2Career activity including student engagement, project participation, and key performance metrics.'}
+            {activeTab === 'overview' && 'A snapshot of your institution\'s Proveground activity including student engagement, project participation, and key performance metrics.'}
             {activeTab === 'students' && 'View and manage students enrolled from your institution. Track their project applications, active projects, and completion history.'}
             {activeTab === 'reports' && 'Detailed reports and analytics on student outcomes, project completion rates, skills developed, and overall institutional engagement.'}
-            {activeTab === 'messages' && 'Send messages to students and communicate with the Campus2Career team about your institution\'s needs.'}
+            {activeTab === 'messages' && 'Send messages to students and communicate with the Proveground team about your institution\'s needs.'}
             {activeTab === 'customize' && 'Personalize your institution\'s landing page with custom branding, hero content, statistics, and section visibility settings.'}
             {activeTab === 'partners' && 'View corporate partners connected to your institution and manage partnership relationships.'}
           </div>

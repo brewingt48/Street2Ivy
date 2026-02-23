@@ -1,5 +1,5 @@
 /**
- * Email Notification Service for Campus2Career
+ * Email Notification Service for Proveground
  *
  * This module handles sending email notifications for key platform events:
  * - Transaction state changes (application received, accepted, declined, completed)
@@ -51,7 +51,7 @@ const NOTIFICATION_TEMPLATES = {
       You can track your application status in your dashboard.
 
       Best of luck!
-      The Campus2Career Team
+      The Proveground Team
     `,
   },
   [NOTIFICATION_TYPES.APPLICATION_ACCEPTED]: {
@@ -71,7 +71,7 @@ const NOTIFICATION_TEMPLATES = {
       Log in to your dashboard to get started.
 
       Congratulations!
-      The Campus2Career Team
+      The Proveground Team
     `,
   },
   [NOTIFICATION_TYPES.APPLICATION_DECLINED]: {
@@ -83,12 +83,12 @@ const NOTIFICATION_TEMPLATES = {
 
       After careful consideration, the corporate partner has decided to move forward with other candidates for this project.
 
-      Don't be discouraged! There are many other opportunities waiting for you on Campus2Career.
+      Don't be discouraged! There are many other opportunities waiting for you on Proveground.
 
       Browse more projects: {browseProjectsUrl}
 
       Keep applying and building your experience!
-      The Campus2Career Team
+      The Proveground Team
     `,
   },
   [NOTIFICATION_TYPES.PROJECT_COMPLETED]: {
@@ -106,7 +106,7 @@ const NOTIFICATION_TEMPLATES = {
       - Update your profile with your new skills
 
       Keep up the great work!
-      The Campus2Career Team
+      The Proveground Team
     `,
   },
   [NOTIFICATION_TYPES.INVITE_RECEIVED]: {
@@ -126,7 +126,7 @@ const NOTIFICATION_TEMPLATES = {
       View and respond to this invitation: {invitationUrl}
 
       Good luck!
-      The Campus2Career Team
+      The Proveground Team
     `,
   },
   [NOTIFICATION_TYPES.NEW_MESSAGE]: {
@@ -140,7 +140,7 @@ const NOTIFICATION_TEMPLATES = {
 
       View full conversation: {conversationUrl}
 
-      The Campus2Career Team
+      The Proveground Team
     `,
   },
   [NOTIFICATION_TYPES.NEW_APPLICATION]: {
@@ -156,7 +156,7 @@ const NOTIFICATION_TEMPLATES = {
 
       Review their application: {applicationUrl}
 
-      The Campus2Career Team
+      The Proveground Team
     `,
   },
   [NOTIFICATION_TYPES.ASSESSMENT_RECEIVED]: {
@@ -166,12 +166,12 @@ const NOTIFICATION_TEMPLATES = {
 
       {companyName} has submitted a performance assessment for your work on "{projectTitle}".
 
-      This assessment is now part of your Campus2Career profile and can be viewed by other corporate partners.
+      This assessment is now part of your Proveground profile and can be viewed by other corporate partners.
 
       View your assessment: {assessmentUrl}
 
       Keep building your experience!
-      The Campus2Career Team
+      The Proveground Team
     `,
   },
   [NOTIFICATION_TYPES.STUDENT_ACCEPTED_INVITE]: {
@@ -185,7 +185,7 @@ const NOTIFICATION_TEMPLATES = {
 
       View your applications: {applicationUrl}
 
-      The Campus2Career Team
+      The Proveground Team
     `,
   },
   [NOTIFICATION_TYPES.APPLICATION_WITHDRAWN]: {
@@ -199,7 +199,7 @@ const NOTIFICATION_TEMPLATES = {
 
       View your applications: {applicationUrl}
 
-      The Campus2Career Team
+      The Proveground Team
     `,
   },
   [NOTIFICATION_TYPES.INVITATION_DECLINED]: {
@@ -209,11 +209,11 @@ const NOTIFICATION_TEMPLATES = {
 
       {studentName} has decided not to pursue the invitation to apply for "{projectTitle}" at this time.
 
-      There are many other qualified students on Campus2Career. Browse student profiles to find the right match.
+      There are many other qualified students on Proveground. Browse student profiles to find the right match.
 
       Browse students: {browseStudentsUrl}
 
-      The Campus2Career Team
+      The Proveground Team
     `,
   },
   [NOTIFICATION_TYPES.DIRECT_MESSAGE]: {
@@ -227,7 +227,7 @@ const NOTIFICATION_TEMPLATES = {
 
       View full conversation: {conversationUrl}
 
-      The Campus2Career Team
+      The Proveground Team
     `,
   },
 };

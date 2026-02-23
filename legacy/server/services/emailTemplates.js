@@ -1,5 +1,5 @@
 /**
- * Professional HTML Email Templates for Campus2Career
+ * Professional HTML Email Templates for Proveground
  *
  * Each template function receives a data object and returns a complete HTML email string.
  * Templates use inline styles for maximum email client compatibility.
@@ -30,7 +30,7 @@ function escapeHtml(str) {
 }
 
 /**
- * Wraps body content in the Campus2Career email shell (header, card, footer).
+ * Wraps body content in the Proveground email shell (header, card, footer).
  */
 function emailShell(subject, bodyHtml, { preheader = '' } = {}) {
   return `<!DOCTYPE html>
@@ -56,7 +56,7 @@ function emailShell(subject, bodyHtml, { preheader = '' } = {}) {
               <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
                 <tr>
                   <td>
-                    <span style="font-size:22px;font-weight:700;color:#FFFFFF;font-family:Georgia,'Times New Roman',serif;letter-spacing:-0.3px;">Campus2Career</span>
+                    <span style="font-size:22px;font-weight:700;color:#FFFFFF;font-family:Georgia,'Times New Roman',serif;letter-spacing:-0.3px;">Proveground</span>
                     <span style="font-size:11px;color:#94A3B8;margin-left:6px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">by Street2Ivy</span>
                   </td>
                 </tr>
@@ -75,8 +75,8 @@ function emailShell(subject, bodyHtml, { preheader = '' } = {}) {
               <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
                 <tr>
                   <td align="center" style="font-size:12px;color:#94A3B8;line-height:1.5;">
-                    <p style="margin:0 0 4px 0;">Street2Ivy, Inc. &middot; Campus2Career Platform</p>
-                    <p style="margin:0 0 4px 0;">You received this email because you have an account on Campus2Career.</p>
+                    <p style="margin:0 0 4px 0;">Street2Ivy, Inc. &middot; Proveground Platform</p>
+                    <p style="margin:0 0 4px 0;">You received this email because you have an account on Proveground.</p>
                     <p style="margin:0;">
                       <a href="${getBaseUrl()}/account/notifications" style="color:#64748B;text-decoration:underline;font-size:11px;">Manage notification preferences</a>
                     </p>
@@ -415,7 +415,7 @@ function assessmentReceived(data) {
         <tr>
           <td style="padding:20px;">
             <p style="margin:0 0 8px 0;font-size:14px;color:#064E3B;font-weight:600;">&#128203; What this means</p>
-            <p style="margin:0;font-size:14px;color:#065F46;line-height:1.5;">This assessment is now part of your Campus2Career profile. Strong assessments help you stand out when applying to future projects.</p>
+            <p style="margin:0;font-size:14px;color:#065F46;line-height:1.5;">This assessment is now part of your Proveground profile. Strong assessments help you stand out when applying to future projects.</p>
           </td>
         </tr>
       </table>
@@ -555,7 +555,7 @@ function invitationDeclined(data) {
         <tr>
           <td style="padding:20px;">
             <p style="margin:0 0 8px 0;font-size:14px;color:#0f172a;font-weight:600;">What you can do next</p>
-            <p style="margin:0;font-size:14px;color:#334155;line-height:1.5;">There are many qualified students on Campus2Career. Browse student profiles and send invitations to find the right match for your project.</p>
+            <p style="margin:0;font-size:14px;color:#334155;line-height:1.5;">There are many qualified students on Proveground. Browse student profiles and send invitations to find the right match for your project.</p>
           </td>
         </tr>
       </table>

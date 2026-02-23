@@ -312,8 +312,8 @@ function migrateAdminMessages() {
 // Run all migrations
 // -------------------------------------------------------------------
 function runMigration() {
-  console.log('=== Campus2Career: JSON -> SQLite Migration ===\n');
-  console.log(`Database: ${path.join(DATA_DIR, 'campus2career.db')}\n`);
+  console.log('=== Proveground: JSON -> SQLite Migration ===\n');
+  console.log(`Database: ${path.join(DATA_DIR, 'proveground.db')}\n`);
 
   const start = Date.now();
 

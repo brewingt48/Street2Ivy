@@ -383,11 +383,11 @@ export const AuthenticationForms = props => {
   const getCareerServicesEmailLink = () => {
     if (!pendingSignupData) return '#';
 
-    const subject = encodeURIComponent('Request AI Career Coaching from Campus2Career');
+    const subject = encodeURIComponent('Request AI Career Coaching from Proveground');
     const body = encodeURIComponent(
       `Dear Career Services,\n\n` +
-      `I recently discovered that Campus2Career offers AI-powered career coaching for students, including resume reviews, interview practice, and career path guidance.\n\n` +
-      `I believe this would be a valuable resource for our student body. Could you please look into partnering with Campus2Career to make this feature available to us?\n\n` +
+      `I recently discovered that Proveground offers AI-powered career coaching for students, including resume reviews, interview practice, and career path guidance.\n\n` +
+      `I believe this would be a valuable resource for our student body. Could you please look into partnering with Proveground to make this feature available to us?\n\n` +
       `You can learn more at https://street2ivy.com\n\n` +
       `Thank you for your consideration.\n\n` +
       `Best regards,\n` +
@@ -512,7 +512,7 @@ export const AuthenticationForms = props => {
               <span className={css.successIcon}>✅</span>
               <h2 className={css.modalTitle}>You're on the List!</h2>
               <p className={css.modalText}>
-                We've added you to our waitlist. We'll notify you as soon as your school joins Campus2Career.
+                We've added you to our waitlist. We'll notify you as soon as your school joins Proveground.
               </p>
               <p className={css.modalText}>
                 In the meantime, consider reaching out to your career services office to let them know you're interested!
@@ -531,7 +531,7 @@ export const AuthenticationForms = props => {
             // Initial state - institution not found
             <>
               <span className={css.modalIcon}>🎓</span>
-              <h2 className={css.modalTitle}>Your School Hasn't Joined Campus2Career Yet</h2>
+              <h2 className={css.modalTitle}>Your School Hasn't Joined Proveground Yet</h2>
               <p className={css.modalText}>
                 We're not yet partnered with <strong>{pendingSignupData?.emailDomain}</strong>, but we'd love to be!
               </p>

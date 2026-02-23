@@ -77,7 +77,7 @@ export const LogoComponent = props => {
   );
 
   // If the CMS logo fails to load (e.g. ephemeral file lost on Heroku),
-  // fall back to the built-in Campus2Career default logo (not the old branding).
+  // fall back to the built-in Proveground default logo (not the old branding).
   const handleImgError = (e) => {
     const fallback = layout === 'desktop' ? defaultLogoDesktop : defaultLogoMobile;
     if (fallback && e.target.src !== fallback) {
@@ -87,7 +87,7 @@ export const LogoComponent = props => {
 
   // While the CMS fetch is in flight, show the built-in default logo immediately.
   // This prevents a flash of broken/empty content during the async fetch.
-  // Since the default logo is now Campus2Career, the user always sees correct branding.
+  // Since the default logo is now Proveground, the user always sees correct branding.
   if (isLoading) {
     const fallbackSrc = layout === 'desktop' ? defaultLogoDesktop : defaultLogoMobile;
     return (

@@ -1,5 +1,5 @@
 -- ============================================================================
--- CAMPUS2CAREER SHARED NETWORK LAYER
+-- PROVEGROUND SHARED NETWORK LAYER
 -- Enables corporate/alumni partners to post projects visible across tenants
 -- while maintaining full student data isolation per tenant
 --
@@ -61,7 +61,7 @@ CREATE TABLE network_partners (
     primary_contact_email VARCHAR(255),
     primary_contact_phone VARCHAR(20),
 
-    -- Billing (for network-level partners paying Campus2Career directly)
+    -- Billing (for network-level partners paying Proveground directly)
     stripe_customer_id  VARCHAR(255),
     subscription_status VARCHAR(50),
 

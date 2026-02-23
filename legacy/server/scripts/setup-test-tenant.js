@@ -150,14 +150,14 @@ async function setupTestTenant() {
       console.log(`  ⚠️  Tenant "${subdomain}" already exists. Updating...`);
       tenant = tenantRegistry.updateTenant(subdomain, {
         name: schoolName,
-        displayName: `${schoolName} on Campus2Career`,
+        displayName: `${schoolName} on Proveground`,
         institutionDomain: domain,
       });
     } else {
       tenant = tenantRegistry.createTenant({
         subdomain,
         name: schoolName,
-        displayName: `${schoolName} on Campus2Career`,
+        displayName: `${schoolName} on Proveground`,
         institutionDomain: domain,
         sharetribe: {
           // Reuse the same Sharetribe account for testing

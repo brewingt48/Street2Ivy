@@ -1,6 +1,6 @@
 # Application System
 
-Campus2Career uses a custom SQLite-backed application system for managing student-to-corporate project applications. This runs alongside Sharetribe's transaction system — applications are created in SQLite first, then linked to a Sharetribe transaction when the corporate partner accepts.
+Proveground uses a custom SQLite-backed application system for managing student-to-corporate project applications. This runs alongside Sharetribe's transaction system — applications are created in SQLite first, then linked to a Sharetribe transaction when the corporate partner accepts.
 
 ## Architecture
 

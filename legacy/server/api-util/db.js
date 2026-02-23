@@ -1,5 +1,5 @@
 /**
- * SQLite Persistence Layer for Campus2Career
+ * SQLite Persistence Layer for Proveground
  *
  * Replaces all file-based JSON stores and in-memory Maps with a single
  * SQLite database using better-sqlite3 (synchronous, fast, WAL mode).
@@ -20,7 +20,7 @@ if (!fs.existsSync(DATA_DIR)) {
   fs.mkdirSync(DATA_DIR, { recursive: true });
 }
 
-const DB_PATH = path.join(DATA_DIR, 'campus2career.db');
+const DB_PATH = path.join(DATA_DIR, 'proveground.db');
 
 // Open the database (creates file if it doesn't exist)
 const sqlite = new Database(DB_PATH);

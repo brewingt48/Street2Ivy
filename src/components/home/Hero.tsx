@@ -91,7 +91,7 @@ export function Hero({ bookDemoUrl, copy }: HeroProps) {
             transition={{ duration: 0.7, delay: 0.3 }}
             className="font-display text-5xl sm:text-7xl md:text-8xl lg:text-9xl text-white leading-[0.95] tracking-wide uppercase"
           >
-            {copy?.headline ? copy.headline : (<>The Discipline That Built You<br /><span className="text-[#d4a843]">Doesn&apos;t Stop</span> at the Field</>)}
+            {copy?.headline ? copy.headline : (<>Where Talent Is<br /><span className="text-[#d4a843]">Proven,</span> Not Assumed</>)}
           </motion.h1>
 
           {/* Subheadline */}

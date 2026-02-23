@@ -76,7 +76,7 @@ async function sendMessage(req, res) {
     if (recipientType === 'all-students') {
       recipientName = `All Students (${institutionName})`;
     } else if (recipientType === 'system-admin') {
-      recipientName = 'Campus2Career Support';
+      recipientName = 'Proveground Support';
     } else if (recipientType.startsWith('student-')) {
       actualRecipientId = recipientType.replace('student-', '');
       // Fetch student name

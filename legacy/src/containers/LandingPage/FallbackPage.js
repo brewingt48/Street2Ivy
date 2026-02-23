@@ -45,7 +45,7 @@ const SectionMaintenanceMode = props => {
           <p>
             The platform is not fully operational at the moment.
             <br />
-            Try refreshing the page and if that does not solve the issue, contact Campus2Career
+            Try refreshing the page and if that does not solve the issue, contact Proveground
             support.
           </p>
         </div>

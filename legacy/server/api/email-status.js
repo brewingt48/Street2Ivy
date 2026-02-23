@@ -28,7 +28,7 @@ const getEmailStatus = async (req, res) => {
   const hasIntegrationSecret = !!process.env.SHARETRIBE_SDK_CLIENT_SECRET;
   const emailEnabled = isEmailEnabled();
 
-  const fromName = process.env.MAILGUN_FROM_NAME || 'Campus2Career';
+  const fromName = process.env.MAILGUN_FROM_NAME || 'Proveground';
   const fromEmail =
     process.env.MAILGUN_FROM_EMAIL || `noreply@${process.env.MAILGUN_DOMAIN || 'street2ivy.com'}`;
 
@@ -42,7 +42,7 @@ const getEmailStatus = async (req, res) => {
       MAILGUN_API_KEY: hasMailgunKey ? 'Set' : 'MISSING',
       MAILGUN_DOMAIN: hasMailgunDomain ? process.env.MAILGUN_DOMAIN : 'MISSING',
       EMAIL_ENABLED: process.env.EMAIL_ENABLED || '(not set — defaults to auto)',
-      MAILGUN_FROM_NAME: process.env.MAILGUN_FROM_NAME || '(not set — defaults to Campus2Career)',
+      MAILGUN_FROM_NAME: process.env.MAILGUN_FROM_NAME || '(not set — defaults to Proveground)',
       MAILGUN_FROM_EMAIL: process.env.MAILGUN_FROM_EMAIL || '(not set — defaults to noreply@domain)',
       SHARETRIBE_SDK_CLIENT_SECRET: hasIntegrationSecret ? 'Set' : 'MISSING',
     },
@@ -78,8 +78,8 @@ const sendTestEmail = async (req, res) => {
   try {
     const result = await sendEmail({
       to: adminEmail,
-      subject: 'Campus2Career Email Test',
-      text: `Hello ${adminName},\n\nThis is a test email from Campus2Career to verify your Mailgun email delivery is working correctly.\n\nIf you're reading this, email delivery is configured and operational.\n\nTimestamp: ${new Date().toISOString()}\n\n— The Campus2Career Team`,
+      subject: 'Proveground Email Test',
+      text: `Hello ${adminName},\n\nThis is a test email from Proveground to verify your Mailgun email delivery is working correctly.\n\nIf you're reading this, email delivery is configured and operational.\n\nTimestamp: ${new Date().toISOString()}\n\n— The Proveground Team`,
       type: 'test',
       data: { adminName, timestamp: new Date().toISOString() },
       tags: { 'o:tag': ['test', 'admin'] },

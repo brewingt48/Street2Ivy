@@ -62,7 +62,7 @@ async function checkDepositStatus(req, res) {
       message = 'Deposit confirmed. You can accept this student.';
     } else {
       message =
-        'Please contact Campus2Career to submit your deposit before accepting this student. Your deposit ensures payment to students upon project completion.';
+        'Please contact Proveground to submit your deposit before accepting this student. Your deposit ensures payment to students upon project completion.';
     }
 
     res.status(200).json({

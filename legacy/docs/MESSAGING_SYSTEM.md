@@ -1,6 +1,6 @@
 # Messaging System
 
-Campus2Career has **two messaging channels** that work together:
+Proveground has **two messaging channels** that work together:
 
 1. **Sharetribe transaction messages** — tied to marketplace transactions, rendered via ActivityFeed on the TransactionPage
 2. **Custom conversation messages** — SQLite-backed free-form threads between students and corporate partners, rendered via ConversationPage

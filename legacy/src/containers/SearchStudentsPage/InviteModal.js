@@ -35,7 +35,7 @@ const InviteModal = props => {
       listingId: selectedListingId,
       message:
         message.trim() ||
-        `Hi ${studentName}, I'd like to invite you to apply for this project on Campus2Career.`,
+        `Hi ${studentName}, I'd like to invite you to apply for this project on Proveground.`,
     });
   };
 
@@ -117,7 +117,7 @@ const InviteModal = props => {
               className={css.inviteTextarea}
               value={message}
               onChange={e => setMessage(e.target.value)}
-              placeholder={`Hi ${studentName}, I'd like to invite you to apply for this project on Campus2Career.`}
+              placeholder={`Hi ${studentName}, I'd like to invite you to apply for this project on Proveground.`}
               rows={4}
             />
           </div>

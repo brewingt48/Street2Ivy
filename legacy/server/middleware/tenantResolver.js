@@ -41,14 +41,14 @@ function tenantResolver(req, res, next) {
       return res.status(404).send(`
         <!DOCTYPE html>
         <html lang="en">
-        <head><meta charset="utf-8"><title>Not Found - Campus2Career</title>
+        <head><meta charset="utf-8"><title>Not Found - Proveground</title>
         <style>body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0;background:#f7fafc;color:#2d3748}
         .container{text-align:center;max-width:480px;padding:2rem}h1{font-size:1.5rem;margin-bottom:1rem}p{color:#718096;line-height:1.6}
         a{color:#2c5282;text-decoration:none}a:hover{text-decoration:underline}</style></head>
         <body><div class="container">
         <h1>Page Not Found</h1>
-        <p>The institution portal &ldquo;${subdomain}&rdquo; is not registered on Campus2Career.</p>
-        <p><a href="https://${BASE_DOMAIN}">Go to Campus2Career</a></p>
+        <p>The institution portal &ldquo;${subdomain}&rdquo; is not registered on Proveground.</p>
+        <p><a href="https://${BASE_DOMAIN}">Go to Proveground</a></p>
         </div></body></html>
       `);
     }
@@ -57,14 +57,14 @@ function tenantResolver(req, res, next) {
       return res.status(503).send(`
         <!DOCTYPE html>
         <html lang="en">
-        <head><meta charset="utf-8"><title>Temporarily Unavailable - Campus2Career</title>
+        <head><meta charset="utf-8"><title>Temporarily Unavailable - Proveground</title>
         <style>body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0;background:#f7fafc;color:#2d3748}
         .container{text-align:center;max-width:480px;padding:2rem}h1{font-size:1.5rem;margin-bottom:1rem}p{color:#718096;line-height:1.6}
         a{color:#2c5282;text-decoration:none}a:hover{text-decoration:underline}</style></head>
         <body><div class="container">
         <h1>Temporarily Unavailable</h1>
         <p>This institution portal is currently undergoing maintenance. Please check back shortly.</p>
-        <p><a href="https://${BASE_DOMAIN}">Go to Campus2Career</a></p>
+        <p><a href="https://${BASE_DOMAIN}">Go to Proveground</a></p>
         </div></body></html>
       `);
     }

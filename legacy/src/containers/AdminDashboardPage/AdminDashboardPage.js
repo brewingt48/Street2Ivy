@@ -2432,7 +2432,7 @@ const ApplicationsSubPanel = props => {
     <div className={css.subPanelContent}>
       <p className={css.subPanelDescription}>
         Review and manage partnership applications from educational administrators who want to bring
-        Campus2Career to their institution. Approving an application creates the school&apos;s account
+        Proveground to their institution. Approving an application creates the school&apos;s account
         and gives their admin access to the Education Dashboard, where they can invite students,
         customize their landing page, and manage their campus presence.
       </p>
@@ -4303,7 +4303,7 @@ const AICoachingConfigPanel = () => {
             <p className={css.modalDescription}>
               {editingInstitution
                 ? 'Update the institution details below.'
-                : 'Add a new institution to enable their students to access Campus2Career.'}
+                : 'Add a new institution to enable their students to access Proveground.'}
             </p>
 
             {institutionError && (
@@ -4883,7 +4883,7 @@ const ContentManagementPanel = props => {
       const toggleableSections = [
         { key: 'hero', label: 'Hero Section', desc: 'The main banner with headline, subtitle, and call-to-action buttons' },
         { key: 'statistics', label: 'Statistics', desc: 'Impact numbers (students matched, companies, etc.)' },
-        { key: 'features', label: 'Features', desc: 'The "Why Campus2Career" value proposition cards' },
+        { key: 'features', label: 'Features', desc: 'The "Why Proveground" value proposition cards' },
         { key: 'howItWorks', label: 'How It Works', desc: 'Step-by-step process for companies, students, and schools' },
         { key: 'videoTestimonial', label: 'Video Testimonial', desc: 'Video testimonial section' },
         { key: 'testimonials', label: 'Written Testimonials', desc: 'Written quotes from students and partners' },
@@ -6396,7 +6396,7 @@ const TenantsPanel = props => {
       ...prev,
       name: value,
       subdomain,
-      displayName: value ? `${value} on Campus2Career` : '',
+      displayName: value ? `${value} on Proveground` : '',
     }));
   };
 
@@ -6505,7 +6505,7 @@ const TenantsPanel = props => {
   // ── Credentials View ────────────────────────────────────────
   if (view === 'credentials' && createAdminResult) {
     const tenantUrl = credentialsTenant
-      ? `https://${credentialsTenant.subdomain}.campus2career.com`
+      ? `https://${credentialsTenant.subdomain}.proveground.com`
       : '';
 
     return (
@@ -6665,7 +6665,7 @@ const TenantsPanel = props => {
 
         <p className={css.tenantFormIntro}>
           Set up a new white-label portal for an educational institution. Each tenant gets their own
-          subdomain (e.g., <strong>harvard.campus2career.com</strong>) with a separate Sharetribe
+          subdomain (e.g., <strong>harvard.proveground.com</strong>) with a separate Sharetribe
           marketplace. After creating the tenant, you can create an admin account and share the
           login credentials with the school.
         </p>
@@ -6712,8 +6712,8 @@ const TenantsPanel = props => {
             />
             <span className={css.tenantFormHint}>
               {formData.subdomain
-                ? `This tenant will be accessible at: ${formData.subdomain}.campus2career.com`
-                : 'The subdomain for this institution (e.g., "harvard" for harvard.campus2career.com)'}
+                ? `This tenant will be accessible at: ${formData.subdomain}.proveground.com`
+                : 'The subdomain for this institution (e.g., "harvard" for harvard.proveground.com)'}
             </span>
           </div>
 
@@ -6739,7 +6739,7 @@ const TenantsPanel = props => {
               type="text"
               value={formData.displayName}
               onChange={e => setFormData(prev => ({ ...prev, displayName: e.target.value }))}
-              placeholder="Harvard University on Campus2Career"
+              placeholder="Harvard University on Proveground"
             />
             <span className={css.tenantFormHint}>
               The marketplace name shown in the header and page titles. Auto-generated from school
@@ -7243,7 +7243,7 @@ const AdminDashboardPageComponent = props => {
             {activeTab === 'create-admin' && 'Create new system administrator accounts with full platform management capabilities.'}
             {activeTab === 'messages' && 'Compose and send messages to individual users or broadcast announcements across the platform.'}
             {activeTab === 'reports' && 'Platform-wide analytics including user growth trends, project statistics, and engagement metrics.'}
-            {activeTab === 'content' && 'Edit the main Campus2Career landing page hero section, statistics, testimonials, and other dynamic content.'}
+            {activeTab === 'content' && 'Edit the main Proveground landing page hero section, statistics, testimonials, and other dynamic content.'}
             {activeTab === 'institutions' && 'Add, edit, and manage partner educational institutions. Configure their domains, AI coaching access, and student enrollment settings.'}
             {activeTab === 'coaching' && 'Configure the AI Career Coaching integration including platform name, URL, and enable/disable access for students.'}
             {activeTab === 'waitlist' && 'Review students who have registered and are awaiting platform access approval. Approve or decline access requests.'}
