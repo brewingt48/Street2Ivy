@@ -130,6 +130,7 @@ export default function ProjectsPage() {
   const [alumniOfFilter, setAlumniOfFilter] = useState(searchParams.get('alumniOf') || '');
   const [sportsPlayedFilter, setSportsPlayedFilter] = useState(searchParams.get('sportsPlayed') || '');
   const [scopeFilter, setScopeFilter] = useState(searchParams.get('scope') || '');
+  const [skillFilter, setSkillFilter] = useState(searchParams.get('skill') || '');
   const [page, setPage] = useState(parseInt(searchParams.get('page') || '1'));
 
   const fetchProjects = useCallback(async () => {
@@ -144,6 +145,7 @@ export default function ProjectsPage() {
       if (alumniOfFilter) params.set('alumniOf', alumniOfFilter);
       if (sportsPlayedFilter) params.set('sportsPlayed', sportsPlayedFilter);
       if (scopeFilter) params.set('scope', scopeFilter);
+      if (skillFilter) params.set('skill', skillFilter);
       params.set('page', String(page));
       params.set('limit', '12');
 
@@ -158,7 +160,7 @@ export default function ProjectsPage() {
     } finally {
       setLoading(false);
     }
-  }, [search, listingTypeFilter, category, remoteOnly, alumniOfFilter, sportsPlayedFilter, scopeFilter, page]);
+  }, [search, listingTypeFilter, category, remoteOnly, alumniOfFilter, sportsPlayedFilter, scopeFilter, skillFilter, page]);
 
   useEffect(() => {
     fetchProjects();
@@ -178,10 +180,11 @@ export default function ProjectsPage() {
     setAlumniOfFilter('');
     setSportsPlayedFilter('');
     setScopeFilter('');
+    setSkillFilter('');
     setPage(1);
   };
 
-  const hasActiveFilters = search || listingTypeFilter || category || remoteOnly || alumniOfFilter || sportsPlayedFilter || scopeFilter;
+  const hasActiveFilters = search || listingTypeFilter || category || remoteOnly || alumniOfFilter || sportsPlayedFilter || scopeFilter || skillFilter;
 
   return (
     <div className="space-y-6">
@@ -245,6 +248,24 @@ export default function ProjectsPage() {
           );
         })}
       </div>
+
+      {/* Active skill filter banner */}
+      {skillFilter && (
+        <div className="flex items-center gap-2 px-4 py-2.5 bg-teal-50 dark:bg-teal-900/20 border border-teal-200 dark:border-teal-800 rounded-lg">
+          <Filter className="h-4 w-4 text-teal-600" />
+          <span className="text-sm text-teal-800 dark:text-teal-200">
+            Filtered by skill: <strong>{skillFilter}</strong>
+          </span>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="ml-auto h-7 text-xs text-teal-600 hover:text-teal-800"
+            onClick={() => { setSkillFilter(''); setPage(1); }}
+          >
+            Clear skill filter
+          </Button>
+        </div>
+      )}
 
       {/* Search & Filters */}
       <Card>

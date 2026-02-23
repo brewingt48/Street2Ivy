@@ -6,6 +6,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+import { revalidatePath } from 'next/cache';
 import { sql } from '@/lib/db';
 import { getCurrentSession } from '@/lib/auth/middleware';
 import { z } from 'zod';
@@ -132,7 +133,7 @@ export async function PUT(request: NextRequest) {
     const updates = parsed.data;
 
     const [tenant] = await sql`
-      SELECT branding, features FROM tenants WHERE id = ${tenantId}
+      SELECT branding, features, subdomain FROM tenants WHERE id = ${tenantId}
     `;
     if (!tenant) {
       return NextResponse.json({ error: 'Tenant not found' }, { status: 404 });
@@ -230,6 +231,15 @@ export async function PUT(request: NextRequest) {
           RETURNING id, hero_video_url, hero_video_poster_url, hero_headline, hero_subheadline,
                     hero_carousel, gallery_images, about_content, social_links, contact_info
         `;
+
+    // Revalidate the tenant landing page so changes appear immediately
+    if (tenant.subdomain) {
+      try {
+        revalidatePath(`/${tenant.subdomain}`);
+      } catch (revalError) {
+        console.error('Revalidation error (non-blocking):', revalError);
+      }
+    }
 
     return NextResponse.json({
       branding: {

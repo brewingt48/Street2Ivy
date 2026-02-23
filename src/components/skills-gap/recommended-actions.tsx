@@ -44,7 +44,7 @@ export function RecommendedActions({ recommendations }: RecommendedActionsProps)
                 </p>
                 {rec.recommendedProjects.length > 0 ? (
                   <Link
-                    href={`/projects`}
+                    href={`/projects?skill=${encodeURIComponent(rec.skillName)}`}
                     className="block text-xs text-teal-600 hover:underline"
                   >
                     {rec.recommendedProjects.length} matching project{rec.recommendedProjects.length !== 1 ? 's' : ''} available
