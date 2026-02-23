@@ -1,6 +1,6 @@
 {
   "name": "street2ivy",
-  "description": "Campus2Career marketplace platform",
+  "description": "Proveground career readiness platform",
   "buildpacks": [
     { "url": "heroku/nodejs" }
   ],
