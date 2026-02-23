@@ -73,7 +73,7 @@ export default function IssueReportsPage() {
     try {
       const params = new URLSearchParams();
       if (status) params.set('status', status);
-      const res = await fetch(`/api/education/reports?${params}`);
+      const res = await fetch(`/api/education/issue-reports?${params}`);
       const data = await res.json();
       setReports(data.reports || []);
       setTotal(data.total || 0);
@@ -91,7 +91,7 @@ export default function IssueReportsPage() {
   const handleUpdateStatus = async (reportId: string, newStatus: string) => {
     setProcessing(true);
     try {
-      const res = await csrfFetch(`/api/education/reports/${reportId}`, {
+      const res = await csrfFetch(`/api/education/issue-reports/${reportId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

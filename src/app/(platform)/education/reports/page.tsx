@@ -12,7 +12,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { FileText, Download, Eye, Loader2, X, ArrowLeft, TrendingUp, Users, Briefcase, BarChart3 } from 'lucide-react';
+import { FileText, Download, Eye, Loader2, X, ArrowLeft, TrendingUp, Users, Briefcase, BarChart3, Trash2 } from 'lucide-react';
+import { csrfFetch } from '@/lib/security/csrf-fetch';
 import { ReportBuilder } from '@/components/outcomes/report-builder';
 
 interface ReportItem {
@@ -117,6 +118,20 @@ export default function ReportsPage() {
       console.error('Failed to view report:', err);
     } finally {
       setViewLoading(null);
+    }
+  };
+
+  const handleDeleteReport = async (reportId: string) => {
+    if (!confirm('Are you sure you want to delete this report?')) return;
+    try {
+      const res = await csrfFetch(`/api/education/reports/${reportId}`, {
+        method: 'DELETE',
+      });
+      if (res.ok) {
+        fetchReports();
+      }
+    } catch (err) {
+      console.error('Failed to delete report:', err);
     }
   };
 
@@ -337,24 +352,34 @@ export default function ReportsPage() {
                           })}
                         </td>
                         <td className="py-3 text-right">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleViewReport(report.id)}
-                            disabled={isLoadingThis}
-                          >
-                            {isLoadingThis ? (
-                              <>
-                                <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" />
-                                Loading...
-                              </>
-                            ) : (
-                              <>
-                                <Eye className="h-3.5 w-3.5 mr-1" />
-                                View
-                              </>
-                            )}
-                          </Button>
+                          <div className="flex items-center justify-end gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleViewReport(report.id)}
+                              disabled={isLoadingThis}
+                            >
+                              {isLoadingThis ? (
+                                <>
+                                  <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" />
+                                  Loading...
+                                </>
+                              ) : (
+                                <>
+                                  <Eye className="h-3.5 w-3.5 mr-1" />
+                                  View
+                                </>
+                              )}
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleDeleteReport(report.id)}
+                              className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </Button>
+                          </div>
                         </td>
                       </tr>
                     );

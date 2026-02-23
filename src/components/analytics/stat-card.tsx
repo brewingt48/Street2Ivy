@@ -8,7 +8,13 @@
 
 import Link from 'next/link';
 import { Card, CardContent } from '@/components/ui/card';
-import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
+import { TrendingUp, TrendingDown, Minus, Info } from 'lucide-react';
 
 interface StatCardProps {
   label: string;
@@ -18,15 +24,30 @@ interface StatCardProps {
   trendLabel?: string;       // e.g. "vs last 30d"
   href?: string;             // click-through link
   icon?: React.ComponentType<{ className?: string }>;
+  tooltip?: string;          // hover explanation
 }
 
-export function StatCard({ label, value, suffix, trend, trendLabel, href, icon: Icon }: StatCardProps) {
+export function StatCard({ label, value, suffix, trend, trendLabel, href, icon: Icon, tooltip }: StatCardProps) {
   const content = (
     <Card className={href ? 'hover:border-teal-300 hover:shadow-sm transition-all cursor-pointer' : ''}>
       <CardContent className="pt-5 pb-4">
         <div className="flex items-start justify-between">
           <div>
-            <p className="text-sm text-slate-500 dark:text-slate-400">{label}</p>
+            <div className="flex items-center gap-1">
+              <p className="text-sm text-slate-500 dark:text-slate-400">{label}</p>
+              {tooltip && (
+                <TooltipProvider delayDuration={200}>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Info className="h-3.5 w-3.5 text-slate-400 hover:text-slate-600 cursor-help shrink-0" />
+                    </TooltipTrigger>
+                    <TooltipContent side="top" className="max-w-xs text-xs">
+                      <p>{tooltip}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              )}
+            </div>
             <p className="text-2xl font-bold text-slate-900 dark:text-white mt-1">
               {value}{suffix && <span className="text-base font-normal text-slate-400 ml-1">{suffix}</span>}
             </p>

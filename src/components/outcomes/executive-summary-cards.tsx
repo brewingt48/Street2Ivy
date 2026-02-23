@@ -28,6 +28,7 @@ export function ExecutiveSummaryCards({ metrics, comparatives }: ExecutiveSummar
         label="Projects Completed"
         value={projectsCompleted}
         icon={Briefcase}
+        tooltip="Total number of projects that students have completed during this period. A completed project means the student delivered all required outcomes and the employer confirmed completion."
         trend={comparatives?.total_projects_completed?.percentChange ?? null}
         trendLabel={comparatives ? 'vs prev period' : undefined}
       />
@@ -36,6 +37,7 @@ export function ExecutiveSummaryCards({ metrics, comparatives }: ExecutiveSummar
         value={Math.round(activationRate * 10) / 10}
         suffix="%"
         icon={Users}
+        tooltip="Percentage of enrolled students who have applied to, been accepted for, or completed at least one project. A higher rate means more students are actively building their track record."
         trend={comparatives?.student_activation_rate?.percentChange ?? null}
         trendLabel={comparatives ? 'vs prev period' : undefined}
       />
@@ -43,6 +45,7 @@ export function ExecutiveSummaryCards({ metrics, comparatives }: ExecutiveSummar
         label="Avg Readiness"
         value={Math.round(avgReadiness * 10) / 10}
         icon={Target}
+        tooltip="Average career readiness score (0-100) across all students based on verified skills, completed projects, and employer ratings. Tiers: Exploring (0-25), Building (26-50), Demonstrating (51-75), Hire-Ready (76-100)."
         trend={comparatives?.avg_readiness_score?.percentChange ?? null}
         trendLabel={comparatives ? 'vs prev period' : undefined}
       />
@@ -50,6 +53,7 @@ export function ExecutiveSummaryCards({ metrics, comparatives }: ExecutiveSummar
         label="Employer Partners"
         value={employerCount}
         icon={Building2}
+        tooltip="Number of unique employers and alumni partners who have posted projects, reviewed student work, or actively engaged with the platform during this period."
         trend={comparatives?.employer_engagement_count?.percentChange ?? null}
         trendLabel={comparatives ? 'vs prev period' : undefined}
       />
@@ -58,6 +62,7 @@ export function ExecutiveSummaryCards({ metrics, comparatives }: ExecutiveSummar
         value={Math.round(completionRate * 10) / 10}
         suffix="%"
         icon={CheckCircle}
+        tooltip="Percentage of accepted projects that were successfully completed. This measures how effectively students follow through on commitments once they begin a project."
         trend={comparatives?.project_completion_rate?.percentChange ?? null}
         trendLabel={comparatives ? 'vs prev period' : undefined}
       />

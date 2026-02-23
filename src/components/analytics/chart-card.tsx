@@ -118,17 +118,18 @@ export function ChartCard(props: ChartCardProps) {
                 ))}
               </LineChart>
             ) : props.type === 'bar' ? (
-              <BarChart data={data} margin={{ bottom: 10 }}>
+              <BarChart data={data} margin={{ bottom: 40 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
                 <XAxis
                   dataKey={props.xKey}
-                  tick={{ fontSize: 12 }}
+                  tick={{ fontSize: 11 }}
                   stroke="#94a3b8"
-                  textAnchor="middle"
+                  textAnchor="end"
                   interval={0}
-                  height={45}
+                  angle={-35}
+                  height={80}
                   tickFormatter={(value: string) =>
-                    value.length > 18 ? value.slice(0, 16) + '…' : value
+                    value.length > 22 ? value.slice(0, 20) + '…' : value
                   }
                 />
                 <YAxis tick={{ fontSize: 12 }} stroke="#94a3b8" />
