@@ -7,7 +7,7 @@ import { Menu, X, Search, Loader2 } from 'lucide-react';
 const navLinks = [
   { label: 'How It Works', href: '#how-it-works' },
   { label: 'Who It\'s For', href: '#who-its-for' },
-  { label: 'AI Coaching', href: '#ai-coaching' },
+  { label: 'Platform', href: '#platform' },
 ];
 
 const DEMO_URL = 'https://calendly.com/proveground/demo';

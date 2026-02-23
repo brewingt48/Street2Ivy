@@ -15,14 +15,9 @@ import {
   Globe,
   Mail,
   Phone,
-  Shield,
-  Target,
-  Trophy,
-  Handshake,
-  Lock,
-  Share2,
-  Brain,
-  MessageSquare,
+  Zap,
+  Menu,
+  X,
 } from 'lucide-react';
 
 /* --- Types --- */
@@ -135,16 +130,18 @@ export function LandingPageClient({ tenant, stats, partners, legalPolicies = [] 
   const ctaSubheadline = ((branding as Record<string, unknown>).ctaSubheadline as string) || '';
   const footerText = ((branding as Record<string, unknown>).footerText as string) || '';
 
-  /* Build a compelling default headline using the team name */
-  const defaultHeadline = `${teamName}. Where Champions Are Made — On and Off the Field.`;
+  /* Hero copy */
+  const defaultHeadline = `${displayName}'s Talent Engine`;
   const headline = tenant.hero_headline ?? defaultHeadline;
   const subheadline =
     tenant.hero_subheadline ??
-    'Real projects. Verified results. Career momentum \u2014 earned, not assumed.';
+    'Your career starts with real work. Get matched to projects that prove what you can do \u2014 and build a verified record employers trust.';
 
   const studentCount = Number(stats.student_count) || 0;
   const listingCount = Number(stats.listing_count) || 0;
   const partnerCount = Number(stats.partner_count) || 0;
+
+  const aiCoachingEnabled = !!tenant.features?.aiCoaching;
 
   /* --- Hero carousel --- */
   const carousel = tenant.hero_carousel;
@@ -163,6 +160,9 @@ export function LandingPageClient({ tenant, stats, partners, legalPolicies = [] 
     return () => clearInterval(timer);
   }, [carouselImages, carouselInterval, nextSlide]);
 
+  /* --- Mobile menu --- */
+  const [menuOpen, setMenuOpen] = useState(false);
+
   /* --- Social icon map --- */
   function socialIcon(key: string) {
     switch (key) {
@@ -177,16 +177,24 @@ export function LandingPageClient({ tenant, stats, partners, legalPolicies = [] 
     }
   }
 
+  /* --- Nav links --- */
+  const navLinks = [
+    { label: 'How It Works', href: '#how-it-works' },
+    { label: 'Explore Projects', href: `/register?tenant=${tenant.subdomain}&role=student` },
+    ...(aiCoachingEnabled ? [{ label: 'AI Coach', href: '#ai-coaching' }] : []),
+  ];
+
   return (
     <div className="min-h-screen bg-white text-gray-900 overflow-x-hidden">
       {/* ================================================================
-          TOP NAV BAR (logo + institution name)
+          SECTION 1 -- TENANT NAV
          ================================================================ */}
       <nav
         className="sticky top-0 z-50 backdrop-blur-md border-b"
         style={{ backgroundColor: `${primary}f0`, borderColor: `${primary}40` }}
       >
         <div className="max-w-6xl mx-auto px-6 py-3 flex items-center justify-between">
+          {/* Left: Logo + Powered by */}
           <div className="flex items-center gap-3">
             {logoUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
@@ -201,21 +209,96 @@ export function LandingPageClient({ tenant, stats, partners, legalPolicies = [] 
                 {displayName}
               </span>
             )}
+            <span className="hidden md:inline text-xs" style={{ color: `${secondary}88` }}>
+              Powered by Proveground
+            </span>
           </div>
-          <div className="flex items-center gap-4">
+
+          {/* Right: Desktop nav */}
+          <div className="hidden md:flex items-center gap-5">
+            {navLinks.map((link) => (
+              <a
+                key={link.label}
+                href={link.href}
+                className="text-sm font-medium transition-opacity hover:opacity-80"
+                style={{ color: `${secondary}dd` }}
+              >
+                {link.label}
+              </a>
+            ))}
+            <a
+              href={`/login?tenant=${tenant.subdomain}`}
+              className="text-sm font-medium px-4 py-1.5 rounded-lg transition-all hover:opacity-90 border"
+              style={{ borderColor: `${secondary}66`, color: secondary }}
+            >
+              Log In
+            </a>
             <a
               href={`/register?tenant=${tenant.subdomain}&role=student`}
               className="text-sm font-medium px-4 py-1.5 rounded-lg transition-all hover:scale-105"
               style={{ backgroundColor: secondary, color: primary }}
             >
-              Get Started
+              Sign Up
             </a>
           </div>
+
+          {/* Mobile hamburger */}
+          <button
+            className="md:hidden"
+            onClick={() => setMenuOpen(!menuOpen)}
+            aria-label="Toggle menu"
+            style={{ color: secondary }}
+          >
+            {menuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+          </button>
         </div>
+
+        {/* Mobile menu panel */}
+        <AnimatePresence>
+          {menuOpen && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.25 }}
+              className="md:hidden overflow-hidden border-t"
+              style={{ backgroundColor: primary, borderColor: `${primary}40` }}
+            >
+              <div className="px-6 py-4 flex flex-col gap-3">
+                {navLinks.map((link) => (
+                  <a
+                    key={link.label}
+                    href={link.href}
+                    onClick={() => setMenuOpen(false)}
+                    className="text-sm font-medium py-2"
+                    style={{ color: `${secondary}dd` }}
+                  >
+                    {link.label}
+                  </a>
+                ))}
+                <hr style={{ borderColor: `${secondary}22` }} />
+                <a
+                  href={`/login?tenant=${tenant.subdomain}`}
+                  className="text-sm font-medium py-2"
+                  style={{ color: secondary }}
+                >
+                  Log In
+                </a>
+                <a
+                  href={`/register?tenant=${tenant.subdomain}&role=student`}
+                  className="text-sm font-semibold py-2 px-4 rounded-lg text-center"
+                  style={{ backgroundColor: secondary, color: primary }}
+                >
+                  Sign Up
+                </a>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </nav>
 
       {/* ================================================================
-          SECTION 1 -- HERO
+          SECTION 2 -- TENANT HERO
          ================================================================ */}
       <section
         className="relative min-h-[85vh] flex items-center justify-center overflow-hidden"
@@ -223,7 +306,7 @@ export function LandingPageClient({ tenant, stats, partners, legalPolicies = [] 
           background: `linear-gradient(135deg, ${primary} 0%, ${primary}dd 50%, ${primary}aa 100%)`,
         }}
       >
-        {/* Carousel background (multiple rotating images) */}
+        {/* Carousel background */}
         {carouselImages ? (
           <div className="absolute inset-0">
             <AnimatePresence mode="wait">
@@ -242,7 +325,7 @@ export function LandingPageClient({ tenant, stats, partners, legalPolicies = [] 
           </div>
         ) : (
           <>
-            {/* Video background (if provided) */}
+            {/* Video background */}
             {tenant.hero_video_url && (
               <video
                 autoPlay
@@ -256,7 +339,7 @@ export function LandingPageClient({ tenant, stats, partners, legalPolicies = [] 
               </video>
             )}
 
-            {/* Image background (if no video but poster/image provided) */}
+            {/* Static image background */}
             {!tenant.hero_video_url && tenant.hero_video_poster_url && (
               <div
                 className="absolute inset-0 w-full h-full bg-cover bg-center bg-no-repeat opacity-40"
@@ -309,41 +392,18 @@ export function LandingPageClient({ tenant, stats, partners, legalPolicies = [] 
               className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl text-lg font-semibold transition-all duration-200 hover:scale-105 shadow-lg"
               style={{ backgroundColor: secondary, color: primary }}
             >
-              Find Projects
+              Create Your Profile
               <ArrowRight className="h-5 w-5" />
             </a>
             <a
-              href={`/register?tenant=${tenant.subdomain}&role=alumni`}
+              href={`/register?tenant=${tenant.subdomain}&role=student`}
               className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl text-lg font-semibold transition-all duration-200 hover:scale-105 border-2"
               style={{ borderColor: secondary, color: secondary, backgroundColor: 'transparent' }}
             >
-              Find Talent
+              Explore Projects
               <ArrowRight className="h-5 w-5" />
             </a>
           </motion.div>
-
-          {/* AI competitive edge highlights */}
-          <motion.div variants={fadeUp} className="mt-8 flex flex-wrap justify-center gap-3">
-            {[
-              { icon: Trophy, text: 'Prove it with real work' },
-              { icon: Target, text: 'Skills AI can\u2019t replace' },
-              { icon: Rocket, text: 'From the field to the boardroom' },
-            ].map((item) => (
-              <span
-                key={item.text}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm backdrop-blur-sm"
-                style={{
-                  backgroundColor: `${secondary}15`,
-                  border: `1px solid ${secondary}33`,
-                  color: `${secondary}dd`,
-                }}
-              >
-                <item.icon className="h-4 w-4" style={{ color: secondary }} />
-                {item.text}
-              </span>
-            ))}
-          </motion.div>
-
         </motion.div>
 
         {/* Carousel dot indicators */}
@@ -367,28 +427,37 @@ export function LandingPageClient({ tenant, stats, partners, legalPolicies = [] 
       </section>
 
       {/* ================================================================
-          SECTION 2 -- STATS BAR
+          SECTION 3 -- SOCIAL PROOF BAR
          ================================================================ */}
       <section className="border-b border-gray-200 bg-gray-50">
         <div className="max-w-5xl mx-auto px-6 py-8">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
             <div>
-              <p className="text-3xl font-bold" style={{ color: primary }}>
+              <p
+                className="text-3xl font-bold"
+                style={{ color: primary, fontFamily: '"Bebas Neue", ui-sans-serif, system-ui, sans-serif' }}
+              >
                 {studentCount}
               </p>
-              <p className="text-sm text-gray-500 mt-1">Student Athletes</p>
+              <p className="text-sm text-gray-500 mt-1">Students</p>
             </div>
             <div>
-              <p className="text-3xl font-bold" style={{ color: primary }}>
+              <p
+                className="text-3xl font-bold"
+                style={{ color: primary, fontFamily: '"Bebas Neue", ui-sans-serif, system-ui, sans-serif' }}
+              >
                 {listingCount}
               </p>
               <p className="text-sm text-gray-500 mt-1">Active Projects</p>
             </div>
             <div>
-              <p className="text-3xl font-bold" style={{ color: primary }}>
+              <p
+                className="text-3xl font-bold"
+                style={{ color: primary, fontFamily: '"Bebas Neue", ui-sans-serif, system-ui, sans-serif' }}
+              >
                 {partnerCount}
               </p>
-              <p className="text-sm text-gray-500 mt-1">Alumni Partners</p>
+              <p className="text-sm text-gray-500 mt-1">Partners</p>
             </div>
             <a href="/" className="flex items-center justify-center gap-2 hover:opacity-80 transition-opacity">
               <Sparkles className="h-5 w-5 text-amber-500" />
@@ -401,228 +470,204 @@ export function LandingPageClient({ tenant, stats, partners, legalPolicies = [] 
       </section>
 
       {/* ================================================================
-          SECTION 3 -- THE COMPETITIVE LOOP (4-step flow)
+          SECTION 4 -- HOW IT WORKS
          ================================================================ */}
-      {sectionVisible('competitiveLoop') && <section className="py-20 px-6">
-        <div className="max-w-6xl mx-auto">
-          <motion.div
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, amount: 0.3 }}
-            variants={stagger}
-            className="text-center mb-14"
-          >
-            <motion.h2 variants={fadeUp} className="text-3xl sm:text-4xl font-bold mb-4">
-              The Competitive Loop&trade;
-            </motion.h2>
-            <motion.p variants={fadeUp} className="text-gray-500 max-w-2xl mx-auto text-lg">
-              Prepare. Compete. Perform. Repeat. The same cycle that made you an athlete &mdash; now applied to your career.
-            </motion.p>
-          </motion.div>
-
-          <motion.div
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, amount: 0.2 }}
-            variants={stagger}
-            className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8"
-          >
-            {/* Step 1 — Prepare */}
+      {sectionVisible('competitiveLoop') && (
+        <section id="how-it-works" className="py-20 px-6">
+          <div className="max-w-6xl mx-auto">
             <motion.div
-              variants={fadeUp}
-              className="bg-gray-50 rounded-2xl p-8 text-center border border-gray-100 hover:shadow-lg transition-shadow"
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, amount: 0.3 }}
+              variants={stagger}
+              className="text-center mb-14"
             >
-              <div
-                className="inline-flex items-center justify-center w-14 h-14 rounded-full mb-5"
-                style={{ backgroundColor: `${primary}15` }}
-              >
-                <Search className="h-7 w-7" style={{ color: primary }} />
-              </div>
-              <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: primary }}>
-                Prepare
-              </p>
-              <h3 className="text-xl font-semibold mb-3">Find Your Match</h3>
-              <p className="text-gray-500 leading-relaxed">
-                Proveground&apos;s proprietary <strong>Match Engine&trade;</strong> pairs you with real projects from alumni and industry partners &mdash; matched to your skills, your schedule, and your goals.
-              </p>
+              <motion.h2 variants={fadeUp} className="text-3xl sm:text-4xl font-bold mb-4">
+                How It Works
+              </motion.h2>
+              <motion.p variants={fadeUp} className="text-gray-500 max-w-2xl mx-auto text-lg">
+                Four steps to a career powered by proof.
+              </motion.p>
             </motion.div>
 
-            {/* Step 2 — Compete */}
             <motion.div
-              variants={fadeUp}
-              className="bg-gray-50 rounded-2xl p-8 text-center border border-gray-100 hover:shadow-lg transition-shadow"
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, amount: 0.2 }}
+              variants={stagger}
+              className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8"
             >
-              <div
-                className="inline-flex items-center justify-center w-14 h-14 rounded-full mb-5"
-                style={{ backgroundColor: `${primary}15` }}
+              {/* Step 1 */}
+              <motion.div
+                variants={fadeUp}
+                className="bg-gray-50 rounded-2xl p-8 text-center border border-gray-100 hover:shadow-lg transition-shadow"
               >
-                <Briefcase className="h-7 w-7" style={{ color: primary }} />
-              </div>
-              <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: primary }}>
-                Compete
-              </p>
-              <h3 className="text-xl font-semibold mb-3">Do the Work</h3>
-              <p className="text-gray-500 leading-relaxed">
-                Take on real engagements with real stakes. The same discipline, preparation, and execution that defines you as an athlete now defines you as a professional.
-              </p>
-            </motion.div>
+                <div
+                  className="inline-flex items-center justify-center w-14 h-14 rounded-full mb-5"
+                  style={{ backgroundColor: `${primary}15` }}
+                >
+                  <Rocket className="h-7 w-7" style={{ color: primary }} />
+                </div>
+                <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: primary }}>
+                  01
+                </p>
+                <h3 className="text-xl font-semibold mb-3">Sign Up &amp; Build Your Profile</h3>
+                <p className="text-gray-500 leading-relaxed">
+                  Create your profile, add your skills and interests. Proveground&apos;s Match Engine finds projects aligned with your strengths.
+                </p>
+              </motion.div>
 
-            {/* Step 3 — Perform */}
-            <motion.div
-              variants={fadeUp}
-              className="bg-gray-50 rounded-2xl p-8 text-center border border-gray-100 hover:shadow-lg transition-shadow"
-            >
-              <div
-                className="inline-flex items-center justify-center w-14 h-14 rounded-full mb-5"
-                style={{ backgroundColor: `${primary}15` }}
+              {/* Step 2 */}
+              <motion.div
+                variants={fadeUp}
+                className="bg-gray-50 rounded-2xl p-8 text-center border border-gray-100 hover:shadow-lg transition-shadow"
               >
-                <Target className="h-7 w-7" style={{ color: primary }} />
-              </div>
-              <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: primary }}>
-                Perform
-              </p>
-              <h3 className="text-xl font-semibold mb-3">Earn Your Reputation</h3>
-              <p className="text-gray-500 leading-relaxed">
-                Deliver results. Earn verified reviews. Build a professional track record that complements your GPA and strengthens everything you do &mdash; in the classroom and beyond.
-              </p>
-            </motion.div>
+                <div
+                  className="inline-flex items-center justify-center w-14 h-14 rounded-full mb-5"
+                  style={{ backgroundColor: `${primary}15` }}
+                >
+                  <Search className="h-7 w-7" style={{ color: primary }} />
+                </div>
+                <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: primary }}>
+                  02
+                </p>
+                <h3 className="text-xl font-semibold mb-3">Get Matched to Real Projects</h3>
+                <p className="text-gray-500 leading-relaxed">
+                  Browse curated project opportunities from employers, alumni, and industry partners &mdash; matched to your skills and schedule.
+                </p>
+              </motion.div>
 
-            {/* Step 4 — Repeat */}
-            <motion.div
-              variants={fadeUp}
-              className="bg-gray-50 rounded-2xl p-8 text-center border border-gray-100 hover:shadow-lg transition-shadow"
-            >
-              <div
-                className="inline-flex items-center justify-center w-14 h-14 rounded-full mb-5"
-                style={{ backgroundColor: `${primary}15` }}
+              {/* Step 3 */}
+              <motion.div
+                variants={fadeUp}
+                className="bg-gray-50 rounded-2xl p-8 text-center border border-gray-100 hover:shadow-lg transition-shadow"
               >
-                <Award className="h-7 w-7" style={{ color: primary }} />
-              </div>
-              <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: primary }}>
-                Repeat
-              </p>
-              <h3 className="text-xl font-semibold mb-3">Momentum Compounds</h3>
-              <p className="text-gray-500 leading-relaxed">
-                Every project builds on the last. Experience enhances your academics, your athletics, and your career trajectory. Champions never stop competing.
-              </p>
-            </motion.div>
-          </motion.div>
+                <div
+                  className="inline-flex items-center justify-center w-14 h-14 rounded-full mb-5"
+                  style={{ backgroundColor: `${primary}15` }}
+                >
+                  <Briefcase className="h-7 w-7" style={{ color: primary }} />
+                </div>
+                <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: primary }}>
+                  03
+                </p>
+                <h3 className="text-xl font-semibold mb-3">Do Real Work</h3>
+                <p className="text-gray-500 leading-relaxed">
+                  Take on real engagements with real stakes. Deliver professional-grade results and earn verified reviews from project partners.
+                </p>
+              </motion.div>
 
-          <motion.p
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, amount: 0.3 }}
-            variants={fadeUp}
-            className="text-center text-xs text-gray-400 mt-8"
-          >
-            Proveground is a matching and discovery platform. All work, contracts, and payments are arranged directly between participants, outside the platform.
-          </motion.p>
-        </div>
-      </section>}
+              {/* Step 4 */}
+              <motion.div
+                variants={fadeUp}
+                className="bg-gray-50 rounded-2xl p-8 text-center border border-gray-100 hover:shadow-lg transition-shadow"
+              >
+                <div
+                  className="inline-flex items-center justify-center w-14 h-14 rounded-full mb-5"
+                  style={{ backgroundColor: `${primary}15` }}
+                >
+                  <Award className="h-7 w-7" style={{ color: primary }} />
+                </div>
+                <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: primary }}>
+                  04
+                </p>
+                <h3 className="text-xl font-semibold mb-3">Build Your Proof</h3>
+                <p className="text-gray-500 leading-relaxed">
+                  Every completed project adds to your verified portfolio. Build a track record employers trust &mdash; not just a resume they skim.
+                </p>
+              </motion.div>
+            </motion.div>
+          </div>
+        </section>
+      )}
 
       {/* ================================================================
-          SECTION 4 -- VALUE PROPOSITION CARDS
+          SECTION 5 -- PLATFORM FEATURES
          ================================================================ */}
-      {sectionVisible('valueProps') && <section className="py-20 px-6 bg-gray-50">
-        <div className="max-w-6xl mx-auto">
-          <motion.div
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, amount: 0.3 }}
-            variants={stagger}
-            className="text-center mb-14"
-          >
-            <motion.h2 variants={fadeUp} className="text-3xl sm:text-4xl font-bold mb-4">
-              Three paths. One destination.
-            </motion.h2>
-          </motion.div>
-
-          <motion.div
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, amount: 0.2 }}
-            variants={stagger}
-            className="grid md:grid-cols-3 gap-8"
-          >
-            {/* Card 1 -- Student-Athletes & Students */}
+      {sectionVisible('platformFeatures') && (
+        <section className="py-20 px-6 bg-gray-50">
+          <div className="max-w-6xl mx-auto">
             <motion.div
-              variants={fadeUp}
-              className="bg-white rounded-2xl p-8 border border-gray-100 shadow-sm hover:shadow-lg transition-shadow"
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, amount: 0.3 }}
+              variants={stagger}
+              className="text-center mb-14"
             >
-              <div
-                className="inline-flex items-center justify-center w-14 h-14 rounded-full mb-5"
-                style={{ backgroundColor: `${primary}15` }}
-              >
-                <Trophy className="h-7 w-7" style={{ color: primary }} />
-              </div>
-              <h3 className="text-xl font-semibold mb-3">For Students</h3>
-              <p className="text-gray-500 leading-relaxed mb-4">
-                Your work speaks for itself. Proveground&apos;s proprietary <strong>Match Engine&trade;</strong> pairs you with projects that fit your skills, schedule, and growth trajectory &mdash; so every engagement builds toward the career you want.
-              </p>
-              <a
-                href={`/register?tenant=${tenant.subdomain}&role=student`}
-                className="inline-flex items-center gap-1 text-sm font-semibold transition-colors"
-                style={{ color: primary }}
-              >
-                Find Projects <ArrowRight className="h-4 w-4" />
-              </a>
+              <motion.h2 variants={fadeUp} className="text-3xl sm:text-4xl font-bold mb-4">
+                Your career toolkit.
+              </motion.h2>
+              <motion.p variants={fadeUp} className="text-gray-500 max-w-2xl mx-auto text-lg">
+                Smart matching, AI coaching, and a verified portfolio &mdash; all in one platform.
+              </motion.p>
             </motion.div>
 
-            {/* Card 2 -- Alumni & Corporate Partners */}
             <motion.div
-              variants={fadeUp}
-              className="bg-white rounded-2xl p-8 border border-gray-100 shadow-sm hover:shadow-lg transition-shadow"
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, amount: 0.2 }}
+              variants={stagger}
+              className={`grid gap-8 ${aiCoachingEnabled ? 'md:grid-cols-3' : 'md:grid-cols-2'}`}
             >
-              <div
-                className="inline-flex items-center justify-center w-14 h-14 rounded-full mb-5"
-                style={{ backgroundColor: `${primary}15` }}
+              {/* Card 1: Smart Matching */}
+              <motion.div
+                variants={fadeUp}
+                className="bg-white rounded-2xl p-8 border border-gray-100 shadow-sm hover:shadow-lg transition-shadow"
               >
-                <Handshake className="h-7 w-7" style={{ color: primary }} />
-              </div>
-              <h3 className="text-xl font-semibold mb-3">For Alumni &amp; Partners</h3>
-              <p className="text-gray-500 leading-relaxed mb-4">
-                Shape the talent pipeline. Post meaningful projects and let Proveground&apos;s proprietary <strong>Match Engine&trade;</strong> surface the right students for the work. Discover top talent through verified engagement &mdash; not guesswork.
-              </p>
-              <a
-                href={`/register?tenant=${tenant.subdomain}&role=alumni`}
-                className="inline-flex items-center gap-1 text-sm font-semibold transition-colors"
-                style={{ color: primary }}
-              >
-                Join as a Partner <ArrowRight className="h-4 w-4" />
-              </a>
-            </motion.div>
+                <div
+                  className="inline-flex items-center justify-center w-14 h-14 rounded-full mb-5"
+                  style={{ backgroundColor: `${primary}15` }}
+                >
+                  <Zap className="h-7 w-7" style={{ color: primary }} />
+                </div>
+                <h3 className="text-xl font-semibold mb-3">Smart Matching</h3>
+                <p className="text-gray-500 leading-relaxed">
+                  Proveground&apos;s Match Engine evaluates your skills, schedule, and goals to connect you with the right projects automatically.
+                </p>
+              </motion.div>
 
-            {/* Card 3 -- Universities & Athletic Programs */}
-            <motion.div
-              variants={fadeUp}
-              className="bg-white rounded-2xl p-8 border border-gray-100 shadow-sm hover:shadow-lg transition-shadow"
-            >
-              <div
-                className="inline-flex items-center justify-center w-14 h-14 rounded-full mb-5"
-                style={{ backgroundColor: `${primary}15` }}
+              {/* Card 2: AI Career Coach (only if enabled) */}
+              {aiCoachingEnabled && (
+                <motion.div
+                  variants={fadeUp}
+                  className="bg-white rounded-2xl p-8 border border-gray-100 shadow-sm hover:shadow-lg transition-shadow"
+                >
+                  <div
+                    className="inline-flex items-center justify-center w-14 h-14 rounded-full mb-5"
+                    style={{ backgroundColor: `${primary}15` }}
+                  >
+                    <Sparkles className="h-7 w-7" style={{ color: primary }} />
+                  </div>
+                  <h3 className="text-xl font-semibold mb-3">AI Career Coach</h3>
+                  <p className="text-gray-500 leading-relaxed">
+                    Personalized coaching powered by Anthropic&apos;s Claude. Interview prep, project strategy, resume review &mdash; a coach that meets you where you are.
+                  </p>
+                </motion.div>
+              )}
+
+              {/* Card 3: Verified Portfolio */}
+              <motion.div
+                variants={fadeUp}
+                className="bg-white rounded-2xl p-8 border border-gray-100 shadow-sm hover:shadow-lg transition-shadow"
               >
-                <Shield className="h-7 w-7" style={{ color: primary }} />
-              </div>
-              <h3 className="text-xl font-semibold mb-3">For Programs</h3>
-              <p className="text-gray-500 leading-relaxed mb-4">
-                Lead with vision. Launch a branded talent engine powered by Proveground&apos;s proprietary <strong>Match Engine&trade;</strong> &mdash; connecting your students to the right opportunities across the network, schedule-aware and data-driven.
-              </p>
-              <a
-                href="https://calendly.com/proveground/demo"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1 text-sm font-semibold transition-colors"
-                style={{ color: primary }}
-              >
-                Schedule a Demo <ArrowRight className="h-4 w-4" />
-              </a>
+                <div
+                  className="inline-flex items-center justify-center w-14 h-14 rounded-full mb-5"
+                  style={{ backgroundColor: `${primary}15` }}
+                >
+                  <Award className="h-7 w-7" style={{ color: primary }} />
+                </div>
+                <h3 className="text-xl font-semibold mb-3">Verified Portfolio</h3>
+                <p className="text-gray-500 leading-relaxed">
+                  Every completed project builds your verified record. Employers see real work, real reviews, and real skills &mdash; not just claims on a resume.
+                </p>
+              </motion.div>
             </motion.div>
-          </motion.div>
-        </div>
-      </section>}
+          </div>
+        </section>
+      )}
 
       {/* ================================================================
-          SECTION 5 -- ALUMNI PARTNERS SHOWCASE
+          SECTION 6 -- ALUMNI PARTNERS SHOWCASE
          ================================================================ */}
       {sectionVisible('alumniPartners') && partners.length > 0 && (
         <section className="py-20 px-6">
@@ -661,13 +706,13 @@ export function LandingPageClient({ tenant, stats, partners, legalPolicies = [] 
                     variants={fadeUp}
                     className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm hover:shadow-md transition-shadow"
                   >
-                    {/* Avatar placeholder */}
                     <div className="flex items-center gap-4 mb-4">
                       <div
                         className="w-12 h-12 rounded-full flex items-center justify-center text-lg font-bold"
                         style={{ backgroundColor: `${primary}20`, color: primary }}
                       >
                         {partner.avatar_url ? (
+                          // eslint-disable-next-line @next/next/no-img-element
                           <img
                             src={partner.avatar_url}
                             alt={ownerName ?? partner.name}
@@ -685,7 +730,6 @@ export function LandingPageClient({ tenant, stats, partners, legalPolicies = [] 
                       </div>
                     </div>
 
-                    {/* Meta */}
                     <div className="flex flex-wrap gap-2 mb-3">
                       {partner.alumni_graduation_year && (
                         <span className="text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-600">
@@ -707,7 +751,6 @@ export function LandingPageClient({ tenant, stats, partners, legalPolicies = [] 
                       )}
                     </div>
 
-                    {/* Bio / Description */}
                     <p className="text-sm text-gray-600 leading-relaxed line-clamp-3">
                       {partner.alumni_bio ?? partner.description ?? ''}
                     </p>
@@ -720,7 +763,7 @@ export function LandingPageClient({ tenant, stats, partners, legalPolicies = [] 
       )}
 
       {/* ================================================================
-          SECTION 6 -- ABOUT
+          SECTION 7 -- ABOUT
          ================================================================ */}
       {sectionVisible('about') && tenant.about_content && (
         <section className="py-20 px-6">
@@ -746,7 +789,7 @@ export function LandingPageClient({ tenant, stats, partners, legalPolicies = [] 
       )}
 
       {/* ================================================================
-          SECTION 6.5 -- PHOTO GALLERY
+          SECTION 8 -- PHOTO GALLERY
          ================================================================ */}
       {sectionVisible('gallery') && Array.isArray(tenant.gallery_images) && tenant.gallery_images.length > 0 && (
         <section className="py-20 px-6 bg-gray-50">
@@ -785,12 +828,11 @@ export function LandingPageClient({ tenant, stats, partners, legalPolicies = [] 
       )}
 
       {/* ================================================================
-          SECTION 7 -- SOCIAL LINKS + CONTACT
+          SECTION 9 -- SOCIAL LINKS + CONTACT
          ================================================================ */}
       {sectionVisible('socialContact') && (Object.keys(socialLinks).length > 0 || contactInfo.email || contactInfo.phone) && (
         <section className="py-12 px-6 bg-gray-50 border-t border-gray-200">
           <div className="max-w-3xl mx-auto flex flex-col sm:flex-row items-center justify-center gap-6">
-            {/* Social icons */}
             {Object.entries(socialLinks).map(
               ([key, url]) =>
                 url && (
@@ -807,7 +849,6 @@ export function LandingPageClient({ tenant, stats, partners, legalPolicies = [] 
                 )
             )}
 
-            {/* Contact info */}
             {contactInfo.email && (
               <a
                 href={`mailto:${contactInfo.email}`}
@@ -831,124 +872,44 @@ export function LandingPageClient({ tenant, stats, partners, legalPolicies = [] 
       )}
 
       {/* ================================================================
-          SECTION 8 -- AI COACHING (feature-gated)
+          SECTION 10 -- AI COACHING (feature-gated)
          ================================================================ */}
-      {sectionVisible('aiCoaching') && !!tenant.features?.aiCoaching && (
+      {sectionVisible('aiCoaching') && aiCoachingEnabled && (
         <AICoachingSection primary={primary} subdomain={tenant.subdomain} />
       )}
 
       {/* ================================================================
-          SECTION 8.5 -- NETWORK ECOSYSTEM
+          SECTION 11 -- COMPETITIVE EDGE (motivational)
          ================================================================ */}
-      {sectionVisible('networkEcosystem') && <section className="py-20 px-6 bg-white">
-        <div className="max-w-6xl mx-auto">
+      <section className="py-20 px-6 bg-white">
+        <div className="max-w-3xl mx-auto text-center">
           <motion.div
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, amount: 0.3 }}
             variants={stagger}
-            className="text-center mb-14"
           >
-            <motion.h2 variants={fadeUp} className="text-3xl sm:text-4xl font-bold mb-4">
-              Stronger together.
+            <motion.h2 variants={fadeUp} className="text-3xl sm:text-4xl font-bold mb-6">
+              The students who stand out are the ones who show their work.
             </motion.h2>
-            <motion.p
-              variants={fadeUp}
-              className="text-gray-500 text-lg leading-relaxed max-w-3xl mx-auto"
-            >
-              {displayName} is part of the Proveground ecosystem &mdash; a unified talent network
-              where institutions, alumni, and industry partners share opportunities and grow
-              together. Your talent engine is live. The network is working for you.
+            <motion.p variants={fadeUp} className="text-gray-500 text-lg leading-relaxed max-w-2xl mx-auto">
+              Anyone can list skills on a resume. Proveground students prove them &mdash; with verified project outcomes, real employer reviews, and a portfolio that speaks for itself.
             </motion.p>
           </motion.div>
-
-          <motion.div
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, amount: 0.2 }}
-            variants={stagger}
-            className="grid md:grid-cols-3 gap-8 mb-12"
-          >
-            {/* Exclusive */}
-            <motion.div
-              variants={fadeUp}
-              className="bg-gray-50 rounded-2xl p-8 border border-gray-100 hover:shadow-lg transition-shadow"
-            >
-              <div
-                className="inline-flex items-center justify-center w-14 h-14 rounded-full mb-5"
-                style={{ backgroundColor: `${primary}15` }}
-              >
-                <Lock className="h-7 w-7" style={{ color: primary }} />
-              </div>
-              <h3 className="text-xl font-semibold mb-3">Exclusive Opportunities</h3>
-              <p className="text-gray-500 leading-relaxed">
-                Your talent engine is private to your program. Listings are visible only to your students, vetted by your team. Quality and trust, by design.
-              </p>
-            </motion.div>
-
-            {/* Network Sharing */}
-            <motion.div
-              variants={fadeUp}
-              className="bg-gray-50 rounded-2xl p-8 border border-gray-100 hover:shadow-lg transition-shadow"
-            >
-              <div
-                className="inline-flex items-center justify-center w-14 h-14 rounded-full mb-5"
-                style={{ backgroundColor: `${primary}15` }}
-              >
-                <Share2 className="h-7 w-7" style={{ color: primary }} />
-              </div>
-              <h3 className="text-xl font-semibold mb-3">Network Sharing</h3>
-              <p className="text-gray-500 leading-relaxed">
-                Choose to share select opportunities across the Proveground network. Partner institutions see what you publish, and you see theirs &mdash; expanding reach while preserving control.
-              </p>
-            </motion.div>
-
-            {/* Open Ecosystem */}
-            <motion.div
-              variants={fadeUp}
-              className="bg-gray-50 rounded-2xl p-8 border border-gray-100 hover:shadow-lg transition-shadow"
-            >
-              <div
-                className="inline-flex items-center justify-center w-14 h-14 rounded-full mb-5"
-                style={{ backgroundColor: `${primary}15` }}
-              >
-                <Globe className="h-7 w-7" style={{ color: primary }} />
-              </div>
-              <h3 className="text-xl font-semibold mb-3">Open Ecosystem</h3>
-              <p className="text-gray-500 leading-relaxed">
-                Corporate partners and alumni post directly into the network. Every institution connected to Proveground gains access &mdash; creating a talent pipeline that grows stronger together.
-              </p>
-            </motion.div>
-          </motion.div>
-
-          {/* Credibility strip */}
-          <motion.div
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, amount: 0.3 }}
-            variants={fadeUp}
-            className="flex flex-wrap justify-center gap-6"
-          >
-            {([
-              { Icon: Trophy, label: 'Athletic Programs' },
-              { Icon: Shield, label: 'Career Services' },
-              { Icon: Users, label: 'Alumni Networks' },
-              { Icon: Globe, label: 'Proveground Network' },
-            ] as const).map((item) => (
-              <div
-                key={item.label}
-                className="flex items-center gap-2 px-4 py-2 rounded-full bg-gray-50 border border-gray-200"
-              >
-                <item.Icon className="h-5 w-5" style={{ color: primary }} />
-                <span className="text-sm font-medium text-gray-700">{item.label}</span>
-              </div>
-            ))}
-          </motion.div>
         </div>
-      </section>}
+      </section>
 
       {/* ================================================================
-          SECTION 9 -- CTA FOOTER
+          SECTION 12 -- BUSINESS MODEL DISCLAIMER
+         ================================================================ */}
+      <section className="py-6 px-6 bg-gray-100">
+        <p className="text-center text-xs text-gray-400 max-w-3xl mx-auto">
+          Proveground is a matching and discovery platform. All work, contracts, and payments are arranged directly between participants, outside the platform.
+        </p>
+      </section>
+
+      {/* ================================================================
+          SECTION 13 -- TENANT FINAL CTA
          ================================================================ */}
       <section
         className="py-20 px-6"
@@ -968,14 +929,14 @@ export function LandingPageClient({ tenant, stats, partners, legalPolicies = [] 
             className="text-3xl sm:text-4xl font-bold mb-4"
             style={{ color: secondary }}
           >
-            {ctaHeadline || 'This is your ground.'}
+            {ctaHeadline || 'Ready to prove what you can do?'}
           </motion.h2>
           <motion.p
             variants={fadeUp}
             className="text-lg mb-10 max-w-xl mx-auto"
             style={{ color: `${secondary}bb` }}
           >
-            {ctaSubheadline || 'Where talent is proven, not presumed. Students, partners, and programs building the future \u2014 together.'}
+            {ctaSubheadline || `Join ${displayName}'s talent engine. Build a career powered by proof, not promises.`}
           </motion.p>
 
           <motion.div variants={fadeUp} className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -984,26 +945,31 @@ export function LandingPageClient({ tenant, stats, partners, legalPolicies = [] 
               className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl text-lg font-semibold transition-all duration-200 hover:scale-105 shadow-lg"
               style={{ backgroundColor: secondary, color: primary }}
             >
-              <Search className="h-5 w-5" />
-              Find Projects
+              Create Your Profile
+              <ArrowRight className="h-5 w-5" />
             </a>
             <a
               href={`/register?tenant=${tenant.subdomain}&role=alumni`}
               className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl text-lg font-semibold transition-all duration-200 hover:scale-105 border-2"
               style={{ borderColor: secondary, color: secondary, backgroundColor: 'transparent' }}
             >
-              <Handshake className="h-5 w-5" />
-              Join as a Partner
+              <Users className="h-5 w-5" />
+              Explore as a Partner
             </a>
           </motion.div>
         </motion.div>
       </section>
 
       {/* ================================================================
-          FOOTER
+          SECTION 14 -- TENANT FOOTER
          ================================================================ */}
       <footer className="py-8 px-6 bg-gray-900 text-gray-400 text-sm">
-        <div className="max-w-7xl mx-auto flex flex-col items-center gap-3">
+        <div className="max-w-7xl mx-auto flex flex-col items-center gap-4">
+          <a href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+            <Sparkles className="h-4 w-4 text-amber-500" />
+            <span className="text-gray-300 text-sm font-semibold">Powered by Proveground</span>
+          </a>
+
           {legalPolicies.length > 0 && (
             <div className="flex flex-wrap items-center justify-center gap-4">
               {legalPolicies.map((p) => (
@@ -1068,7 +1034,7 @@ function AICoachingSection({ primary, subdomain }: { primary: string; subdomain:
   }, [isInView]);
 
   return (
-    <section ref={ref} className="py-20 px-6 bg-gray-50">
+    <section id="ai-coaching" ref={ref} className="py-20 px-6 bg-gray-50">
       <div className="max-w-6xl mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
           {/* Left — Copy */}
@@ -1094,7 +1060,7 @@ function AICoachingSection({ primary, subdomain }: { primary: string; subdomain:
               transition={{ duration: 0.6, delay: 0.1 }}
               className="text-3xl sm:text-4xl font-bold mb-5 leading-tight"
             >
-              AI should prepare you for the future, not replace you.
+              A career coach that meets you where you are.
             </motion.h2>
 
             <motion.p
@@ -1103,8 +1069,7 @@ function AICoachingSection({ primary, subdomain }: { primary: string; subdomain:
               transition={{ duration: 0.6, delay: 0.2 }}
               className="text-gray-500 text-base leading-relaxed mb-6"
             >
-              Personalized career coaching powered by Anthropic&rsquo;s Claude &mdash; from interview
-              prep to project strategy. Not a chatbot. A coach that meets you where you are.
+              Personalized career coaching powered by Anthropic&rsquo;s Claude. From your first project to your final interview, get specific guidance based on your actual project history, verified skills, and career goals.
             </motion.p>
 
             <motion.a

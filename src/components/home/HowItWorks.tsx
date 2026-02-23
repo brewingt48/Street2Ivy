@@ -9,25 +9,25 @@ const steps = [
     num: '01',
     icon: Rocket,
     title: 'Launch Your Talent Engine',
-    body: 'Your school or network gets its own branded ProveGround platform \u2014 your logo, your domain, your community. Set it up with your team or let us handle onboarding.',
+    body: 'Your institution gets its own branded Proveground platform \u2014 your logo, your domain, your community. We handle onboarding or your team runs it independently.',
   },
   {
     num: '02',
     icon: Briefcase,
-    title: 'Companies Post Real Projects',
-    body: 'Corporate partners post scoped, real-world projects. Our matching engine connects them with qualified students from your network based on skills, interests, and availability.',
+    title: 'Employers Post Real Projects',
+    body: 'Corporate partners and alumni post scoped, real-world projects. The Match Engine connects them with qualified students based on skills, availability, and fit.',
   },
   {
     num: '03',
     icon: CheckCircle2,
-    title: 'Students Deliver & Build Their Record',
-    body: 'Students complete real work with real deliverables. Every project outcome is verified and added to a portable track record they carry with them beyond graduation.',
+    title: 'Students Deliver and Build Proof',
+    body: 'Students complete real work with real deliverables. Every outcome is verified and added to a portable track record they carry beyond graduation.',
   },
   {
     num: '04',
     icon: BarChart3,
-    title: 'Outcomes Everyone Can Measure',
-    body: 'Students build proof of what they can do. Companies access emerging talent pipelines. Schools and networks demonstrate measurable career outcomes to stakeholders and accreditors.',
+    title: 'Everyone Sees the Results',
+    body: 'Students build verified portfolios. Employers access proven talent pipelines. Career offices get accreditation-ready outcome data. Everyone wins.',
   },
 ];
 
@@ -39,22 +39,22 @@ export function HowItWorks() {
     <section id="how-it-works" className="py-24 md:py-32 px-6 bg-[#fafaf8]">
       <div ref={ref} className="max-w-7xl mx-auto">
         <div className="text-center mb-16">
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            animate={isInView ? { opacity: 1, y: 0 } : {}}
-            transition={{ duration: 0.5 }}
-            className="text-[#d4a843] text-sm font-semibold uppercase tracking-[0.2em] mb-4"
-          >
-            The Playbook
-          </motion.p>
           <motion.h2
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 24 }}
             animate={isInView ? { opacity: 1, y: 0 } : {}}
-            transition={{ duration: 0.6, delay: 0.1 }}
+            transition={{ duration: 0.6 }}
             className="font-display text-4xl sm:text-5xl md:text-6xl text-[#1a1a2e] tracking-wide"
           >
-            How ProveGround Works
+            How Proveground Works
           </motion.h2>
+          <motion.p
+            initial={{ opacity: 0, y: 24 }}
+            animate={isInView ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.5, delay: 0.1 }}
+            className="text-base text-[#3a3a3a]/70 mt-4"
+          >
+            Four steps from launch to measurable outcomes.
+          </motion.p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 relative">
@@ -66,7 +66,7 @@ export function HowItWorks() {
             return (
               <motion.div
                 key={step.num}
-                initial={{ opacity: 0, y: 30 }}
+                initial={{ opacity: 0, y: 24 }}
                 animate={isInView ? { opacity: 1, y: 0 } : {}}
                 transition={{ duration: 0.5, delay: 0.15 + i * 0.1 }}
                 className="relative text-center lg:text-left"

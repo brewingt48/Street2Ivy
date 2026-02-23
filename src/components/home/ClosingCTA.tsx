@@ -26,7 +26,7 @@ export function ClosingCTA() {
           transition={{ duration: 0.7 }}
           className="font-display text-4xl sm:text-5xl md:text-7xl text-[#1a1a2e] tracking-wide leading-[1.05] mb-5"
         >
-          Ready to build your network&apos;s{' '}
+          Ready to build your institution&apos;s{' '}
           <span className="text-[#d4a843]">talent engine?</span>
         </motion.h2>
 
@@ -36,7 +36,7 @@ export function ClosingCTA() {
           transition={{ duration: 0.6, delay: 0.15 }}
           className="text-[#3a3a3a]/80 text-base leading-relaxed max-w-lg mx-auto mb-8"
         >
-          See how ProveGround works for your school, organization, or workforce network.
+          See how Proveground works for your school, organization, or workforce network.
         </motion.p>
 
         <motion.div

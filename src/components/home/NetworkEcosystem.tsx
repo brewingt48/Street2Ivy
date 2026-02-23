@@ -2,7 +2,7 @@
 
 import { useRef, useEffect, useState } from 'react';
 import { motion, useInView } from 'framer-motion';
-import { Globe, Lock, Share2, Users, Building2, GraduationCap, Handshake, ArrowRight } from 'lucide-react';
+import { Globe, Lock, Share2, Users, Building2, GraduationCap, Handshake } from 'lucide-react';
 
 /* ------------------------------------------------------------------ */
 /*  Network node definitions — descriptive archetypes, no real names  */
@@ -136,8 +136,8 @@ export function NetworkEcosystem() {
             transition={{ duration: 0.7, delay: 0.1 }}
             className="font-display text-4xl sm:text-5xl md:text-6xl lg:text-7xl text-white tracking-wide leading-[1.05] mb-6"
           >
-            Stronger{' '}
-            <span className="text-[#d4a843]">together.</span>
+            One network. Many{' '}
+            <span className="text-[#d4a843]">talent engines.</span>
           </motion.h2>
 
           <motion.p
@@ -146,9 +146,10 @@ export function NetworkEcosystem() {
             transition={{ duration: 0.6, delay: 0.2 }}
             className="text-white/60 text-base md:text-lg leading-relaxed max-w-2xl mx-auto"
           >
-            Proveground connects institutions, alumni networks, and industry partners into one
-            unified talent ecosystem. Each program keeps its own private talent engine — while
-            sharing select opportunities across the network amplifies reach for everyone.
+            Each institution on Proveground gets its own private, branded talent engine.
+            Students and opportunities stay within your community by default. When you choose,
+            share select opportunities across partner institutions to amplify reach while
+            preserving control.
           </motion.p>
         </div>
 
@@ -274,34 +275,20 @@ export function NetworkEcosystem() {
                 </motion.div>
               );
             })}
-
-            {/* Inspirational callout */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={isInView ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.6, delay: 0.8 }}
-              className="pt-4 pl-1"
-            >
-              <p className="text-white/40 text-sm leading-relaxed italic">
-                &ldquo;When institutions, alumni, and industry share a common platform, talent
-                flows to where it&apos;s needed most — and opportunity reaches those who&apos;ve earned it.&rdquo;
-              </p>
-            </motion.div>
           </div>
         </div>
 
-        {/* Bottom stat bar — Fortune 500 style credibility strip */}
+        {/* Bottom stat bar */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.7, delay: 0.9 }}
-          className="mt-20 grid grid-cols-2 md:grid-cols-4 gap-px bg-white/[0.06] rounded-2xl overflow-hidden"
+          className="mt-20 grid grid-cols-1 md:grid-cols-3 gap-px bg-white/[0.06] rounded-2xl overflow-hidden"
         >
           {[
-            { value: 'Private', label: 'Each talent engine is exclusive to its program' },
-            { value: 'Shared', label: 'Select postings extend across partner institutions' },
-            { value: 'Verified', label: 'Every engagement and review is authenticated' },
-            { value: 'United', label: 'One ecosystem where everyone wins together' },
+            { value: 'Private', label: 'Each talent engine is exclusive to its program.' },
+            { value: 'Shared', label: 'Select postings extend across partner institutions.' },
+            { value: 'Open', label: 'Corporate partners post into the broader network.' },
           ].map((stat, i) => (
             <div key={i} className="bg-white/[0.03] p-6 text-center">
               <p className="font-display text-xl md:text-2xl text-[#d4a843] tracking-wider mb-1">

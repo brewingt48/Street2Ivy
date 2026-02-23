@@ -58,8 +58,17 @@ export function AICoaching() {
               transition={{ duration: 0.6, delay: 0.1 }}
               className="font-display text-4xl sm:text-5xl text-[#1a1a2e] tracking-wide leading-[1.05] mb-5"
             >
-              AI should prepare you for the future, not replace you.
+              A career coach that meets you where you are.
             </motion.h2>
+
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              animate={isInView ? { opacity: 1, y: 0 } : {}}
+              transition={{ duration: 0.6, delay: 0.15 }}
+              className="text-[#d4a843] text-sm font-semibold mb-4"
+            >
+              Powered by Anthropic&apos;s Claude &mdash; not a generic chatbot.
+            </motion.p>
 
             <motion.p
               initial={{ opacity: 0, y: 20 }}
@@ -67,8 +76,11 @@ export function AICoaching() {
               transition={{ duration: 0.6, delay: 0.2 }}
               className="text-[#3a3a3a] text-base leading-relaxed"
             >
-              Personalized career coaching powered by Anthropic&apos;s Claude &mdash; from interview
-              prep to project strategy. Not a chatbot. A coach that meets you where you are.
+              From your first project to your final interview, Proveground&apos;s AI coach
+              provides personalized guidance based on your actual project history, verified
+              skills, and career goals. It doesn&apos;t give generic advice. It prepares you for
+              specific opportunities with specific strategies based on what you&apos;ve actually
+              done.
             </motion.p>
           </div>
 
