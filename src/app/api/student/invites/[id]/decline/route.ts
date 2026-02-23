@@ -16,6 +16,10 @@ export async function POST(
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
     }
 
+    if (session.data.role !== 'student') {
+      return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 });
+    }
+
     // Verify ownership and status
     const invites = await sql`
       SELECT id, corporate_partner_id, listing_id, project_title, status

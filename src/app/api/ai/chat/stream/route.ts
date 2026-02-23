@@ -11,6 +11,7 @@ import { getCurrentSession } from '@/lib/auth/middleware';
 import { z } from 'zod';
 import { checkAiAccessV2, incrementUsageV2, getUsageStatusV2 } from '@/lib/ai/config';
 import { streamClaude } from '@/lib/ai/claude-client';
+import { getUserAIOptOut } from '@/lib/ai/check-opt-out';
 import { buildCoachingSystemPrompt } from '@/lib/ai/prompts';
 import type { ConversationMessage, StudentProfileForAi, QuickAction } from '@/lib/ai/types';
 
@@ -146,6 +147,9 @@ export async function POST(request: NextRequest) {
       });
     }
 
+    // Check AI training opt-out
+    const aiTrainingOptOut = await getUserAIOptOut(userId);
+
     // Stream response via SSE
     const encoder = new TextEncoder();
     const stream = new ReadableStream({
@@ -158,6 +162,8 @@ export async function POST(request: NextRequest) {
             systemPrompt,
             messages: conversationHistory,
             maxTokens: 2048,
+            aiTrainingOptOut,
+            metadata: { user_id: userId },
           })) {
             fullResponse += delta;
             controller.enqueue(

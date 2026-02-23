@@ -2,11 +2,13 @@
  * GET /api/partner/listings/[id]/applications — List applications for a listing
  *
  * Returns all applications for a specific network listing owned by the partner.
+ * Student data is filtered by FERPA directory preferences before being returned.
  */
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getCurrentSession } from '@/lib/auth/middleware';
 import { sql } from '@/lib/db';
+import { filterByDirectoryPreferences } from '@/lib/auth/ferpa-gate';
 
 async function getPartnerUser(email: string) {
   const rows = await sql`
@@ -64,30 +66,45 @@ export async function GET(
       ORDER BY na.created_at DESC
     `;
 
-    return NextResponse.json({
-      listingTitle: listing[0].title,
-      applications: applications.map((a: Record<string, unknown>) => ({
-        id: a.id,
-        status: a.status,
-        coverLetter: a.cover_letter,
-        proposedApproach: a.proposed_approach,
-        availabilityNote: a.availability_note,
-        matchScore: a.match_score,
-        skillsMatchScore: a.skills_match_score,
-        reviewedAt: a.reviewed_at,
-        createdAt: a.created_at,
-        student: {
-          id: a.student_id,
+    // Apply FERPA directory preference filtering to student data
+    const filteredApplications = await Promise.all(
+      applications.map(async (a: Record<string, unknown>) => {
+        const studentId = a.student_id as string;
+
+        // Build the raw student data object
+        const rawStudentData: Record<string, unknown> = {
+          id: studentId,
           firstName: a.student_first_name,
           lastName: a.student_last_name,
           email: a.student_email,
           gpa: a.student_gpa,
-        },
-        tenant: {
-          id: a.tenant_id,
-          name: a.tenant_name,
-        },
-      })),
+        };
+
+        // Filter by FERPA directory preferences
+        const filteredStudent = await filterByDirectoryPreferences(studentId, rawStudentData);
+
+        return {
+          id: a.id,
+          status: a.status,
+          coverLetter: a.cover_letter,
+          proposedApproach: a.proposed_approach,
+          availabilityNote: a.availability_note,
+          matchScore: a.match_score,
+          skillsMatchScore: a.skills_match_score,
+          reviewedAt: a.reviewed_at,
+          createdAt: a.created_at,
+          student: filteredStudent,
+          tenant: {
+            id: a.tenant_id,
+            name: a.tenant_name,
+          },
+        };
+      })
+    );
+
+    return NextResponse.json({
+      listingTitle: listing[0].title,
+      applications: filteredApplications,
     });
   } catch (error) {
     console.error('Partner listing applications error:', error);

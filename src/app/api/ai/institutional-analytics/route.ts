@@ -15,6 +15,7 @@ import { sql } from '@/lib/db';
 import { getCurrentSession } from '@/lib/auth/middleware';
 import { checkAiAccessV2, incrementUsageV2 } from '@/lib/ai/config';
 import { askClaude } from '@/lib/ai/claude-client';
+import { getUserAIOptOut } from '@/lib/ai/check-opt-out';
 import { safeParseAiJson } from '@/lib/ai/parse-json';
 
 // -------------------------------------------------------------------------
@@ -262,7 +263,8 @@ export async function POST(_request: NextRequest) {
       .filter(Boolean)
       .join('\n');
 
-    // Step 4: Call Claude
+    // Step 4: Check AI training opt-out and call Claude
+    const aiTrainingOptOut = await getUserAIOptOut(userId);
     const aiResponse = await askClaude({
       model: accessCheck.config.model,
       systemPrompt,
@@ -273,6 +275,8 @@ export async function POST(_request: NextRequest) {
         },
       ],
       maxTokens: 4096,
+      aiTrainingOptOut,
+      metadata: { user_id: userId },
     });
 
     // Step 5: Parse JSON response

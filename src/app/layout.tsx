@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { DM_Sans, Playfair_Display, Bebas_Neue } from 'next/font/google';
 import { ThemeProvider } from '@/components/theme/theme-provider';
+import { CookieConsentBanner } from '@/components/shared/cookie-consent';
 import './globals.css';
 
 const dmSans = DM_Sans({
@@ -55,6 +56,7 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           {children}
+          <CookieConsentBanner />
         </ThemeProvider>
       </body>
     </html>

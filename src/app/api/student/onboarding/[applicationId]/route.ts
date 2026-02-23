@@ -16,6 +16,10 @@ export async function GET(
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
     }
 
+    if (session.data.role !== 'student') {
+      return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 });
+    }
+
     // Verify the application belongs to the student
     const apps = await sql`
       SELECT id, student_id FROM project_applications

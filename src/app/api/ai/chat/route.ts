@@ -11,6 +11,7 @@ import { getCurrentSession } from '@/lib/auth/middleware';
 import { z } from 'zod';
 import { checkAiAccessV2, incrementUsageV2, getUsageStatusV2 } from '@/lib/ai/config';
 import { askClaude } from '@/lib/ai/claude-client';
+import { getUserAIOptOut } from '@/lib/ai/check-opt-out';
 import { buildCoachingSystemPrompt } from '@/lib/ai/prompts';
 import type { ConversationMessage, StudentProfileForAi, QuickAction } from '@/lib/ai/types';
 
@@ -134,12 +135,15 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // Step 9: Call Claude
+    // Step 9: Check AI training opt-out and call Claude
+    const aiTrainingOptOut = await getUserAIOptOut(userId);
     const aiResponse = await askClaude({
       model: accessCheck.config.model,
       systemPrompt,
       messages: conversationHistory,
       maxTokens: 2048,
+      aiTrainingOptOut,
+      metadata: { user_id: userId },
     });
 
     // Step 10: Save assistant response

@@ -1,8 +1,9 @@
 /**
- * GET /api/sso/callback
+ * GET/POST /api/sso/callback
  *
- * Handle the SSO callback from an identity provider.
- * STUB: Returns 501 until SSO is implemented.
+ * Legacy SSO callback stub — redirects to protocol-specific callbacks.
+ * SAML callbacks go to /api/sso/saml/callback
+ * OIDC callbacks go to /api/sso/oidc/callback
  */
 
 import { NextResponse } from 'next/server';
@@ -10,21 +11,21 @@ import { NextResponse } from 'next/server';
 export async function GET() {
   return NextResponse.json(
     {
-      error: 'SSO callback handling is not yet available',
-      code: 'SSO_NOT_IMPLEMENTED',
-      message: 'The SSO callback will validate provider tokens, create/link user accounts, and establish sessions.',
+      error: 'Use protocol-specific callback endpoints',
+      saml: '/api/sso/saml/callback (POST)',
+      oidc: '/api/sso/oidc/callback (GET)',
     },
-    { status: 501 }
+    { status: 400 }
   );
 }
 
 export async function POST() {
   return NextResponse.json(
     {
-      error: 'SSO callback handling is not yet available',
-      code: 'SSO_NOT_IMPLEMENTED',
-      message: 'The SSO callback will validate provider tokens, create/link user accounts, and establish sessions.',
+      error: 'Use protocol-specific callback endpoints',
+      saml: '/api/sso/saml/callback (POST)',
+      oidc: '/api/sso/oidc/callback (GET)',
     },
-    { status: 501 }
+    { status: 400 }
   );
 }

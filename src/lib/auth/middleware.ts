@@ -10,6 +10,7 @@ import { NextResponse } from 'next/server';
 import { getSession, touchSession } from './session';
 import { sql } from '@/lib/db';
 import type { AuthUser, Session } from './types';
+import { getUserMFAStatus, isSessionMFAVerified } from './mfa';
 
 /**
  * Get the current session from the request.
@@ -106,6 +107,30 @@ export async function requireRole(
       { error: 'Insufficient permissions' },
       { status: 403 }
     );
+  }
+
+  return session;
+}
+
+/**
+ * Require MFA verification — returns the session or throws 403.
+ * Checks if the user has MFA enabled and if the session has been MFA-verified.
+ * Use in API routes that protect sensitive operations.
+ */
+export async function requireMFA(): Promise<Session> {
+  const session = await requireAuth();
+
+  const mfaStatus = await getUserMFAStatus(session.data.userId);
+
+  // If user has MFA enabled, verify the session is MFA-verified
+  if (mfaStatus.isEnabled) {
+    const verified = await isSessionMFAVerified(session.sid);
+    if (!verified) {
+      throw NextResponse.json(
+        { error: 'MFA verification required', code: 'MFA_REQUIRED' },
+        { status: 403 }
+      );
+    }
   }
 
   return session;

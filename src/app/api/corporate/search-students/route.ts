@@ -16,6 +16,10 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
     }
 
+    if (session.data.role !== 'corporate_partner' && session.data.role !== 'admin') {
+      return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 });
+    }
+
     const { searchParams } = new URL(request.url);
     const q = searchParams.get('q') || '';
     const graduationYear = searchParams.get('graduationYear') || '';

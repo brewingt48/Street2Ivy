@@ -13,8 +13,7 @@ export async function GET() {
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
     }
 
-    const users = await sql`SELECT role FROM users WHERE id = ${session.data.userId}`;
-    if (users.length === 0 || users[0].role !== 'corporate_partner') {
+    if (session.data.role !== 'corporate_partner' && session.data.role !== 'admin') {
       return NextResponse.json({ error: 'Corporate access required' }, { status: 403 });
     }
 

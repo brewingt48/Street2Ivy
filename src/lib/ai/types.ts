@@ -62,6 +62,10 @@ export interface ClaudeOptions {
   systemPrompt: string;
   messages: ConversationMessage[];
   maxTokens?: number;
+  /** When true, signals that the user has opted out of AI training data usage. */
+  aiTrainingOptOut?: boolean;
+  /** Anthropic metadata — currently supports user_id for abuse tracking. */
+  metadata?: { user_id?: string };
 }
 
 /** Student profile data for prompt building */

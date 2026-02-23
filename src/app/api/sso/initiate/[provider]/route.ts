@@ -1,8 +1,8 @@
 /**
  * POST /api/sso/initiate/[provider]
  *
- * Initiate an SSO login flow with the specified provider.
- * STUB: Returns 501 until SSO is implemented.
+ * Legacy SSO initiation stub — redirects to protocol-specific login endpoints.
+ * Use /api/sso/saml/login or /api/sso/oidc/login instead.
  */
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -13,10 +13,11 @@ export async function POST(
 ) {
   return NextResponse.json(
     {
-      error: `SSO with provider "${params.provider}" is not yet available`,
-      code: 'SSO_NOT_IMPLEMENTED',
-      message: 'SSO initiation will redirect to the provider for authentication. Supported providers: google, microsoft, okta.',
+      error: 'Use protocol-specific login endpoints instead',
+      saml: '/api/sso/saml/login?tenant={subdomain}',
+      oidc: '/api/sso/oidc/login?tenant={subdomain}',
+      requestedProvider: params.provider,
     },
-    { status: 501 }
+    { status: 400 }
   );
 }

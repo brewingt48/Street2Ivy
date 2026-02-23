@@ -13,6 +13,7 @@ import { getCurrentSession } from '@/lib/auth/middleware';
 import { z } from 'zod';
 import { checkAiAccessV2, incrementUsageV2, getUsageStatusV2 } from '@/lib/ai/config';
 import { askClaude } from '@/lib/ai/claude-client';
+import { getUserAIOptOut } from '@/lib/ai/check-opt-out';
 import { buildBioImprovementPrompt } from '@/lib/ai/prompts';
 import type { StudentProfileForAi } from '@/lib/ai/types';
 
@@ -98,14 +99,17 @@ export async function POST(request: NextRequest) {
     const completedProjects = projectRows.map((p: Record<string, unknown>) => p.title as string);
     const avgRating = ratingRows[0]?.avg_rating ? parseFloat(ratingRows[0].avg_rating as string) : null;
 
-    // Build prompt and call Claude
+    // Build prompt, check opt-out, and call Claude
     const systemPrompt = buildBioImprovementPrompt(studentProfile, currentBio, completedProjects, avgRating);
 
+    const aiTrainingOptOut = await getUserAIOptOut(userId);
     const improvedBio = await askClaude({
       model: accessCheck.config.model,
       systemPrompt,
       messages: [{ role: 'user', content: 'Please improve my bio.' }],
       maxTokens: 1024,
+      aiTrainingOptOut,
+      metadata: { user_id: userId },
     });
 
     // Increment usage

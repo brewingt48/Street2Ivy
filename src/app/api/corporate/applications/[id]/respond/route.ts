@@ -41,6 +41,10 @@ export async function POST(
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
     }
 
+    if (session.data.role !== 'corporate_partner' && session.data.role !== 'admin') {
+      return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 });
+    }
+
     const body = await request.json();
     const parsed = respondSchema.safeParse(body);
     if (!parsed.success) {

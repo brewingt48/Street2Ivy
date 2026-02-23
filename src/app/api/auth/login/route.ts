@@ -19,6 +19,7 @@ import type { SessionData } from '@/lib/auth/types';
 import { checkRateLimit, RATE_LIMITS } from '@/lib/security/rate-limit';
 import { checkAccountLock, recordFailedAttempt, clearAttempts } from '@/lib/security/account-lockout';
 import { auditLog, extractRequestInfo } from '@/lib/security/audit';
+import { getUserMFAStatus } from '@/lib/auth/mfa';
 
 export async function POST(request: NextRequest) {
   try {
@@ -100,6 +101,9 @@ export async function POST(request: NextRequest) {
     // Successful login — clear lockout attempts
     clearAttempts(email);
 
+    // Check if user has MFA enabled
+    const mfaStatus = await getUserMFAStatus(user.id);
+
     // Create session
     const sid = generateSessionId();
     const sessionData: SessionData = {
@@ -122,6 +126,23 @@ export async function POST(request: NextRequest) {
 
     // Audit: successful login
     auditLog('AUTH_SUCCESS', { ...reqInfo, userId: user.id, email: user.email });
+
+    // If MFA is enabled, return partial auth response — client must verify MFA
+    if (mfaStatus.isEnabled) {
+      return NextResponse.json({
+        requiresMFA: true,
+        user: {
+          id: user.id,
+          email: user.email,
+          role: user.role,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          displayName: user.displayName,
+          emailVerified: user.emailVerified,
+          avatarUrl: user.avatarUrl,
+        },
+      });
+    }
 
     return NextResponse.json({
       user: {

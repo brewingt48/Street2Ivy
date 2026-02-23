@@ -13,6 +13,10 @@ export async function GET() {
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
     }
 
+    if (session.data.role !== 'student') {
+      return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 });
+    }
+
     const invites = await sql`
       SELECT ci.id, ci.corporate_partner_id, ci.listing_id, ci.project_title,
              ci.message, ci.status, ci.sent_at, ci.responded_at,

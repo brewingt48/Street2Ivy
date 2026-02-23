@@ -21,6 +21,10 @@ export async function GET() {
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
     }
 
+    if (session.data.role !== 'corporate_partner' && session.data.role !== 'admin') {
+      return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 });
+    }
+
     const invites = await sql`
       SELECT id, student_id, student_name, student_email, student_university,
              listing_id, project_title, message, status, sent_at, responded_at

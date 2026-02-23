@@ -33,7 +33,10 @@ import {
   Building2,
   Eye,
   Lock,
+  AlertTriangle,
+  Download,
 } from 'lucide-react';
+import Link from 'next/link';
 import { DiffView } from '@/components/coaching/diff-view';
 
 interface Profile {
@@ -1122,6 +1125,55 @@ export default function SettingsPage() {
                 )}
               </div>
             )}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Danger Zone */}
+      <Card className="border-red-200 dark:border-red-900/50">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-red-700 dark:text-red-400">
+            <AlertTriangle className="h-5 w-5" />
+            Danger Zone
+          </CardTitle>
+          <CardDescription>
+            Irreversible actions that affect your entire account
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex items-center justify-between p-4 rounded-lg border border-red-200 dark:border-red-900/40 bg-red-50/50 dark:bg-red-950/10">
+            <div className="flex-1 mr-4">
+              <p className="text-sm font-medium text-slate-900 dark:text-white">
+                Export Your Data
+              </p>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                Download a copy of all your data before making any permanent changes.
+              </p>
+            </div>
+            <Link
+              href="/api/profile/export"
+              className="inline-flex items-center gap-1.5 rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-3 py-1.5 text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+            >
+              <Download className="h-3.5 w-3.5" />
+              Export
+            </Link>
+          </div>
+
+          <div className="flex items-center justify-between p-4 rounded-lg border border-red-200 dark:border-red-900/40 bg-red-50/50 dark:bg-red-950/10">
+            <div className="flex-1 mr-4">
+              <p className="text-sm font-medium text-slate-900 dark:text-white">
+                Delete Account
+              </p>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                Permanently delete your account and all associated data. This cannot be undone.
+              </p>
+            </div>
+            <Link
+              href="/settings/delete-account"
+              className="inline-flex items-center gap-1.5 rounded-md bg-red-600 hover:bg-red-700 px-3 py-1.5 text-sm font-medium text-white transition-colors"
+            >
+              Delete Account
+            </Link>
           </div>
         </CardContent>
       </Card>

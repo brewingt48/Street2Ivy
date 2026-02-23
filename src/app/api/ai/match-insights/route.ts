@@ -12,6 +12,7 @@ import { getCurrentSession } from '@/lib/auth/middleware';
 import { z } from 'zod';
 import { checkAiAccessV2, incrementUsageV2, getUsageStatusV2 } from '@/lib/ai/config';
 import { askClaude } from '@/lib/ai/claude-client';
+import { getUserAIOptOut } from '@/lib/ai/check-opt-out';
 import { safeParseAiJson } from '@/lib/ai/parse-json';
 import { AI_FAIRNESS_CONSTRAINTS, AI_DISCLAIMER_TEXT } from '@/lib/ai/prompts';
 
@@ -132,6 +133,7 @@ export async function POST(request: NextRequest) {
       `Return ONLY valid JSON, no markdown.`,
     ].join('\n');
 
+    const aiTrainingOptOut = await getUserAIOptOut(userId);
     const aiResponse = await askClaude({
       model: accessCheck.config.model,
       systemPrompt,
@@ -142,6 +144,8 @@ export async function POST(request: NextRequest) {
         },
       ],
       maxTokens: 2048,
+      aiTrainingOptOut,
+      metadata: { user_id: userId },
     });
 
     // Step 7: Parse JSON response

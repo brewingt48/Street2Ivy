@@ -38,12 +38,30 @@ function toAnthropicMessages(
 }
 
 /**
+ * Build the effective system prompt, prepending an opt-out notice when the
+ * user has opted out of AI training data usage.
+ */
+function buildSystemPrompt(systemPrompt: string, aiTrainingOptOut?: boolean): string {
+  if (!aiTrainingOptOut) return systemPrompt;
+
+  const optOutNotice = [
+    '[PRIVACY NOTICE] The user associated with this request has opted out of having their data used for AI model training.',
+    'Do not use any personally identifiable information from this conversation for training purposes.',
+    '',
+  ].join('\n');
+
+  return optOutNotice + systemPrompt;
+}
+
+/**
  * Send a message to Claude and get a complete response.
  * Includes retry logic with exponential backoff.
  */
 export async function askClaude(options: ClaudeOptions): Promise<string> {
-  const { model, systemPrompt, messages, maxTokens = 2048 } = options;
+  const { model, systemPrompt, messages, maxTokens = 2048, aiTrainingOptOut, metadata } = options;
   const anthropic = getClient();
+
+  const effectiveSystem = buildSystemPrompt(systemPrompt, aiTrainingOptOut);
 
   let lastError: Error | null = null;
 
@@ -52,8 +70,9 @@ export async function askClaude(options: ClaudeOptions): Promise<string> {
       const response = await anthropic.messages.create({
         model,
         max_tokens: maxTokens,
-        system: systemPrompt,
+        system: effectiveSystem,
         messages: toAnthropicMessages(messages),
+        ...(metadata ? { metadata } : {}),
       });
 
       // Extract text from response
@@ -85,14 +104,17 @@ export async function askClaude(options: ClaudeOptions): Promise<string> {
 export async function* streamClaude(
   options: ClaudeOptions
 ): AsyncGenerator<string, void, unknown> {
-  const { model, systemPrompt, messages, maxTokens = 2048 } = options;
+  const { model, systemPrompt, messages, maxTokens = 2048, aiTrainingOptOut, metadata } = options;
   const anthropic = getClient();
+
+  const effectiveSystem = buildSystemPrompt(systemPrompt, aiTrainingOptOut);
 
   const stream = anthropic.messages.stream({
     model,
     max_tokens: maxTokens,
-    system: systemPrompt,
+    system: effectiveSystem,
     messages: toAnthropicMessages(messages),
+    ...(metadata ? { metadata } : {}),
   });
 
   for await (const event of stream) {

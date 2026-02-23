@@ -14,6 +14,10 @@ export async function GET() {
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
     }
 
+    if (session.data.role !== 'student') {
+      return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 });
+    }
+
     const badges = await sql`
       SELECT id, badge_type, badge_label, earned_at, badge_metadata
       FROM portfolio_badges

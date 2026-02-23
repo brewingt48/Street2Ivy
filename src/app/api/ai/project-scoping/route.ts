@@ -11,6 +11,7 @@ import { getCurrentSession } from '@/lib/auth/middleware';
 import { z } from 'zod';
 import { checkAiAccessV2, incrementUsageV2, getUsageStatusV2 } from '@/lib/ai/config';
 import { askClaude } from '@/lib/ai/claude-client';
+import { getUserAIOptOut } from '@/lib/ai/check-opt-out';
 import { safeParseAiJson } from '@/lib/ai/parse-json';
 import { AI_DISCLAIMER_TEXT } from '@/lib/ai/prompts';
 
@@ -184,7 +185,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Step 2: Build prompt and call Claude
+    // Step 2: Build prompt, check opt-out, and call Claude
     const systemPrompt = buildScopingPrompt(description, action);
 
     const actionLabels: Record<string, string> = {
@@ -194,6 +195,7 @@ export async function POST(request: NextRequest) {
       full_scope: 'perform a full project scoping analysis',
     };
 
+    const aiTrainingOptOut = await getUserAIOptOut(userId);
     const aiResponse = await askClaude({
       model: accessCheck.config.model,
       systemPrompt,
@@ -204,6 +206,8 @@ export async function POST(request: NextRequest) {
         },
       ],
       maxTokens: 3072,
+      aiTrainingOptOut,
+      metadata: { user_id: userId },
     });
 
     // Step 3: Parse response

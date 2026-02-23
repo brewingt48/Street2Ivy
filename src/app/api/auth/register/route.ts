@@ -116,6 +116,9 @@ export async function POST(request: NextRequest) {
     const welcome = welcomeEmail({ firstName, role });
     sendEmail({ to: email, ...welcome, tags: ['welcome'] }).catch(() => {});
 
+    // For students, indicate that FERPA consent is required before platform access
+    const requiresFerpaConsent = role === 'student';
+
     return NextResponse.json(
       {
         user: {
@@ -128,6 +131,8 @@ export async function POST(request: NextRequest) {
           emailVerified: user.email_verified,
           avatarUrl: user.avatar_url,
         },
+        requiresFerpaConsent,
+        ferpaConsentUrl: requiresFerpaConsent ? '/student/ferpa-consent' : null,
       },
       { status: 201 }
     );

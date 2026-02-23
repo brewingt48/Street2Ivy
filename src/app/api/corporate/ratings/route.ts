@@ -6,6 +6,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { sql } from '@/lib/db';
 import { getCurrentSession } from '@/lib/auth/middleware';
+import { filterByDirectoryPreferences } from '@/lib/auth/ferpa-gate';
 
 export async function GET(request: NextRequest) {
   try {
@@ -43,19 +44,33 @@ export async function GET(request: NextRequest) {
     const avg = stats[0]?.avg ? Number(stats[0].avg) : null;
     const count = parseInt(stats[0]?.count as string) || 0;
 
+    // Apply FERPA directory preference filtering to student names in ratings
+    const filteredRatings = await Promise.all(
+      ratings.map(async (r: Record<string, unknown>) => {
+        const studentId = r.student_id as string;
+        const studentData: Record<string, unknown> = {
+          id: studentId,
+          displayName: r.student_name,
+        };
+        const filtered = await filterByDirectoryPreferences(studentId, studentData);
+
+        return {
+          id: r.id,
+          applicationId: r.application_id,
+          studentId: r.student_id,
+          studentName: filtered.displayName || 'Student',
+          corporateId: r.corporate_id,
+          listingId: r.listing_id,
+          projectTitle: r.project_title,
+          rating: r.rating,
+          reviewText: r.review_text,
+          createdAt: r.created_at,
+        };
+      })
+    );
+
     return NextResponse.json({
-      ratings: ratings.map((r: Record<string, unknown>) => ({
-        id: r.id,
-        applicationId: r.application_id,
-        studentId: r.student_id,
-        studentName: r.student_name,
-        corporateId: r.corporate_id,
-        listingId: r.listing_id,
-        projectTitle: r.project_title,
-        rating: r.rating,
-        reviewText: r.review_text,
-        createdAt: r.created_at,
-      })),
+      ratings: filteredRatings,
       average: avg,
       count,
     });

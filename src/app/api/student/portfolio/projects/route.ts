@@ -22,6 +22,10 @@ export async function PUT(request: Request) {
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
     }
 
+    if (session.data.role !== 'student') {
+      return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 });
+    }
+
     const portfolio = await getPortfolio(session.data.userId);
     if (!portfolio) {
       return NextResponse.json({ error: 'No portfolio found. Create one first.' }, { status: 404 });

@@ -23,7 +23,13 @@ export type AuditEventType =
   | 'ADMIN_ACTION'
   | 'EXPORT_REQUESTED'
   | 'EXPORT_DOWNLOADED'
-  | 'FILE_SCAN_WARNING';
+  | 'FILE_SCAN_WARNING'
+  | 'MFA_ENROLLED'
+  | 'MFA_DISABLED'
+  | 'MFA_VERIFIED'
+  | 'MFA_FAILED'
+  | 'MFA_BACKUP_USED'
+  | 'MFA_BACKUP_REGENERATED';
 
 interface AuditLogData {
   userId?: string;

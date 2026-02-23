@@ -19,6 +19,10 @@ export async function GET() {
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
     }
 
+    if (session.data.role !== 'student') {
+      return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 });
+    }
+
     const tenantId = session.data.tenantId;
     if (tenantId) {
       const allowed = await hasFeature(tenantId, 'portfolioBuilder');
@@ -63,6 +67,10 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
     }
 
+    if (session.data.role !== 'student') {
+      return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 });
+    }
+
     const tenantId = session.data.tenantId;
     if (tenantId) {
       const allowed = await hasFeature(tenantId, 'portfolioBuilder');
@@ -105,6 +113,10 @@ export async function PATCH(request: Request) {
     const session = await getCurrentSession();
     if (!session) {
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
+    }
+
+    if (session.data.role !== 'student') {
+      return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 });
     }
 
     const body = await request.json();

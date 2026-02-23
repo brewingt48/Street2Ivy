@@ -13,9 +13,7 @@ export async function GET() {
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
     }
 
-    // Verify student role
-    const users = await sql`SELECT role FROM users WHERE id = ${session.data.userId}`;
-    if (users.length === 0 || users[0].role !== 'student') {
+    if (session.data.role !== 'student') {
       return NextResponse.json({ error: 'Student access required' }, { status: 403 });
     }
 
