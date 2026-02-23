@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X, Search, Loader2 } from 'lucide-react';
 
@@ -20,6 +21,8 @@ interface TenantResult {
 }
 
 export function Navbar() {
+  const pathname = usePathname();
+  const isSubpage = pathname !== '/';
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [loginOpen, setLoginOpen] = useState(false);
@@ -141,7 +144,7 @@ export function Navbar() {
     <>
       <nav
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-          scrolled
+          scrolled || isSubpage
             ? 'bg-white/80 backdrop-blur-xl border-b border-gray-200/60 shadow-sm'
             : 'bg-transparent'
         }`}
@@ -152,7 +155,7 @@ export function Navbar() {
             <a href="#" className="flex items-center gap-0 shrink-0">
               <span
                 className={`font-display text-2xl md:text-3xl tracking-wider transition-colors duration-300 ${
-                  scrolled ? 'text-[#1a1a2e]' : 'text-white'
+                  scrolled || isSubpage ? 'text-[#1a1a2e]' : 'text-white'
                 }`}
               >
                 PROVE
@@ -169,7 +172,7 @@ export function Navbar() {
                   key={link.href}
                   href={link.href}
                   className={`text-sm font-medium tracking-wide transition-colors duration-200 hover:text-[#d4a843] whitespace-nowrap ${
-                    scrolled ? 'text-[#3a3a3a]' : 'text-white/90'
+                    scrolled || isSubpage ? 'text-[#3a3a3a]' : 'text-white/90'
                   }`}
                 >
                   {link.label}
@@ -179,7 +182,7 @@ export function Navbar() {
                 <button
                   onClick={() => setLoginOpen(true)}
                   className={`text-sm font-medium transition-colors duration-200 hover:text-[#d4a843] whitespace-nowrap cursor-pointer ${
-                    scrolled ? 'text-[#3a3a3a]' : 'text-white/90'
+                    scrolled || isSubpage ? 'text-[#3a3a3a]' : 'text-white/90'
                   }`}
                 >
                   Log In
@@ -199,7 +202,7 @@ export function Navbar() {
             <button
               onClick={() => setMobileOpen(!mobileOpen)}
               className={`lg:hidden p-2 rounded-lg transition-colors ${
-                scrolled ? 'text-[#1a1a2e]' : 'text-white'
+                scrolled || isSubpage ? 'text-[#1a1a2e]' : 'text-white'
               }`}
               aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
             >
