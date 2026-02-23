@@ -47,9 +47,16 @@ async function getMarketingSettings(): Promise<Record<string, unknown>> {
   }
 }
 
+/** Legacy section IDs that were renamed — check both old and new */
+const SECTION_ALIASES: Record<string, string[]> = {
+  positioning: ['problem'],
+  'career-stack': ['white-label'],
+};
+
 function isVisible(settings: Record<string, unknown>, sectionId: string): boolean {
   const hidden = (settings.hiddenSections as string[]) || [];
-  return !hidden.includes(sectionId);
+  const idsToCheck = [sectionId, ...(SECTION_ALIASES[sectionId] || [])];
+  return !idsToCheck.some((id) => hidden.includes(id));
 }
 
 export default async function ProvegroundHomepage() {
