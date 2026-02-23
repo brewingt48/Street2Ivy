@@ -45,34 +45,33 @@ export async function GET(request: NextRequest) {
     // and their listings are marked as network-visible
     const listings = await sql`
       SELECT
-        pl.id,
-        pl.title,
-        pl.description,
-        pl.status,
-        pl.project_type,
-        pl.industry,
-        pl.skills_required,
-        pl.created_at,
-        u.first_name || ' ' || u.last_name as poster_name,
+        l.id,
+        l.title,
+        l.description,
+        l.status,
+        l.category,
+        l.skills_required,
+        l.created_at,
+        u.display_name as poster_name,
         t.name as tenant_name,
         t.subdomain as tenant_subdomain
-      FROM project_listings pl
-      JOIN users u ON u.id = pl.user_id
-      JOIN tenants t ON t.id = pl.tenant_id
-      WHERE pl.tenant_id != ${tenantId}
-        AND pl.status = 'published'
+      FROM listings l
+      JOIN users u ON u.id = l.author_id
+      JOIN tenants t ON t.id = l.tenant_id
+      WHERE l.tenant_id != ${tenantId}
+        AND l.status = 'published'
         AND t.status = 'active'
         AND (t.features->>'sharedNetworkEnabled')::boolean = true
-      ORDER BY pl.created_at DESC
+      ORDER BY l.created_at DESC
       LIMIT ${limit} OFFSET ${offset}
     `;
 
     const [countRow] = await sql`
       SELECT COUNT(*) as total
-      FROM project_listings pl
-      JOIN tenants t ON t.id = pl.tenant_id
-      WHERE pl.tenant_id != ${tenantId}
-        AND pl.status = 'published'
+      FROM listings l
+      JOIN tenants t ON t.id = l.tenant_id
+      WHERE l.tenant_id != ${tenantId}
+        AND l.status = 'published'
         AND t.status = 'active'
         AND (t.features->>'sharedNetworkEnabled')::boolean = true
     `;
@@ -83,8 +82,7 @@ export async function GET(request: NextRequest) {
         title: l.title,
         description: l.description,
         status: l.status,
-        projectType: l.project_type,
-        industry: l.industry,
+        category: l.category,
         skillsRequired: l.skills_required,
         createdAt: l.created_at,
         posterName: l.poster_name,

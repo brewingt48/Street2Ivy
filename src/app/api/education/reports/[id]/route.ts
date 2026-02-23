@@ -1,16 +1,19 @@
 /**
- * GET /api/education/reports/:id — Get a single issue report
- * PATCH /api/education/reports/:id — Update report status/resolution
+ * GET /api/education/reports/:id — Get a single outcome report
+ * PATCH /api/education/reports/:id — Update report (scheduling, title)
+ * DELETE /api/education/reports/:id — Delete a report
  */
 
 import { NextRequest, NextResponse } from 'next/server';
 import { sql } from '@/lib/db';
 import { getCurrentSession } from '@/lib/auth/middleware';
+import { hasFeature } from '@/lib/tenant/features';
 import { z } from 'zod';
 
 const updateSchema = z.object({
-  status: z.enum(['open', 'investigating', 'resolved']).optional(),
-  resolutionNotes: z.string().max(5000).optional(),
+  title: z.string().min(1).max(200).optional(),
+  isScheduled: z.boolean().optional(),
+  scheduleFrequency: z.enum(['monthly', 'quarterly', 'semester']).nullable().optional(),
 });
 
 export async function GET(
@@ -24,28 +27,28 @@ export async function GET(
     }
 
     if (session.data.role !== 'educational_admin' && session.data.role !== 'admin') {
-      return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 });
+      return NextResponse.json({ error: 'Educational admin access required' }, { status: 403 });
     }
 
-    // Get admin's institution_domain
-    const admins = await sql`
-      SELECT institution_domain FROM users WHERE id = ${session.data.userId}
-    `;
-
-    if (admins.length === 0) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    const tenantId = session.data.tenantId;
+    if (tenantId) {
+      const allowed = await hasFeature(tenantId, 'outcomesDashboard');
+      if (!allowed) {
+        return NextResponse.json(
+          { error: 'Outcomes Dashboard requires Professional plan or higher' },
+          { status: 403 }
+        );
+      }
     }
-
-    const institutionDomain = admins[0].institution_domain;
 
     const reports = await sql`
-      SELECT id, reporter_id, reporter_name, reported_entity_id, reported_entity_name,
-             application_id, category, subject, description, status,
-             resolution_notes, resolved_at, resolved_by,
-             tenant_id, institution_domain, created_at
-      FROM issue_reports
+      SELECT id, institution_id, title, report_type, filters,
+             generated_by, generated_at, file_url,
+             is_scheduled, schedule_frequency,
+             created_at, updated_at
+      FROM outcome_reports
       WHERE id = ${params.id}
-        AND institution_domain = ${institutionDomain}
+        AND institution_id = ${tenantId}
     `;
 
     if (reports.length === 0) {
@@ -54,24 +57,30 @@ export async function GET(
 
     const r = reports[0];
 
+    // Fetch the generator's display name
+    let generatedByName = null;
+    if (r.generated_by) {
+      const users = await sql`
+        SELECT display_name FROM users WHERE id = ${r.generated_by}
+      `;
+      generatedByName = users[0]?.display_name || null;
+    }
+
     return NextResponse.json({
       report: {
         id: r.id,
-        reporterId: r.reporter_id,
-        reporterName: r.reporter_name,
-        reportedEntityId: r.reported_entity_id,
-        reportedEntityName: r.reported_entity_name,
-        applicationId: r.application_id,
-        category: r.category,
-        subject: r.subject,
-        description: r.description,
-        status: r.status,
-        resolutionNotes: r.resolution_notes,
-        resolvedAt: r.resolved_at,
-        resolvedBy: r.resolved_by,
-        tenantId: r.tenant_id,
-        institutionDomain: r.institution_domain,
+        institutionId: r.institution_id,
+        title: r.title,
+        reportType: r.report_type,
+        filters: r.filters,
+        generatedBy: r.generated_by,
+        generatedByName,
+        generatedAt: r.generated_at,
+        fileUrl: r.file_url,
+        isScheduled: r.is_scheduled,
+        scheduleFrequency: r.schedule_frequency,
         createdAt: r.created_at,
+        updatedAt: r.updated_at,
       },
     });
   } catch (error) {
@@ -91,7 +100,18 @@ export async function PATCH(
     }
 
     if (session.data.role !== 'educational_admin' && session.data.role !== 'admin') {
-      return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 });
+      return NextResponse.json({ error: 'Educational admin access required' }, { status: 403 });
+    }
+
+    const tenantId = session.data.tenantId;
+    if (tenantId) {
+      const allowed = await hasFeature(tenantId, 'outcomesDashboard');
+      if (!allowed) {
+        return NextResponse.json(
+          { error: 'Outcomes Dashboard requires Professional plan or higher' },
+          { status: 403 }
+        );
+      }
     }
 
     const body = await request.json();
@@ -106,69 +126,75 @@ export async function PATCH(
 
     const data = parsed.data;
 
-    // Get admin's institution_domain
-    const admins = await sql`
-      SELECT institution_domain FROM users WHERE id = ${session.data.userId}
-    `;
-
-    if (admins.length === 0) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 });
-    }
-
-    const institutionDomain = admins[0].institution_domain;
-
     // Verify report belongs to admin's institution
-    const reports = await sql`
-      SELECT id, reporter_id, status FROM issue_reports
+    const existing = await sql`
+      SELECT id FROM outcome_reports
       WHERE id = ${params.id}
-        AND institution_domain = ${institutionDomain}
+        AND institution_id = ${tenantId}
     `;
 
-    if (reports.length === 0) {
+    if (existing.length === 0) {
       return NextResponse.json({ error: 'Report not found' }, { status: 404 });
     }
 
-    const report = reports[0];
-    const newStatus = data.status || report.status;
-    const isResolving = newStatus === 'resolved' && report.status !== 'resolved';
-
-    // Update the report
-    let result;
-    if (isResolving) {
-      result = await sql`
-        UPDATE issue_reports
-        SET status = ${newStatus},
-            resolution_notes = ${data.resolutionNotes || null},
-            resolved_at = NOW(),
-            resolved_by = ${session.data.userId}
-        WHERE id = ${params.id}
-        RETURNING id, status, resolved_at
-      `;
-    } else {
-      result = await sql`
-        UPDATE issue_reports
-        SET status = ${newStatus},
-            resolution_notes = COALESCE(${data.resolutionNotes || null}, resolution_notes)
-        WHERE id = ${params.id}
-        RETURNING id, status
-      `;
-    }
-
-    // Create notification to the reporter about the status update
-    await sql`
-      INSERT INTO notifications (recipient_id, type, subject, content, data)
-      VALUES (
-        ${report.reporter_id},
-        'issue_updated',
-        'Issue Report Updated',
-        ${'Your issue report has been updated to ' + newStatus},
-        ${JSON.stringify({ reportId: params.id, status: newStatus })}::jsonb
-      )
+    // Build update fields dynamically
+    const result = await sql`
+      UPDATE outcome_reports
+      SET title = COALESCE(${data.title || null}, title),
+          is_scheduled = COALESCE(${data.isScheduled ?? null}, is_scheduled),
+          schedule_frequency = COALESCE(${data.scheduleFrequency ?? null}, schedule_frequency),
+          updated_at = NOW()
+      WHERE id = ${params.id}
+        AND institution_id = ${tenantId}
+      RETURNING id, title, is_scheduled, schedule_frequency, updated_at
     `;
 
     return NextResponse.json({ report: result[0] });
   } catch (error) {
     console.error('Education report update error:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  }
+}
+
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const session = await getCurrentSession();
+    if (!session) {
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
+    }
+
+    if (session.data.role !== 'educational_admin' && session.data.role !== 'admin') {
+      return NextResponse.json({ error: 'Educational admin access required' }, { status: 403 });
+    }
+
+    const tenantId = session.data.tenantId;
+    if (tenantId) {
+      const allowed = await hasFeature(tenantId, 'outcomesDashboard');
+      if (!allowed) {
+        return NextResponse.json(
+          { error: 'Outcomes Dashboard requires Professional plan or higher' },
+          { status: 403 }
+        );
+      }
+    }
+
+    const result = await sql`
+      DELETE FROM outcome_reports
+      WHERE id = ${params.id}
+        AND institution_id = ${tenantId}
+      RETURNING id
+    `;
+
+    if (result.length === 0) {
+      return NextResponse.json({ error: 'Report not found' }, { status: 404 });
+    }
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error('Education report delete error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

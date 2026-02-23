@@ -70,9 +70,9 @@ export async function POST(request: NextRequest) {
 
     // Load completed project titles
     const projectRows = await sql`
-      SELECT pl.title
+      SELECT l.title
       FROM project_applications pa
-      JOIN project_listings pl ON pl.id = pa.listing_id
+      JOIN listings l ON l.id = pa.listing_id
       WHERE pa.student_id = ${userId} AND pa.status = 'completed'
     `;
 
