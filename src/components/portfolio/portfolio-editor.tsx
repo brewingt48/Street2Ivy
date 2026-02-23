@@ -31,7 +31,12 @@ import {
   Globe,
   CheckCircle,
   AlertCircle,
+  Sparkles,
+  Loader2,
+  Check,
+  X,
 } from 'lucide-react';
+import { csrfFetch } from '@/lib/security/csrf-fetch';
 
 interface PortfolioData {
   id: string;
@@ -86,6 +91,9 @@ export function PortfolioEditor({ portfolio, onUpdate }: PortfolioEditorProps) {
     type: 'success' | 'error';
     message: string;
   } | null>(null);
+  const [aiLoading, setAiLoading] = useState(false);
+  const [improvedBio, setImprovedBio] = useState<string | null>(null);
+  const [aiError, setAiError] = useState<string | null>(null);
 
   const handleSave = async () => {
     setSaving(true);
@@ -117,6 +125,33 @@ export function PortfolioEditor({ portfolio, onUpdate }: PortfolioEditorProps) {
       setFeedback({ type: 'error', message });
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleAiImprove = async () => {
+    setAiLoading(true);
+    setAiError(null);
+    setImprovedBio(null);
+
+    try {
+      const res = await csrfFetch('/api/ai/portfolio/bio', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ currentBio: bio }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || 'Failed to improve bio');
+      }
+
+      const data = await res.json();
+      setImprovedBio(data.improvedBio);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to improve bio';
+      setAiError(message);
+    } finally {
+      setAiLoading(false);
     }
   };
 
@@ -182,14 +217,87 @@ export function PortfolioEditor({ portfolio, onUpdate }: PortfolioEditorProps) {
             <Textarea
               id="bio"
               value={bio}
-              onChange={(e) => setBio(e.target.value)}
+              onChange={(e) => {
+                setBio(e.target.value);
+                // Clear AI preview if user edits bio after getting a suggestion
+                if (improvedBio) setImprovedBio(null);
+              }}
               placeholder="Tell employers about yourself, your goals, and what makes you stand out..."
               rows={5}
               maxLength={2000}
             />
-            <p className="text-xs text-muted-foreground">
-              {bio.length}/2000 characters
-            </p>
+            <div className="flex items-center justify-between">
+              <p className="text-xs text-muted-foreground">
+                {bio.length}/2000 characters
+              </p>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={handleAiImprove}
+                disabled={bio.length < 20 || aiLoading}
+                className="text-xs"
+              >
+                {aiLoading ? (
+                  <>
+                    <Loader2 className="h-3 w-3 mr-1.5 animate-spin" />
+                    Improving...
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="h-3 w-3 mr-1.5" />
+                    Improve with AI
+                  </>
+                )}
+              </Button>
+            </div>
+
+            {/* AI Error */}
+            {aiError && (
+              <div className="flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700 dark:border-red-800 dark:bg-red-950 dark:text-red-300">
+                <AlertCircle className="h-3.5 w-3.5 shrink-0" />
+                {aiError}
+              </div>
+            )}
+
+            {/* AI Improved Bio Preview */}
+            {improvedBio && (
+              <div className="rounded-lg border border-teal-200 bg-teal-50/50 p-4 space-y-3 dark:border-teal-800 dark:bg-teal-950/50">
+                <div className="flex items-center gap-2">
+                  <Sparkles className="h-4 w-4 text-teal-600 dark:text-teal-400" />
+                  <span className="text-sm font-medium text-teal-800 dark:text-teal-200">
+                    AI-Improved Version
+                  </span>
+                </div>
+                <p className="text-sm text-slate-700 dark:text-slate-300 whitespace-pre-wrap leading-relaxed">
+                  {improvedBio}
+                </p>
+                <div className="flex gap-2">
+                  <Button
+                    type="button"
+                    size="sm"
+                    onClick={() => {
+                      setBio(improvedBio);
+                      setImprovedBio(null);
+                    }}
+                    className="bg-teal-600 hover:bg-teal-700 text-white text-xs"
+                  >
+                    <Check className="h-3 w-3 mr-1.5" />
+                    Accept
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setImprovedBio(null)}
+                    className="text-xs"
+                  >
+                    <X className="h-3 w-3 mr-1.5" />
+                    Discard
+                  </Button>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Theme */}

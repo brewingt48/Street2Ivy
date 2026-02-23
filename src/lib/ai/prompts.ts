@@ -272,3 +272,52 @@ export function buildTalentInsightsPrompt(data: {
     `4. **Strategic Recommendations** - Actions the institution should take`,
   ].join('\n');
 }
+
+/**
+ * Build a bio improvement prompt for portfolio editing.
+ * Asks Claude to polish the student's existing bio, weaving in their achievements.
+ */
+export function buildBioImprovementPrompt(
+  student: StudentProfileForAi,
+  currentBio: string,
+  completedProjects: string[],
+  avgRating: number | null
+): string {
+  const parts: string[] = [
+    `You are a professional bio editor for Proveground, a platform connecting student-athletes with real-world corporate projects.`,
+    ``,
+    `A student has written a bio for their professional portfolio. Your job is to improve it — make it more polished, compelling, and impactful while preserving their authentic voice.`,
+    ``,
+    `## Student Profile`,
+    `- Name: ${student.name}`,
+  ];
+
+  if (student.university) parts.push(`- University: ${student.university}`);
+  if (student.major) parts.push(`- Major: ${student.major}`);
+  if (student.graduationYear) parts.push(`- Expected Graduation: ${student.graduationYear}`);
+  if (student.gpa) parts.push(`- GPA: ${student.gpa}`);
+  if (student.skills.length > 0) parts.push(`- Skills: ${student.skills.join(', ')}`);
+  if (student.sportsPlayed) parts.push(`- Athletics: ${student.sportsPlayed}`);
+  if (student.activities) parts.push(`- Activities: ${student.activities}`);
+
+  if (completedProjects.length > 0) {
+    parts.push(`- Completed Projects: ${completedProjects.join(', ')}`);
+  }
+  if (avgRating !== null) {
+    parts.push(`- Average Project Rating: ${avgRating.toFixed(1)}/5`);
+  }
+
+  parts.push(``);
+  parts.push(`## Current Bio (to improve)`);
+  parts.push(currentBio);
+  parts.push(``);
+  parts.push(`## Instructions`);
+  parts.push(`1. PRESERVE the student's authentic voice and tone — improve, don't rewrite from scratch`);
+  parts.push(`2. WEAVE IN concrete achievements from their profile (projects, ratings, skills) where natural`);
+  parts.push(`3. KEEP the result under 2000 characters`);
+  parts.push(`4. USE a professional but personable tone appropriate for employers`);
+  parts.push(`5. NEVER fabricate facts, statistics, or achievements not present in the profile data above`);
+  parts.push(`6. RETURN ONLY the improved bio text — no commentary, no explanations, no quotation marks wrapping it`);
+
+  return parts.join('\n');
+}
