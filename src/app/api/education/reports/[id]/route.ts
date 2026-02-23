@@ -8,6 +8,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { sql } from '@/lib/db';
 import { getCurrentSession } from '@/lib/auth/middleware';
 import { hasFeature } from '@/lib/tenant/features';
+import { computeAllMetrics } from '@/lib/outcomes';
 import { z } from 'zod';
 
 const updateSchema = z.object({
@@ -66,6 +67,14 @@ export async function GET(
       generatedByName = users[0]?.display_name || null;
     }
 
+    // Re-compute metrics from saved filters so the report can be viewed
+    const filters = (r.filters || {}) as Record<string, unknown>;
+    const dateRange = (filters.dateRange || {}) as Record<string, string>;
+    const periodStart = dateRange.start || new Date(Date.now() - 90 * 86400000).toISOString().split('T')[0];
+    const periodEnd = dateRange.end || new Date().toISOString().split('T')[0];
+
+    const metricsSummary = await computeAllMetrics(tenantId!, periodStart, periodEnd);
+
     return NextResponse.json({
       report: {
         id: r.id,
@@ -82,6 +91,7 @@ export async function GET(
         createdAt: r.created_at,
         updatedAt: r.updated_at,
       },
+      data: metricsSummary,
     });
   } catch (error) {
     console.error('Education report detail error:', error);
