@@ -1,13 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-
 const DEMO_URL = 'https://calendly.com/proveground/demo';
-
-interface PolicyLink {
-  title: string;
-  slug: string;
-}
 
 const footerColumns = [
   {
@@ -36,26 +29,11 @@ const footerColumns = [
 
 const companyLinks = [
   { label: 'Contact', href: 'mailto:support@proveground.com' },
-  { label: 'Privacy Policy', href: '/legal/privacy-policy' },
+  { label: 'Privacy Policy', href: '/legal/privacy' },
+  { label: 'Terms of Service', href: '/legal/terms' },
 ];
 
 export function Footer() {
-  const [policies, setPolicies] = useState<PolicyLink[]>([]);
-
-  useEffect(() => {
-    fetch('/api/legal-policies')
-      .then((r) => r.json())
-      .then((d) => setPolicies(d.policies || []))
-      .catch(() => {});
-  }, []);
-
-  // Merge dynamic policies into Company column, avoiding duplicates with static links
-  const staticSlugs = new Set(['privacy-policy']);
-  const dynamicPolicyLinks = policies
-    .filter((p) => !staticSlugs.has(p.slug))
-    .map((p) => ({ label: p.title, href: `/legal/${p.slug}` }));
-
-  const allCompanyLinks = [...companyLinks, ...dynamicPolicyLinks];
 
   return (
     <footer className="border-t border-gray-200 bg-white">
@@ -91,7 +69,7 @@ export function Footer() {
               Company
             </h3>
             <ul className="space-y-2">
-              {allCompanyLinks.map((link) => (
+              {companyLinks.map((link) => (
                 <li key={link.label}>
                   <a
                     href={link.href}
