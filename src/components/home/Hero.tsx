@@ -53,7 +53,7 @@ export function Hero({ bookDemoUrl, copy }: HeroProps) {
   const handleSubmit = async () => {
     if (!formData.name.trim() || !formData.email.trim() || !formData.schoolName.trim()) return;
     setSubmitting(true);
-    console.log('Notify My School submission:', formData);
+    // TODO: Wire to actual API endpoint for school notification requests
     await new Promise((r) => setTimeout(r, 600));
     setSubmitting(false);
     setSubmitted(true);

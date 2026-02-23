@@ -105,13 +105,19 @@ export default function AdminHomepageCMS() {
 
   useEffect(() => {
     fetch('/api/admin/settings')
-      .then((r) => r.json())
+      .then((r) => {
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        return r.json();
+      })
       .then((d) => {
         if (d.settings) {
           setSettings({ ...DEFAULTS, ...d.settings });
         }
       })
-      .catch(console.error)
+      .catch((err) => {
+        console.error('Failed to load settings:', err);
+        setError('Failed to load settings. Showing defaults.');
+      })
       .finally(() => setLoading(false));
   }, []);
 
@@ -448,7 +454,7 @@ export default function AdminHomepageCMS() {
             How It Works Section
           </CardTitle>
           <CardDescription>
-            Customize the 3-step process section headline and step descriptions.
+            Customize the 4-step process section headline and step descriptions.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -467,8 +473,8 @@ export default function AdminHomepageCMS() {
               className="mt-1"
             />
           </div>
-          {[0, 1, 2].map((i) => {
-            const defaultTitles = ['Corporations Post Projects', 'Students Apply & Match', 'Institutions Track Impact'];
+          {[0, 1, 2, 3].map((i) => {
+            const defaultTitles = ['Launch Your Talent Engine', 'Employers Post Real Projects', 'Students Deliver and Build Proof', 'Everyone Sees the Results'];
             const step = settings.howItWorksCopy?.steps?.[i] || {};
             return (
               <div key={i} className="p-3 border rounded-lg space-y-2">
@@ -479,7 +485,7 @@ export default function AdminHomepageCMS() {
                     id={`step${i}Title`}
                     value={step.title || ''}
                     onChange={(e) => {
-                      const steps = [...(settings.howItWorksCopy?.steps || [{}, {}, {}])];
+                      const steps = [...(settings.howItWorksCopy?.steps || [{}, {}, {}, {}])];
                       steps[i] = { ...steps[i], title: e.target.value };
                       setSettings({
                         ...settings,
@@ -496,7 +502,7 @@ export default function AdminHomepageCMS() {
                     id={`step${i}Desc`}
                     value={step.description || ''}
                     onChange={(e) => {
-                      const steps = [...(settings.howItWorksCopy?.steps || [{}, {}, {}])];
+                      const steps = [...(settings.howItWorksCopy?.steps || [{}, {}, {}, {}])];
                       steps[i] = { ...steps[i], description: e.target.value };
                       setSettings({
                         ...settings,

@@ -17,8 +17,8 @@ export const dynamic = 'force-dynamic';
 const updateSettingsSchema = z.object({
   aiCoachingUrl: z.string().optional(),
   aiCoachingEnabled: z.boolean().optional(),
-  bookDemoUrl: z.string().optional(),
-  logoUrl: z.string().optional(),
+  bookDemoUrl: z.string().url().optional().or(z.literal('')),
+  logoUrl: z.string().url().optional().or(z.literal('')),
   hiddenSections: z.array(z.string()).optional(),
   heroCopy: z.object({
     tagline: z.string().optional(),
