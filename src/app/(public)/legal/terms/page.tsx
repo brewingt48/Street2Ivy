@@ -38,7 +38,7 @@ export default function TermsOfServicePage() {
           your account.
         </li>
         <li>
-          You will notify us immediately at <strong>[Contact Email]</strong> if you suspect
+          You will notify us immediately at <a href="mailto:legal@proveground.com" className="text-teal-600 hover:underline">legal@proveground.com</a> if you suspect
           unauthorized access to your account.
         </li>
       </ul>
@@ -199,7 +199,7 @@ export default function TermsOfServicePage() {
       <h3>7.1 Informal Resolution</h3>
       <p>
         Before filing any formal legal proceeding, you agree to first attempt to resolve any dispute
-        informally by contacting us at <strong>[Contact Email]</strong>. We will attempt to resolve
+        informally by contacting us at <a href="mailto:legal@proveground.com" className="text-teal-600 hover:underline">legal@proveground.com</a>. We will attempt to resolve
         the dispute within 30 days.
       </p>
 
@@ -229,7 +229,7 @@ export default function TermsOfServicePage() {
       <ul>
         <li>
           <strong>By You:</strong> You may terminate your account at any time through Settings &gt;
-          Delete Account or by contacting us at <strong>[Contact Email]</strong>.
+          Delete Account or by contacting us at <a href="mailto:legal@proveground.com" className="text-teal-600 hover:underline">legal@proveground.com</a>.
         </li>
         <li>
           <strong>By Us:</strong> We may suspend or terminate your access to the Service at any time,
@@ -290,7 +290,7 @@ export default function TermsOfServicePage() {
       {/* ------------------------------------------------------------------ */}
       <h2>14. Contact Us</h2>
       <p>
-        If you have questions about these Terms, please contact us at <strong>[Contact Email]</strong>.
+        If you have questions about these Terms, please contact us at <a href="mailto:legal@proveground.com" className="text-teal-600 hover:underline">legal@proveground.com</a>.
       </p>
     </>
   );

@@ -22,9 +22,9 @@ export default function PrivacyPolicyPage() {
 
       <p>
         If you are accessing the Service through an educational institution, references to
-        &quot;[Institution Name]&quot; refer to your institution. For questions specific to your institution&apos;s
+        your educational institution refer to your institution. For questions specific to your institution&apos;s
         data practices, contact your institution&apos;s privacy officer. For Proveground-specific inquiries,
-        contact us at <strong>[Contact Email]</strong>.
+        contact us at <a href="mailto:privacy@proveground.com" className="text-teal-600 hover:underline">privacy@proveground.com</a>.
       </p>
 
       {/* ------------------------------------------------------------------ */}
@@ -165,7 +165,7 @@ export default function PrivacyPolicyPage() {
       <p>
         If you are a student user, certain information you provide may constitute &quot;education records&quot;
         under the Family Educational Rights and Privacy Act (FERPA). Your educational institution
-        (&quot;[Institution Name]&quot;) is the custodian of your education records, and Proveground acts as a
+        (your educational institution) is the custodian of your education records, and Proveground acts as a
         &quot;school official&quot; with a legitimate educational interest under FERPA.
       </p>
       <p>As a student, you have the right to:</p>
@@ -183,7 +183,7 @@ export default function PrivacyPolicyPage() {
       </ul>
       <p>
         Your institution&apos;s privacy officer can provide additional information about your FERPA rights.
-        Contact your institution directly or reach out to us at <strong>[Contact Email]</strong>.
+        Contact your institution directly or reach out to us at <a href="mailto:privacy@proveground.com" className="text-teal-600 hover:underline">privacy@proveground.com</a>.
       </p>
 
       {/* ------------------------------------------------------------------ */}
@@ -201,7 +201,7 @@ export default function PrivacyPolicyPage() {
         <li>
           <strong>Right to Delete:</strong> You can request deletion of your personal information, subject
           to certain exceptions. Use the account deletion feature in Settings or contact us at{' '}
-          <strong>[Contact Email]</strong>.
+          <a href="mailto:privacy@proveground.com" className="text-teal-600 hover:underline">privacy@proveground.com</a>.
         </li>
         <li>
           <strong>Right to Opt-Out of Sale/Sharing:</strong> We do not sell your personal information.
@@ -217,7 +217,7 @@ export default function PrivacyPolicyPage() {
         </li>
       </ul>
       <p>
-        To exercise your CCPA rights, email <strong>[Contact Email]</strong> with the subject line
+        To exercise your CCPA rights, email <a href="mailto:privacy@proveground.com" className="text-teal-600 hover:underline">privacy@proveground.com</a> with the subject line
         &quot;CCPA Request.&quot; We will verify your identity before processing your request.
       </p>
 
@@ -334,11 +334,11 @@ export default function PrivacyPolicyPage() {
       </p>
       <ul>
         <li>
-          <strong>Email:</strong> <strong>[Contact Email]</strong>
+          <strong>Email:</strong> <a href="mailto:privacy@proveground.com" className="text-teal-600 hover:underline">privacy@proveground.com</a>
         </li>
         <li>
           <strong>Institution Privacy Officer:</strong> Contact your educational institution
-          (&quot;[Institution Name]&quot;) directly for FERPA-related inquiries.
+          (your educational institution) directly for FERPA-related inquiries.
         </li>
       </ul>
     </>
