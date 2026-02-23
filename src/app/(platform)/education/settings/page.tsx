@@ -121,8 +121,9 @@ export default function EducationSettingsPage() {
   const [ctaSubheadlineCustom, setCtaSubheadlineCustom] = useState('');
   const [footerText, setFooterText] = useState('');
   const [sectionVisibility, setSectionVisibility] = useState<Record<string, boolean>>({
+    stats: true,
     competitiveLoop: true,
-    valueProps: true,
+    platformFeatures: true,
     alumniPartners: true,
     about: true,
     gallery: true,
@@ -130,6 +131,8 @@ export default function EducationSettingsPage() {
     aiCoaching: true,
     networkEcosystem: true,
   });
+  const [enterpriseSaving, setEnterpriseSaving] = useState(false);
+  const [enterpriseMsg, setEnterpriseMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   const fetchSettings = useCallback(async () => {
     try {
@@ -1136,7 +1139,46 @@ export default function EducationSettingsPage() {
                 {planName !== 'enterprise' && ' Upgrade to Enterprise for maximum customization.'}
               </CardDescription>
             </div>
+            <Button
+              onClick={async () => {
+                setEnterpriseSaving(true);
+                setEnterpriseMsg(null);
+                try {
+                  const res = await csrfFetch('/api/tenant/branding', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                      sectionVisibility,
+                      ctaHeadline: ctaHeadlineCustom || undefined,
+                      ctaSubheadline: ctaSubheadlineCustom || undefined,
+                      footerText: footerText || undefined,
+                    }),
+                  });
+                  if (!res.ok) {
+                    const d = await res.json();
+                    throw new Error(d.error || 'Failed to save');
+                  }
+                  setEnterpriseMsg({ type: 'success', text: 'Homepage customization saved' });
+                  setTimeout(() => setEnterpriseMsg(null), 3000);
+                } catch (err) {
+                  setEnterpriseMsg({ type: 'error', text: err instanceof Error ? err.message : 'Failed to save' });
+                } finally {
+                  setEnterpriseSaving(false);
+                }
+              }}
+              disabled={enterpriseSaving || planName !== 'enterprise'}
+              size="sm"
+              className="bg-teal-600 hover:bg-teal-700"
+            >
+              <Save className="h-3.5 w-3.5 mr-1" />
+              {enterpriseSaving ? 'Saving...' : 'Save Customization'}
+            </Button>
           </div>
+          {enterpriseMsg && (
+            <div className={`mt-2 text-sm px-3 py-2 rounded ${enterpriseMsg.type === 'success' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
+              {enterpriseMsg.text}
+            </div>
+          )}
         </CardHeader>
         <CardContent className="space-y-6">
           {/* Section Visibility Toggles */}

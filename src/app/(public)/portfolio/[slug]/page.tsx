@@ -48,6 +48,13 @@ interface PortfolioBadge {
   metadata: Record<string, unknown>;
 }
 
+interface PortfolioSkill {
+  skill: string;
+  level: number;
+  maxLevel: number;
+  verificationSource: string;
+}
+
 interface PublicPortfolioData {
   id: string;
   studentId: string;
@@ -63,6 +70,7 @@ interface PublicPortfolioData {
   institution: string;
   projects: PortfolioProject[];
   badges: PortfolioBadge[];
+  skills?: PortfolioSkill[];
 }
 
 /* -------------------------------------------------------------------------- */
@@ -304,8 +312,7 @@ export default function PublicPortfolioPage() {
                 <CardTitle className="text-lg">Verified Skills</CardTitle>
               </CardHeader>
               <CardContent>
-                {/* Skills data not yet in portfolio API -- pass empty array for placeholder */}
-                <SkillsRadarChart skills={[]} />
+                <SkillsRadarChart skills={portfolio.skills || []} />
               </CardContent>
             </Card>
           </section>

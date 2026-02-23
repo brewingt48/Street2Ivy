@@ -6,6 +6,13 @@
 
 import { sql } from '@/lib/db';
 
+export interface PortfolioSkill {
+  skill: string;
+  level: number;
+  maxLevel: number;
+  verificationSource: string;
+}
+
 export interface PortfolioData {
   id: string;
   studentId: string;
@@ -33,6 +40,7 @@ export interface PortfolioData {
     earnedAt: string;
     metadata: Record<string, unknown>;
   }>;
+  skills?: PortfolioSkill[];
 }
 
 export async function createPortfolio(
@@ -160,6 +168,16 @@ export async function getPortfolioBySlug(
     ORDER BY earned_at DESC
   `;
 
+  // Fetch student skills for the skills radar chart
+  const skillRows = await sql`
+    SELECT s.name, us.proficiency_level, us.verification_source
+    FROM user_skills us
+    JOIN skills s ON s.id = us.skill_id
+    WHERE us.user_id = ${studentId}
+    ORDER BY us.proficiency_level DESC
+    LIMIT 12
+  `;
+
   return {
     id: portfolioId,
     studentId,
@@ -188,6 +206,12 @@ export async function getPortfolioBySlug(
       label: r.badge_label as string,
       earnedAt: r.earned_at as string,
       metadata: (r.badge_metadata || {}) as Record<string, unknown>,
+    })),
+    skills: skillRows.map((r) => ({
+      skill: r.name as string,
+      level: Number(r.proficiency_level),
+      maxLevel: 5,
+      verificationSource: (r.verification_source as string) || 'self_reported',
     })),
   };
 }
