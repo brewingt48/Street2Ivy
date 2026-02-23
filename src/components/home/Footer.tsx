@@ -35,7 +35,6 @@ const footerColumns = [
 ];
 
 const companyLinks = [
-  { label: 'About', href: '#' },
   { label: 'Contact', href: 'mailto:support@proveground.com' },
   { label: 'Privacy Policy', href: '/legal/privacy-policy' },
 ];

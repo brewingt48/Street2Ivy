@@ -19,7 +19,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
+import { RichTextEditor } from '@/components/ui/rich-text-editor';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -301,13 +301,11 @@ export default function EducationLegalPoliciesPage() {
             </div>
             <div>
               <Label htmlFor="create-content">Content</Label>
-              <Textarea
-                id="create-content"
-                value={createForm.content}
-                onChange={(e) => setCreateForm({ ...createForm, content: e.target.value })}
+              <RichTextEditor
+                content={createForm.content}
+                onChange={(html) => setCreateForm({ ...createForm, content: html })}
                 placeholder="Enter your legal policy content here..."
-                rows={12}
-                className="mt-1 font-mono text-sm"
+                className="mt-1"
               />
             </div>
             <div className="grid grid-cols-2 gap-4">
@@ -412,11 +410,10 @@ export default function EducationLegalPoliciesPage() {
                     </div>
                     <div>
                       <Label>Content</Label>
-                      <Textarea
-                        value={editForm.content}
-                        onChange={(e) => setEditForm({ ...editForm, content: e.target.value })}
-                        rows={16}
-                        className="mt-1 font-mono text-sm"
+                      <RichTextEditor
+                        content={editForm.content}
+                        onChange={(html) => setEditForm({ ...editForm, content: html })}
+                        className="mt-1"
                       />
                     </div>
                     <div className="grid grid-cols-2 gap-4">

@@ -1148,6 +1148,7 @@ export default function EducationSettingsPage() {
             <p className="text-xs text-slate-400">Choose which sections appear on your landing page.</p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {[
+                { key: 'stats', label: 'Stats & Social Proof' },
                 { key: 'competitiveLoop', label: 'The Competitive Loop\u2122' },
                 { key: 'valueProps', label: 'Value Proposition Cards' },
                 { key: 'alumniPartners', label: 'Alumni Partners Showcase' },

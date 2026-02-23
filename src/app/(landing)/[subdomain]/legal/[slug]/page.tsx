@@ -78,9 +78,11 @@ export default async function TenantLegalPolicyPage({
         {updatedAt && (
           <p className="text-sm text-gray-400 mt-2">Last updated: {updatedAt}</p>
         )}
-        <div className="mt-8 prose prose-slate max-w-none whitespace-pre-wrap text-gray-700 leading-relaxed">
-          {policy.content as string}
-        </div>
+        {/* Content authored by authenticated admins via TipTap rich text editor */}
+        <div
+          className="mt-8 prose prose-slate max-w-none text-gray-700 leading-relaxed"
+          dangerouslySetInnerHTML={{ __html: policy.content as string }}
+        />
       </div>
 
       {/* Footer */}

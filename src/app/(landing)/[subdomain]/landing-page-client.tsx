@@ -429,45 +429,47 @@ export function LandingPageClient({ tenant, stats, partners, legalPolicies = [] 
       {/* ================================================================
           SECTION 3 -- SOCIAL PROOF BAR
          ================================================================ */}
-      <section className="border-b border-gray-200 bg-gray-50">
-        <div className="max-w-5xl mx-auto px-6 py-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
-            <div>
-              <p
-                className="text-3xl font-bold"
-                style={{ color: primary, fontFamily: '"Bebas Neue", ui-sans-serif, system-ui, sans-serif' }}
-              >
-                {studentCount}
-              </p>
-              <p className="text-sm text-gray-500 mt-1">Students</p>
+      {sectionVisible('stats') && (
+        <section className="border-b border-gray-200 bg-gray-50">
+          <div className="max-w-5xl mx-auto px-6 py-8">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
+              <div>
+                <p
+                  className="text-3xl font-bold"
+                  style={{ color: primary, fontFamily: '"Bebas Neue", ui-sans-serif, system-ui, sans-serif' }}
+                >
+                  {studentCount}
+                </p>
+                <p className="text-sm text-gray-500 mt-1">Students</p>
+              </div>
+              <div>
+                <p
+                  className="text-3xl font-bold"
+                  style={{ color: primary, fontFamily: '"Bebas Neue", ui-sans-serif, system-ui, sans-serif' }}
+                >
+                  {listingCount}
+                </p>
+                <p className="text-sm text-gray-500 mt-1">Active Projects</p>
+              </div>
+              <div>
+                <p
+                  className="text-3xl font-bold"
+                  style={{ color: primary, fontFamily: '"Bebas Neue", ui-sans-serif, system-ui, sans-serif' }}
+                >
+                  {partnerCount}
+                </p>
+                <p className="text-sm text-gray-500 mt-1">Partners</p>
+              </div>
+              <a href="/" className="flex items-center justify-center gap-2 hover:opacity-80 transition-opacity">
+                <Sparkles className="h-5 w-5 text-amber-500" />
+                <p className="text-sm text-gray-500">
+                  Powered by <span className="font-semibold text-gray-700 hover:text-teal-700 transition-colors">Proveground</span>
+                </p>
+              </a>
             </div>
-            <div>
-              <p
-                className="text-3xl font-bold"
-                style={{ color: primary, fontFamily: '"Bebas Neue", ui-sans-serif, system-ui, sans-serif' }}
-              >
-                {listingCount}
-              </p>
-              <p className="text-sm text-gray-500 mt-1">Active Projects</p>
-            </div>
-            <div>
-              <p
-                className="text-3xl font-bold"
-                style={{ color: primary, fontFamily: '"Bebas Neue", ui-sans-serif, system-ui, sans-serif' }}
-              >
-                {partnerCount}
-              </p>
-              <p className="text-sm text-gray-500 mt-1">Partners</p>
-            </div>
-            <a href="/" className="flex items-center justify-center gap-2 hover:opacity-80 transition-opacity">
-              <Sparkles className="h-5 w-5 text-amber-500" />
-              <p className="text-sm text-gray-500">
-                Powered by <span className="font-semibold text-gray-700 hover:text-teal-700 transition-colors">Proveground</span>
-              </p>
-            </a>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* ================================================================
           SECTION 4 -- HOW IT WORKS
