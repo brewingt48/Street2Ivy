@@ -8,20 +8,20 @@ const cards = [
   {
     icon: GraduationCap,
     label: 'For Students',
-    headline: 'Prove what you can do',
-    body: 'Build a verified portfolio through real project work with real companies.',
+    headline: 'Build proof, not just profiles',
+    body: 'Complete real projects for real companies. Every verified outcome becomes part of a portable track record that follows you beyond graduation.',
   },
   {
     icon: Briefcase,
     label: 'For Employers & Alumni',
-    headline: 'Find talent that\u2019s already proven',
-    body: 'Post projects and discover students through verified work, not guesswork.',
+    headline: 'Hire from verified work, not resumes',
+    body: 'Post scoped projects and see what students can actually deliver. The Match Engine\u2122 surfaces proven talent based on real performance.',
   },
   {
     icon: BarChart3,
     label: 'For Career Services',
     headline: 'Measure what matters',
-    body: 'Launch a branded talent engine with outcomes data your stakeholders need.',
+    body: 'Launch a branded talent engine with verified outcomes data \u2014 not self-reported surveys.',
   },
 ];
 

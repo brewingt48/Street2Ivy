@@ -91,7 +91,7 @@ export function Hero({ bookDemoUrl, copy }: HeroProps) {
             transition={{ duration: 0.7, delay: 0.3 }}
             className="font-display text-5xl sm:text-7xl md:text-8xl lg:text-9xl text-white leading-[0.95] tracking-wide uppercase"
           >
-            {copy?.headline ? copy.headline : (<>Where Talent Is<br /><span className="text-[#d4a843]">Proven,</span> Not Assumed</>)}
+            {copy?.headline ? copy.headline : (<>Where Talent Is<br /><span className="text-[#d4a843]">Proven,</span> Not Presumed</>)}
           </motion.h1>
 
           {/* Subheadline */}
@@ -101,7 +101,7 @@ export function Hero({ bookDemoUrl, copy }: HeroProps) {
             transition={{ duration: 0.6, delay: 0.6 }}
             className="mt-6 text-base sm:text-lg text-white/75 max-w-2xl mx-auto leading-relaxed"
           >
-            {copy?.subheadline || 'Proveground connects students with alumni and corporate partners for real project work \u2014 building proof that opens doors before graduation.'}
+            {copy?.subheadline || 'Students complete real projects for corporate partners and alumni \u2014 building a portable track record of verified work that follows them beyond graduation.'}
           </motion.p>
 
           {/* CTAs */}

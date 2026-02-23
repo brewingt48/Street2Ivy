@@ -40,7 +40,7 @@ export function Positioning({ copy }: PositioningProps) {
           transition={{ duration: 0.6, delay: 0.25 }}
           className="mt-6 text-base text-[#3a3a3a]/80 leading-relaxed max-w-2xl mx-auto"
         >
-          {copy?.description || 'Most career platforms help students find listings and submit applications. Proveground helps them become the candidates who actually get hired. Through verified project work, AI-powered coaching, and measurable skill development, students build the proof that sets them apart \u2014 on any platform, in any application, for any role.'}
+          {copy?.description || 'Traditional platforms let students claim their skills on a profile. Proveground lets them prove it through real work. Corporate partners post scoped projects, students deliver real outcomes, and every result is verified and recorded \u2014 creating proof that speaks louder than any resume.'}
         </motion.p>
 
         {/* Decorative gold accent line */}
