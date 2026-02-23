@@ -2,7 +2,7 @@
 
 import { useRef } from 'react';
 import { motion, useInView } from 'framer-motion';
-import { GraduationCap, Briefcase, BarChart3, ArrowRight } from 'lucide-react';
+import { GraduationCap, Briefcase, BarChart3 } from 'lucide-react';
 
 const cards = [
   {
@@ -59,18 +59,9 @@ export function ValueProps() {
                 </h3>
 
                 {/* Body */}
-                <p className="text-sm text-[#3a3a3a]/70 leading-relaxed mb-6">
+                <p className="text-sm text-[#3a3a3a]/70 leading-relaxed">
                   {card.body}
                 </p>
-
-                {/* Arrow link */}
-                <a
-                  href="#"
-                  className="inline-flex items-center gap-1.5 text-sm font-medium text-[#d4a843] hover:text-[#f0c75e] transition-colors duration-200"
-                >
-                  Learn more
-                  <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5" />
-                </a>
               </motion.div>
             );
           })}
