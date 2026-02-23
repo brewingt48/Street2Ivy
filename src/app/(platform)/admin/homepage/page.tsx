@@ -71,16 +71,16 @@ interface Settings {
 }
 
 const ALL_SECTIONS = [
-  { id: 'hero', label: 'Hero Banner', description: 'Full-screen video hero with headline' },
-  { id: 'problem', label: 'The Problem / Opportunity', description: 'Statistics about the talent gap' },
-  { id: 'how-it-works', label: 'How It Works', description: '3-step process explanation' },
-  { id: 'value-props', label: 'Value Propositions', description: 'Solutions for students, corporates, and institutions' },
-  { id: 'white-label', label: 'White Label', description: 'White-label platform showcase with mockup' },
-  { id: 'ai-coaching', label: 'AI Coaching', description: 'AI career coaching feature section' },
-  { id: 'social-proof', label: 'Social Proof', description: 'Stats, partner logos, and testimonials' },
-  { id: 'video', label: 'Video Content', description: 'Platform demo video section' },
-  { id: 'faq', label: 'FAQ', description: 'Frequently asked questions accordion — manage content in FAQ Manager' },
-  { id: 'cta', label: 'CTA Footer', description: 'Bottom call-to-action with Book Demo' },
+  { id: 'hero', label: 'Hero Banner', description: 'Full-screen gradient hero with headline and CTAs' },
+  { id: 'social-proof', label: 'Social Proof', description: 'Stats bar with key metrics' },
+  { id: 'positioning', label: 'Positioning Statement', description: '"Job boards show who applied. We show who\'s ready."' },
+  { id: 'value-props', label: 'Value Propositions', description: 'Cards for Students, Employers, and Career Services' },
+  { id: 'how-it-works', label: 'How It Works', description: '4-step process from launch to outcomes' },
+  { id: 'platform-features', label: 'Platform Features', description: 'Match Engine, Skills Gap, Portfolio, AI Coaching, Dashboard, Content Hub' },
+  { id: 'ai-coaching', label: 'AI Coaching', description: 'AI career coaching showcase with chat mockup' },
+  { id: 'career-stack', label: 'Career Stack Comparison', description: 'Job boards vs. Proveground comparison table' },
+  { id: 'network-ecosystem', label: 'Network Ecosystem', description: 'Multi-institution network visualization' },
+  { id: 'cta', label: 'Closing CTA', description: 'Bottom call-to-action with Request a Demo' },
 ];
 
 const DEFAULTS: Settings = {

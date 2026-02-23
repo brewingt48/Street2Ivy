@@ -9,6 +9,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { sql } from '@/lib/db';
 import { getCurrentSession } from '@/lib/auth/middleware';
 import { z } from 'zod';
+import { revalidatePath } from 'next/cache';
 
 // Force dynamic to prevent caching
 export const dynamic = 'force-dynamic';
@@ -127,6 +128,13 @@ export async function PUT(request: NextRequest) {
         updated_by = ${session.data.userId},
         updated_at = NOW()
     `;
+
+    // Bust ISR cache for the marketing homepage
+    try {
+      revalidatePath('/');
+    } catch (revalError) {
+      console.error('Revalidation error (non-blocking):', revalError);
+    }
 
     return NextResponse.json({ settings: newSettings });
   } catch (error) {
