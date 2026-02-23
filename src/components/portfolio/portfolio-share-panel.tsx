@@ -11,7 +11,7 @@
  * - Handshake integration tip
  */
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -38,9 +38,15 @@ export function PortfolioSharePanel({
 }: PortfolioSharePanelProps) {
   const [copied, setCopied] = useState(false);
   const [showHandshakeTip, setShowHandshakeTip] = useState(false);
+  const [baseUrl, setBaseUrl] = useState(
+    process.env.NEXT_PUBLIC_APP_URL || 'https://proveground.com'
+  );
 
-  const baseUrl =
-    process.env.NEXT_PUBLIC_APP_URL || 'https://proveground.com';
+  // Use the actual browser origin so preview URLs work in any deployment
+  useEffect(() => {
+    setBaseUrl(window.location.origin);
+  }, []);
+
   const portfolioUrl = `${baseUrl}/portfolio/${slug}`;
   const linkedInUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(
     portfolioUrl
