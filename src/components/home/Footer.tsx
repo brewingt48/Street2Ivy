@@ -23,7 +23,6 @@ const footerColumns = [
     links: [
       { label: 'Post a Project', href: '/login' },
       { label: 'Find Talent', href: '/login' },
-      { label: 'Case Studies', href: '#' },
     ],
   },
   {
@@ -31,7 +30,6 @@ const footerColumns = [
     links: [
       { label: 'Launch Your Engine', href: DEMO_URL, external: true },
       { label: 'Outcomes Dashboard', href: '#platform' },
-      { label: 'Integration', href: '#' },
     ],
   },
 ];
