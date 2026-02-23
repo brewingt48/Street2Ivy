@@ -101,7 +101,7 @@ export function Hero({ bookDemoUrl, copy }: HeroProps) {
             transition={{ duration: 0.6, delay: 0.6 }}
             className="mt-6 text-base sm:text-lg text-white/75 max-w-2xl mx-auto leading-relaxed"
           >
-            {copy?.subheadline || 'Proveground is the career platform where students prove their skills through real project work \u2014 building verified track records that employers trust and career offices can measure.'}
+            {copy?.subheadline || 'Real projects. Verified skills. Careers that start before graduation.'}
           </motion.p>
 
           {/* CTAs */}
@@ -138,7 +138,7 @@ export function Hero({ bookDemoUrl, copy }: HeroProps) {
             <div className="flex items-center gap-1.5">
               <GraduationCap className="h-4 w-4 text-[#d4a843] shrink-0" />
               <span className="text-white/60 text-sm">
-                Student? Ask your school to bring Proveground to your campus.
+                Want Proveground at your school?
               </span>
             </div>
             <button
