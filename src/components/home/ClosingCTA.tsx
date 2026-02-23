@@ -3,10 +3,15 @@
 import { useRef } from 'react';
 import { motion, useInView } from 'framer-motion';
 import { ArrowRight } from 'lucide-react';
+import type { CtaCopy } from '@/lib/marketing/types';
 
-const DEMO_URL = 'https://calendly.com/proveground/demo';
+interface ClosingCTAProps {
+  bookDemoUrl?: string;
+  copy?: CtaCopy;
+}
 
-export function ClosingCTA() {
+export function ClosingCTA({ bookDemoUrl, copy }: ClosingCTAProps) {
+  const demoUrl = bookDemoUrl || 'https://calendly.com/proveground/demo';
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: '-80px' });
 
@@ -26,8 +31,7 @@ export function ClosingCTA() {
           transition={{ duration: 0.7 }}
           className="font-display text-4xl sm:text-5xl md:text-7xl text-[#1a1a2e] tracking-wide leading-[1.05] mb-5"
         >
-          Ready to build your institution&apos;s{' '}
-          <span className="text-[#d4a843]">talent engine?</span>
+          {copy?.headline ? copy.headline : (<>Ready to build your institution&apos;s{' '}<span className="text-[#d4a843]">talent engine?</span></>)}
         </motion.h2>
 
         <motion.p
@@ -36,7 +40,7 @@ export function ClosingCTA() {
           transition={{ duration: 0.6, delay: 0.15 }}
           className="text-[#3a3a3a]/80 text-base leading-relaxed max-w-lg mx-auto mb-8"
         >
-          See how Proveground works for your school, organization, or workforce network.
+          {copy?.subheadline || 'See how Proveground works for your school, organization, or workforce network.'}
         </motion.p>
 
         <motion.div
@@ -45,7 +49,7 @@ export function ClosingCTA() {
           transition={{ duration: 0.6, delay: 0.3 }}
         >
           <a
-            href={DEMO_URL}
+            href={demoUrl}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 rounded-full bg-[#d4a843] px-7 py-3 text-sm font-semibold text-[#1a1a2e] hover:bg-[#f0c75e] transition-all duration-200 shadow-lg shadow-[#d4a843]/20"

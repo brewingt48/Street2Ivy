@@ -3,6 +3,7 @@
 import { useRef } from 'react';
 import { motion, useInView } from 'framer-motion';
 import { Rocket, Briefcase, CheckCircle2, BarChart3 } from 'lucide-react';
+import type { HowItWorksCopy } from '@/lib/marketing/types';
 
 const steps = [
   {
@@ -31,9 +32,22 @@ const steps = [
   },
 ];
 
-export function HowItWorks() {
+interface HowItWorksProps {
+  copy?: HowItWorksCopy;
+}
+
+export function HowItWorks({ copy }: HowItWorksProps) {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: '-80px' });
+
+  const displaySteps = steps.map((defaultStep, i) => {
+    const override = copy?.steps?.[i];
+    return {
+      ...defaultStep,
+      title: override?.title || defaultStep.title,
+      body: override?.description || defaultStep.body,
+    };
+  });
 
   return (
     <section id="how-it-works" className="py-24 md:py-32 px-6 bg-[#fafaf8]">
@@ -45,7 +59,7 @@ export function HowItWorks() {
             transition={{ duration: 0.6 }}
             className="font-display text-4xl sm:text-5xl md:text-6xl text-[#1a1a2e] tracking-wide"
           >
-            How Proveground Works
+            {copy?.headline || 'How Proveground Works'}
           </motion.h2>
           <motion.p
             initial={{ opacity: 0, y: 24 }}
@@ -53,7 +67,7 @@ export function HowItWorks() {
             transition={{ duration: 0.5, delay: 0.1 }}
             className="text-base text-[#3a3a3a]/70 mt-4"
           >
-            Four steps from launch to measurable outcomes.
+            {copy?.subtitle || 'Four steps from launch to measurable outcomes.'}
           </motion.p>
         </div>
 
@@ -61,7 +75,7 @@ export function HowItWorks() {
           {/* Connector line (desktop only) */}
           <div className="hidden lg:block absolute top-5 left-[12.5%] right-[12.5%] h-px bg-gradient-to-r from-[#d4a843]/20 via-[#d4a843]/40 to-[#d4a843]/20" />
 
-          {steps.map((step, i) => {
+          {displaySteps.map((step, i) => {
             const Icon = step.icon;
             return (
               <motion.div

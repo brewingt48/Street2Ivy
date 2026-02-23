@@ -11,7 +11,10 @@ const navLinks = [
   { label: 'Platform', href: '#platform' },
 ];
 
-const DEMO_URL = 'https://calendly.com/proveground/demo';
+interface NavbarProps {
+  bookDemoUrl?: string;
+  logoUrl?: string;
+}
 
 interface TenantResult {
   subdomain: string;
@@ -20,7 +23,8 @@ interface TenantResult {
   logoUrl: string | null;
 }
 
-export function Navbar() {
+export function Navbar({ bookDemoUrl, logoUrl }: NavbarProps) {
+  const demoUrl = bookDemoUrl || 'https://calendly.com/proveground/demo';
   const pathname = usePathname();
   const isSubpage = pathname !== '/';
   const [scrolled, setScrolled] = useState(false);
@@ -153,16 +157,23 @@ export function Navbar() {
           <div className="flex items-center justify-between h-16 md:h-20">
             {/* Logo */}
             <a href="#" className="flex items-center gap-0 shrink-0">
-              <span
-                className={`font-display text-2xl md:text-3xl tracking-wider transition-colors duration-300 ${
-                  scrolled || isSubpage ? 'text-[#1a1a2e]' : 'text-white'
-                }`}
-              >
-                PROVE
-              </span>
-              <span className="font-display text-2xl md:text-3xl tracking-wider text-[#d4a843]">
-                GROUND
-              </span>
+              {logoUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={logoUrl} alt="Logo" className="h-8 md:h-10 object-contain" />
+              ) : (
+                <>
+                  <span
+                    className={`font-display text-2xl md:text-3xl tracking-wider transition-colors duration-300 ${
+                      scrolled || isSubpage ? 'text-[#1a1a2e]' : 'text-white'
+                    }`}
+                  >
+                    PROVE
+                  </span>
+                  <span className="font-display text-2xl md:text-3xl tracking-wider text-[#d4a843]">
+                    GROUND
+                  </span>
+                </>
+              )}
             </a>
 
             {/* Desktop links */}
@@ -188,7 +199,7 @@ export function Navbar() {
                   Log In
                 </button>
                 <a
-                  href={DEMO_URL}
+                  href={demoUrl}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center justify-center px-5 py-2 rounded-full bg-[#d4a843] text-[#1a1a2e] text-sm font-semibold hover:bg-[#f0c75e] transition-all duration-200 shadow-md shadow-[#d4a843]/20 hover:shadow-lg hover:shadow-[#d4a843]/30 whitespace-nowrap"
@@ -242,7 +253,7 @@ export function Navbar() {
                     Log In
                   </button>
                   <a
-                    href={DEMO_URL}
+                    href={demoUrl}
                     target="_blank"
                     rel="noopener noreferrer"
                     onClick={() => setMobileOpen(false)}

@@ -2,8 +2,13 @@
 
 import { useRef } from 'react';
 import { motion, useInView } from 'framer-motion';
+import type { PositioningCopy } from '@/lib/marketing/types';
 
-export function Positioning() {
+interface PositioningProps {
+  copy?: PositioningCopy;
+}
+
+export function Positioning({ copy }: PositioningProps) {
   const ref = useRef<HTMLElement>(null);
   const isInView = useInView(ref, { once: true, margin: '-80px' });
 
@@ -25,9 +30,7 @@ export function Positioning() {
           transition={{ duration: 0.6, delay: 0.1 }}
           className="font-serif text-3xl sm:text-4xl md:text-5xl text-[#1a1a2e] leading-snug"
         >
-          Job boards show who applied.
-          <br className="hidden sm:block" />{' '}
-          We show who&rsquo;s ready.
+          {copy?.headline ? copy.headline : (<>Job boards show who applied.<br className="hidden sm:block" />{' '}We show who&rsquo;s ready.</>)}
         </motion.h2>
 
         {/* Body */}
@@ -37,11 +40,7 @@ export function Positioning() {
           transition={{ duration: 0.6, delay: 0.25 }}
           className="mt-6 text-base text-[#3a3a3a]/80 leading-relaxed max-w-2xl mx-auto"
         >
-          Most career platforms help students find listings and submit
-          applications. Proveground helps them become the candidates who actually
-          get hired. Through verified project work, AI-powered coaching, and
-          measurable skill development, students build the proof that sets them
-          apart &mdash; on any platform, in any application, for any role.
+          {copy?.description || 'Most career platforms help students find listings and submit applications. Proveground helps them become the candidates who actually get hired. Through verified project work, AI-powered coaching, and measurable skill development, students build the proof that sets them apart \u2014 on any platform, in any application, for any role.'}
         </motion.p>
 
         {/* Decorative gold accent line */}
