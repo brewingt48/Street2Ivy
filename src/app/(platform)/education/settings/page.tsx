@@ -1150,7 +1150,7 @@ export default function EducationSettingsPage() {
               {[
                 { key: 'stats', label: 'Stats & Social Proof' },
                 { key: 'competitiveLoop', label: 'The Competitive Loop\u2122' },
-                { key: 'valueProps', label: 'Value Proposition Cards' },
+                { key: 'platformFeatures', label: 'Value Proposition Cards' },
                 { key: 'alumniPartners', label: 'Alumni Partners Showcase' },
                 { key: 'about', label: 'About Section' },
                 { key: 'gallery', label: 'Photo Gallery' },

@@ -42,8 +42,10 @@ const updateBrandingSchema = z.object({
   ctaSubheadline: z.string().max(500).optional(),
   footerText: z.string().max(500).optional(),
   sectionVisibility: z.object({
+    stats: z.boolean().optional(),
     competitiveLoop: z.boolean().optional(),
     valueProps: z.boolean().optional(),
+    platformFeatures: z.boolean().optional(),
     alumniPartners: z.boolean().optional(),
     about: z.boolean().optional(),
     gallery: z.boolean().optional(),
