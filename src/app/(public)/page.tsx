@@ -33,7 +33,7 @@ import { Footer } from '@/components/home/Footer';
 
 export const revalidate = 60;
 
-const DEFAULT_DEMO_URL = 'https://calendly.com/proveground/demo';
+const DEFAULT_DEMO_URL = 'https://calendly.com/proveground-support';
 
 async function getMarketingSettings(): Promise<Record<string, unknown>> {
   try {

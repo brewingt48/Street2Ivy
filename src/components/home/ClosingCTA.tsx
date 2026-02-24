@@ -11,7 +11,7 @@ interface ClosingCTAProps {
 }
 
 export function ClosingCTA({ bookDemoUrl, copy }: ClosingCTAProps) {
-  const demoUrl = bookDemoUrl || 'https://calendly.com/proveground/demo';
+  const demoUrl = bookDemoUrl || 'https://calendly.com/proveground-support';
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: '-80px' });
 

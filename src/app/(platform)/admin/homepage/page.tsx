@@ -84,7 +84,7 @@ const ALL_SECTIONS = [
 ];
 
 const DEFAULTS: Settings = {
-  bookDemoUrl: 'https://calendly.com',
+  bookDemoUrl: 'https://calendly.com/proveground-support',
   logoUrl: '',
   hiddenSections: [],
   aiCoachingEnabled: false,
@@ -323,12 +323,12 @@ export default function AdminHomepageCMS() {
           </div>
           <div className="flex items-center gap-2">
             <Badge variant="outline" className="text-xs">
-              Current: {settings.bookDemoUrl || 'https://calendly.com'}
+              Current: {settings.bookDemoUrl || 'https://calendly.com/proveground-support'}
             </Badge>
             <Button
               size="sm"
               variant="ghost"
-              onClick={() => setSettings({ ...settings, bookDemoUrl: 'https://calendly.com' })}
+              onClick={() => setSettings({ ...settings, bookDemoUrl: 'https://calendly.com/proveground-support' })}
               className="text-xs"
             >
               <RotateCcw className="h-3 w-3 mr-1" /> Reset to Calendly

@@ -4,7 +4,7 @@ import { useRef } from 'react';
 import { motion, useInView } from 'framer-motion';
 import { Zap, BookOpen, Sparkles, ArrowRight } from 'lucide-react';
 
-const DEMO_URL = 'https://calendly.com/proveground/demo';
+const DEMO_URL = 'https://calendly.com/proveground-support';
 
 const pillars = [
   {

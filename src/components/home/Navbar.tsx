@@ -24,7 +24,7 @@ interface TenantResult {
 }
 
 export function Navbar({ bookDemoUrl, logoUrl }: NavbarProps) {
-  const demoUrl = bookDemoUrl || 'https://calendly.com/proveground/demo';
+  const demoUrl = bookDemoUrl || 'https://calendly.com/proveground-support';
   const pathname = usePathname();
   const isSubpage = pathname !== '/';
   const [scrolled, setScrolled] = useState(false);

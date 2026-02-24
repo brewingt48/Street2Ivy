@@ -49,7 +49,7 @@ export async function POST() {
       if (settingsCheck.length === 0) {
         await sql`
           INSERT INTO landing_content (section, content)
-          VALUES ('platform_settings', '{"bookDemoUrl": "https://calendly.com", "logoUrl": "", "hiddenSections": [], "aiCoachingEnabled": false, "heroCopy": {}, "problemCopy": {}, "ctaCopy": {}}'::jsonb)
+          VALUES ('platform_settings', '{"bookDemoUrl": "https://calendly.com/proveground-support", "logoUrl": "", "hiddenSections": [], "aiCoachingEnabled": false, "heroCopy": {}, "problemCopy": {}, "ctaCopy": {}}'::jsonb)
           ON CONFLICT (section) DO NOTHING
         `;
         results.push({ name: 'seed_platform_settings', status: 'applied' });
