@@ -1,6 +1,6 @@
 'use client';
 
-const DEMO_URL = 'https://calendly.com/proveground-support';
+const DEMO_URL = 'https://calendly.com/proveground-support/30min';
 
 const footerColumns = [
   {

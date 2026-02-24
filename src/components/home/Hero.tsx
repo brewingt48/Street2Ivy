@@ -11,7 +11,7 @@ interface HeroProps {
 }
 
 export function Hero({ bookDemoUrl, copy }: HeroProps) {
-  const demoUrl = bookDemoUrl || 'https://calendly.com/proveground-support';
+  const demoUrl = bookDemoUrl || 'https://calendly.com/proveground-support/30min';
   const [loaded, setLoaded] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [formData, setFormData] = useState({ name: '', email: '', schoolName: '' });
