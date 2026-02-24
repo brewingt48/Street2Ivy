@@ -19,7 +19,7 @@ export async function GET() {
 
     // Only return the public-safe subset
     const response = NextResponse.json({
-      bookDemoUrl: settings.bookDemoUrl || 'https://calendly.com/proveground-support/30min',
+      bookDemoUrl: settings.bookDemoUrl || 'https://calendly.com/proveground-support/product-demo',
       logoUrl: settings.logoUrl || '',
       hiddenSections: settings.hiddenSections || [],
       aiCoachingEnabled: settings.aiCoachingEnabled || false,
