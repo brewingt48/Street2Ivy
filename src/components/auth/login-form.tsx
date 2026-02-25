@@ -145,22 +145,63 @@ export function LoginForm() {
       // If the user belongs to a different tenant, redirect to that tenant's subdomain
       if (data.tenantSubdomain && typeof window !== 'undefined') {
         const currentHost = window.location.hostname;
-        const currentSubdomain = (() => {
-          const parts = currentHost.split('.');
-          if (parts.length >= 3 && parts[0] !== 'www') return parts[0];
-          return null;
-        })();
+
+        // Platform domains where the first segment is NOT a tenant subdomain
+        // Must match PLATFORM_DOMAINS in src/lib/tenant/resolve.ts
+        const PLATFORM_DOMAINS = [
+          'localhost',
+          'herokuapp.com',
+          'street2ivy.com',
+          'proveground.com',
+          'vercel.app',
+        ];
+
+        // Determine if the current host is on a platform domain
+        // e.g., "street2ivy-dev-c54ffcb26038.herokuapp.com" → platform domain "herokuapp.com"
+        //       "proveground.com" → platform domain "proveground.com"
+        //       "holy-cross-pilot.proveground.com" → tenant subdomain on "proveground.com"
+        const findBaseDomain = (host: string): { baseDomain: string; currentSubdomain: string | null } => {
+          const hostNoPort = host.split(':')[0];
+
+          for (const pd of PLATFORM_DOMAINS) {
+            // Exact match (e.g., "proveground.com" or "localhost")
+            if (hostNoPort === pd || hostNoPort === `www.${pd}`) {
+              return { baseDomain: hostNoPort, currentSubdomain: null };
+            }
+            // Ends with platform domain (e.g., "xyz.herokuapp.com" or "holy-cross-pilot.proveground.com")
+            if (hostNoPort.endsWith(`.${pd}`)) {
+              const prefix = hostNoPort.slice(0, -(pd.length + 1)); // everything before ".herokuapp.com"
+              const prefixParts = prefix.split('.');
+              // If the prefix itself has dots, the first segment might be a tenant subdomain
+              // e.g., "holy-cross-pilot.proveground.com" → prefix="holy-cross-pilot", baseDomain="proveground.com"
+              // e.g., "street2ivy-dev-c54ffcb26038.herokuapp.com" → prefix="street2ivy-dev-c54ffcb26038", baseDomain="street2ivy-dev-c54ffcb26038.herokuapp.com" (app name, not tenant)
+              if (pd === 'herokuapp.com' || pd === 'vercel.app') {
+                // On Heroku/Vercel, the first segment is the app name, not a tenant
+                // Tenant subdomains go in front: "holy-cross-pilot.street2ivy-dev-xxx.herokuapp.com"
+                return { baseDomain: hostNoPort, currentSubdomain: null };
+              }
+              // On custom domains (proveground.com, street2ivy.com), first segment IS the tenant
+              if (prefixParts.length === 1 && prefixParts[0] !== 'www') {
+                return { baseDomain: pd, currentSubdomain: prefixParts[0] };
+              }
+              return { baseDomain: hostNoPort, currentSubdomain: null };
+            }
+          }
+
+          // Unknown domain — fallback to simple subdomain detection
+          const parts = hostNoPort.split('.');
+          if (parts.length >= 3 && parts[0] !== 'www') {
+            return { baseDomain: parts.slice(1).join('.'), currentSubdomain: parts[0] };
+          }
+          return { baseDomain: hostNoPort, currentSubdomain: null };
+        };
+
+        const { baseDomain, currentSubdomain } = findBaseDomain(currentHost);
 
         // Only redirect if logging in from the main site (no subdomain)
         // or from a different tenant's subdomain
         if (!currentSubdomain || currentSubdomain !== data.tenantSubdomain) {
           const protocol = window.location.protocol;
-          const hostParts = currentHost.split('.');
-          // Build the tenant subdomain URL
-          // e.g., holy-cross-pilot.proveground.com or holy-cross-pilot.localhost:3000
-          const baseDomain = currentSubdomain
-            ? hostParts.slice(1).join('.')
-            : currentHost;
           const port = window.location.port ? `:${window.location.port}` : '';
           window.location.href = `${protocol}//${data.tenantSubdomain}.${baseDomain}${port}${dashboardPath}`;
           return;
