@@ -104,6 +104,17 @@ export async function POST(request: NextRequest) {
     // Check if user has MFA enabled
     const mfaStatus = await getUserMFAStatus(user.id);
 
+    // Look up the user's tenant subdomain (for cross-tenant redirect)
+    let tenantSubdomain: string | null = null;
+    if (user.tenantId) {
+      const tenantResult = await sql`
+        SELECT subdomain FROM tenants WHERE id = ${user.tenantId}
+      `;
+      if (tenantResult.length > 0) {
+        tenantSubdomain = tenantResult[0].subdomain;
+      }
+    }
+
     // Create session
     const sid = generateSessionId();
     const sessionData: SessionData = {
@@ -127,34 +138,29 @@ export async function POST(request: NextRequest) {
     // Audit: successful login
     auditLog('AUTH_SUCCESS', { ...reqInfo, userId: user.id, email: user.email });
 
+    const userPayload = {
+      id: user.id,
+      email: user.email,
+      role: user.role,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      displayName: user.displayName,
+      emailVerified: user.emailVerified,
+      avatarUrl: user.avatarUrl,
+    };
+
     // If MFA is enabled, return partial auth response — client must verify MFA
     if (mfaStatus.isEnabled) {
       return NextResponse.json({
         requiresMFA: true,
-        user: {
-          id: user.id,
-          email: user.email,
-          role: user.role,
-          firstName: user.firstName,
-          lastName: user.lastName,
-          displayName: user.displayName,
-          emailVerified: user.emailVerified,
-          avatarUrl: user.avatarUrl,
-        },
+        user: userPayload,
+        tenantSubdomain,
       });
     }
 
     return NextResponse.json({
-      user: {
-        id: user.id,
-        email: user.email,
-        role: user.role,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        displayName: user.displayName,
-        emailVerified: user.emailVerified,
-        avatarUrl: user.avatarUrl,
-      },
+      user: userPayload,
+      tenantSubdomain,
     });
   } catch (error) {
     console.error('Login error:', error);

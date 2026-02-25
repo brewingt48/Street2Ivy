@@ -111,14 +111,58 @@ INSERT INTO users (
 )
 SELECT
   'admin@holycross-pilot.proveground.com',
-  'HC Career Services',
-  'Admin',
+  'Amy',
+  'Murphy',
   'educational_admin',
   t.id,
   true,
   crypt('HolyCrossPilot2026!', gen_salt('bf', 10)),
   'Director of Career Services',
-  'Institutional administrator for the College of the Holy Cross ProveGround pilot. This account manages student access, employer partnerships, project oversight, and analytics.',
+  'Director of Career Services at the College of the Holy Cross. Oversees student access, employer partnerships, project oversight, and analytics for the ProveGround pilot.',
+  true
+FROM tenants t
+WHERE t.subdomain = 'holy-cross-pilot'
+ON CONFLICT (email) DO NOTHING;
+
+-- ── Demo Student Account ──
+INSERT INTO users (
+  email, first_name, last_name, role, tenant_id, is_active,
+  password_hash, university, major, graduation_year, gpa, bio, email_verified
+)
+SELECT
+  'demo-student@holycross.edu',
+  'Demo',
+  'Student',
+  'student',
+  t.id,
+  true,
+  crypt('demo2026', gen_salt('bf', 10)),
+  'College of the Holy Cross',
+  'Economics',
+  2027,
+  '3.65',
+  'Demo student account for evaluating the ProveGround student experience. Browse projects, view matches, and explore the student dashboard.',
+  true
+FROM tenants t
+WHERE t.subdomain = 'holy-cross-pilot'
+ON CONFLICT (email) DO NOTHING;
+
+-- ── Demo Employer Account ──
+INSERT INTO users (
+  email, first_name, last_name, role, tenant_id, is_active,
+  password_hash, company_name, job_title, bio, email_verified
+)
+SELECT
+  'demo-employer@holycross-pilot.proveground.com',
+  'Demo',
+  'Employer',
+  'corporate_partner',
+  t.id,
+  true,
+  crypt('demo2026', gen_salt('bf', 10)),
+  'Worcester Chamber of Commerce',
+  'Partnership Manager',
+  'Demo employer account for evaluating the ProveGround corporate partner experience. Post projects, review applicants, and explore the employer dashboard.',
   true
 FROM tenants t
 WHERE t.subdomain = 'holy-cross-pilot'
@@ -1624,7 +1668,12 @@ ON CONFLICT DO NOTHING;
 -- Summary:
 --   Institution: holycross.edu (College of the Holy Cross)
 --   Tenant: holy-cross-pilot (Enterprise, institution marketplace)
---   Admin: admin@holycross-pilot.proveground.com / HolyCrossPilot2026!
+--
+--   Login Credentials:
+--     Admin (Amy Murphy): admin@holycross-pilot.proveground.com / HolyCrossPilot2026!
+--     Demo Student:       demo-student@holycross.edu / demo2026
+--     Demo Employer:      demo-employer@holycross-pilot.proveground.com / demo2026
+--
 --   Students: 15 (diverse majors, 6 student-athletes)
 --   Employers: 10 (Worcester/Boston corridor)
 --   Projects: 15 (8 open, 4 in-progress, 3 completed)
