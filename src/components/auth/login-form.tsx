@@ -140,7 +140,34 @@ export function LoginForm() {
         educational_admin: '/education',
       };
 
-      router.push(dashboardRoutes[data.user.role] || '/dashboard');
+      const dashboardPath = dashboardRoutes[data.user.role] || '/dashboard';
+
+      // If the user belongs to a different tenant, redirect to that tenant's subdomain
+      if (data.tenantSubdomain && typeof window !== 'undefined') {
+        const currentHost = window.location.hostname;
+        const currentSubdomain = (() => {
+          const parts = currentHost.split('.');
+          if (parts.length >= 3 && parts[0] !== 'www') return parts[0];
+          return null;
+        })();
+
+        // Only redirect if logging in from the main site (no subdomain)
+        // or from a different tenant's subdomain
+        if (!currentSubdomain || currentSubdomain !== data.tenantSubdomain) {
+          const protocol = window.location.protocol;
+          const hostParts = currentHost.split('.');
+          // Build the tenant subdomain URL
+          // e.g., holy-cross-pilot.proveground.com or holy-cross-pilot.localhost:3000
+          const baseDomain = currentSubdomain
+            ? hostParts.slice(1).join('.')
+            : currentHost;
+          const port = window.location.port ? `:${window.location.port}` : '';
+          window.location.href = `${protocol}//${data.tenantSubdomain}.${baseDomain}${port}${dashboardPath}`;
+          return;
+        }
+      }
+
+      router.push(dashboardPath);
       router.refresh();
     } catch {
       setError('An unexpected error occurred. Please try again.');
