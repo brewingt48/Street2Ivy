@@ -142,70 +142,32 @@ export function LoginForm() {
 
       const dashboardPath = dashboardRoutes[data.user.role] || '/dashboard';
 
-      // If the user belongs to a different tenant, redirect to that tenant's subdomain
+      // Cross-tenant redirect: if on a custom domain (proveground.com, street2ivy.com)
+      // and the user belongs to a different tenant, redirect to their subdomain.
+      // On Heroku/Vercel/localhost, subdomain routing isn't available so we just
+      // navigate to the dashboard — the session already has the correct tenantId.
       if (data.tenantSubdomain && typeof window !== 'undefined') {
-        const currentHost = window.location.hostname;
+        const host = window.location.hostname.split(':')[0];
 
-        // Platform domains where the first segment is NOT a tenant subdomain
-        // Must match PLATFORM_DOMAINS in src/lib/tenant/resolve.ts
-        const PLATFORM_DOMAINS = [
-          'localhost',
-          'herokuapp.com',
-          'street2ivy.com',
-          'proveground.com',
-          'vercel.app',
-        ];
+        // Only attempt subdomain redirect on custom domains that support wildcards
+        const SUBDOMAIN_DOMAINS = ['proveground.com', 'street2ivy.com'];
+        const matchedDomain = SUBDOMAIN_DOMAINS.find(
+          (d) => host === d || host === `www.${d}` || host.endsWith(`.${d}`)
+        );
 
-        // Determine if the current host is on a platform domain
-        // e.g., "street2ivy-dev-c54ffcb26038.herokuapp.com" → platform domain "herokuapp.com"
-        //       "proveground.com" → platform domain "proveground.com"
-        //       "holy-cross-pilot.proveground.com" → tenant subdomain on "proveground.com"
-        const findBaseDomain = (host: string): { baseDomain: string; currentSubdomain: string | null } => {
-          const hostNoPort = host.split(':')[0];
+        if (matchedDomain) {
+          // Check if already on the correct tenant subdomain
+          const currentSubdomain = host.endsWith(`.${matchedDomain}`)
+            ? host.slice(0, -(matchedDomain.length + 1))
+            : null;
 
-          for (const pd of PLATFORM_DOMAINS) {
-            // Exact match (e.g., "proveground.com" or "localhost")
-            if (hostNoPort === pd || hostNoPort === `www.${pd}`) {
-              return { baseDomain: hostNoPort, currentSubdomain: null };
-            }
-            // Ends with platform domain (e.g., "xyz.herokuapp.com" or "holy-cross-pilot.proveground.com")
-            if (hostNoPort.endsWith(`.${pd}`)) {
-              const prefix = hostNoPort.slice(0, -(pd.length + 1)); // everything before ".herokuapp.com"
-              const prefixParts = prefix.split('.');
-              // If the prefix itself has dots, the first segment might be a tenant subdomain
-              // e.g., "holy-cross-pilot.proveground.com" → prefix="holy-cross-pilot", baseDomain="proveground.com"
-              // e.g., "street2ivy-dev-c54ffcb26038.herokuapp.com" → prefix="street2ivy-dev-c54ffcb26038", baseDomain="street2ivy-dev-c54ffcb26038.herokuapp.com" (app name, not tenant)
-              if (pd === 'herokuapp.com' || pd === 'vercel.app') {
-                // On Heroku/Vercel, the first segment is the app name, not a tenant
-                // Tenant subdomains go in front: "holy-cross-pilot.street2ivy-dev-xxx.herokuapp.com"
-                return { baseDomain: hostNoPort, currentSubdomain: null };
-              }
-              // On custom domains (proveground.com, street2ivy.com), first segment IS the tenant
-              if (prefixParts.length === 1 && prefixParts[0] !== 'www') {
-                return { baseDomain: pd, currentSubdomain: prefixParts[0] };
-              }
-              return { baseDomain: hostNoPort, currentSubdomain: null };
-            }
+          if (currentSubdomain !== data.tenantSubdomain) {
+            const protocol = window.location.protocol;
+            window.location.href = `${protocol}//${data.tenantSubdomain}.${matchedDomain}${dashboardPath}`;
+            return;
           }
-
-          // Unknown domain — fallback to simple subdomain detection
-          const parts = hostNoPort.split('.');
-          if (parts.length >= 3 && parts[0] !== 'www') {
-            return { baseDomain: parts.slice(1).join('.'), currentSubdomain: parts[0] };
-          }
-          return { baseDomain: hostNoPort, currentSubdomain: null };
-        };
-
-        const { baseDomain, currentSubdomain } = findBaseDomain(currentHost);
-
-        // Only redirect if logging in from the main site (no subdomain)
-        // or from a different tenant's subdomain
-        if (!currentSubdomain || currentSubdomain !== data.tenantSubdomain) {
-          const protocol = window.location.protocol;
-          const port = window.location.port ? `:${window.location.port}` : '';
-          window.location.href = `${protocol}//${data.tenantSubdomain}.${baseDomain}${port}${dashboardPath}`;
-          return;
         }
+        // On Heroku/Vercel/localhost: fall through to normal router.push below
       }
 
       router.push(dashboardPath);
