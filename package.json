@@ -8,7 +8,7 @@
     "start": "node server.js",
     "lint": "next lint",
     "test": "npx tsc --noEmit",
-    "heroku-postbuild": "npm run build && cp -r .next/static .next/standalone/.next/static && (cp -r public .next/standalone/public 2>/dev/null || true)"
+    "heroku-postbuild": "if [ \"$CI\" = 'true' ]; then echo 'Skipping build in CI'; else npm run build && cp -r .next/static .next/standalone/.next/static && (cp -r public .next/standalone/public 2>/dev/null || true); fi"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.74.0",
