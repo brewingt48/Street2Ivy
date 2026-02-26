@@ -13,7 +13,7 @@ export const sql = postgres(connectionString, {
   max: 10,
   idle_timeout: 20,
   connect_timeout: 10,
-  ssl: process.env.NODE_ENV === 'production'
+  ssl: (process.env.NODE_ENV === 'production' || connectionString.includes('rds.amazonaws.com'))
     ? { rejectUnauthorized: false }
     : false,
 });
