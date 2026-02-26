@@ -28,3 +28,4 @@ legacy/node_modules/
 
 # uploads
 uploads/
+.claude/worktrees/
