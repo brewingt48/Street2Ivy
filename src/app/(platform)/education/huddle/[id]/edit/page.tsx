@@ -36,9 +36,9 @@ const statusColors: Record<string, string> = {
   archived: 'bg-slate-100 text-slate-500',
 };
 
-export default function EditHuddlePostPage({ params }: { params: Promise<{ id: string }> }) {
+export default function EditHuddlePostPage({ params }: { params: { id: string } }) {
   const router = useRouter();
-  const [postId, setPostId] = useState('');
+  const postId = params.id;
   const [loading, setLoading] = useState(true);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -57,32 +57,28 @@ export default function EditHuddlePostPage({ params }: { params: Promise<{ id: s
   const [saved, setSaved] = useState(false);
 
   useEffect(() => {
-    params.then(({ id }) => {
-      setPostId(id);
-
-      Promise.all([
-        fetch(`/api/education/huddle/posts/${id}`).then((r) => r.json()),
-        fetch('/api/education/huddle/topics').then((r) => r.json()),
-      ]).then(([postData, topicsData]) => {
-        const p = postData.post;
-        if (p) {
-          setTitle(p.title || '');
-          setDescription(p.description || '');
-          setBody(p.body || '');
-          setContentType(p.contentType || 'article');
-          setMediaUrl(p.mediaUrl || '');
-          setThumbnailUrl(p.thumbnailUrl || '');
-          setIsPinned(p.isPinned || false);
-          setIsFeatured(p.isFeatured || false);
-          setStatus(p.status || '');
-          setRejectionNote(p.rejectionNote || '');
-          setSelectedTopics((p.topics || []).map((t: { id: string }) => t.id));
-        }
-        setAllTopics((topicsData.topics || []).filter((t: { isActive: boolean }) => t.isActive));
-      }).catch(console.error)
-        .finally(() => setLoading(false));
-    });
-  }, [params]);
+    Promise.all([
+      fetch(`/api/education/huddle/posts/${postId}`).then((r) => r.json()),
+      fetch('/api/education/huddle/topics').then((r) => r.json()),
+    ]).then(([postData, topicsData]) => {
+      const p = postData.post;
+      if (p) {
+        setTitle(p.title || '');
+        setDescription(p.description || '');
+        setBody(p.body || '');
+        setContentType(p.contentType || 'article');
+        setMediaUrl(p.mediaUrl || '');
+        setThumbnailUrl(p.thumbnailUrl || '');
+        setIsPinned(p.isPinned || false);
+        setIsFeatured(p.isFeatured || false);
+        setStatus(p.status || '');
+        setRejectionNote(p.rejectionNote || '');
+        setSelectedTopics((p.topics || []).map((t: { id: string }) => t.id));
+      }
+      setAllTopics((topicsData.topics || []).filter((t: { isActive: boolean }) => t.isActive));
+    }).catch(console.error)
+      .finally(() => setLoading(false));
+  }, [postId]);
 
   const handleSave = async (newStatus?: string) => {
     if (!title) { setError('Title is required'); return; }

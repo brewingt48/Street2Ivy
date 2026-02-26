@@ -100,7 +100,7 @@ function initials(name: string | null): string {
 // Component
 // ---------------------------------------------------------------------------
 
-export default function HuddlePostDetailPage({ params }: { params: Promise<{ id: string }> }) {
+export default function HuddlePostDetailPage({ params }: { params: { id: string } }) {
   const router = useRouter();
   const [post, setPost] = useState<HuddlePost | null>(null);
   const [loading, setLoading] = useState(true);
@@ -109,18 +109,16 @@ export default function HuddlePostDetailPage({ params }: { params: Promise<{ id:
 
   useEffect(() => {
     let cancelled = false;
-    params.then(({ id }) => {
-      fetch(`/api/huddle/posts/${id}`)
-        .then((r) => {
-          if (!r.ok) throw new Error('Post not found');
-          return r.json();
-        })
-        .then((d) => { if (!cancelled) setPost(d.post); })
-        .catch((err) => { if (!cancelled) setError(err.message || 'Failed to load post'); })
-        .finally(() => { if (!cancelled) setLoading(false); });
-    });
+    fetch(`/api/huddle/posts/${params.id}`)
+      .then((r) => {
+        if (!r.ok) throw new Error('Post not found');
+        return r.json();
+      })
+      .then((d) => { if (!cancelled) setPost(d.post); })
+      .catch((err) => { if (!cancelled) setError(err.message || 'Failed to load post'); })
+      .finally(() => { if (!cancelled) setLoading(false); });
     return () => { cancelled = true; };
-  }, [params]);
+  }, [params.id]);
 
   const toggleBookmark = async () => {
     if (!post) return;
