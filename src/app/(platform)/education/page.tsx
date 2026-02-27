@@ -346,7 +346,7 @@ export default function EducationDashboardPage() {
                       </div>
                       <div>
                         <Link
-                          href={`/education/students?q=${encodeURIComponent(s.email)}`}
+                          href={`/corporate/students/${s.id}`}
                           className="text-sm font-medium hover:text-teal-600 transition-colors"
                         >
                           {s.name}
@@ -402,7 +402,7 @@ export default function EducationDashboardPage() {
                 <div key={s.id} className="flex items-center justify-between">
                   <div>
                     <Link
-                      href={`/education/students?q=${encodeURIComponent(s.email)}`}
+                      href={`/corporate/students/${s.id}`}
                       className="text-sm font-medium hover:text-teal-600 transition-colors"
                     >
                       {s.name}
