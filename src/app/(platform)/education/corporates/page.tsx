@@ -8,6 +8,7 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
+import Link from 'next/link';
 import { csrfFetch } from '@/lib/security/csrf-fetch';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -195,7 +196,9 @@ export default function EducationCorporatesPage() {
                   </div>
                   <div>
                     <div className="flex items-center gap-2">
-                      <p className="text-sm font-medium">{corp.name}</p>
+                      <Link href={`/education/corporates/${corp.id}`} className="text-sm font-medium hover:text-teal-600 hover:underline transition-colors">
+                        {corp.name}
+                      </Link>
                       {corp.avgRating ? (
                         <span className="flex items-center gap-0.5 text-xs text-amber-600">
                           <Star className="h-3 w-3 fill-amber-500 text-amber-500" />

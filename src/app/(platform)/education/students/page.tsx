@@ -363,7 +363,7 @@ export default function EducationStudentsPage() {
                     </div>
                     <div className="min-w-0">
                       <Link
-                        href={`/education/students?q=${encodeURIComponent(s.email)}`}
+                        href={`/corporate/students/${s.id}`}
                         className="text-sm font-semibold text-slate-900 dark:text-white hover:text-teal-600 dark:hover:text-teal-400 transition-colors truncate block"
                       >
                         {s.name}
@@ -461,7 +461,7 @@ export default function EducationStudentsPage() {
                   </div>
                   <div className="min-w-0">
                     <Link
-                      href={`/education/students?q=${encodeURIComponent(s.email)}`}
+                      href={`/corporate/students/${s.id}`}
                       className="text-sm font-medium hover:text-teal-600 transition-colors"
                     >
                       {s.name}

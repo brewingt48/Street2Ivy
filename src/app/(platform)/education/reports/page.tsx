@@ -73,7 +73,7 @@ const metricLabels: Record<string, { label: string; icon: typeof TrendingUp; for
 };
 
 function formatMetricValue(value: number, format?: string): string {
-  if (format === 'percent') return `${(value * 100).toFixed(1)}%`;
+  if (format === 'percent') return `${value.toFixed(1)}%`;
   if (format === 'decimal') return value.toFixed(1);
   if (format === 'integer') return Math.round(value).toLocaleString();
   return value.toLocaleString();

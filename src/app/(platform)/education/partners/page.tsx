@@ -8,6 +8,7 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
+import Link from 'next/link';
 import { csrfFetch } from '@/lib/security/csrf-fetch';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -402,7 +403,11 @@ export default function PartnersNetworkPage() {
                         )}
                       </div>
                       <div>
-                        <CardTitle className="text-sm">{partner.name}</CardTitle>
+                        <CardTitle className="text-sm">
+                          <Link href={`/admin/network-partners/${partner.id}`} className="hover:text-teal-600 hover:underline transition-colors">
+                            {partner.name}
+                          </Link>
+                        </CardTitle>
                         {partner.industry && (
                           <p className="text-xs text-slate-400">{partner.industry}</p>
                         )}
@@ -498,7 +503,9 @@ export default function PartnersNetworkPage() {
                       )}
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-slate-900 dark:text-white">{partner.name}</p>
+                      <Link href={`/admin/network-partners/${partner.id}`} className="text-sm font-medium text-slate-900 dark:text-white hover:text-teal-600 hover:underline transition-colors">
+                        {partner.name}
+                      </Link>
                       <div className="flex items-center gap-2">
                         {partner.industry && (
                           <span className="text-xs text-slate-400">{partner.industry}</span>
