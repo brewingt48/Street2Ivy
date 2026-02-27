@@ -19,8 +19,9 @@ export async function GET(
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
     }
 
-    if (session.data.role !== 'corporate_partner' && session.data.role !== 'admin') {
-      return NextResponse.json({ error: 'Only corporate partners can view student profiles' }, { status: 403 });
+    const allowedRoles = ['corporate_partner', 'admin', 'educational_admin'];
+    if (!allowedRoles.includes(session.data.role)) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
 
     const studentId = params.id;
