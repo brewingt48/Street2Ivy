@@ -1,0 +1,128 @@
+/**
+ * Claude API Client
+ *
+ * Wrapper around the Anthropic SDK for the Proveground platform.
+ * Provides both synchronous and streaming interfaces.
+ */
+
+import Anthropic from '@anthropic-ai/sdk';
+import type { ClaudeOptions, ConversationMessage } from './types';
+
+// Lazy-initialized client (only created when first used)
+let client: Anthropic | null = null;
+
+function getClient(): Anthropic {
+  if (!client) {
+    const apiKey = process.env.ANTHROPIC_API_KEY;
+    if (!apiKey) {
+      throw new Error('ANTHROPIC_API_KEY environment variable is not set');
+    }
+    client = new Anthropic({ apiKey });
+  }
+  return client;
+}
+
+/**
+ * Convert our ConversationMessage format to Anthropic SDK format.
+ * Filters out system messages (handled separately).
+ */
+function toAnthropicMessages(
+  messages: ConversationMessage[]
+): Array<{ role: 'user' | 'assistant'; content: string }> {
+  return messages
+    .filter((m) => m.role !== 'system')
+    .map((m) => ({
+      role: m.role as 'user' | 'assistant',
+      content: m.content,
+    }));
+}
+
+/**
+ * Build the effective system prompt, prepending an opt-out notice when the
+ * user has opted out of AI training data usage.
+ */
+function buildSystemPrompt(systemPrompt: string, aiTrainingOptOut?: boolean): string {
+  if (!aiTrainingOptOut) return systemPrompt;
+
+  const optOutNotice = [
+    '[PRIVACY NOTICE] The user associated with this request has opted out of having their data used for AI model training.',
+    'Do not use any personally identifiable information from this conversation for training purposes.',
+    '',
+  ].join('\n');
+
+  return optOutNotice + systemPrompt;
+}
+
+/**
+ * Send a message to Claude and get a complete response.
+ * Includes retry logic with exponential backoff.
+ */
+export async function askClaude(options: ClaudeOptions): Promise<string> {
+  const { model, systemPrompt, messages, maxTokens = 2048, aiTrainingOptOut, metadata } = options;
+  const anthropic = getClient();
+
+  const effectiveSystem = buildSystemPrompt(systemPrompt, aiTrainingOptOut);
+
+  let lastError: Error | null = null;
+
+  for (let attempt = 0; attempt < 3; attempt++) {
+    try {
+      const response = await anthropic.messages.create({
+        model,
+        max_tokens: maxTokens,
+        system: effectiveSystem,
+        messages: toAnthropicMessages(messages),
+        ...(metadata ? { metadata } : {}),
+      });
+
+      // Extract text from response
+      const textBlock = response.content.find((block) => block.type === 'text');
+      return textBlock?.text || '';
+    } catch (error) {
+      lastError = error as Error;
+
+      // Don't retry on auth errors or invalid requests
+      if (error instanceof Anthropic.AuthenticationError || error instanceof Anthropic.BadRequestError) {
+        throw error;
+      }
+
+      // Retry on rate limits and server errors with exponential backoff
+      if (attempt < 2) {
+        const delay = Math.pow(2, attempt) * 1000; // 1s, 2s
+        await new Promise((resolve) => setTimeout(resolve, delay));
+      }
+    }
+  }
+
+  throw lastError || new Error('Failed to get response from Claude');
+}
+
+/**
+ * Stream a response from Claude.
+ * Yields text deltas as they arrive.
+ */
+export async function* streamClaude(
+  options: ClaudeOptions
+): AsyncGenerator<string, void, unknown> {
+  const { model, systemPrompt, messages, maxTokens = 2048, aiTrainingOptOut, metadata } = options;
+  const anthropic = getClient();
+
+  const effectiveSystem = buildSystemPrompt(systemPrompt, aiTrainingOptOut);
+
+  const stream = anthropic.messages.stream({
+    model,
+    max_tokens: maxTokens,
+    system: effectiveSystem,
+    messages: toAnthropicMessages(messages),
+    ...(metadata ? { metadata } : {}),
+  });
+
+  for await (const event of stream) {
+    if (
+      event.type === 'content_block_delta' &&
+      event.delta.type === 'text_delta'
+    ) {
+      yield event.delta.text;
+    }
+  }
+}

@@ -1,0 +1,1162 @@
+'use client';
+
+import { useState, useEffect, useRef, useCallback } from 'react';
+import { motion, useInView, AnimatePresence } from 'framer-motion';
+import {
+  Search,
+  Sparkles,
+  Rocket,
+  Users,
+  Briefcase,
+  Award,
+  ArrowRight,
+  Twitter,
+  Instagram,
+  Globe,
+  Mail,
+  Phone,
+  Zap,
+  Menu,
+  X,
+} from 'lucide-react';
+
+/* --- Types --- */
+
+interface Branding {
+  primaryColor?: string;
+  secondaryColor?: string;
+  logoUrl?: string | null;
+}
+
+interface SocialLinks {
+  twitter?: string;
+  instagram?: string;
+  linkedin?: string;
+  website?: string;
+  [key: string]: string | undefined;
+}
+
+interface ContactInfo {
+  email?: string;
+  phone?: string;
+  [key: string]: string | undefined;
+}
+
+interface Tenant {
+  id: string;
+  name: string;
+  display_name: string | null;
+  subdomain: string;
+  marketplace_type: string | null;
+  sport: string | null;
+  team_name: string | null;
+  conference: string | null;
+  hero_video_url: string | null;
+  hero_video_poster_url: string | null;
+  hero_headline: string | null;
+  hero_subheadline: string | null;
+  hero_carousel: { images?: Array<{ src: string; alt: string }>; intervalMs?: number } | null;
+  gallery_images: unknown[];
+  social_links: SocialLinks | null;
+  about_content: string | null;
+  contact_info: ContactInfo | null;
+  branding: Branding | null;
+  features: Record<string, unknown>;
+}
+
+interface Stats {
+  student_count: string | number;
+  listing_count: string | number;
+  partner_count: string | number;
+}
+
+interface Partner {
+  name: string;
+  slug: string;
+  logo_url: string | null;
+  description: string | null;
+  industry: string | null;
+  alumni_graduation_year: number | null;
+  alumni_position: string | null;
+  alumni_years_on_team: string | null;
+  first_name: string | null;
+  last_name: string | null;
+  avatar_url: string | null;
+  alumni_bio: string | null;
+}
+
+interface LegalPolicy {
+  title: string;
+  slug: string;
+  scope: string;
+}
+
+interface LandingPageClientProps {
+  tenant: Tenant;
+  stats: Stats;
+  partners: Partner[];
+  legalPolicies?: LegalPolicy[];
+}
+
+/* --- Animation helpers --- */
+
+const fadeUp = {
+  hidden: { opacity: 0, y: 24 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
+};
+
+const stagger = {
+  visible: { transition: { staggerChildren: 0.12 } },
+};
+
+/* --- Component --- */
+
+export function LandingPageClient({ tenant, stats, partners, legalPolicies = [] }: LandingPageClientProps) {
+  const branding = tenant.branding ?? {};
+  const primary = branding.primaryColor ?? '#0f766e';
+  const secondary = branding.secondaryColor ?? '#f8fafc';
+  const logoUrl = branding.logoUrl ?? null;
+  const socialLinks = tenant.social_links ?? {};
+  const contactInfo = tenant.contact_info ?? {};
+
+  const displayName = tenant.display_name ?? tenant.name;
+  const sportName = tenant.sport ?? 'Athletics';
+  const teamName = tenant.team_name ?? displayName;
+
+  /* Enterprise customization: section visibility & custom text */
+  const sv = (branding as Record<string, unknown>).sectionVisibility as Record<string, boolean> | undefined;
+  const sectionVisible = (key: string) => !sv || sv[key] !== false;
+  const ctaHeadline = ((branding as Record<string, unknown>).ctaHeadline as string) || '';
+  const ctaSubheadline = ((branding as Record<string, unknown>).ctaSubheadline as string) || '';
+  const footerText = ((branding as Record<string, unknown>).footerText as string) || '';
+
+  /* Hero copy */
+  const defaultHeadline = `${displayName}'s Talent Engine`;
+  const headline = tenant.hero_headline ?? defaultHeadline;
+  const subheadline =
+    tenant.hero_subheadline ??
+    'Your career starts with real work. Get matched to projects that prove what you can do \u2014 and build a verified record employers trust.';
+
+  const studentCount = Number(stats.student_count) || 0;
+  const listingCount = Number(stats.listing_count) || 0;
+  const partnerCount = Number(stats.partner_count) || 0;
+
+  const aiCoachingEnabled = !!tenant.features?.aiCoaching;
+
+  /* --- Hero carousel --- */
+  const carousel = tenant.hero_carousel;
+  const carouselImages = carousel?.images && carousel.images.length > 0 ? carousel.images : null;
+  const carouselInterval = carousel?.intervalMs ?? 5000;
+  const [currentSlide, setCurrentSlide] = useState(0);
+
+  const nextSlide = useCallback(() => {
+    if (!carouselImages) return;
+    setCurrentSlide((prev) => (prev + 1) % carouselImages.length);
+  }, [carouselImages]);
+
+  useEffect(() => {
+    if (!carouselImages || carouselImages.length <= 1) return;
+    const timer = setInterval(nextSlide, carouselInterval);
+    return () => clearInterval(timer);
+  }, [carouselImages, carouselInterval, nextSlide]);
+
+  /* --- Mobile menu --- */
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  /* --- Social icon map --- */
+  function socialIcon(key: string) {
+    switch (key) {
+      case 'twitter':
+        return <Twitter className="h-5 w-5" />;
+      case 'instagram':
+        return <Instagram className="h-5 w-5" />;
+      case 'linkedin':
+        return <Globe className="h-5 w-5" />;
+      default:
+        return <Globe className="h-5 w-5" />;
+    }
+  }
+
+  /* --- Nav links --- */
+  const navLinks = [
+    { label: 'How It Works', href: '#how-it-works' },
+    { label: 'Explore Projects', href: `/register?tenant=${tenant.subdomain}&role=student` },
+    ...(aiCoachingEnabled ? [{ label: 'AI Coach', href: '#ai-coaching' }] : []),
+  ];
+
+  return (
+    <div className="min-h-screen bg-white text-gray-900 overflow-x-hidden">
+      {/* ================================================================
+          SECTION 1 -- TENANT NAV
+         ================================================================ */}
+      <nav
+        className="sticky top-0 z-50 backdrop-blur-md border-b"
+        style={{ backgroundColor: `${primary}f0`, borderColor: `${primary}40` }}
+      >
+        <div className="max-w-6xl mx-auto px-6 py-3 flex items-center justify-between">
+          {/* Left: Logo + Powered by */}
+          <div className="flex items-center gap-3">
+            {logoUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={logoUrl} alt={`${displayName} logo`} className="h-8 object-contain" />
+            ) : (
+              <span className="text-lg font-bold" style={{ color: secondary }}>
+                {displayName}
+              </span>
+            )}
+            {logoUrl && (
+              <span className="text-sm font-medium hidden sm:inline" style={{ color: `${secondary}cc` }}>
+                {displayName}
+              </span>
+            )}
+            <span className="hidden md:inline text-xs" style={{ color: `${secondary}88` }}>
+              Powered by Proveground
+            </span>
+          </div>
+
+          {/* Right: Desktop nav */}
+          <div className="hidden md:flex items-center gap-5">
+            {navLinks.map((link) => (
+              <a
+                key={link.label}
+                href={link.href}
+                className="text-sm font-medium transition-opacity hover:opacity-80"
+                style={{ color: `${secondary}dd` }}
+              >
+                {link.label}
+              </a>
+            ))}
+            <a
+              href={`/login?tenant=${tenant.subdomain}`}
+              className="text-sm font-medium px-4 py-1.5 rounded-lg transition-all hover:opacity-90 border"
+              style={{ borderColor: `${secondary}66`, color: secondary }}
+            >
+              Log In
+            </a>
+            <a
+              href={`/register?tenant=${tenant.subdomain}&role=student`}
+              className="text-sm font-medium px-4 py-1.5 rounded-lg transition-all hover:scale-105"
+              style={{ backgroundColor: secondary, color: primary }}
+            >
+              Sign Up
+            </a>
+          </div>
+
+          {/* Mobile hamburger */}
+          <button
+            className="md:hidden"
+            onClick={() => setMenuOpen(!menuOpen)}
+            aria-label="Toggle menu"
+            style={{ color: secondary }}
+          >
+            {menuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+          </button>
+        </div>
+
+        {/* Mobile menu panel */}
+        <AnimatePresence>
+          {menuOpen && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.25 }}
+              className="md:hidden overflow-hidden border-t"
+              style={{ backgroundColor: primary, borderColor: `${primary}40` }}
+            >
+              <div className="px-6 py-4 flex flex-col gap-3">
+                {navLinks.map((link) => (
+                  <a
+                    key={link.label}
+                    href={link.href}
+                    onClick={() => setMenuOpen(false)}
+                    className="text-sm font-medium py-2"
+                    style={{ color: `${secondary}dd` }}
+                  >
+                    {link.label}
+                  </a>
+                ))}
+                <hr style={{ borderColor: `${secondary}22` }} />
+                <a
+                  href={`/login?tenant=${tenant.subdomain}`}
+                  className="text-sm font-medium py-2"
+                  style={{ color: secondary }}
+                >
+                  Log In
+                </a>
+                <a
+                  href={`/register?tenant=${tenant.subdomain}&role=student`}
+                  className="text-sm font-semibold py-2 px-4 rounded-lg text-center"
+                  style={{ backgroundColor: secondary, color: primary }}
+                >
+                  Sign Up
+                </a>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </nav>
+
+      {/* ================================================================
+          SECTION 2 -- TENANT HERO
+         ================================================================ */}
+      <section
+        className="relative min-h-[85vh] flex items-center justify-center overflow-hidden"
+        style={{
+          background: `linear-gradient(135deg, ${primary} 0%, ${primary}dd 50%, ${primary}aa 100%)`,
+        }}
+      >
+        {/* Carousel background */}
+        {carouselImages ? (
+          <div className="absolute inset-0">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={currentSlide}
+                initial={{ opacity: 0, scale: 1.02 }}
+                animate={{ opacity: 1, scale: 1.08 }}
+                exit={{ opacity: 0 }}
+                transition={{ opacity: { duration: 0.6 }, scale: { duration: 4, ease: 'linear' } }}
+                className="absolute inset-0 bg-cover bg-center opacity-40"
+                style={{ backgroundImage: `url(${carouselImages[currentSlide].src})` }}
+                role="img"
+                aria-label={carouselImages[currentSlide].alt}
+              />
+            </AnimatePresence>
+          </div>
+        ) : (
+          <>
+            {/* Video background */}
+            {tenant.hero_video_url && (
+              <video
+                autoPlay
+                muted
+                loop
+                playsInline
+                poster={tenant.hero_video_poster_url ?? undefined}
+                className="absolute inset-0 w-full h-full object-cover opacity-30"
+              >
+                <source src={tenant.hero_video_url} type="video/mp4" />
+              </video>
+            )}
+
+            {/* Static image background */}
+            {!tenant.hero_video_url && tenant.hero_video_poster_url && (
+              <div
+                className="absolute inset-0 w-full h-full bg-cover bg-center bg-no-repeat opacity-40"
+                style={{ backgroundImage: `url(${tenant.hero_video_poster_url})` }}
+              />
+            )}
+          </>
+        )}
+
+        {/* Overlay gradient */}
+        <div className="absolute inset-0 bg-black/20" />
+
+        <motion.div
+          className="relative z-10 max-w-4xl mx-auto px-6 text-center"
+          initial="hidden"
+          animate="visible"
+          variants={stagger}
+        >
+          {/* Conference badge */}
+          {tenant.conference && (
+            <motion.div variants={fadeUp} className="mb-6">
+              <span
+                className="inline-block px-4 py-1.5 rounded-full text-sm font-semibold tracking-wide uppercase"
+                style={{ backgroundColor: `${secondary}22`, color: secondary }}
+              >
+                {tenant.conference}
+              </span>
+            </motion.div>
+          )}
+
+          <motion.h1
+            variants={fadeUp}
+            className="text-4xl sm:text-5xl md:text-6xl font-bold leading-tight mb-6"
+            style={{ color: secondary }}
+          >
+            {headline}
+          </motion.h1>
+
+          <motion.p
+            variants={fadeUp}
+            className="text-lg sm:text-xl md:text-2xl mb-10 max-w-2xl mx-auto"
+            style={{ color: `${secondary}cc` }}
+          >
+            {subheadline}
+          </motion.p>
+
+          <motion.div variants={fadeUp} className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+            <a
+              href={`/register?tenant=${tenant.subdomain}&role=student`}
+              className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl text-lg font-semibold transition-all duration-200 hover:scale-105 shadow-lg"
+              style={{ backgroundColor: secondary, color: primary }}
+            >
+              Create Your Profile
+              <ArrowRight className="h-5 w-5" />
+            </a>
+            <a
+              href={`/register?tenant=${tenant.subdomain}&role=student`}
+              className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl text-lg font-semibold transition-all duration-200 hover:scale-105 border-2"
+              style={{ borderColor: secondary, color: secondary, backgroundColor: 'transparent' }}
+            >
+              Explore Projects
+              <ArrowRight className="h-5 w-5" />
+            </a>
+          </motion.div>
+        </motion.div>
+
+        {/* Carousel dot indicators */}
+        {carouselImages && carouselImages.length > 1 && (
+          <div className="absolute bottom-6 right-6 flex gap-1.5 z-10">
+            {carouselImages.map((_, i) => (
+              <button
+                key={i}
+                onClick={() => setCurrentSlide(i)}
+                aria-label={`Go to slide ${i + 1}`}
+                className={`h-1.5 rounded-full transition-all duration-300 ${
+                  i === currentSlide ? 'w-5' : 'w-1.5 hover:opacity-75'
+                }`}
+                style={{
+                  backgroundColor: i === currentSlide ? secondary : `${secondary}50`,
+                }}
+              />
+            ))}
+          </div>
+        )}
+      </section>
+
+      {/* ================================================================
+          SECTION 3 -- SOCIAL PROOF BAR
+         ================================================================ */}
+      {sectionVisible('stats') && (
+        <section className="border-b border-gray-200 bg-gray-50">
+          <div className="max-w-5xl mx-auto px-6 py-8">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
+              <div>
+                <p
+                  className="text-3xl font-bold"
+                  style={{ color: primary, fontFamily: '"Bebas Neue", ui-sans-serif, system-ui, sans-serif' }}
+                >
+                  {studentCount}
+                </p>
+                <p className="text-sm text-gray-500 mt-1">Students</p>
+              </div>
+              <div>
+                <p
+                  className="text-3xl font-bold"
+                  style={{ color: primary, fontFamily: '"Bebas Neue", ui-sans-serif, system-ui, sans-serif' }}
+                >
+                  {listingCount}
+                </p>
+                <p className="text-sm text-gray-500 mt-1">Active Projects</p>
+              </div>
+              <div>
+                <p
+                  className="text-3xl font-bold"
+                  style={{ color: primary, fontFamily: '"Bebas Neue", ui-sans-serif, system-ui, sans-serif' }}
+                >
+                  {partnerCount}
+                </p>
+                <p className="text-sm text-gray-500 mt-1">Partners</p>
+              </div>
+              <a href="/" className="flex items-center justify-center gap-2 hover:opacity-80 transition-opacity">
+                <Sparkles className="h-5 w-5 text-amber-500" />
+                <p className="text-sm text-gray-500">
+                  Powered by <span className="font-semibold text-gray-700 hover:text-teal-700 transition-colors">Proveground</span>
+                </p>
+              </a>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* ================================================================
+          SECTION 4 -- HOW IT WORKS
+         ================================================================ */}
+      {sectionVisible('competitiveLoop') && (
+        <section id="how-it-works" className="py-20 px-6">
+          <div className="max-w-6xl mx-auto">
+            <motion.div
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, amount: 0.3 }}
+              variants={stagger}
+              className="text-center mb-14"
+            >
+              <motion.h2 variants={fadeUp} className="text-3xl sm:text-4xl font-bold mb-4">
+                How It Works
+              </motion.h2>
+              <motion.p variants={fadeUp} className="text-gray-500 max-w-2xl mx-auto text-lg">
+                Four steps to a career powered by proof.
+              </motion.p>
+            </motion.div>
+
+            <motion.div
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, amount: 0.2 }}
+              variants={stagger}
+              className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8"
+            >
+              {/* Step 1 */}
+              <motion.div
+                variants={fadeUp}
+                className="bg-gray-50 rounded-2xl p-8 text-center border border-gray-100 hover:shadow-lg transition-shadow"
+              >
+                <div
+                  className="inline-flex items-center justify-center w-14 h-14 rounded-full mb-5"
+                  style={{ backgroundColor: `${primary}15` }}
+                >
+                  <Rocket className="h-7 w-7" style={{ color: primary }} />
+                </div>
+                <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: primary }}>
+                  01
+                </p>
+                <h3 className="text-xl font-semibold mb-3">Sign Up &amp; Build Your Profile</h3>
+                <p className="text-gray-500 leading-relaxed">
+                  Create your profile, add your skills and interests. Proveground&apos;s Match Engine finds projects aligned with your strengths.
+                </p>
+              </motion.div>
+
+              {/* Step 2 */}
+              <motion.div
+                variants={fadeUp}
+                className="bg-gray-50 rounded-2xl p-8 text-center border border-gray-100 hover:shadow-lg transition-shadow"
+              >
+                <div
+                  className="inline-flex items-center justify-center w-14 h-14 rounded-full mb-5"
+                  style={{ backgroundColor: `${primary}15` }}
+                >
+                  <Search className="h-7 w-7" style={{ color: primary }} />
+                </div>
+                <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: primary }}>
+                  02
+                </p>
+                <h3 className="text-xl font-semibold mb-3">Get Matched to Real Projects</h3>
+                <p className="text-gray-500 leading-relaxed">
+                  Browse curated project opportunities from employers, alumni, and industry partners &mdash; matched to your skills and schedule.
+                </p>
+              </motion.div>
+
+              {/* Step 3 */}
+              <motion.div
+                variants={fadeUp}
+                className="bg-gray-50 rounded-2xl p-8 text-center border border-gray-100 hover:shadow-lg transition-shadow"
+              >
+                <div
+                  className="inline-flex items-center justify-center w-14 h-14 rounded-full mb-5"
+                  style={{ backgroundColor: `${primary}15` }}
+                >
+                  <Briefcase className="h-7 w-7" style={{ color: primary }} />
+                </div>
+                <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: primary }}>
+                  03
+                </p>
+                <h3 className="text-xl font-semibold mb-3">Do Real Work</h3>
+                <p className="text-gray-500 leading-relaxed">
+                  Take on real engagements with real stakes. Deliver professional-grade results and earn verified reviews from project partners.
+                </p>
+              </motion.div>
+
+              {/* Step 4 */}
+              <motion.div
+                variants={fadeUp}
+                className="bg-gray-50 rounded-2xl p-8 text-center border border-gray-100 hover:shadow-lg transition-shadow"
+              >
+                <div
+                  className="inline-flex items-center justify-center w-14 h-14 rounded-full mb-5"
+                  style={{ backgroundColor: `${primary}15` }}
+                >
+                  <Award className="h-7 w-7" style={{ color: primary }} />
+                </div>
+                <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: primary }}>
+                  04
+                </p>
+                <h3 className="text-xl font-semibold mb-3">Build Your Proof</h3>
+                <p className="text-gray-500 leading-relaxed">
+                  Every completed project adds to your verified portfolio. Build a track record employers trust &mdash; not just a resume they skim.
+                </p>
+              </motion.div>
+            </motion.div>
+          </div>
+        </section>
+      )}
+
+      {/* ================================================================
+          SECTION 5 -- PLATFORM FEATURES
+         ================================================================ */}
+      {sectionVisible('platformFeatures') && (
+        <section className="py-20 px-6 bg-gray-50">
+          <div className="max-w-6xl mx-auto">
+            <motion.div
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, amount: 0.3 }}
+              variants={stagger}
+              className="text-center mb-14"
+            >
+              <motion.h2 variants={fadeUp} className="text-3xl sm:text-4xl font-bold mb-4">
+                Your career toolkit.
+              </motion.h2>
+              <motion.p variants={fadeUp} className="text-gray-500 max-w-2xl mx-auto text-lg">
+                Smart matching, AI coaching, and a verified portfolio &mdash; all in one platform.
+              </motion.p>
+            </motion.div>
+
+            <motion.div
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, amount: 0.2 }}
+              variants={stagger}
+              className={`grid gap-8 ${aiCoachingEnabled ? 'md:grid-cols-3' : 'md:grid-cols-2'}`}
+            >
+              {/* Card 1: Smart Matching */}
+              <motion.div
+                variants={fadeUp}
+                className="bg-white rounded-2xl p-8 border border-gray-100 shadow-sm hover:shadow-lg transition-shadow"
+              >
+                <div
+                  className="inline-flex items-center justify-center w-14 h-14 rounded-full mb-5"
+                  style={{ backgroundColor: `${primary}15` }}
+                >
+                  <Zap className="h-7 w-7" style={{ color: primary }} />
+                </div>
+                <h3 className="text-xl font-semibold mb-3">Smart Matching</h3>
+                <p className="text-gray-500 leading-relaxed">
+                  Proveground&apos;s Match Engine evaluates your skills, schedule, and goals to connect you with the right projects automatically.
+                </p>
+              </motion.div>
+
+              {/* Card 2: AI Career Coach (only if enabled) */}
+              {aiCoachingEnabled && (
+                <motion.div
+                  variants={fadeUp}
+                  className="bg-white rounded-2xl p-8 border border-gray-100 shadow-sm hover:shadow-lg transition-shadow"
+                >
+                  <div
+                    className="inline-flex items-center justify-center w-14 h-14 rounded-full mb-5"
+                    style={{ backgroundColor: `${primary}15` }}
+                  >
+                    <Sparkles className="h-7 w-7" style={{ color: primary }} />
+                  </div>
+                  <h3 className="text-xl font-semibold mb-3">AI Career Coach</h3>
+                  <p className="text-gray-500 leading-relaxed">
+                    Personalized coaching powered by Anthropic&apos;s Claude. Interview prep, project strategy, resume review &mdash; a coach that meets you where you are.
+                  </p>
+                </motion.div>
+              )}
+
+              {/* Card 3: Verified Portfolio */}
+              <motion.div
+                variants={fadeUp}
+                className="bg-white rounded-2xl p-8 border border-gray-100 shadow-sm hover:shadow-lg transition-shadow"
+              >
+                <div
+                  className="inline-flex items-center justify-center w-14 h-14 rounded-full mb-5"
+                  style={{ backgroundColor: `${primary}15` }}
+                >
+                  <Award className="h-7 w-7" style={{ color: primary }} />
+                </div>
+                <h3 className="text-xl font-semibold mb-3">Verified Portfolio</h3>
+                <p className="text-gray-500 leading-relaxed">
+                  Every completed project builds your verified record. Employers see real work, real reviews, and real skills &mdash; not just claims on a resume.
+                </p>
+              </motion.div>
+            </motion.div>
+          </div>
+        </section>
+      )}
+
+      {/* ================================================================
+          SECTION 6 -- ALUMNI PARTNERS SHOWCASE
+         ================================================================ */}
+      {sectionVisible('alumniPartners') && partners.length > 0 && (
+        <section className="py-20 px-6">
+          <div className="max-w-6xl mx-auto">
+            <motion.div
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, amount: 0.3 }}
+              variants={stagger}
+              className="text-center mb-14"
+            >
+              <motion.h2 variants={fadeUp} className="text-3xl sm:text-4xl font-bold mb-4">
+                Alumni Partners
+              </motion.h2>
+              <motion.p variants={fadeUp} className="text-gray-500 max-w-xl mx-auto">
+                Real businesses. Run by alumni who played on this field.
+              </motion.p>
+            </motion.div>
+
+            <motion.div
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, amount: 0.1 }}
+              variants={stagger}
+              className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8"
+            >
+              {partners.map((partner) => {
+                const ownerName =
+                  partner.first_name && partner.last_name
+                    ? `${partner.first_name} ${partner.last_name}`
+                    : null;
+
+                return (
+                  <motion.div
+                    key={partner.slug}
+                    variants={fadeUp}
+                    className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm hover:shadow-md transition-shadow"
+                  >
+                    <div className="flex items-center gap-4 mb-4">
+                      <div
+                        className="w-12 h-12 rounded-full flex items-center justify-center text-lg font-bold"
+                        style={{ backgroundColor: `${primary}20`, color: primary }}
+                      >
+                        {partner.avatar_url ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img
+                            src={partner.avatar_url}
+                            alt={ownerName ?? partner.name}
+                            className="w-12 h-12 rounded-full object-cover"
+                          />
+                        ) : (
+                          (ownerName ?? partner.name).charAt(0).toUpperCase()
+                        )}
+                      </div>
+                      <div>
+                        {ownerName && (
+                          <p className="font-semibold text-gray-900">{ownerName}</p>
+                        )}
+                        <p className="text-sm text-gray-500">{partner.name}</p>
+                      </div>
+                    </div>
+
+                    <div className="flex flex-wrap gap-2 mb-3">
+                      {partner.alumni_graduation_year && (
+                        <span className="text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-600">
+                          Class of {partner.alumni_graduation_year}
+                        </span>
+                      )}
+                      {partner.alumni_position && (
+                        <span className="text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-600">
+                          {partner.alumni_position}
+                        </span>
+                      )}
+                      {partner.industry && (
+                        <span
+                          className="text-xs px-2 py-0.5 rounded-full"
+                          style={{ backgroundColor: `${primary}12`, color: primary }}
+                        >
+                          {partner.industry}
+                        </span>
+                      )}
+                    </div>
+
+                    <p className="text-sm text-gray-600 leading-relaxed line-clamp-3">
+                      {partner.alumni_bio ?? partner.description ?? ''}
+                    </p>
+                  </motion.div>
+                );
+              })}
+            </motion.div>
+          </div>
+        </section>
+      )}
+
+      {/* ================================================================
+          SECTION 7 -- ABOUT
+         ================================================================ */}
+      {sectionVisible('about') && tenant.about_content && (
+        <section className="py-20 px-6">
+          <div className="max-w-3xl mx-auto text-center">
+            <motion.div
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, amount: 0.3 }}
+              variants={stagger}
+            >
+              <motion.h2 variants={fadeUp} className="text-3xl sm:text-4xl font-bold mb-6">
+                About {displayName}
+              </motion.h2>
+              <motion.p
+                variants={fadeUp}
+                className="text-gray-600 text-lg leading-relaxed whitespace-pre-line"
+              >
+                {tenant.about_content}
+              </motion.p>
+            </motion.div>
+          </div>
+        </section>
+      )}
+
+      {/* ================================================================
+          SECTION 8 -- PHOTO GALLERY
+         ================================================================ */}
+      {sectionVisible('gallery') && Array.isArray(tenant.gallery_images) && tenant.gallery_images.length > 0 && (
+        <section className="py-20 px-6 bg-gray-50">
+          <div className="max-w-6xl mx-auto">
+            <motion.div
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, amount: 0.2 }}
+              variants={stagger}
+            >
+              <motion.h2 variants={fadeUp} className="text-3xl sm:text-4xl font-bold text-center mb-12">
+                Gallery
+              </motion.h2>
+              <motion.div
+                variants={fadeUp}
+                className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"
+              >
+                {(tenant.gallery_images as string[]).map((img, i) => (
+                  <div
+                    key={i}
+                    className="relative aspect-[4/3] rounded-xl overflow-hidden group cursor-pointer"
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={img}
+                      alt={`${displayName} gallery ${i + 1}`}
+                      className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                    />
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300" />
+                  </div>
+                ))}
+              </motion.div>
+            </motion.div>
+          </div>
+        </section>
+      )}
+
+      {/* ================================================================
+          SECTION 9 -- SOCIAL LINKS + CONTACT
+         ================================================================ */}
+      {sectionVisible('socialContact') && (Object.keys(socialLinks).length > 0 || contactInfo.email || contactInfo.phone) && (
+        <section className="py-12 px-6 bg-gray-50 border-t border-gray-200">
+          <div className="max-w-3xl mx-auto flex flex-col sm:flex-row items-center justify-center gap-6">
+            {Object.entries(socialLinks).map(
+              ([key, url]) =>
+                url && (
+                  <a
+                    key={key}
+                    href={url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 text-gray-500 hover:text-gray-900 transition-colors"
+                  >
+                    {socialIcon(key)}
+                    <span className="text-sm capitalize">{key}</span>
+                  </a>
+                )
+            )}
+
+            {contactInfo.email && (
+              <a
+                href={`mailto:${contactInfo.email}`}
+                className="inline-flex items-center gap-2 text-gray-500 hover:text-gray-900 transition-colors"
+              >
+                <Mail className="h-5 w-5" />
+                <span className="text-sm">{contactInfo.email}</span>
+              </a>
+            )}
+            {contactInfo.phone && (
+              <a
+                href={`tel:${contactInfo.phone}`}
+                className="inline-flex items-center gap-2 text-gray-500 hover:text-gray-900 transition-colors"
+              >
+                <Phone className="h-5 w-5" />
+                <span className="text-sm">{contactInfo.phone}</span>
+              </a>
+            )}
+          </div>
+        </section>
+      )}
+
+      {/* ================================================================
+          SECTION 10 -- AI COACHING (feature-gated)
+         ================================================================ */}
+      {sectionVisible('aiCoaching') && aiCoachingEnabled && (
+        <AICoachingSection primary={primary} subdomain={tenant.subdomain} />
+      )}
+
+      {/* ================================================================
+          SECTION 11 -- COMPETITIVE EDGE (motivational)
+         ================================================================ */}
+      <section className="py-20 px-6 bg-white">
+        <div className="max-w-3xl mx-auto text-center">
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.3 }}
+            variants={stagger}
+          >
+            <motion.h2 variants={fadeUp} className="text-3xl sm:text-4xl font-bold mb-6">
+              The students who stand out are the ones who show their work.
+            </motion.h2>
+            <motion.p variants={fadeUp} className="text-gray-500 text-lg leading-relaxed max-w-2xl mx-auto">
+              Anyone can list skills on a resume. Proveground students prove them &mdash; with verified project outcomes, real employer reviews, and a portfolio that speaks for itself.
+            </motion.p>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* ================================================================
+          SECTION 12 -- BUSINESS MODEL DISCLAIMER
+         ================================================================ */}
+      <section className="py-6 px-6 bg-gray-100">
+        <p className="text-center text-xs text-gray-400 max-w-3xl mx-auto">
+          Proveground is a matching and discovery platform. All work, contracts, and payments are arranged directly between participants, outside the platform.
+        </p>
+      </section>
+
+      {/* ================================================================
+          SECTION 13 -- TENANT FINAL CTA
+         ================================================================ */}
+      <section
+        className="py-20 px-6"
+        style={{
+          background: `linear-gradient(135deg, ${primary} 0%, ${primary}cc 100%)`,
+        }}
+      >
+        <motion.div
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.3 }}
+          variants={stagger}
+          className="max-w-3xl mx-auto text-center"
+        >
+          <motion.h2
+            variants={fadeUp}
+            className="text-3xl sm:text-4xl font-bold mb-4"
+            style={{ color: secondary }}
+          >
+            {ctaHeadline || 'Ready to prove what you can do?'}
+          </motion.h2>
+          <motion.p
+            variants={fadeUp}
+            className="text-lg mb-10 max-w-xl mx-auto"
+            style={{ color: `${secondary}bb` }}
+          >
+            {ctaSubheadline || `Join ${displayName}'s talent engine. Build a career powered by proof, not promises.`}
+          </motion.p>
+
+          <motion.div variants={fadeUp} className="flex flex-col sm:flex-row gap-4 justify-center">
+            <a
+              href={`/register?tenant=${tenant.subdomain}&role=student`}
+              className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl text-lg font-semibold transition-all duration-200 hover:scale-105 shadow-lg"
+              style={{ backgroundColor: secondary, color: primary }}
+            >
+              Create Your Profile
+              <ArrowRight className="h-5 w-5" />
+            </a>
+            <a
+              href={`/register?tenant=${tenant.subdomain}&role=alumni`}
+              className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl text-lg font-semibold transition-all duration-200 hover:scale-105 border-2"
+              style={{ borderColor: secondary, color: secondary, backgroundColor: 'transparent' }}
+            >
+              <Users className="h-5 w-5" />
+              Explore as a Partner
+            </a>
+          </motion.div>
+        </motion.div>
+      </section>
+
+      {/* ================================================================
+          SECTION 14 -- TENANT FOOTER
+         ================================================================ */}
+      <footer className="py-8 px-6 bg-gray-900 text-gray-400 text-sm">
+        <div className="max-w-7xl mx-auto flex flex-col items-center gap-4">
+          <a href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+            <Sparkles className="h-4 w-4 text-amber-500" />
+            <span className="text-gray-300 text-sm font-semibold">Powered by Proveground</span>
+          </a>
+
+          {legalPolicies.length > 0 && (
+            <div className="flex flex-wrap items-center justify-center gap-4">
+              {legalPolicies.map((p) => (
+                <a
+                  key={`${p.scope}-${p.slug}`}
+                  href={p.scope === 'platform' ? `/legal/${p.slug}` : `/${tenant.subdomain}/legal/${p.slug}`}
+                  className="hover:text-white transition-colors"
+                >
+                  {p.title}
+                </a>
+              ))}
+            </div>
+          )}
+          {footerText ? (
+            <p>{footerText}</p>
+          ) : (
+            <p>
+              &copy; {new Date().getFullYear()} {displayName}. Powered by{' '}
+              <a
+                href="/"
+                className="text-white hover:underline"
+              >
+                Proveground
+              </a>
+            </p>
+          )}
+        </div>
+      </footer>
+    </div>
+  );
+}
+
+/* ================================================================
+   AI COACHING SUB-COMPONENT — renders when aiCoaching feature is on
+   ================================================================ */
+
+const coachMessages = [
+  {
+    type: 'user' as const,
+    text: 'I have a consulting project presentation next week and I\u2019ve never presented to a C-suite audience before.',
+  },
+  {
+    type: 'coach' as const,
+    text: 'Let\u2019s get you ready. C-suite audiences care about three things: bottom-line impact, risk profile, and timeline. Let\u2019s restructure your deck around those pillars.',
+  },
+  {
+    type: 'user' as const,
+    text: 'Can we start with the opening?',
+  },
+];
+
+function AICoachingSection({ primary, subdomain }: { primary: string; subdomain: string }) {
+  const ref = useRef(null);
+  const isInView = useInView(ref, { once: true, amount: 0.3 });
+  const [showTyping, setShowTyping] = useState(false);
+
+  useEffect(() => {
+    if (isInView) {
+      const timer = setTimeout(() => setShowTyping(true), 2200);
+      return () => clearTimeout(timer);
+    }
+  }, [isInView]);
+
+  return (
+    <section id="ai-coaching" ref={ref} className="py-20 px-6 bg-gray-50">
+      <div className="max-w-6xl mx-auto">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+          {/* Left — Copy */}
+          <div>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={isInView ? { opacity: 1, y: 0 } : {}}
+              transition={{ duration: 0.5 }}
+              className="flex items-center gap-3 mb-4"
+            >
+              <span className="text-sm font-semibold uppercase tracking-widest" style={{ color: primary }}>
+                AI-Powered
+              </span>
+              <span className="text-gray-300 text-xs">|</span>
+              <span className="text-gray-400 text-xs font-medium tracking-wide">
+                Powered by Anthropic
+              </span>
+            </motion.div>
+
+            <motion.h2
+              initial={{ opacity: 0, y: 20 }}
+              animate={isInView ? { opacity: 1, y: 0 } : {}}
+              transition={{ duration: 0.6, delay: 0.1 }}
+              className="text-3xl sm:text-4xl font-bold mb-5 leading-tight"
+            >
+              A career coach that meets you where you are.
+            </motion.h2>
+
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              animate={isInView ? { opacity: 1, y: 0 } : {}}
+              transition={{ duration: 0.6, delay: 0.2 }}
+              className="text-gray-500 text-base leading-relaxed mb-6"
+            >
+              Personalized career coaching powered by Anthropic&rsquo;s Claude. From your first project to your final interview, get specific guidance based on your actual project history, verified skills, and career goals.
+            </motion.p>
+
+            <motion.a
+              initial={{ opacity: 0, y: 20 }}
+              animate={isInView ? { opacity: 1, y: 0 } : {}}
+              transition={{ duration: 0.6, delay: 0.3 }}
+              href={`/register?tenant=${subdomain}&role=student`}
+              className="inline-flex items-center gap-2 font-semibold transition-colors group"
+              style={{ color: primary }}
+            >
+              Explore AI Coaching
+              <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+            </motion.a>
+          </div>
+
+          {/* Right — Chat mockup */}
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={isInView ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.7, delay: 0.2 }}
+            className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm"
+          >
+            {/* Chat header */}
+            <div className="flex items-center justify-between mb-5 pb-4 border-b border-gray-200">
+              <div className="flex items-center gap-3">
+                <div
+                  className="w-8 h-8 rounded-full flex items-center justify-center"
+                  style={{ backgroundColor: `${primary}15` }}
+                >
+                  <Sparkles className="h-4 w-4" style={{ color: primary }} />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-gray-900">Proveground Coach</p>
+                  <p className="text-xs text-green-500 flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-green-500 inline-block" />
+                    Online
+                  </p>
+                </div>
+              </div>
+              <span className="text-[10px] text-gray-400 font-medium tracking-wide uppercase">
+                Powered by Anthropic
+              </span>
+            </div>
+
+            {/* Messages */}
+            <div className="space-y-3">
+              {coachMessages.map((msg, i) => (
+                <motion.div
+                  key={i}
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={isInView ? { opacity: 1, y: 0 } : {}}
+                  transition={{ duration: 0.4, delay: 0.5 + i * 0.25 }}
+                  className={`flex ${msg.type === 'user' ? 'justify-end' : 'justify-start'}`}
+                >
+                  <div
+                    className={`max-w-[85%] rounded-2xl px-4 py-3 text-sm leading-relaxed ${
+                      msg.type === 'user'
+                        ? 'bg-gray-100 text-gray-900 rounded-br-md'
+                        : 'bg-white text-gray-700 border border-gray-200 rounded-bl-md shadow-sm'
+                    }`}
+                  >
+                    {msg.text}
+                  </div>
+                </motion.div>
+              ))}
+
+              {showTyping && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="flex justify-start"
+                >
+                  <div className="bg-white border border-gray-200 rounded-2xl rounded-bl-md px-4 py-3 shadow-sm">
+                    <div className="flex gap-1.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-gray-300 animate-bounce [animation-delay:0ms]" />
+                      <span className="w-1.5 h-1.5 rounded-full bg-gray-300 animate-bounce [animation-delay:150ms]" />
+                      <span className="w-1.5 h-1.5 rounded-full bg-gray-300 animate-bounce [animation-delay:300ms]" />
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </div>
+          </motion.div>
+        </div>
+      </div>
+    </section>
+  );
+}

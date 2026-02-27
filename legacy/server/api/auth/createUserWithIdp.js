@@ -1,0 +1,111 @@
+const http = require('http');
+const https = require('https');
+const sharetribeSdk = require('sharetribe-flex-sdk');
+const { handleError, serialize, typeHandlers } = require('../../api-util/sdk');
+
+const CLIENT_ID = process.env.REACT_APP_SHARETRIBE_SDK_CLIENT_ID;
+const CLIENT_SECRET = process.env.SHARETRIBE_SDK_CLIENT_SECRET;
+const TRANSIT_VERBOSE = process.env.REACT_APP_SHARETRIBE_SDK_TRANSIT_VERBOSE === 'true';
+const USING_SSL = process.env.REACT_APP_SHARETRIBE_USING_SSL === 'true';
+const BASE_URL = process.env.REACT_APP_SHARETRIBE_SDK_BASE_URL;
+
+const FACBOOK_APP_ID = process.env.REACT_APP_FACEBOOK_APP_ID;
+const GOOGLE_CLIENT_ID = process.env.REACT_APP_GOOGLE_CLIENT_ID;
+
+const FACEBOOK_IDP_ID = 'facebook';
+const GOOGLE_IDP_ID = 'google';
+
+// Instantiate HTTP(S) Agents with keepAlive set to true.
+// This will reduce the request time for consecutive requests by
+// reusing the existing TCP connection, thus eliminating the time used
+// for setting up new TCP connections.
+const httpAgent = new http.Agent({ keepAlive: true });
+const httpsAgent = new https.Agent({ keepAlive: true });
+
+const baseUrl = BASE_URL ? { baseUrl: BASE_URL } : {};
+
+module.exports = (req, res) => {
+  // SECURITY: Use tenant-specific credentials when available, fall back to env vars
+  const tenantClientId = req.tenant?.sharetribe?.clientId || CLIENT_ID;
+  const tenantClientSecret = req.tenant?.sharetribe?.clientSecret || CLIENT_SECRET;
+
+  const tokenStore = sharetribeSdk.tokenStore.expressCookieStore({
+    clientId: tenantClientId,
+    req,
+    res,
+    secure: USING_SSL,
+  });
+
+  const sdk = sharetribeSdk.createInstance({
+    transitVerbose: TRANSIT_VERBOSE,
+    clientId: tenantClientId,
+    clientSecret: tenantClientSecret,
+    httpAgent,
+    httpsAgent,
+    tokenStore,
+    typeHandlers,
+    ...baseUrl,
+  });
+
+  const { idpId, ...rest } = req.body || {};
+
+  // Read the sensitive idpToken from the HttpOnly cookie (not from the request body)
+  const tokenCookie = req.cookies?.['st-authinfo-token'];
+  const idpToken = tokenCookie?.idpToken || req.body?.idpToken;
+
+  // Enforce tenant email domain for student signups
+  const tenantDomain = req.tenant?.institutionDomain;
+  const userType = rest?.publicData?.userType;
+  const email = rest?.email;
+
+  if (userType === 'student' && tenantDomain && email) {
+    const emailDomain = email.split('@')[1]?.toLowerCase();
+    const domainMatches =
+      emailDomain === tenantDomain || (emailDomain && emailDomain.endsWith('.' + tenantDomain));
+    if (!domainMatches) {
+      return res.status(403).json({
+        error: `This marketplace is for ${req.tenant.name || tenantDomain} students only. Please use your ${tenantDomain} email address to sign up.`,
+      });
+    }
+  }
+
+  // Ensure emailDomain is stored in publicData for IDP signups
+  if (email && rest.publicData && !rest.publicData.emailDomain) {
+    rest.publicData.emailDomain = email.split('@')[1]?.toLowerCase() || null;
+  }
+
+  // Choose the idpClientId based on which authentication method is used.
+  const idpClientId =
+    idpId === FACEBOOK_IDP_ID ? FACBOOK_APP_ID : idpId === GOOGLE_IDP_ID ? GOOGLE_CLIENT_ID : null;
+
+  sdk.currentUser
+    .createWithIdp({ idpId, idpClientId, idpToken, ...rest })
+    .then(() =>
+      // After the user is created, we need to call loginWithIdp endpoint
+      // so that the user will be logged in.
+      sdk.loginWithIdp({
+        idpId,
+        idpClientId: `${idpClientId}`,
+        idpToken: `${idpToken}`,
+      })
+    )
+    .then(apiResponse => {
+      const { status, statusText, data } = apiResponse;
+      res
+        .clearCookie('st-authinfo')
+        .clearCookie('st-authinfo-token')
+        .status(status)
+        .set('Content-Type', 'application/transit+json')
+        .send(
+          serialize({
+            status,
+            statusText,
+            data,
+          })
+        )
+        .end();
+    })
+    .catch(e => {
+      handleError(res, e);
+    });
+};

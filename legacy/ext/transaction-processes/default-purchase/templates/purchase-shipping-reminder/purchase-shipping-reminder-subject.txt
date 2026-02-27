@@ -1,0 +1,1 @@
+{{set-translations (asset "content/email-texts.json")}}{{t "PurchaseShippingReminder.Subject" "Remember to {option, select, shipping {complete} other {deliver}} {customerDisplayName}'s project engagement" customerDisplayName=transaction.customer.display-name option=transaction.protected-data.deliveryMethod}}

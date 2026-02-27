@@ -1,0 +1,10 @@
+[     504ms] EvalError: Evaluating a string as JavaScript violates the following Content Security Policy directive because 'unsafe-eval' is not an allowed source of script: script-src 'self' 'unsafe-inline'".
+
+    at (app-pages-browser)/./node_modules/next/dist/compiled/@next/react-refresh-utils/dist/runtime.js (http://localhost:3000/_next/static/chunks/main-app.js?v=1771849529475:50:26)
+    at options.factory (http://localhost:3000/_next/static/chunks/webpack.js?v=1771849529475:715:31)
+    at __webpack_require__ (http://localhost:3000/_next/static/chunks/webpack.js?v=1771849529475:37:33)
+    at __webpack_exec__ (http://localhost:3000/_next/static/chunks/main-app.js?v=1771849529475:2007:61)
+    at http://localhost:3000/_next/static/chunks/main-app.js?v=1771849529475:2008:37
+    at webpackJsonpCallback (http://localhost:3000/_next/static/chunks/webpack.js?v=1771849529475:1387:39)
+    at http://localhost:3000/_next/static/chunks/main-app.js?v=1771849529475:9:61
+[    1150ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://localhost:3000/favicon.ico:0

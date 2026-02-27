@@ -1,0 +1,198 @@
+/**
+ * GET /api/profile — Get current user's full profile
+ * PATCH /api/profile — Update current user's profile
+ */
+
+import { NextRequest, NextResponse } from 'next/server';
+import { sql } from '@/lib/db';
+import { getCurrentSession } from '@/lib/auth/middleware';
+import { z } from 'zod';
+
+const updateProfileSchema = z.object({
+  firstName: z.string().min(1).max(100).optional(),
+  lastName: z.string().min(1).max(100).optional(),
+  bio: z.string().max(2000).optional(),
+  phone: z.string().max(20).optional(),
+  university: z.string().max(200).optional(),
+  major: z.string().max(200).optional(),
+  graduationYear: z.number().int().min(2000).max(2040).optional(),
+  gpa: z.string().max(10).optional(),
+  avatarUrl: z.string().url().optional().nullable(),
+  companyName: z.string().max(200).optional(),
+  jobTitle: z.string().max(200).optional(),
+  department: z.string().max(200).optional(),
+  companyDescription: z.string().max(2000).optional(),
+  companyWebsite: z.string().max(500).optional(),
+  companySize: z.string().max(100).optional(),
+  companyIndustry: z.string().max(200).optional(),
+  stockSymbol: z.string().max(20).optional(),
+  isPubliclyTraded: z.boolean().optional(),
+  sportsPlayed: z.string().max(500).optional(),
+  activities: z.string().max(500).optional(),
+});
+
+export async function GET() {
+  try {
+    const session = await getCurrentSession();
+    if (!session) {
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
+    }
+
+    const users = await sql`
+      SELECT id, email, role, first_name, last_name, display_name,
+             bio, phone, university, major, graduation_year, gpa,
+             avatar_url, email_verified, institution_domain,
+             tenant_id, company_name, job_title, department,
+             public_data, metadata, created_at
+      FROM users
+      WHERE id = ${session.data.userId}
+    `;
+
+    if (users.length === 0) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    }
+
+    const user = users[0];
+
+    // Get user skills
+    const skills = await sql`
+      SELECT s.id, s.name, s.category
+      FROM user_skills us
+      JOIN skills s ON s.id = us.skill_id
+      WHERE us.user_id = ${session.data.userId}
+      ORDER BY s.name
+    `;
+
+    // Get institution info if linked
+    let institution = null;
+    if (user.institution_domain) {
+      const insts = await sql`
+        SELECT domain, name, membership_status, ai_coaching_enabled, ai_coaching_url
+        FROM institutions
+        WHERE domain = ${user.institution_domain}
+      `;
+      if (insts.length > 0) institution = insts[0];
+    }
+
+    return NextResponse.json({
+      profile: {
+        id: user.id,
+        email: user.email,
+        role: user.role,
+        firstName: user.first_name,
+        lastName: user.last_name,
+        displayName: user.display_name,
+        bio: user.bio,
+        phone: user.phone,
+        university: user.university,
+        major: user.major,
+        graduationYear: user.graduation_year,
+        gpa: user.gpa,
+        avatarUrl: user.avatar_url,
+        emailVerified: user.email_verified,
+        institutionDomain: user.institution_domain,
+        companyName: user.company_name,
+        jobTitle: user.job_title,
+        department: user.department,
+        companyDescription: (user.public_data as any)?.companyDescription || null,
+        companyWebsite: (user.public_data as any)?.companyWebsite || null,
+        companySize: (user.public_data as any)?.companySize || null,
+        companyIndustry: (user.public_data as any)?.companyIndustry || null,
+        stockSymbol: (user.public_data as any)?.stockSymbol || null,
+        isPubliclyTraded: (user.public_data as any)?.isPubliclyTraded ?? null,
+        sportsPlayed: (user.metadata as any)?.sportsPlayed || null,
+        activities: (user.metadata as any)?.activities || null,
+        createdAt: user.created_at,
+      },
+      skills,
+      institution,
+    });
+  } catch (error) {
+    console.error('Profile get error:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  }
+}
+
+export async function PATCH(request: NextRequest) {
+  try {
+    const session = await getCurrentSession();
+    if (!session) {
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
+    }
+
+    const body = await request.json();
+    const parsed = updateProfileSchema.safeParse(body);
+
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: 'Validation failed', details: parsed.error.flatten().fieldErrors },
+        { status: 400 }
+      );
+    }
+
+    const data = parsed.data;
+    const updates: string[] = [];
+    const values: Record<string, unknown> = {};
+
+    // Build dynamic update - display_name is GENERATED ALWAYS, never include
+    if (data.firstName !== undefined) { updates.push('first_name'); values.first_name = data.firstName; }
+    if (data.lastName !== undefined) { updates.push('last_name'); values.last_name = data.lastName; }
+    if (data.bio !== undefined) { updates.push('bio'); values.bio = data.bio; }
+    if (data.phone !== undefined) { updates.push('phone'); values.phone = data.phone; }
+    if (data.university !== undefined) { updates.push('university'); values.university = data.university; }
+    if (data.major !== undefined) { updates.push('major'); values.major = data.major; }
+    if (data.graduationYear !== undefined) { updates.push('graduation_year'); values.graduation_year = data.graduationYear; }
+    if (data.gpa !== undefined) { updates.push('gpa'); values.gpa = data.gpa; }
+    if (data.avatarUrl !== undefined) { updates.push('avatar_url'); values.avatar_url = data.avatarUrl; }
+    if (data.companyName !== undefined) { updates.push('company_name'); values.company_name = data.companyName; }
+    if (data.jobTitle !== undefined) { updates.push('job_title'); values.job_title = data.jobTitle; }
+    if (data.department !== undefined) { updates.push('department'); values.department = data.department; }
+
+    if (updates.length > 0) {
+      await sql`
+        UPDATE users
+        SET ${sql(values, ...updates)}, updated_at = NOW()
+        WHERE id = ${session.data.userId}
+      `;
+    }
+
+    // Handle public_data fields (merge with existing)
+    const publicDataFields = ['companyDescription', 'companyWebsite', 'companySize', 'companyIndustry', 'stockSymbol', 'isPubliclyTraded'];
+    const publicDataUpdates: Record<string, unknown> = {};
+    for (const field of publicDataFields) {
+      if ((data as Record<string, unknown>)[field] !== undefined) {
+        publicDataUpdates[field] = (data as Record<string, unknown>)[field];
+      }
+    }
+    if (Object.keys(publicDataUpdates).length > 0) {
+      await sql`
+        UPDATE users SET public_data = public_data || ${JSON.stringify(publicDataUpdates)}::jsonb, updated_at = NOW()
+        WHERE id = ${session.data.userId}
+      `;
+    }
+
+    // Handle metadata fields (merge with existing)
+    const metadataFields = ['sportsPlayed', 'activities'];
+    const metadataUpdates: Record<string, unknown> = {};
+    for (const field of metadataFields) {
+      if ((data as Record<string, unknown>)[field] !== undefined) {
+        metadataUpdates[field] = (data as Record<string, unknown>)[field];
+      }
+    }
+    if (Object.keys(metadataUpdates).length > 0) {
+      await sql`
+        UPDATE users SET metadata = metadata || ${JSON.stringify(metadataUpdates)}::jsonb, updated_at = NOW()
+        WHERE id = ${session.data.userId}
+      `;
+    }
+
+    if (updates.length === 0 && Object.keys(publicDataUpdates).length === 0 && Object.keys(metadataUpdates).length === 0) {
+      return NextResponse.json({ error: 'No fields to update' }, { status: 400 });
+    }
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error('Profile update error:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  }
+}

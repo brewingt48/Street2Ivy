@@ -1,0 +1,19 @@
+name: Deploy
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Deploy to Heroku via git push
+        env:
+          HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+        run: |
+          git remote add heroku https://heroku:${HEROKU_API_KEY}@git.heroku.com/${{ vars.HEROKU_APP_NAME || 'street2ivy-dev' }}.git
+          git push heroku main --force
