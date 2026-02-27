@@ -7,9 +7,9 @@
  * company info, stats, ratings, and project listings.
  */
 
-import { useState, useEffect, use } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -63,8 +63,8 @@ const statusColors: Record<string, string> = {
   archived: 'bg-slate-100 text-slate-500',
 };
 
-export default function CorporateProfilePage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = use(params);
+export default function CorporateProfilePage() {
+  const { id } = useParams<{ id: string }>();
   const router = useRouter();
   const [corporate, setCorporate] = useState<CorporateDetail | null>(null);
   const [listings, setListings] = useState<Listing[]>([]);
