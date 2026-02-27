@@ -118,7 +118,7 @@ export function ChartCard(props: ChartCardProps) {
                 ))}
               </LineChart>
             ) : props.type === 'bar' ? (
-              <BarChart data={data} margin={{ bottom: 40 }}>
+              <BarChart data={data} margin={{ bottom: 60 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
                 <XAxis
                   dataKey={props.xKey}
@@ -126,10 +126,10 @@ export function ChartCard(props: ChartCardProps) {
                   stroke="#94a3b8"
                   textAnchor="end"
                   interval={0}
-                  angle={-35}
-                  height={80}
+                  angle={-45}
+                  height={120}
                   tickFormatter={(value: string) =>
-                    value.length > 22 ? value.slice(0, 20) + '…' : value
+                    value.length > 35 ? value.slice(0, 33) + '…' : value
                   }
                 />
                 <YAxis tick={{ fontSize: 12 }} stroke="#94a3b8" />
