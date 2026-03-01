@@ -102,7 +102,8 @@ export default function TargetRolesPage() {
   // Skill search for adding requirements
   const [allSkills, setAllSkills] = useState<Skill[]>([]);
   const [skillSearch, setSkillSearch] = useState('');
-  const [showSkillResults, setShowSkillResults] = useState(false);
+  const [skillsLoading, setSkillsLoading] = useState(true);
+  const [skillsError, setSkillsError] = useState(false);
 
   // Delete confirmation
   const [deletingRole, setDeletingRole] = useState<TargetRole | null>(null);
@@ -133,14 +134,21 @@ export default function TargetRolesPage() {
   }, []);
 
   const fetchSkills = useCallback(async () => {
+    setSkillsLoading(true);
+    setSkillsError(false);
     try {
       const res = await fetch('/api/skills');
       if (res.ok) {
         const data = await res.json();
         setAllSkills(data.skills || []);
+      } else {
+        setSkillsError(true);
       }
     } catch (err) {
       console.error('Failed to load skills:', err);
+      setSkillsError(true);
+    } finally {
+      setSkillsLoading(false);
     }
   }, []);
 
@@ -154,6 +162,7 @@ export default function TargetRolesPage() {
     setTitle('');
     setDescription('');
     setRequirements([]);
+    setSkillSearch('');
     setDialogError(null);
     setDialogOpen(true);
   };
@@ -162,6 +171,7 @@ export default function TargetRolesPage() {
     setEditingRole(role);
     setTitle(role.title);
     setDescription(role.description);
+    setSkillSearch('');
     setDialogError(null);
 
     // Fetch existing requirements
@@ -267,7 +277,6 @@ export default function TargetRolesPage() {
       },
     ]);
     setSkillSearch('');
-    setShowSkillResults(false);
   };
 
   const removeSkillRequirement = (skillId: string) => {
@@ -498,22 +507,30 @@ export default function TargetRolesPage() {
               </div>
 
               {/* Skill Search */}
-              <div className="relative">
-                <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
-                <Input
-                  className="pl-9"
-                  placeholder="Search skills to add..."
-                  value={skillSearch}
-                  onChange={(e) => {
-                    setSkillSearch(e.target.value);
-                    setShowSkillResults(true);
-                  }}
-                  onFocus={() => setShowSkillResults(true)}
-                />
-                {showSkillResults && filteredSkills.length > 0 && (
-                  <div className="absolute z-10 mt-1 w-full bg-white dark:bg-slate-900 border rounded-lg shadow-lg max-h-48 overflow-y-auto">
+              <div>
+                <div className="relative">
+                  <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
+                  <Input
+                    className="pl-9"
+                    placeholder="Search skills to add..."
+                    value={skillSearch}
+                    onChange={(e) => setSkillSearch(e.target.value)}
+                  />
+                </div>
+                {skillsLoading ? (
+                  <p className="text-xs text-slate-400 mt-2 flex items-center gap-1.5">
+                    <Loader2 className="h-3 w-3 animate-spin" />
+                    Loading skills...
+                  </p>
+                ) : skillsError ? (
+                  <p className="text-xs text-red-500 mt-2">
+                    Unable to load skills. Please refresh the page and try again.
+                  </p>
+                ) : skillSearch.length >= 2 && filteredSkills.length > 0 ? (
+                  <div className="mt-1 border rounded-lg bg-white dark:bg-slate-900 max-h-48 overflow-y-auto">
                     {filteredSkills.map((skill) => (
                       <button
+                        type="button"
                         key={skill.id}
                         className="w-full text-left px-3 py-2 text-sm hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center justify-between"
                         onClick={() => addSkillRequirement(skill)}
@@ -523,7 +540,11 @@ export default function TargetRolesPage() {
                       </button>
                     ))}
                   </div>
-                )}
+                ) : skillSearch.length >= 2 ? (
+                  <p className="text-xs text-slate-400 mt-2">
+                    No skills match &ldquo;{skillSearch}&rdquo;
+                  </p>
+                ) : null}
               </div>
 
               {/* Requirements List */}
